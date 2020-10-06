@@ -37,6 +37,7 @@
     <record name="Review">
         <field name="reviewId" type="ID" />
         <field name="productId" type="Int" />
+        <field name="storeViewCode" type="String" />
         <field name="title" type="String" />
         <field name="nickname" type="String" />
         <field name="text" type="String" />
@@ -52,8 +53,11 @@
 
     <record name="RatingMetadata">
         <field name="ratingId" type="ID" />
+        <field name="storeViewCode" type="String" />
         <field name="name" type="String" />
-        <field name="values" type="RatingValue" repeated="true" />
+        <field name="values" type="RatingValue" repeated="true">
+            <using field="ratingId" />
+        </field>
     </record>
     <record name="RatingValue">
         <field name="valueId" type="ID" />
