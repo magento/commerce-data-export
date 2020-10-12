@@ -41,7 +41,6 @@
         <field name="title" type="String" />
         <field name="nickname" type="String" />
         <field name="text" type="String" />
-        <field name="customerId" type="String" />
         <field name="ratings" type="Rating" repeated="true">
             <using field="reviewId" />
         </field>
