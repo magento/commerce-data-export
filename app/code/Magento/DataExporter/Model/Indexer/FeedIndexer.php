@@ -269,7 +269,8 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
 
         foreach ($chunk as &$feedData) {
-            $existingData = $existingFeedData[$feedData['storeViewCode']][$feedData[$feedIdentity]] ?? null;
+            $storeViewCode = $feedData['storeViewCode'] ?? null;
+            $existingData = $existingFeedData[$storeViewCode][$feedData[$feedIdentity]] ?? null;
             $attributes = [];
 
             if (null !== $existingData) {
@@ -282,7 +283,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
             $callbackData[] = \array_filter(
                 [
                     $feedIdentity => $feedData[$feedIdentity],
-                    'storeViewCode' => $feedData['storeViewCode'],
+                    'storeViewCode' => $storeViewCode,
                     'attributes' => $attributes,
                 ]
             );

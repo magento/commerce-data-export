@@ -23,46 +23,6 @@
                provider="Magento\CatalogDataExporter\Model\Provider\ProductVariants">
             <using field="product_id" />
         </field>
-        <field name="reviews" type="Review" repeated="true"
-               provider="Magento\CatalogDataExporter\Model\Provider\ProductReviews">
-            <using field="review_id" />
-        </field>
-        <field name="ratingMetadata" type="RatingMetadata" repeated="true"
-               provider="Magento\CatalogDataExporter\Model\Provider\RatingMetadata">
-            <using field="rating_id" />
-        </field>
-    </record>
-
-    <!-- TODO Move reviews to a separate module? -->
-    <record name="Review">
-        <field name="reviewId" type="ID" />
-        <field name="productId" type="Int" />
-        <field name="storeViewCode" type="String" />
-        <field name="title" type="String" />
-        <field name="nickname" type="String" />
-        <field name="text" type="String" />
-        <field name="customerId" type="String" />
-        <field name="ratings" type="Rating" repeated="true">
-            <using field="reviewId" />
-        </field>
-    </record>
-    <record name="Rating">
-        <field name="ratingId" type="ID" />
-        <field name="value" type="String" />
-    </record>
-
-    <record name="RatingMetadata">
-        <field name="ratingId" type="ID" />
-        <field name="storeViewCode" type="String" />
-        <field name="name" type="String" />
-        <field name="values" type="RatingValue" repeated="true">
-            <using field="ratingId" />
-        </field>
-    </record>
-    <record name="RatingValue">
-        <field name="valueId" type="ID" />
-        <field name="value" type="String" />
-        <field name="position" type="Int" />
     </record>
 
     <!-- TODO: delete deprecated "ImageDeprecated" type. use "Image" instead -->
