@@ -53,9 +53,27 @@ class FeedIndexMetadata
     private $feedTableMutableColumns;
 
     /**
+     * @var string
+     */
+    private $scopeTableName;
+
+    /**
+     * @var string
+     */
+    private $scopeTableField;
+
+    /**
+     * @var string
+     */
+    private $scopeCode;
+
+    /**
      * @param string $feedName
      * @param string $sourceTableName
      * @param string $sourceTableField
+     * @param string $scopeTableName
+     * @param string $scopeTableField
+     * @param string $scopeCode
      * @param string $feedIdentity
      * @param string $feedTableName
      * @param string $feedTableField
@@ -70,6 +88,9 @@ class FeedIndexMetadata
         string $feedTableName,
         string $feedTableField,
         array $feedTableMutableColumns,
+        string $scopeTableName = '',
+        string $scopeTableField = '',
+        string $scopeCode = '',
         int $batchSize = 100
     ) {
         $this->sourceTableName = $sourceTableName;
@@ -80,6 +101,9 @@ class FeedIndexMetadata
         $this->batchSize = $batchSize;
         $this->feedName = $feedName;
         $this->feedTableMutableColumns = $feedTableMutableColumns;
+        $this->scopeTableName = $scopeTableName;
+        $this->scopeTableField = $scopeTableField;
+        $this->scopeCode = $scopeCode;
     }
 
     /**
@@ -160,5 +184,35 @@ class FeedIndexMetadata
     public function getFeedTableMutableColumns(): array
     {
         return $this->feedTableMutableColumns;
+    }
+
+    /**
+     * Get scope table name
+     *
+     * @return string
+     */
+    public function getScopeTableName(): string
+    {
+        return $this->scopeTableName;
+    }
+
+    /**
+     * Get scope table field
+     *
+     * @return string
+     */
+    public function getScopeTableField(): string
+    {
+        return $this->scopeTableField;
+    }
+
+    /**
+     * Get scope table scope code
+     *
+     * @return string
+     */
+    public function getScopeCode(): string
+    {
+        return $this->scopeCode;
     }
 }
