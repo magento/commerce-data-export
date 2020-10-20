@@ -8,4 +8,6 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Communication/etc/communication.xsd">
     <topic name="catalog.export.product.data" request="Magento\CatalogExport\Event\Data\ChangedEntities"/>
     <topic name="catalog.export.category.data" request="Magento\CatalogExport\Event\Data\ChangedEntities"/>
+    <topic name="export.product.reviews" request="Magento\CatalogExport\Event\Data\ChangedEntities"/>
+    <topic name="export.rating.metadata" request="Magento\CatalogExport\Event\Data\ChangedEntities"/>
 </config>

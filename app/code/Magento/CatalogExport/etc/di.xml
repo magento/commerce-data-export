@@ -10,6 +10,9 @@
     <preference for="Magento\CatalogExportApi\Api\CategoryRepositoryInterface" type="Magento\CatalogExport\Model\CategoryRepository"/>
     <preference for="Magento\CatalogDataExporter\Model\Indexer\ProductIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ProductIndexerCallback" />
     <preference for="Magento\CatalogDataExporter\Model\Indexer\CategoryIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback" />
+    <preference for="Magento\ProductReviewDataExporter\Model\Indexer\ReviewsIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ReviewIndexerCallback" />
+    <preference for="Magento\ProductReviewDataExporter\Model\Indexer\RatingMetadataIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\RatingMetadataIndexerCallback" />
+
     <type name="Magento\CatalogExport\Model\ProductRepository">
         <arguments>
             <argument name="logger" xsi:type="object">CatalogStorefrontConnectorLogger</argument>
@@ -45,4 +48,24 @@
             </argument>
         </arguments>
     </type>
+
+    <virtualType name="Magento\CatalogExport\Model\Indexer\ReviewIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">export.product.reviews</argument>
+            <argument name="updatedEventType" xsi:type="string">reviews_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">reviews_deleted</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogExport\Model\Indexer\RatingMetadataIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">export.rating.metadata</argument>
+            <argument name="updatedEventType" xsi:type="string">rating_metadata_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">rating_metadata_deleted</argument>
+        </arguments>
+    </virtualType>
 </config>

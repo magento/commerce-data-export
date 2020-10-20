@@ -135,8 +135,8 @@ class EntityIndexerCallback implements FeedIndexerCallbackInterface
         $deleted = [];
         $feed = $this->feedPool->getFeed($this->feedIndexMetadata->getFeedName());
         foreach ($feed->getDeletedByIds($deleteIds) as $entity) {
-            $deleted[$entity['storeViewCode']][] = [
-                'entity_id' => (int)$entity[$this->feedIndexMetadata->getFeedIdentity()],
+            $deleted[$entity['storeViewCode'] ?? null][] = [
+                'entity_id' => $entity[$this->feedIndexMetadata->getFeedIdentity()],
             ];
         }
 
@@ -154,8 +154,8 @@ class EntityIndexerCallback implements FeedIndexerCallbackInterface
     {
         $entitiesArray = [];
         foreach ($entityData as $entity) {
-            $entitiesArray[$entity['storeViewCode']][] = [
-                'entity_id' => (int)$entity[$this->feedIndexMetadata->getFeedIdentity()],
+            $entitiesArray[$entity['storeViewCode'] ?? null][] = [
+                'entity_id' => $entity[$this->feedIndexMetadata->getFeedIdentity()],
                 'attributes' => $entity['attributes'] ?? [],
             ];
         }
@@ -174,7 +174,7 @@ class EntityIndexerCallback implements FeedIndexerCallbackInterface
      */
     private function publishMessage(string $eventType, array $entities, string $scope): void
     {
-        $message = $this->messageBuilder->build($eventType, $entities, $scope);
+        $message = $this->messageBuilder->build($eventType, $entities, $scope ?: null);
 
         try {
             $this->queuePublisher->publish($this->topicName, $message);

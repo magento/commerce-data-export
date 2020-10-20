@@ -12,4 +12,10 @@
     <publisher topic="catalog.export.category.data">
         <connection name="amqp" exchange="catalog.export.exchange" />
     </publisher>
+    <publisher topic="export.product.reviews">
+        <connection name="amqp" exchange="catalog.export.exchange" />
+    </publisher>
+    <publisher topic="export.rating.metadata">
+        <connection name="amqp" exchange="catalog.export.exchange" />
+    </publisher>
 </config>
