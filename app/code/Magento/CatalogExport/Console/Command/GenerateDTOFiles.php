@@ -68,6 +68,8 @@ class GenerateDTOFiles extends Command
         'Product',
         'Category',
         'ProductVariant',
+        'Review',
+        'RatingMetadata',
     ];
 
     /**
