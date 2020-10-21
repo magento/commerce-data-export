@@ -9,6 +9,7 @@
     <preference for="Magento\CatalogExportApi\Api\ProductRepositoryInterface" type="Magento\CatalogExport\Model\ProductRepository"/>
     <preference for="Magento\CatalogExportApi\Api\CategoryRepositoryInterface" type="Magento\CatalogExport\Model\CategoryRepository"/>
     <preference for="Magento\CatalogExportApi\Api\ReviewRepositoryInterface" type="Magento\CatalogExport\Model\ReviewRepository"/>
+    <preference for="Magento\CatalogExportApi\Api\RatingMetadataRepositoryInterface" type="Magento\CatalogExport\Model\RatingMetadataRepository"/>
     <preference for="Magento\CatalogDataExporter\Model\Indexer\ProductIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ProductIndexerCallback" />
     <preference for="Magento\CatalogDataExporter\Model\Indexer\CategoryIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback" />
     <preference for="Magento\ProductReviewDataExporter\Model\Indexer\ReviewsIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ReviewIndexerCallback" />

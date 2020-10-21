@@ -29,4 +29,10 @@
             <resource ref="anonymous" />
         </resources>
     </route>
+    <route url="/V1/reviews-export/ratings-metadata" method="GET">
+        <service class="Magento\CatalogExportApi\Api\RatingMetadataRepositoryInterface" method="get"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
 </routes>

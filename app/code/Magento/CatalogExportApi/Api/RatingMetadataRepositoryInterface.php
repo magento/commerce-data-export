@@ -7,16 +7,16 @@
 namespace Magento\CatalogExportApi\Api;
 
 /**
- * Review entity repository interface
+ * Rating metadata repository interface
  */
-interface ReviewRepositoryInterface
+interface RatingMetadataRepositoryInterface
 {
     /**
-     * Get reviews by ids
+     * Get rating metadata by rating ids
      *
      * @param \Magento\CatalogExportApi\Api\EntityRequest $request
      *
-     * @return \Magento\CatalogExportApi\Api\Data\Review[]
+     * @return \Magento\CatalogExportApi\Api\Data\RatingMetadata[]
      *
      * @throws \InvalidArgumentException
      */
