@@ -24,10 +24,10 @@
 
 ### Fixed Issues (if relevant)
 <!---
-    If relevant, please provide a list of fixed issues in the format magento-commerce/commerce-data-export#<issue_number>.
+    If relevant, please provide a list of fixed issues in the format magento/catalog-storefront#<issue_number>.
     There could be 1 or more issues linked here and it will help us find some more information about the reasoning behind this change.
 -->
-1. Fixes magento-commerce/commerce-data-export#<issue_number>
+1. Fixes magento/catalog-storefront#<issue_number>
 
 
 ### Questions or comments

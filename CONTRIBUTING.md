@@ -28,7 +28,7 @@ If you are a new GitHub user, we recommend that you create your own [free github
 This will allow you to collaborate with the Magento 2 development team, fork the Magento 2 project and send pull requests.
 
 1. Review the [Contributor License Agreement](https://magento.com/legaldocuments/mca) if this is your first time contributing.
-2. Fork the graphql-schemas repository and when you are ready to send us a pull request – follow the [Create A Pull Request instructions](https://devdocs.magento.com/guides/v2.3/contributor-guide/contributing.html#pull_request).
+2. Fork commerce-data-export repository and when you are ready to send us a pull request – follow the [Create A Pull Request instructions](https://devdocs.magento.com/contributor-guide/contributing.html).
 3. Once your contribution is received the Magento 2 development team will review the contribution and collaborate with you as needed.
 
 ## Code of Conduct
