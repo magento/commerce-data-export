@@ -141,4 +141,12 @@
         <plugin name="reindex_rating_metadata_feed_on_option_save"
                 type="Magento\ProductReviewDataExporter\Plugin\ReindexRatingMetadataFeedOnOptionSave"/>
     </type>
+    <type name="Magento\Review\Model\Review">
+        <plugin name="reindex_review_feed"
+                type="Magento\ProductReviewDataExporter\Plugin\ReindexReviewFeed"/>
+    </type>
+    <type name="Magento\Review\Model\ResourceModel\Rating\Option">
+        <plugin name="reindex_review_feed_on_vote_add"
+                type="Magento\ProductReviewDataExporter\Plugin\ReindexReviewFeedOnVoteAdd"/>
+    </type>
 </config>

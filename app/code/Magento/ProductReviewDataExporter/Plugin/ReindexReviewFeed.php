@@ -9,17 +9,17 @@ declare(strict_types=1);
 namespace Magento\ProductReviewDataExporter\Plugin;
 
 use Magento\Framework\Indexer\IndexerRegistry;
-use Magento\Review\Model\Rating;
+use Magento\Review\Model\Review;
 
 /**
- * Plugin for running rating metadata feed indexation during save / delete operation
+ * Plugin for running review feed indexation during save / delete operation
  */
-class ReindexRatingMetadataFeed
+class ReindexReviewFeed
 {
     /**
-     * Rating metadata feed indexer id
+     * Review feed indexer id
      */
-    private const RATING_METADATA_FEED_INDEXER = 'catalog_data_exporter_rating_metadata';
+    private const REVIEW_FEED_INDEXER = 'catalog_data_exporter_product_reviews';
 
     /**
      * @var IndexerRegistry
@@ -38,11 +38,11 @@ class ReindexRatingMetadataFeed
     /**
      * Execute reindex process on delete callback
      *
-     * @param Rating $subject
+     * @param Review $subject
      *
-     * @return Rating
+     * @return Review
      */
-    public function beforeAfterDeleteCommit(Rating $subject): Rating
+    public function beforeAfterDeleteCommit(Review $subject): Review
     {
         $this->reindex($subject);
 
@@ -52,11 +52,11 @@ class ReindexRatingMetadataFeed
     /**
      * Execute reindex process on save commit callback
      *
-     * @param Rating $subject
+     * @param Review $subject
      *
-     * @return Rating
+     * @return Review
      */
-    public function beforeAfterCommitCallback(Rating $subject): Rating
+    public function beforeAfterCommitCallback(Review $subject): Review
     {
         $this->reindex($subject);
 
@@ -64,17 +64,17 @@ class ReindexRatingMetadataFeed
     }
 
     /**
-     * Re-indexation process of rating metadata feed
+     * Re-indexation process of review feed
      *
-     * @param Rating $rating
+     * @param Review $review
      *
      * @return void
      */
-    public function reindex(Rating $rating): void
+    public function reindex(Review $review): void
     {
-        $indexer = $this->indexerRegistry->get(self::RATING_METADATA_FEED_INDEXER);
+        $indexer = $this->indexerRegistry->get(self::REVIEW_FEED_INDEXER);
         if (!$indexer->isScheduled()) {
-            $indexer->reindexRow($rating->getId());
+            $indexer->reindexRow($review->getId());
         }
     }
 }
