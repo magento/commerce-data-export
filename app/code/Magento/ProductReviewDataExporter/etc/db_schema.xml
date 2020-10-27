@@ -42,13 +42,7 @@
            resource="default"
            engine="innodb"
            comment="Product Rating Metadata Feed Storage">
-        <column xsi:type="varchar"
-                name="id"
-                nullable="false"
-                length="64"
-                comment="ID"
-        />
-
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" comment="ID"/>
         <column xsi:type="varchar"
                 name="store_view_code"
                 nullable="false"

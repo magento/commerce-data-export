@@ -80,15 +80,15 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\RatingDataSerializer"
-                 type="Magento\DataExporter\Model\Indexer\DataSerializer">
+    <type name="Magento\ProductReviewDataExporter\Model\Indexer\RatingDataSerializer">
         <arguments>
+            <argument name="feedIdentity" xsi:type="string">ratingId</argument>
             <argument name="mapping" xsi:type="array">
                 <item name="id" xsi:type="string">ratingId</item>
                 <item name="store_view_code" xsi:type="string">storeViewCode</item>
             </argument>
         </arguments>
-    </virtualType>
+    </type>
 
     <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\RatingMetadataIndexerCallbackInterface"
                  type="Magento\DataExporter\Model\Indexer\FeedIndexerCallbackInterface"/>
@@ -106,9 +106,6 @@
             </argument>
             <argument name="serializer" xsi:type="object">
                 Magento\ProductReviewDataExporter\Model\Indexer\RatingDataSerializer
-            </argument>
-            <argument name="markRemovedEntities" xsi:type="object">
-                Magento\ProductReviewDataExporter\Model\Indexer\MarkRemovedRatingMetadata
             </argument>
         </arguments>
     </virtualType>
@@ -133,5 +130,15 @@
                 </item>
             </argument>
         </arguments>
+    </type>
+
+    <!-- Plugins -->
+    <type name="Magento\Review\Model\Rating">
+        <plugin name="reindex_rating_metadata_feed"
+                type="Magento\ProductReviewDataExporter\Plugin\ReindexRatingMetadataFeed"/>
+    </type>
+    <type name="Magento\Review\Model\Rating\Option">
+        <plugin name="reindex_rating_metadata_feed_on_option_save"
+                type="Magento\ProductReviewDataExporter\Plugin\ReindexRatingMetadataFeedOnOptionSave"/>
     </type>
 </config>

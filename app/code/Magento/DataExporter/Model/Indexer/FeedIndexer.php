@@ -145,7 +145,10 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     {
         $this->truncateFeedTable();
         foreach ($this->getAllIds() as $ids) {
-            $this->markRemovedEntities->execute($ids, $this->feedIndexMetadata);
+            $this->markRemovedEntities->execute(
+                \array_column($ids, $this->feedIndexMetadata->getFeedIdentity()),
+                $this->feedIndexMetadata
+            );
             $this->process($ids);
         }
     }

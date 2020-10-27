@@ -96,7 +96,7 @@ class RatingMetadata
     private function formatRatingRow(array $row): array
     {
         return [
-            'ratingId' => \base64_encode($row['ratingId']),
+            'ratingId' => $row['ratingId'],
             'storeViewCode' => $row['storeViewCode'],
             'name' => $row['name'],
         ];
