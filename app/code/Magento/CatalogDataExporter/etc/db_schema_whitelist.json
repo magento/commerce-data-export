@@ -1,0 +1,41 @@
+{
+    "catalog_data_exporter_products": {
+        "index": {
+            "CATALOG_DATA_EXPORTER_PRODUCTS_MODIFIED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "column": {
+            "id": true,
+            "sku": true,
+            "store_view_code": true,
+            "feed_data": true,
+            "modified_at": true,
+            "is_deleted": true
+        }
+    },
+    "catalog_data_exporter_categories": {
+        "index": {
+            "CATALOG_DATA_EXPORTER_CATEGORIES_MODIFIED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "column": {
+            "id": true,
+            "store_view_code": true,
+            "feed_data": true,
+            "modified_at": true,
+            "is_deleted": true
+        }
+    },
+    "catalog_data_exporter_product_attributes": {
+        "index": {
+            "CATALOG_DATA_EXPORTER_PRODUCT_ATTRIBUTES_MODIFIED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

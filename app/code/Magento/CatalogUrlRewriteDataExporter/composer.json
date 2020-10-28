@@ -1,0 +1,28 @@
+{
+  "name": "magento/module-catalog-url-rewrite-data-exporter",
+  "description": "Product URL data exporter",
+  "config": {
+    "sort-packages": true
+  },
+  "type": "magento2-module",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Magento\\CatalogUrlRewriteDataExporter\\": ""
+    }
+  },
+  "require": {
+    "php": "~7.3.0||~7.4.0",
+    "magento/framework": "*",
+    "magento/module-url-rewrite": "*",
+    "magento/module-store": "*",
+    "magento/module-data-exporter": "*",
+    "magento/module-catalog": "*"
+  }
+}

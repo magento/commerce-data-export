@@ -1,0 +1,26 @@
+{
+  "name": "magento/module-parent-product-data-exporter",
+  "description": "Extract parent-child product relation",
+  "config": {
+    "sort-packages": true
+  },
+  "type": "magento2-module",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Magento\\ParentProductDataExporter\\": ""
+    }
+  },
+  "require": {
+    "php": "~7.3.0||~7.4.0",
+    "magento/framework": "*",
+    "magento/module-data-exporter": "*",
+    "magento/module-configurable-product": "*"
+  }
+}

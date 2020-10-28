@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
+    <indexer
+        id="catalog_data_exporter_products"
+        view_id="catalog_data_exporter_products"
+        class="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer"
+    >
+        <title translate="true">Product Feed</title>
+        <description translate="true">Collects data for a Product Feed</description>
+        <dependencies>
+            <indexer id="catalog_product_price" />
+            <indexer id="catalog_category_product" />
+            <indexer id="catalog_product_category" />
+            <indexer id="cataloginventory_stock" />
+        </dependencies>
+    </indexer>
+</config>

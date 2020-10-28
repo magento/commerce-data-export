@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="catalog_data_exporter_products" resource="default" engine="innodb" comment="Product Feed Storage">
+        <column xsi:type="int"
+            name="id"
+            padding="10"
+            unsigned="true"
+            nullable="false"
+            comment="ID"
+            onCreate="migrateDataFromJSON(JSON_EXTRACT(feed_data, '$.productId'))"
+        />
+        <column xsi:type="varchar"
+            name="sku"
+            nullable="false"
+            length="64"
+            comment="SKU"
+        />
+        <column xsi:type="varchar"
+            name="store_view_code"
+            nullable="false"
+            length="64"
+            comment="Store view code"
+        />
+        <column
+            xsi:type="mediumtext"
+            name="feed_data"
+            nullable="false"
+            comment="Feed Data"
+        />
+        <column
+            xsi:type="timestamp"
+            name="modified_at"
+            on_update="true"
+            nullable="false"
+            default="CURRENT_TIMESTAMP"
+            comment="Created At"
+        />
+        <column
+            xsi:type="tinyint"
+            name="is_deleted"
+            nullable="false"
+            default="0"
+            comment="Product Deleted"
+        />
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+            <column name="store_view_code"/>
+        </constraint>
+        <index referenceId="catalog_data_exporter_products_modified_at" indexType="btree">
+            <column name="modified_at"/>
+        </index>
+    </table>
+
+    <table name="catalog_data_exporter_categories" resource="default" engine="innodb" comment="Category Feed Storage">
+        <column xsi:type="int"
+                name="id"
+                padding="10"
+                unsigned="true"
+                nullable="false"
+                comment="ID"
+        />
+        <column xsi:type="varchar"
+                name="store_view_code"
+                nullable="false"
+                length="64"
+                comment="Store view code"
+        />
+        <column xsi:type="mediumtext"
+                name="feed_data"
+                nullable="false"
+                comment="Feed Data"
+        />
+        <column xsi:type="timestamp"
+                name="modified_at"
+                on_update="true"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"
+                comment="Created At"
+        />
+        <column xsi:type="tinyint"
+                name="is_deleted"
+                nullable="false"
+                default="0"
+                comment="Category Deleted"
+        />
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+            <column name="store_view_code"/>
+        </constraint>
+        <index referenceId="catalog_data_exporter_categories_modified_at" indexType="btree">
+            <column name="modified_at"/>
+        </index>
+    </table>
+    <table name="catalog_data_exporter_product_attributes"
+        resource="default"
+           engine="innodb"
+           comment="Product Attribute Feed Storage"
+    >
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" comment="ID"/>
+        <column xsi:type="varchar"
+                name="store_view_code"
+                nullable="false"
+                length="64"
+                comment="Store view code"
+        />
+        <column
+            xsi:type="mediumtext"
+            name="feed_data"
+            nullable="false"
+            comment="Feed Data"
+        />
+        <column
+            xsi:type="timestamp"
+            name="modified_at"
+            on_update="true"
+            nullable="false"
+            default="CURRENT_TIMESTAMP"
+            comment="Created At"
+        />
+        <column
+            xsi:type="tinyint"
+            name="is_deleted"
+            nullable="false"
+            default="0"
+            comment="Is Deleted"
+        />
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+            <column name="store_view_code"/>
+        </constraint>
+        <index referenceId="catalog_data_exporter_product_attributes_modified_at" indexType="btree">
+            <column name="modified_at"/>
+        </index>
+    </table>
+</schema>

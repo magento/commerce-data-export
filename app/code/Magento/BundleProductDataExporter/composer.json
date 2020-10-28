@@ -1,0 +1,30 @@
+{
+  "name": "magento/module-bundle-product-data-exporter",
+  "description": "Bundle product data exporter",
+  "config": {
+    "sort-packages": true
+  },
+  "type": "magento2-module",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Magento\\BundleProductDataExporter\\": ""
+    }
+  },
+  "require": {
+    "php": "~7.3.0||~7.4.0",
+    "magento/framework": "*",
+    "magento/module-data-exporter": "*",
+    "magento/module-catalog-data-exporter": "*",
+    "magento/module-eav": "*",
+    "magento/module-store": "*",
+    "magento/module-bundle": "*",
+    "magento/module-catalog": "*"
+  }
+}

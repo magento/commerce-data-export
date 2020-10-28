@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\CatalogExportApi\Api\ProductRepositoryInterface" type="Magento\CatalogExport\Model\ProductRepository"/>
+    <preference for="Magento\CatalogExportApi\Api\CategoryRepositoryInterface" type="Magento\CatalogExport\Model\CategoryRepository"/>
+    <preference for="Magento\CatalogDataExporter\Model\Indexer\ProductIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ProductIndexerCallback" />
+    <preference for="Magento\CatalogDataExporter\Model\Indexer\CategoryIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback" />
+    <type name="Magento\CatalogExport\Model\ProductRepository">
+        <arguments>
+            <argument name="logger" xsi:type="object">CatalogStorefrontConnectorLogger</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">catalog.export.category.data</argument>
+            <argument name="updatedEventType" xsi:type="string">categories_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">categories_deleted</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogExport\Model\Indexer\ProductIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">catalog.export.product.data</argument>
+            <argument name="updatedEventType" xsi:type="string">products_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">products_deleted</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="dto_auto_generation" xsi:type="object">
+                    Magento\CatalogExport\Console\Command\GenerateDTOFiles
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>
