@@ -65,7 +65,6 @@ class Processor
     {
         $info = $this->infoAssembler->assembleFieldInfo($fieldName, $this->rootProfileName);
         $snapshots = $this->extractor->extract($info, $arguments);
-        $data = $this->transformer->transform($info, $snapshots);
-        return $data;
+        return $this->transformer->transform($info, $snapshots);
     }
 }

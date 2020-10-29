@@ -12,9 +12,9 @@
         >
             <using field="productId" />
         </field>
-        <record name="ParentProduct">
-            <field name="sku" type="String"/>
-            <field name="productType" type="String"/>
-        </record>
+    </record>
+    <record name="ParentProduct">
+        <field name="sku" type="String"/>
+        <field name="productType" type="String"/>
     </record>
 </config>

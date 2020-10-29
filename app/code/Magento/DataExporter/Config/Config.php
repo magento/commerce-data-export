@@ -37,7 +37,11 @@ class Config implements ConfigInterface
      */
     public function get(string $profileName) : array
     {
-        return $this->data->get($profileName);
+        $config = $this->data->get($profileName);
+        if (!$config) {
+            throw new \RuntimeException(\sprintf('et_schema error: no config found for entity "%s"', $profileName));
+        }
+        return $config;
     }
 
     /**
