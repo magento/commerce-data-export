@@ -65,12 +65,12 @@ class ProductReviewsQuery
                 'r.entity_id = re.entity_id',
                 []
             )
-            ->join(
+            ->joinLeft(
                 ['rov' => $this->resourceConnection->getTableName('rating_option_vote')],
                 'r.review_id = rov.review_id',
                 []
             )
-            ->join(
+            ->joinLeft(
                 ['ro' => $this->resourceConnection->getTableName('rating_option')],
                 'rov.option_id = ro.option_id',
                 []

@@ -72,10 +72,13 @@ class ProductReviews
             while ($row = $cursor->fetch()) {
                 $key = $row['reviewId'];
                 $output[$key] = $output[$key] ?? $this->formatReviewRow($row);
-                $output[$key]['ratings'][] = [
-                    'ratingId' => \base64_encode($row['ratingId']),
-                    'value' => $row['ratingValue'],
-                ];
+
+                if (null !== $row['ratingId']) {
+                    $output[$key]['ratings'][] = [
+                        'ratingId' => \base64_encode($row['ratingId']),
+                        'value' => $row['ratingValue'],
+                    ];
+                }
             }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
