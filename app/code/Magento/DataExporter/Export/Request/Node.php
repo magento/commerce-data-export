@@ -9,6 +9,8 @@ namespace Magento\DataExporter\Export\Request;
 
 /**
  * Class Node
+ *
+ * DTO class for node.
  */
 class Node
 {
@@ -23,8 +25,6 @@ class Node
     private $children;
 
     /**
-     * Node constructor.
-     *
      * @param array $field
      * @param array $children
      */

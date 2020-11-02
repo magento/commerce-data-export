@@ -9,6 +9,8 @@ namespace Magento\CatalogDataExporter\Model\Provider\Product\Formatter;
 
 /**
  * Class SystemEnumFormatter
+ *
+ * Formats system enum values.
  */
 class SystemEnumFormatter implements FormatterInterface
 {
@@ -18,8 +20,6 @@ class SystemEnumFormatter implements FormatterInterface
     private $systemEnums;
 
     /**
-     * SystemEnumFormatter constructor.
-     *
      * @param array $systemEnums
      */
     public function __construct(

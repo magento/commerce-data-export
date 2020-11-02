@@ -10,18 +10,19 @@ namespace Magento\CatalogInventoryDataExporter\Model\Query;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 
-
+/**
+ * Class CatalogInventoryQuery
+ *
+ * Gets information about product inventory
+ */
 class CatalogInventoryQuery
 {
-
     /**
      * @var ResourceConnection
      */
     private $resourceConnection;
 
     /**
-     * CatalogInventoryQuery constructor.
-     *
      * @param ResourceConnection $resourceConnection
      */
     public function __construct(
@@ -31,6 +32,8 @@ class CatalogInventoryQuery
     }
 
     /**
+     * Get table name
+     *
      * @param string $tableName
      * @return string
      */
@@ -40,6 +43,8 @@ class CatalogInventoryQuery
     }
 
     /**
+     * Get query with information about in_stock status
+     *
      * @param array $arguments
      * @return Select
      */

@@ -30,7 +30,7 @@ use Magento\DataExporter\Config\ConfigInterface;
  *
  * A destination folder is required to define where the files will be generated.
  *
- * php bin/magento dto:generate --destination-folder /var/www/saas-export/app/code/Magento/CatalogExportApi/Api/Data
+ * php bin/magento dto:generate --destination-folder /var/www/commerce-data-export/app/code/Magento/CatalogExportApi/Api/Data
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @SuppressWarnings(PHPMD.CyclomaticComplexity)

@@ -9,6 +9,8 @@ namespace Magento\DataExporter\Export\Request;
 
 /**
  * Class Info
+ *
+ * DTO class for node info.
  */
 class Info
 {
@@ -18,8 +20,6 @@ class Info
     private $node;
 
     /**
-     * Info constructor.
-     *
      * @param Node $node
      */
     public function __construct(
@@ -29,6 +29,8 @@ class Info
     }
 
     /**
+     * Get root node.
+     *
      * @return Node
      */
     public function getRootNode() : Node

@@ -12,6 +12,8 @@ use Magento\DataExporter\Export\Request\Info;
 
 /**
  * Class Transformer
+ *
+ * Transforms info object into data.
  */
 class Transformer
 {
@@ -21,8 +23,6 @@ class Transformer
     private $config;
 
     /**
-     * Transformer constructor.
-     *
      * @param ConfigInterface $config
      */
     public function __construct(
@@ -79,7 +79,7 @@ class Transformer
      * Cast scalar value
      *
      * @param string $type
-     * @param $value
+     * @param string|null $value
      * @return bool|float|int|string|null
      */
     private function castScalarValue(string $type, $value)
@@ -109,6 +109,8 @@ class Transformer
      * @param array $rootField
      * @param $value
      * @return bool|float|int|string|null
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function castToFieldType(array $rootField, $value)
     {
@@ -169,7 +171,7 @@ class Transformer
                     foreach ($field['using'] as $key) {
                         $index[] = [$key['field'] => $row[$key['field']]];
                     }
-                    $lookupReference = base64_encode(json_encode($index));
+                    $lookupReference = \base64_encode(\json_encode($index));
                     //todo: add Filter cond
                     $result[$field['name']] = $this->convertComplexData($field, $snapshot, $lookupReference);
                 }

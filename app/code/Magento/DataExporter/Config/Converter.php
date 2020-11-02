@@ -55,6 +55,8 @@ class Converter implements ConverterInterface
      *
      * @param \DOMDocument $source
      * @return array
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function convert($source)
     {

@@ -13,6 +13,8 @@ use Magento\Framework\ObjectManagerInterface;
 
 /**
  * Class Extractor
+ *
+ * Extracts data for product.
  */
 class Extractor
 {
@@ -22,59 +24,12 @@ class Extractor
     private $objectManager;
 
     /**
-     * Extractor constructor.
-     *
      * @param ObjectManagerInterface $objectManager
      */
     public function __construct(
         ObjectManagerInterface $objectManager
     ) {
         $this->objectManager = $objectManager;
-    }
-
-    /**
-     * Resolve arguments
-     *
-     * @param array $parentField
-     * @param array $field
-     * @param array $value
-     * @param bool $isRoot
-     * @return array
-     */
-    private function resolveArguments(array $parentField, array $field, array $value, bool $isRoot) : array
-    {
-        return $value;
-        /*
-        $arguments = [];
-        if ($isRoot || !isset($field['using'])) {
-            return  $value;
-        }
-        foreach ($value as $item) {
-            $argument = [];
-            foreach ($field['using'] as $using) {
-                if ($parentField['repeated'] && !$isRoot) {
-                    foreach ($item as $row) {
-                        $argument[$using['field']] = $row[$using['field']];
-                    }
-                } else {
-                    $argument[$using['field']] = $item[$using['field']];
-                }
-            }
-            $arguments[] = $argument;
-        }
-        return $arguments;
-        */
-    }
-
-    /**
-     * Check if type is scalar
-     *
-     * @param string $typeName
-     * @return bool
-     */
-    private function isScalar(string $typeName) : bool
-    {
-        return in_array($typeName, ['String', 'Int', 'Float', 'ID', 'Boolean']);
     }
 
     /**
