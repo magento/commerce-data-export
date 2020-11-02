@@ -29,28 +29,10 @@ class ClientAdapterTest extends TestCase
     const SERVICE_VERSION = 'V1';
     const RESOURCE_PATH = '/V1/products';
 
-    /** @var ObjectManagerInterface */
-    private $objectManager;
-
     /**
      * @var State
      */
     private $state;
-
-    /**
-     * @var AdminTokenServiceInterface
-     */
-    private $adminTokens;
-
-    /**
-     * @var DocumentFactory
-     */
-    private $documentFactory;
-
-    /**
-     * @var DocumentIteratorFactory
-     */
-    private $documentIteratorFactory;
 
     /**
      * @var ElasticsearchDataDefinitionAdapter
@@ -74,14 +56,11 @@ class ClientAdapterTest extends TestCase
     {
         parent::setUp();
 
-        $this->objectManager = Bootstrap::getObjectManager();
-        $this->state = $this->objectManager->create(State::class);
-        $this->storageDDL = $this->objectManager->create(ElasticsearchDataDefinitionAdapter::class);
-        $this->storageQuery = $this->objectManager->create(ElasticsearchQuery::class);
-        $this->storageCommand = $this->objectManager->create(ElasticsearchCommand::class);
-        $this->adminTokens = Bootstrap::getObjectManager()->get(AdminTokenServiceInterface::class);
-        $this->documentFactory = Bootstrap::getObjectManager()->get(DocumentFactory::class);
-        $this->documentIteratorFactory = Bootstrap::getObjectManager()->get(DocumentIteratorFactory::class);
+        $objectManager = Bootstrap::getObjectManager();
+        $this->state = $objectManager->create(State::class);
+        $this->storageDDL = $objectManager->create(ElasticsearchDataDefinitionAdapter::class);
+        $this->storageQuery = $objectManager->create(ElasticsearchQuery::class);
+        $this->storageCommand = $objectManager->create(ElasticsearchCommand::class);
 
         $this->storageDDL->createDataSource($this->state->getCurrentDataSourceName(['scope']), []);
         $this->storageDDL->createEntity($this->state->getCurrentDataSourceName(['scope']), 'product', []);

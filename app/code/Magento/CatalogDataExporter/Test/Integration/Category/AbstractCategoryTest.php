@@ -82,6 +82,7 @@ abstract class AbstractCategoryTest extends TestCase
     /**
      * Run the indexer to extract categories data
      *
+     * @param array $ids
      * @return void
      */
     protected function runIndexer(array $ids) : void

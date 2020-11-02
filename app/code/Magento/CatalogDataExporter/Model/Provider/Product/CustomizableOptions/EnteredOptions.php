@@ -43,6 +43,7 @@ class EnteredOptions implements OptionProviderInterface
      *
      * @param array $values
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function get(array $values) : array
     {

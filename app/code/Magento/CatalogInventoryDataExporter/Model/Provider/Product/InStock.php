@@ -55,12 +55,11 @@ class InStock
      */
     private function format(array $row) : array
     {
-        $output = [
+        return [
             'productId' => $row['product_id'],
             'storeViewCode' => $row['storeViewCode'],
             'inStock' => $row['is_in_stock'],
         ];
-        return $output;
     }
 
     /**

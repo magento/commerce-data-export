@@ -202,6 +202,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     /**
      * Get partially hardcoded option values to compare to extracted product data
      *
+     * @param string $attributeId
      * @param array $optionValues
      * @return array
      */

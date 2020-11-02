@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Provider\Product\Downloadable;
 
-use Magento\Catalog\Model\Product\Media\ConfigInterface as MediaConfig;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Model\StoreManagerInterface;

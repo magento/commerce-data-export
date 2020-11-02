@@ -91,7 +91,6 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
         $metadata = $this->metadataPool->getMetadata($this->entityType);
         $entityTableName = $metadata->getEntityTable();
 
-        /** @var \Magento\Framework\DB\Adapter\AdapterInterface $connection */
         $connection = $this->resourceConnection->getConnection();
         $entityTableAttributes = \array_keys($connection->describeTable($entityTableName));
 

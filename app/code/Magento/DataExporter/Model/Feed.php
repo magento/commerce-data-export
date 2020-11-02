@@ -120,6 +120,7 @@ class Feed implements FeedInterface
 
     /**
      * @inheritDoc
+     * @throws \Zend_Db_Statement_Exception
      */
     public function getDeletedByIds(array $ids, ?array $storeViewCodes = []): array
     {
@@ -155,8 +156,8 @@ class Feed implements FeedInterface
      *
      * @param string|\Magento\Framework\DB\Select $select
      * @param array $attributes
-     *
      * @return array
+     * @throws \Zend_Db_Statement_Exception
      */
     private function fetchData($select, array $attributes): array
     {

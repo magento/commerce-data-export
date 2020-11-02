@@ -30,11 +30,6 @@ abstract class AbstractProductExportTestHelper extends WebapiAbstract
     protected $createServiceInfo;
 
     /**
-     * @var ObjectManager
-     */
-    private $objectManager;
-
-    /**
      * @var CompareArraysRecursively
      */
     private $compareArraysRecursively;
@@ -65,12 +60,12 @@ abstract class AbstractProductExportTestHelper extends WebapiAbstract
      */
     protected function setUp(): void
     {
-        $this->objectManager = Bootstrap::getObjectManager();
-        $this->productsFeed = $this->objectManager->get(FeedPool::class)->getFeed('products');
+        $objectManager = Bootstrap::getObjectManager();
+        $this->productsFeed = $objectManager->get(FeedPool::class)->getFeed('products');
 
         $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
-        $this->productRepository = $this->objectManager->get(ProductRepositoryInterface::class);
-        $this->compareArraysRecursively = $this->objectManager->create(CompareArraysRecursively::class);
+        $this->productRepository = $objectManager->get(ProductRepositoryInterface::class);
+        $this->compareArraysRecursively = $objectManager->create(CompareArraysRecursively::class);
 
         $this->createServiceInfo = [
             'rest' => [
