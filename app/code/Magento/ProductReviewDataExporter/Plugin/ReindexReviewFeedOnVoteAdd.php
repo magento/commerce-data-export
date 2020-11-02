@@ -44,6 +44,8 @@ class ReindexReviewFeedOnVoteAdd
      * @param Option $option
      *
      * @return RatingOptionResource
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterAddVote(
         RatingOptionResource $subject,

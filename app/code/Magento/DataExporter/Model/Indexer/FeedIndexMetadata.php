@@ -71,14 +71,16 @@ class FeedIndexMetadata
      * @param string $feedName
      * @param string $sourceTableName
      * @param string $sourceTableField
-     * @param string $scopeTableName
-     * @param string $scopeTableField
-     * @param string $scopeCode
      * @param string $feedIdentity
      * @param string $feedTableName
      * @param string $feedTableField
-     * @param string[] $feedTableMutableColumns
+     * @param array $feedTableMutableColumns
+     * @param string $scopeTableName
+     * @param string $scopeTableField
+     * @param string $scopeCode
      * @param int $batchSize
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         string $feedName,

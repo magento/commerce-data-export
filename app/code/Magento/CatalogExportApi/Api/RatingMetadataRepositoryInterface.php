@@ -7,7 +7,7 @@
 namespace Magento\CatalogExportApi\Api;
 
 /**
- * Rating metadata repository interface
+ * Rating metadata entity repository interface
  */
 interface RatingMetadataRepositoryInterface
 {

@@ -74,7 +74,7 @@ class ChangedEntitiesMessageBuilder
         $entitiesArray = [];
         foreach ($entities as $entityData) {
             $entity = $this->entityFactory->create();
-            $entity->setEntityId((string)$entityData['entity_id']);
+            $entity->setEntityId((int)$entityData['entity_id']);
             $entity->setAttributes($entityData['attributes'] ?? []);
 
             $entitiesArray[] = $entity;
