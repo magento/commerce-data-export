@@ -54,7 +54,7 @@ class ProductCategoryQuery
     /**
      * Get URL key attribute ID
      *
-     * @return array
+     * @return int
      */
     private function getUrlKeyAttributeId() : int
     {

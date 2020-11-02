@@ -6,3 +6,4 @@ magento/module-configurable-product-data-exporter
 magento/module-bundle-product-data-exporter
 magento/module-catalog-export
 magento/module-catalog-export-api
+magento/module-parent-product-data-exporter

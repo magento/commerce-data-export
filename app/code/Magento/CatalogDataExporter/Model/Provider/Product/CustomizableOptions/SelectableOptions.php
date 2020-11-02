@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Provider\Product\CustomizableOptions;
 
-use Magento\Catalog\Api\Data\ProductCustomOptionInterface as ProductCustomOption;
 use Magento\CatalogDataExporter\Model\Provider\Product\CustomOptions;
 use Magento\CatalogDataExporter\Model\Provider\Product\OptionProviderInterface;
 

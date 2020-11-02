@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Test\Integration;
 
-use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\StateException;

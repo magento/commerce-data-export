@@ -9,7 +9,6 @@ namespace Magento\CatalogDataExporter\Model\Provider\Product;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
-use Magento\Framework\DB\Sql\Expression;
 
 /**
  * Class for Attribute Metadata
@@ -129,6 +128,7 @@ class AttributeMetadata
      * @param string $storeViewCode
      * @param string $value
      * @return array
+     * @throws \Zend_Db_Statement_Exception
      */
     public function getAttributeValue(string $attributeCode, string $storeViewCode, string $value): array
     {
@@ -154,6 +154,7 @@ class AttributeMetadata
      * @param string $storeViewCode
      * @param string $value
      * @return array
+     * @throws \Zend_Db_Statement_Exception
      */
     public function getOptionById(string $attributeCode, string $storeViewCode, string $value): array
     {

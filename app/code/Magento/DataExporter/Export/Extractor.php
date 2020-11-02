@@ -115,7 +115,6 @@ class Extractor
      */
     public function extract(Info $info, array $arguments = []) : array
     {
-        $data = $this->extractDataForNode($info, $info->getRootNode(), $arguments);
-        return $data;
+        return $this->extractDataForNode($info, $info->getRootNode(), $arguments);
     }
 }

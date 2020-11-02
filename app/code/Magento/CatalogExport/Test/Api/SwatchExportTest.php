@@ -27,15 +27,9 @@ class SwatchExportTest extends WebapiAbstract
      */
     private $objectManager;
 
-    /**
-     * @var FeedInterface
-     */
-    private $productsFeed;
-
     protected function setUp(): void
     {
         $this->objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
-        $this->productsFeed = $this->objectManager->get(FeedPool::class)->getFeed('products');
 
         $this->createServiceInfo = [
             'rest' => [
