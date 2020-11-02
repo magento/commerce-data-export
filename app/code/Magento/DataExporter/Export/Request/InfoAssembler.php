@@ -11,10 +11,11 @@ use Magento\DataExporter\Config\ConfigInterface;
 
 /**
  * Class InfoAssembler
+ *
+ * Assembles field nodes information.
  */
 class InfoAssembler
 {
-
     /**
      * @var array
      */
@@ -36,8 +37,6 @@ class InfoAssembler
     private $infoFactory;
 
     /**
-     * InfoAssembler constructor.
-     *
      * @param ConfigInterface $config
      * @param NodeFactory $nodeFactory
      * @param InfoFactory $infoFactory

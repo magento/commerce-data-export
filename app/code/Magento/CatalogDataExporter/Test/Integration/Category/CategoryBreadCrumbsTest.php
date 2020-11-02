@@ -92,8 +92,12 @@ class CategoryBreadCrumbsTest extends AbstractCategoryTest
      */
     private function assertContainsSpecifiedData(array $categoryBreadCrumbs, array $expectedBreadCrumbs): void
     {
-        usort($categoryBreadCrumbs, function ($a, $b){return $a['categoryId'] <=> $b['categoryId'];});
-        usort($expectedBreadCrumbs, function ($a, $b){return $a['categoryId'] <=> $b['categoryId'];});
+        usort($categoryBreadCrumbs, function ($a, $b) {
+            return $a['categoryId'] <=> $b['categoryId'];
+        });
+        usort($expectedBreadCrumbs, function ($a, $b) {
+            return $a['categoryId'] <=> $b['categoryId'];
+        });
         $this->assertEquals(
             $expectedBreadCrumbs,
             $categoryBreadCrumbs

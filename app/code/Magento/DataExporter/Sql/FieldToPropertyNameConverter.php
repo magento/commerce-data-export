@@ -9,6 +9,8 @@ namespace Magento\DataExporter\Sql;
 
 /**
  * Class FieldToPropertyNameConverter
+ *
+ * Converts field to property name.
  */
 class FieldToPropertyNameConverter
 {

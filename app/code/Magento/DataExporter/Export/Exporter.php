@@ -11,6 +11,8 @@ use Magento\DataExporter\Config\ConfigInterface;
 
 /**
  * Class Exporter
+ *
+ * Extracts and exports product data.
  */
 class Exporter
 {
@@ -44,22 +46,23 @@ class Exporter
         foreach ($type['field'] as $field) {
             if ($field['name'] == $recordName) {
                 $requestedField = $field;
+                break;
             }
         }
         if (!$requestedField) {
             throw new \InvalidArgumentException('Unknown record name.');
         }
-        return $this->extractFieldData($field, null);
+        return $this->extractFieldData($requestedField, null);
     }
 
     /**
      * Resolve scalar value
      *
      * @param array $fieldDefinition
-     * @param $reference
+     * @param string|null $reference
      * @return mixed
      */
-    private function resolveScalarValue(array $fieldDefinition, $reference)
+    private function resolveScalarValue(array $fieldDefinition, ?string $reference)
     {
         if ($fieldDefinition['provider']) {
             return $reference;
@@ -71,10 +74,10 @@ class Exporter
      * Extract field data
      *
      * @param array $rootField
-     * @param $reference
+     * @param string|null $reference
      * @return array
      */
-    private function extractFieldData(array $rootField, $reference) : ?array
+    private function extractFieldData(array $rootField, ?string $reference) : ?array
     {
         $outputValue = null;
         if ($this->config->isScalar($rootField['type'])) {

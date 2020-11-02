@@ -9,6 +9,8 @@ namespace Magento\CatalogDataExporter\Model\Provider\Product;
 
 /**
  * Class Options
+ *
+ * General data provider for different types of options.
  */
 class Options implements OptionProviderInterface
 {

@@ -11,6 +11,8 @@ use Magento\DataExporter\Export\Request\InfoAssembler;
 
 /**
  * Class Processor
+ *
+ * Processes data for given field from et_schema
  */
 class Processor
 {
@@ -35,8 +37,6 @@ class Processor
     private $rootProfileName;
 
     /**
-     * Processor constructor.
-     *
      * @param Extractor $extractor
      * @param Transformer $transformer
      * @param InfoAssembler $infoAssembler

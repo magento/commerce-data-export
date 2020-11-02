@@ -39,6 +39,9 @@ class Currency
      */
     public function get(array $values) : array
     {
+        $queryArguments = [
+            'storeViewCode' => []
+        ];
         // Get unique store view codes
         foreach ($values as $value) {
             $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];

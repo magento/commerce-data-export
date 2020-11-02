@@ -87,7 +87,7 @@ class CustomOptions
             ['cpe' => $cpe],
             sprintf(
                 'cpe.%s = main_table.product_id',
-                $this->metadataPool->getMetadata(ProductInterface::class)->getLinkField(),
+                $this->metadataPool->getMetadata(ProductInterface::class)->getLinkField()
             ),
             ['entity_id' => 'cpe.entity_id', 'product_sku' => 'cpe.sku']
         );

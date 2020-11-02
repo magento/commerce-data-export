@@ -11,6 +11,8 @@ use Magento\Framework\Exception\LocalizedException;
 
 /**
  * Class UnableSendData
+ *
+ * Unable to send data exception.
  */
 class UnableSendData extends LocalizedException
 {

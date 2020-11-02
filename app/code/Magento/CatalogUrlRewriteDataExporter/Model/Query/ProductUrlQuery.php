@@ -45,6 +45,7 @@ class ProductUrlQuery
     /**
      * Get query for provider
      *
+     * @param array $arguments
      * @return Select
      */
     public function getQuery(array $arguments): Select

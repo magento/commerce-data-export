@@ -15,6 +15,8 @@ use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class UnavailableProductQuery
+ *
+ * Class for creating query that get information about product unavailability.
  */
 class UnavailableProductQuery
 {
