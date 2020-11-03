@@ -13,7 +13,7 @@ use Magento\Framework\App\DeploymentConfig\Reader;
 use Magento\Framework\Filesystem\Glob;
 
 /**
- * Encapsulates application installation, initialization and uninstall.
+ * Override class from CE edition to provide ad-hoc solution for dynamic tables creation. See createDynamicTables
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @SuppressWarnings(PHPMD.TooManyFields)
