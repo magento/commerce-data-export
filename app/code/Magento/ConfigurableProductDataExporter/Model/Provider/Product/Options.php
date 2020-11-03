@@ -181,7 +181,6 @@ class Options implements OptionProviderInterface
 
     /**
      * @inheritDoc
-     * @throws UnableRetrieveData
      */
     public function get(array $values): array
     {

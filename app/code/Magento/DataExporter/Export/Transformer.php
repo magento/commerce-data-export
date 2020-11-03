@@ -111,6 +111,9 @@ class Transformer
      * @return bool|float|int|string|null
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @phpcs:disable Magento2.Annotation.MethodArguments
+     * @phpcs:disable Generic.Metrics.NestingLevel
+     * @phpcs:ignore Generic.CodeAnalysis.ForLoopWithTestFunctionCall
      */
     private function castToFieldType(array $rootField, $value)
     {
@@ -132,7 +135,8 @@ class Transformer
                     for ($i=0; count($value) > $i; $i++) {
                         foreach ($type['field'] as $field) {
                             if (isset($value[$i][$field['name']])) {
-                                $result[$i][$field['name']] = $this->castToFieldType($field, $value[$i][$field['name']]);
+                                $result[$i][$field['name']] =
+                                    $this->castToFieldType($field, $value[$i][$field['name']]);
                             } else {
                                 $result[$i][$field['name']] = null;
                             }
@@ -191,6 +195,8 @@ class Transformer
      * @param array $snapshot
      * @param string $lookup
      * @return array
+     *
+     * @phpcs:ignore Generic.CodeAnalysis.ForLoopWithTestFunctionCall
      */
     private function convertComplexData(array $field, array $snapshot, ?string $lookup)
     {
