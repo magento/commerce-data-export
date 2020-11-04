@@ -8,6 +8,9 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Test\Integration\Category;
 
+use PHPUnit\Framework\ExpectationFailedException;
+use SebastianBergmann\RecursionContext\InvalidArgumentException;
+
 /**
  * Test class for category feed breadcrumbs data
  */
@@ -41,8 +44,8 @@ class CategoryBreadCrumbsTest extends AbstractCategoryTest
 
         //store 2, first store-view
         $data = $this->categoryFeed->getFeedByIds([402], ['custom_store_view_one'])['feed'][0];
-        $this->markTestSkipped('should be fixed in https://github.com/magento/catalog-storefront/issues/406');
         $this->assertContainsBreadCrumbs($data);
+
         $breadCrumbs = $data['breadcrumbs'];
         $expected = [
             [
@@ -87,21 +90,24 @@ class CategoryBreadCrumbsTest extends AbstractCategoryTest
     }
 
     /**
+     * Asserts that actual breadcrumbs data is equal to expected data.
+     *
      * @param array $categoryBreadCrumbs
      * @param array $expectedBreadCrumbs
+     *
+     * @return void
+     *
+     * @throws ExpectationFailedException
+     * @throws InvalidArgumentException
      */
     private function assertContainsSpecifiedData(array $categoryBreadCrumbs, array $expectedBreadCrumbs): void
     {
-        usort($categoryBreadCrumbs, function ($a, $b) {
-            return $a['categoryId'] <=> $b['categoryId'];
+        // Sort breadcrumbs by category level
+        \usort($categoryBreadCrumbs, function ($a, $b) {
+            return $a['categoryLevel'] > $b['categoryLevel'];
         });
-        usort($expectedBreadCrumbs, function ($a, $b) {
-            return $a['categoryId'] <=> $b['categoryId'];
-        });
-        $this->assertEquals(
-            $expectedBreadCrumbs,
-            $categoryBreadCrumbs
-        );
+
+        self::assertEquals($expectedBreadCrumbs, $categoryBreadCrumbs);
     }
 
     /**
