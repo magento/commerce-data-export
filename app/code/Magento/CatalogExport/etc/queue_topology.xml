@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/topology.xsd">
+    <exchange name="catalog.export.exchange" type="topic" connection="amqp">
+        <binding id="catalog.product.export.consumer" topic="catalog.export.product.data" destinationType="queue" destination="catalog.product.export.queue"/>
+        <binding id="catalog.category.export.consumer" topic="catalog.export.category.data" destinationType="queue" destination="catalog.category.export.queue"/>
+    </exchange>
+</config>

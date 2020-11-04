@@ -1,0 +1,31 @@
+{
+  "name": "magento/module-catalog-data-exporter",
+  "description": "Catalog data exporter",
+  "config": {
+    "sort-packages": true
+  },
+  "type": "magento2-module",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Magento\\CatalogDataExporter\\": ""
+    }
+  },
+  "require": {
+    "php": "~7.2.0||~7.3.0||~7.4.0",
+    "magento/framework": "*",
+    "magento/module-catalog": "*",
+    "magento/module-eav": "*",
+    "magento/module-store": "*",
+    "magento/module-directory": "*",
+    "magento/module-data-exporter": "*",
+    "magento/module-customer": "*",
+    "magento/module-downloadable": "*"
+  }
+}

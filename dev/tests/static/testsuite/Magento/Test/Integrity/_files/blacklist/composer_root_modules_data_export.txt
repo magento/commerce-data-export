@@ -1,0 +1,9 @@
+magento/module-data-exporter
+magento/module-catalog-data-exporter
+magento/module-catalog-inventory-data-exporter
+magento/module-catalog-url-rewrite-data-exporter
+magento/module-configurable-product-data-exporter
+magento/module-bundle-product-data-exporter
+magento/module-catalog-export
+magento/module-catalog-export-api
+magento/module-parent-product-data-exporter

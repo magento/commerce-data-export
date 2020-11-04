@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_DataExporter:etc/et_schema.xsd">
+    <record name="Product">
+        <field name="url" type="String"
+               provider="Magento\CatalogUrlRewriteDataExporter\Model\Provider\Product\Urls"
+        >
+            <using field="productId" />
+            <using field="storeViewCode" />
+
+        </field>
+    </record>
+    <record name="Category">
+        <field name="canonicalUrl" type="String"
+               provider="Magento\CatalogUrlRewriteDataExporter\Model\Provider\Category\CanonicalUrl"
+        >
+            <using field="categoryId" />
+            <using field="storeViewCode" />
+        </field>
+    </record>
+</config>

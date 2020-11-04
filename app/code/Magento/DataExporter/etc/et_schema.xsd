@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="config">
+        <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="record" type="Record">
+                    <xs:unique name="uniqueFieldName">
+                        <xs:annotation>
+                            <xs:documentation>Field name should be unique</xs:documentation>
+                        </xs:annotation>
+                        <xs:selector xpath="field" />
+                        <xs:field xpath="@name" />
+                    </xs:unique>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+        <xs:unique name="uniqueRecordName">
+            <xs:annotation>
+                <xs:documentation>Record name should be unique across all modules</xs:documentation>
+            </xs:annotation>
+            <xs:selector xpath="record" />
+            <xs:field xpath="@name" />
+        </xs:unique>
+    </xs:element>
+    <xs:complexType name="Record">
+        <xs:annotation>
+            <xs:documentation>
+                Record definition
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="field" type="Field"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required" />
+    </xs:complexType>
+    <xs:complexType name="Field">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="using" type="Using"/>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="provider" type="xs:string" />
+        <xs:attribute name="type" type="xs:string" />
+        <xs:attribute name="repeated" type="xs:boolean" />
+    </xs:complexType>
+    <xs:complexType name="Using">
+        <xs:attribute name="field" type="xs:string" use="required" />
+    </xs:complexType>
+</xs:schema>

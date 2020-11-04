@@ -1,0 +1,1 @@
+magento/module-gift-card-product-data-exporter
