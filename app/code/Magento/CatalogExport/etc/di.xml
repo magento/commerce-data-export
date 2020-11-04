@@ -10,11 +10,6 @@
     <preference for="Magento\CatalogExportApi\Api\CategoryRepositoryInterface" type="Magento\CatalogExport\Model\CategoryRepository"/>
     <preference for="Magento\CatalogDataExporter\Model\Indexer\ProductIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ProductIndexerCallback" />
     <preference for="Magento\CatalogDataExporter\Model\Indexer\CategoryIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback" />
-    <type name="Magento\CatalogExport\Model\ProductRepository">
-        <arguments>
-            <argument name="logger" xsi:type="object">CatalogStorefrontConnectorLogger</argument>
-        </arguments>
-    </type>
 
     <virtualType name="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback"
                  type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
