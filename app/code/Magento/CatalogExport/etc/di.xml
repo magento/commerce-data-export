@@ -15,12 +15,6 @@
     <preference for="Magento\ProductReviewDataExporter\Model\Indexer\ReviewsIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ReviewIndexerCallback" />
     <preference for="Magento\ProductReviewDataExporter\Model\Indexer\RatingMetadataIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\RatingMetadataIndexerCallback" />
 
-    <type name="Magento\CatalogExport\Model\ProductRepository">
-        <arguments>
-            <argument name="logger" xsi:type="object">CatalogStorefrontConnectorLogger</argument>
-        </arguments>
-    </type>
-
     <virtualType name="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback"
                  type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
         <arguments>
