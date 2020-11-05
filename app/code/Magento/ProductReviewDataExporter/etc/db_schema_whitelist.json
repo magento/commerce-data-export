@@ -4,7 +4,8 @@
             "id": true,
             "feed_data": true,
             "modified_at": true,
-            "is_deleted": true
+            "is_deleted": true,
+            "product_id": true
         },
         "index": {
             "CATALOG_DATA_EXPORTER_PRODUCT_REVIEWS_MODIFIED_AT": true

@@ -12,6 +12,13 @@
            engine="innodb"
            comment="Product Reviews Feed Storage">
         <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" comment="ID"/>
+        <column xsi:type="int"
+                name="product_id"
+                unsigned="true"
+                nullable="false"
+                identity="false"
+                comment="Product ID"
+        />
         <column xsi:type="mediumtext"
                 name="feed_data"
                 nullable="false"

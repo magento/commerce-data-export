@@ -28,6 +28,7 @@
         <arguments>
             <argument name="mapping" xsi:type="array">
                 <item name="id" xsi:type="string">reviewId</item>
+                <item name="product_id" xsi:type="string">productId</item>
             </argument>
         </arguments>
     </virtualType>
@@ -148,5 +149,17 @@
     <type name="Magento\Review\Model\ResourceModel\Rating\Option">
         <plugin name="reindex_review_feed_on_vote_add"
                 type="Magento\ProductReviewDataExporter\Plugin\ReindexReviewFeedOnVoteAdd"/>
+    </type>
+    <type name="Magento\Review\Model\ResourceModel\Review">
+        <plugin name="reindex_review_feed_on_product_delete"
+                type="Magento\ProductReviewDataExporter\Plugin\MarkRemovedReviewsOnProductDelete"/>
+    </type>
+
+    <type name="Magento\ProductReviewDataExporter\Plugin\MarkRemovedReviewsOnProductDelete">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexMetadata
+            </argument>
+        </arguments>
     </type>
 </config>
