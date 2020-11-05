@@ -15,7 +15,7 @@ use Magento\Framework\App\DeploymentConfig;
 use Psr\Log\LoggerInterface;
 
 /**
- * @inheritdoc
+ * Product variant repository
  */
 class ProductVariantRepository implements ProductVariantRepositoryInterface
 {

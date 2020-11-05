@@ -64,8 +64,7 @@ class ReindexVariants
         ResourceProduct $result,
         AbstractModel $product
     ): ResourceProduct {
-        $type = $product->getTypeId();
-        if ($type === Type::TYPE_SIMPLE || $type === Type::TYPE_VIRTUAL) {
+        if (\in_array($product->getTypeId(), [Type::TYPE_SIMPLE, Type::TYPE_VIRTUAL], true)) {
             $select = $this->linkedAttributesQuery->getQuery((int)$product->getId());
             $connection = $this->resourceConnection->getConnection();
             $configurableLinks = $connection->query($select)->fetchAll();
