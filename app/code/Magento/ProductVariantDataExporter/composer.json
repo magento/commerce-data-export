@@ -1,0 +1,28 @@
+{
+  "name": "magento/module-product-variant-data-exporter",
+  "description": "Product Variant Data Exporter",
+  "config": {
+    "sort-packages": true
+  },
+  "type": "magento2-module",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Magento\\ProductVariantDataExporter\\": ""
+    }
+  },
+  "require": {
+    "php": "~7.1.3||~7.2.0||~7.3.0||~7.4.0",
+    "guzzlehttp/guzzle": "*",
+    "guzzlehttp/psr7": "~1.0",
+    "magento/framework": "*",
+    "magento/module-config": "*",
+    "magento/module-data-exporter": "*"
+  }
+}

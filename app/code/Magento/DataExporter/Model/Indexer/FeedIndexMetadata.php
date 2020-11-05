@@ -15,42 +15,42 @@ class FeedIndexMetadata
     /**
      * @var string
      */
-    private $feedName;
+    protected $feedName;
 
     /**
      * @var string
      */
-    private $sourceTableName;
+    protected $sourceTableName;
 
     /**
      * @var string
      */
-    private $sourceTableField;
+    protected $sourceTableField;
 
     /**
      * @var string
      */
-    private $feedIdentity;
+    protected $feedIdentity;
 
     /**
      * @var string
      */
-    private $feedTableName;
+    protected $feedTableName;
 
     /**
      * @var string
      */
-    private $feedTableField;
-
-    /**
-     * @var int
-     */
-    private $batchSize;
+    protected $feedTableField;
 
     /**
      * @var string[]
      */
-    private $feedTableMutableColumns;
+    protected $feedTableMutableColumns;
+
+    /**
+     * @var int
+     */
+    protected $batchSize;
 
     /**
      * @param string $feedName
@@ -72,14 +72,14 @@ class FeedIndexMetadata
         array $feedTableMutableColumns,
         int $batchSize = 100
     ) {
+        $this->feedName = $feedName;
         $this->sourceTableName = $sourceTableName;
         $this->sourceTableField = $sourceTableField;
         $this->feedIdentity = $feedIdentity;
         $this->feedTableName = $feedTableName;
         $this->feedTableField = $feedTableField;
-        $this->batchSize = $batchSize;
-        $this->feedName = $feedName;
         $this->feedTableMutableColumns = $feedTableMutableColumns;
+        $this->batchSize = $batchSize;
     }
 
     /**

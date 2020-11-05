@@ -54,16 +54,16 @@ class Options implements OptionProviderInterface
     private $queryGenerator;
 
     /**
-     * @var ConfigurableAttributeUid
+     * @var ConfigurableOptionValueUid
      */
-    private $configurableAttributeUid;
+    private $optionValueUid;
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param ProductOptionQuery $productOptionQuery
      * @param ProductOptionValueQuery $productOptionValueQuery
      * @param QueryGenerator $queryGenerator
-     * @param ConfigurableAttributeUid $configurableAttributeUid
+     * @param ConfigurableOptionValueUid $optionValueUid
      * @param LoggerInterface $logger
      * @param int $batchSize
      */
@@ -72,7 +72,7 @@ class Options implements OptionProviderInterface
         ProductOptionQuery $productOptionQuery,
         ProductOptionValueQuery $productOptionValueQuery,
         QueryGenerator $queryGenerator,
-        ConfigurableAttributeUid $configurableAttributeUid,
+        ConfigurableOptionValueUid $optionValueUid,
         LoggerInterface $logger,
         int $batchSize
     ) {
@@ -80,7 +80,7 @@ class Options implements OptionProviderInterface
         $this->productOptionQuery = $productOptionQuery;
         $this->productOptionValueQuery = $productOptionValueQuery;
         $this->queryGenerator = $queryGenerator;
-        $this->configurableAttributeUid = $configurableAttributeUid;
+        $this->optionValueUid = $optionValueUid;
         $this->logger = $logger;
         $this->batchSize = $batchSize;
     }
@@ -125,7 +125,7 @@ class Options implements OptionProviderInterface
         foreach ($this->getBatchedQueryData($select, 'attribute_id') as $batchData) {
             foreach ($batchData as $row) {
                 $optionValues[$row['attribute_id']][$row['storeViewCode']][$row['optionId']] = [
-                    'id' => $this->configurableAttributeUid->resolve($row['attribute_id'], $row['optionId']),
+                    'id' => $this->optionValueUid->resolve($row['attribute_id'], $row['optionId']),
                     'label' => $row['label'],
 
                     //TODO: should be deleted in catalog-storefront/issues/304
@@ -150,7 +150,7 @@ class Options implements OptionProviderInterface
             'storeViewCode' => $row['storeViewCode'],
             'productOptions' => [
                 'id' => $row['attribute_code'],
-                'type' => ConfigurableAttributeUid::OPTION_TYPE,
+                'type' => ConfigurableOptionValueUid::OPTION_TYPE,
                 'label' => $row['label'],
                 'sort_order' => $row['position']
             ],
@@ -159,7 +159,7 @@ class Options implements OptionProviderInterface
             'options' => [
                 'id' => $row['super_attribute_id'],
                 'sort_order' => $row['position'],
-                'type' => ConfigurableAttributeUid::OPTION_TYPE,
+                'type' => ConfigurableOptionValueUid::OPTION_TYPE,
                 'attribute_id' => $row['attribute_id'],
                 'attribute_code' => $row['attribute_code'],
                 'use_default' => (bool)$row['use_default'],

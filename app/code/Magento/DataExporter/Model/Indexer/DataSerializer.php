@@ -49,7 +49,13 @@ class DataSerializer implements DataSerializerInterface
             $outputRow = [];
             $outputRow['feed_data'] = $this->serializer->serialize($row);
             foreach ($this->mapping as $field => $index) {
-                $outputRow[$field] = isset($row[$index]) ? $row[$index] : null;
+                if (isset($row[$index])) {
+                    $outputRow[$field] = is_array($row[$index]) ?
+                        $this->serializer->serialize($row[$index]) :
+                        $row[$index];
+                } else {
+                    $outputRow[$field] = null;
+                }
             }
             $output[] = $outputRow;
         }

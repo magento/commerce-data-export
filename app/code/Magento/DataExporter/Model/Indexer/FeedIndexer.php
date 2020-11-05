@@ -22,37 +22,37 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     /**
      * @var Processor
      */
-    private $processor;
+    protected $processor;
 
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    protected $resourceConnection;
 
     /**
      * @var FeedIndexMetadata
      */
-    private $feedIndexMetadata;
+    protected $feedIndexMetadata;
 
     /**
      * @var DataSerializerInterface
      */
-    private $dataSerializer;
+    protected $dataSerializer;
 
     /**
      * @var FeedIndexerCallbackInterface
      */
-    private $feedIndexerCallback;
+    protected $feedIndexerCallback;
 
     /**
      * @var array
      */
-    private $callbackSkipAttributes;
+    protected $callbackSkipAttributes;
 
     /**
      * @var FeedPool
      */
-    private $feedPool;
+    protected $feedPool;
 
     /**
      * @param Processor $processor
@@ -87,7 +87,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      * @param int $lastKnownId
      * @return Select
      */
-    private function getIdsSelect(int $lastKnownId) : Select
+    protected function getIdsSelect(int $lastKnownId) : Select
     {
         $columnExpression = sprintf('s.%s', $this->feedIndexMetadata->getSourceTableField());
         $whereClause = sprintf('s.%s > ?', $this->feedIndexMetadata->getSourceTableField());
@@ -219,7 +219,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      *
      * @return void
      */
-    private function process($indexData = []) : void
+    protected function process($indexData = []) : void
     {
         $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
         $data = $this->processor->process($this->feedIndexMetadata->getFeedName(), $indexData);
@@ -317,7 +317,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      * @param array $ids
      * @return void
      */
-    private function markRemoved(array $ids) : void
+    protected function markRemoved(array $ids) : void
     {
         $connection = $this->resourceConnection->getConnection();
         $select = $connection->select()
@@ -347,7 +347,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      *
      * @return void
      */
-    private function truncateFeedTable(): void
+    protected function truncateFeedTable(): void
     {
         $connection = $this->resourceConnection->getConnection();
         $feedTable = $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName());

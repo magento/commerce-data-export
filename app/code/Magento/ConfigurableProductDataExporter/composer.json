@@ -22,6 +22,7 @@
     "magento/framework": "*",
     "magento/module-configurable-product": "*",
     "magento/module-data-exporter": "*",
+    "magento/module-product-variant-data-exporter": "*",
     "magento/module-catalog-data-exporter": "*",
     "magento/module-catalog": "*",
     "magento/module-eav": "*",

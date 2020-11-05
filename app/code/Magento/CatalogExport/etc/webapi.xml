@@ -23,4 +23,20 @@
 <!--            <resource ref="Magento_Catalog::categories" />-->
         </resources>
     </route>
+    <route url="/V1/catalog-export/product-variants" method="GET">
+        <service class="Magento\CatalogExportApi\Api\ProductVariantRepositoryInterface" method="get"/>
+        <resources>
+            <resource ref="anonymous" />
+<!--            TODO: permissions-->
+<!--            <resource ref="Magento_Catalog::products" />-->
+        </resources>
+    </route>
+    <route url="/V1/catalog-export/product-variants/product-ids" method="GET">
+        <service class="Magento\CatalogExportApi\Api\ProductVariantRepositoryInterface" method="getByProductIds"/>
+        <resources>
+            <resource ref="anonymous" />
+<!--            TODO: permissions-->
+<!--            <resource ref="Magento_Catalog::products" />-->
+        </resources>
+    </route>
 </routes>
