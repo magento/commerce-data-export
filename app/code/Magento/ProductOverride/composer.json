@@ -1,0 +1,30 @@
+{
+  "name": "magento/module-product-customer-price-data-exporter",
+  "description": "Product prices exporter",
+  "config": {
+    "sort-packages": true
+  },
+  "type": "magento2-module",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Magento\\ProductOverrideDataExporter\\": ""
+    }
+  },
+  "require": {
+    "php": "~7.2.0||~7.3.0||~7.4.0",
+    "magento/module-data-exporter": "*",
+    "magento/module-catalog-data-exporter": "*",
+    "magento/framework": ">=101.0.4",
+    "magento/module-eav": ">=101.0.3",
+    "magento/module-store": ">=100.2.3",
+    "magento/module-bundle": "100.0.1",
+    "magento/module-catalog": ">=102.0.4"
+  }
+}
