@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurableProductDataExporter\Test\Integration;
 
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
 use Magento\ProductVariantDataExporter\Test\Integration\AbstractProductVariantsTest;
-use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Test class for configurable product variants export
@@ -40,19 +40,76 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
             $diff = $this->arrayUtils->recursiveDiff($expected, $actual);
             self::assertEquals([], $diff, "Product variants response doesn't equal expected response");
 
-        } catch (NoSuchEntityException $e) {
-            $this->fail('Test products could not be retrieved');
+        } catch (\Throwable $e) {
+            $this->fail($e->getMessage());
         }
+    }
+
+    /**
+     * Test that variants are deleted as expected.
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture Magento/ConfigurableProduct/_files/product_configurable.php
+     *
+     * @return void
+     */
+    public function testDeleteConfigurableProductVariants(): void
+    {
+        try {
+            $configurable = $this->productRepository->get('configurable');
+            $configurableId = $configurable->getId();
+            $extractedVariantsData = $this->productVariantsFeed->getFeedByProductIds(
+                [$configurableId]
+            )['feed'];
+            $this->assertCount(2, $extractedVariantsData);
+
+            $simple = $this->productRepository->get('simple_10');
+            $this->deleteProduct($simple->getSku());
+            $this->runIndexer([$configurableId]);
+
+            $emptyVariantsData = $this->productVariantsFeed->getFeedByProductIds(
+                [$configurableId]
+            )['feed'];
+            $this->assertCount(1, $emptyVariantsData);
+            $deletedVariantsData = $this->productVariantsFeed->getDeletedByProductIds(
+                [$configurableId]
+            );
+            $this->assertCount(1, $deletedVariantsData);
+        } catch (\Throwable $e) {
+            $this->fail($e->getMessage());
+        }
+    }
+
+    /**
+     * Delete product variant
+     *
+     * @param string $productSku
+     * @throws \RuntimeException
+     */
+    private function deleteProduct(string $productSku): void
+    {
+        $this->registry->unregister('isSecureArea');
+        $this->registry->register('isSecureArea', true);
+
+        try {
+            $this->productRepository->deleteById($productSku);
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Could not delete product ' . $productSku);
+        }
+
+        $this->registry->unregister('isSecureArea');
+        $this->registry->register('isSecureArea', false);
     }
 
     /**
      * Get the expected variants for the first combination of options being tested.
      *
-     * @param Product $configurable
+     * @param ProductInterface $configurable
      * @param Product[] $simples
      * @return array
      */
-    private function getExpectedProductVariants(Product $configurable, array $simples): array
+    private function getExpectedProductVariants(ProductInterface $configurable, array $simples): array
     {
         $configurableOptions = $configurable->getExtensionAttributes()->getConfigurableProductOptions();
         $variants = [];
