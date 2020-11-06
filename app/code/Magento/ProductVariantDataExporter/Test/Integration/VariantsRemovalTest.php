@@ -37,7 +37,7 @@ class VariantsRemovalTest extends AbstractProductVariantsTest
 
             $simple = $this->productRepository->get('simple_10');
             $this->deleteProduct($simple->getSku());
-            $this->runIndexer();
+            $this->runIndexer([$configurableId]);
 
             $emptyVariantsData = $this->productVariantsFeed->getFeedByProductIds(
                 [$configurableId]
@@ -52,7 +52,7 @@ class VariantsRemovalTest extends AbstractProductVariantsTest
         } catch (StateException $e) {
             $this->fail('Product could not be deleted');
         } catch (\RuntimeException $e) {
-            $this->fail('Product variants failed to reindex');
+            $this->fail($e->getMessage());
         }
     }
 
