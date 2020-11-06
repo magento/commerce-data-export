@@ -87,7 +87,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      * @param int $lastKnownId
      * @return Select
      */
-    protected function getIdsSelect(int $lastKnownId) : Select
+    private function getIdsSelect(int $lastKnownId) : Select
     {
         $columnExpression = sprintf('s.%s', $this->feedIndexMetadata->getSourceTableField());
         $whereClause = sprintf('s.%s > ?', $this->feedIndexMetadata->getSourceTableField());
@@ -219,7 +219,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      *
      * @return void
      */
-    protected function process($indexData = []) : void
+    private function process($indexData = []) : void
     {
         $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
         $data = $this->processor->process($this->feedIndexMetadata->getFeedName(), $indexData);
@@ -317,7 +317,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      * @param array $ids
      * @return void
      */
-    protected function markRemoved(array $ids) : void
+    private function markRemoved(array $ids) : void
     {
         $connection = $this->resourceConnection->getConnection();
         $select = $connection->select()

@@ -9,7 +9,7 @@ namespace Magento\ConfigurableProductDataExporter\Plugin;
 
 use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\ResourceModel\Product as ResourceProduct;
-use Magento\ConfigurableProductDataExporter\Plugin\Query\LinkedAttributesQuery;
+use Magento\ConfigurableProductDataExporter\Query\LinkedAttributesQuery;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Model\AbstractModel;
 use Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer;

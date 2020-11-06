@@ -15,9 +15,8 @@ interface IdInterface
     /**
      * Get product variant id
      *
-     * @param string $parentId
-     * @param string $childId
+     * @param string[] $params
      * @return string
      */
-    public function resolve(string $parentId, string $childId) : string;
+    public function resolve(string ...$params) : string;
 }

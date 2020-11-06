@@ -21,7 +21,7 @@ class ProductVariantFeedIndexer extends FeedIndexer
      * @param int $lastKnownId
      * @return Select
      */
-    protected function getIdsSelect(int $lastKnownId): Select
+    private function getIdsSelect(int $lastKnownId): Select
     {
         $sourceTableField = $this->feedIndexMetadata->getSourceTableField();
         $columnExpression = sprintf(
@@ -32,7 +32,7 @@ class ProductVariantFeedIndexer extends FeedIndexer
         $connection = $this->resourceConnection->getConnection();
         return $connection->select()
             ->from(
-                ['s' => $this->feedIndexMetadata->getSourceTableName()],
+                ['s' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getSourceTableName())],
                 [
                     $this->feedIndexMetadata->getFeedTableParentField() => 's.' . $sourceTableField
                 ]
@@ -47,7 +47,7 @@ class ProductVariantFeedIndexer extends FeedIndexer
      *
      * @return \Generator
      */
-    protected function getAllIds(): ?\Generator
+    private function getAllIds(): ?\Generator
     {
         $connection = $this->resourceConnection->getConnection();
         $lastKnownId = 0;
@@ -128,7 +128,7 @@ class ProductVariantFeedIndexer extends FeedIndexer
      * @param array $indexData
      * @return void
      */
-    protected function process($indexData = []): void
+    private function process($indexData = []): void
     {
         $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
         $data = $this->processor->process($this->feedIndexMetadata->getFeedName(), $indexData);
@@ -177,7 +177,7 @@ class ProductVariantFeedIndexer extends FeedIndexer
      * @param array $ids
      * @return void
      */
-    protected function markRemoved(array $ids): void
+    private function markRemoved(array $ids): void
     {
         $connection = $this->resourceConnection->getConnection();
         $connection->update(

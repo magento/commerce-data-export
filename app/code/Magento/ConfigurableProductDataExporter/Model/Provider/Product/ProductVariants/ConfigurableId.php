@@ -11,25 +11,19 @@ use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\IdInterfac
 use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ConfigurableOptionValueUid;
 
 /**
- * Create configurable product variant id in base64 encode
+ * Create configurable product variant id
  */
 class ConfigurableId implements IdInterface
 {
     /**
      * Returns uid based on parent and child product ids
      *
-     * @param string $parentId
-     * @param string $childId
+     * @param string[] $params
      * @return string
      */
-    public function resolve(string $parentId, string $childId): string
+    public function resolve(string ...$params): string
     {
-        $uid = [
-            ConfigurableOptionValueUid::OPTION_TYPE,
-            $parentId,
-            $childId
-        ];
-
-        return implode('/', $uid);
+        array_unshift($params, ConfigurableOptionValueUid::OPTION_TYPE);
+        return implode('/', $params);
     }
 }
