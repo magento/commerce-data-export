@@ -30,6 +30,7 @@ class ProductVariants implements ProductVariantsProviderInterface
 
     /**
      * @inheritdoc
+     *
      * @throws UnableRetrieveData
      */
     public function get(array $values): array

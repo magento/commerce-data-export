@@ -71,32 +71,29 @@ class ProductVariantExportTest extends WebapiAbstract
      *
      * @magentoApiDataFixture Magento/ConfigurableProduct/_files/configurable_products_with_two_attributes.php
      * @return void
+     * @throws NoSuchEntityException
      */
     public function testGetVariantById(): void
     {
         $this->_markTestAsRestOnly('SOAP will be covered in another test');
-        try {
-            $configurable = $this->productRepository->get('configurable');
-            $configurableId = $configurable->getId();
-            $simple = $this->productRepository->get('simple_10');
-            $simpleId = $simple->getId();
-            $variantId = \base64_encode(\sprintf(
-                'configurable/%1$s/%2$s',
-                $configurableId,
-                $simpleId,
-            ));
-            $this->createServiceInfo['get']['rest']['resourcePath'] .= '?ids[0]=' . $variantId;
-            $apiResult = $this->_webApiCall($this->createServiceInfo['get'], []);
-            $variantFeed = $this->productVariantsFeed->getFeedByIds([$variantId])['feed'];
+        $configurable = $this->productRepository->get('configurable');
+        $configurableId = $configurable->getId();
+        $simple = $this->productRepository->get('simple_10');
+        $simpleId = $simple->getId();
+        $variantId = \base64_encode(\sprintf(
+            'configurable/%1$s/%2$s',
+            $configurableId,
+            $simpleId,
+        ));
+        $this->createServiceInfo['get']['rest']['resourcePath'] .= '?ids[0]=' . $variantId;
+        $apiResult = $this->_webApiCall($this->createServiceInfo['get'], []);
+        $variantFeed = $this->productVariantsFeed->getFeedByIds([$variantId])['feed'];
 
-            foreach (array_keys($variantFeed) as $feedKey) {
-                unset($variantFeed[$feedKey]['modifiedAt'], $variantFeed[$feedKey]['deleted']);
-            }
-
-            $this->assertVariantsEqual($variantFeed, $apiResult);
-        } catch (NoSuchEntityException $e) {
-            $this->fail('Expected product could not be retrieved');
+        foreach (array_keys($variantFeed) as $feedKey) {
+            unset($variantFeed[$feedKey]['modifiedAt'], $variantFeed[$feedKey]['deleted']);
         }
+
+        $this->assertVariantsEqual($variantFeed, $apiResult);
     }
 
     /**
@@ -104,17 +101,14 @@ class ProductVariantExportTest extends WebapiAbstract
      *
      * @magentoApiDataFixture Magento/ConfigurableProduct/_files/configurable_products_with_two_attributes.php
      * @return void
+     * @throws NoSuchEntityException
      */
     public function testGetVariantByProductId(): void
     {
         $this->_markTestAsRestOnly('SOAP will be covered in another test');
 
-        try {
-            $product = $this->productRepository->get('configurable');
-            $productId = $product->getId();
-        } catch (NoSuchEntityException $e) {
-            $this->fail('Expected product could not be retrieved');
-        }
+        $product = $this->productRepository->get('configurable');
+        $productId = $product->getId();
 
         $this->createServiceInfo['getByProductIds']['rest']['resourcePath'] .= '?productIds[0]=' . $productId;
         $apiResult = $this->_webApiCall($this->createServiceInfo['getByProductIds'], []);
