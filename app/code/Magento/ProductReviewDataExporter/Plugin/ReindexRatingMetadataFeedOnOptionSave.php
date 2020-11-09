@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductReviewDataExporter\Plugin;
 
-use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\ProductReviewDataExporter\Model\Indexer\ReindexOnSaveAction;
 use Magento\Review\Model\Rating\Option;
 
 /**
@@ -17,22 +17,17 @@ use Magento\Review\Model\Rating\Option;
 class ReindexRatingMetadataFeedOnOptionSave
 {
     /**
-     * Rating metadata feed indexer id
+     * @var ReindexOnSaveAction
      */
-    private const RATING_METADATA_FEED_INDEXER = 'catalog_data_exporter_rating_metadata';
+    private $reindexOnSaveAction;
 
     /**
-     * @var IndexerRegistry
-     */
-    private $indexerRegistry;
-
-    /**
-     * @param IndexerRegistry $indexerRegistry
+     * @param ReindexOnSaveAction $reindexOnSaveAction
      */
     public function __construct(
-        IndexerRegistry $indexerRegistry
+        ReindexOnSaveAction $reindexOnSaveAction
     ) {
-        $this->indexerRegistry = $indexerRegistry;
+        $this->reindexOnSaveAction = $reindexOnSaveAction;
     }
 
     /**
@@ -44,10 +39,10 @@ class ReindexRatingMetadataFeedOnOptionSave
      */
     public function beforeAfterCommitCallback(Option $subject): Option
     {
-        $indexer = $this->indexerRegistry->get(self::RATING_METADATA_FEED_INDEXER);
-        if (!$indexer->isScheduled()) {
-            $indexer->reindexRow($subject->getRatingId());
-        }
+        $this->reindexOnSaveAction->execute(
+            ReindexOnSaveAction::RATING_METADATA_FEED_INDEXER,
+            [$subject->getRatingId()]
+        );
 
         return $subject;
     }

@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductReviewDataExporter\Plugin;
 
-use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\ProductReviewDataExporter\Model\Indexer\ReindexOnSaveAction;
 use Magento\Review\Model\Review;
 
 /**
@@ -17,22 +17,17 @@ use Magento\Review\Model\Review;
 class ReindexReviewFeed
 {
     /**
-     * Review feed indexer id
+     * @var ReindexOnSaveAction
      */
-    private const REVIEW_FEED_INDEXER = 'catalog_data_exporter_product_reviews';
+    private $reindexOnSaveAction;
 
     /**
-     * @var IndexerRegistry
-     */
-    private $indexerRegistry;
-
-    /**
-     * @param IndexerRegistry $indexerRegistry
+     * @param ReindexOnSaveAction $reindexOnSaveAction
      */
     public function __construct(
-        IndexerRegistry $indexerRegistry
+        ReindexOnSaveAction $reindexOnSaveAction
     ) {
-        $this->indexerRegistry = $indexerRegistry;
+        $this->reindexOnSaveAction = $reindexOnSaveAction;
     }
 
     /**
@@ -44,7 +39,7 @@ class ReindexReviewFeed
      */
     public function beforeAfterDeleteCommit(Review $subject): Review
     {
-        $this->reindex($subject);
+        $this->reindexOnSaveAction->execute(ReindexOnSaveAction::REVIEW_FEED_INDEXER, [$subject->getId()]);
 
         return $subject;
     }
@@ -58,23 +53,8 @@ class ReindexReviewFeed
      */
     public function beforeAfterCommitCallback(Review $subject): Review
     {
-        $this->reindex($subject);
+        $this->reindexOnSaveAction->execute(ReindexOnSaveAction::REVIEW_FEED_INDEXER, [$subject->getId()]);
 
         return $subject;
-    }
-
-    /**
-     * Re-indexation process of review feed
-     *
-     * @param Review $review
-     *
-     * @return void
-     */
-    public function reindex(Review $review): void
-    {
-        $indexer = $this->indexerRegistry->get(self::REVIEW_FEED_INDEXER);
-        if (!$indexer->isScheduled()) {
-            $indexer->reindexRow($review->getId());
-        }
     }
 }

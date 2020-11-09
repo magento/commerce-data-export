@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductReviewDataExporter\Plugin;
 
-use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\ProductReviewDataExporter\Model\Indexer\ReindexOnSaveAction;
 use Magento\Review\Model\Rating;
 
 /**
@@ -17,22 +17,17 @@ use Magento\Review\Model\Rating;
 class ReindexRatingMetadataFeed
 {
     /**
-     * Rating metadata feed indexer id
+     * @var ReindexOnSaveAction
      */
-    private const RATING_METADATA_FEED_INDEXER = 'catalog_data_exporter_rating_metadata';
+    private $reindexOnSaveAction;
 
     /**
-     * @var IndexerRegistry
-     */
-    private $indexerRegistry;
-
-    /**
-     * @param IndexerRegistry $indexerRegistry
+     * @param ReindexOnSaveAction $reindexOnSaveAction
      */
     public function __construct(
-        IndexerRegistry $indexerRegistry
+        ReindexOnSaveAction $reindexOnSaveAction
     ) {
-        $this->indexerRegistry = $indexerRegistry;
+        $this->reindexOnSaveAction = $reindexOnSaveAction;
     }
 
     /**
@@ -44,7 +39,7 @@ class ReindexRatingMetadataFeed
      */
     public function beforeAfterDeleteCommit(Rating $subject): Rating
     {
-        $this->reindex($subject);
+        $this->reindexOnSaveAction->execute(ReindexOnSaveAction::RATING_METADATA_FEED_INDEXER, [$subject->getId()]);
 
         return $subject;
     }
@@ -58,23 +53,8 @@ class ReindexRatingMetadataFeed
      */
     public function beforeAfterCommitCallback(Rating $subject): Rating
     {
-        $this->reindex($subject);
+        $this->reindexOnSaveAction->execute(ReindexOnSaveAction::RATING_METADATA_FEED_INDEXER, [$subject->getId()]);
 
         return $subject;
-    }
-
-    /**
-     * Re-indexation process of rating metadata feed
-     *
-     * @param Rating $rating
-     *
-     * @return void
-     */
-    public function reindex(Rating $rating): void
-    {
-        $indexer = $this->indexerRegistry->get(self::RATING_METADATA_FEED_INDEXER);
-        if (!$indexer->isScheduled()) {
-            $indexer->reindexRow($rating->getId());
-        }
     }
 }

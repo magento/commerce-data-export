@@ -65,7 +65,7 @@ class ChangedEntitiesMessageBuilder
      *
      * @return \Magento\CatalogExport\Event\Data\ChangedEntities
      */
-    public function build(string $eventType, array $entities, string $scope = null): ChangedEntities
+    public function build(string $eventType, array $entities, ?string $scope): ChangedEntities
     {
         $meta = $this->metaFactory->create();
         $meta->setScope($scope);
@@ -74,7 +74,7 @@ class ChangedEntitiesMessageBuilder
         $entitiesArray = [];
         foreach ($entities as $entityData) {
             $entity = $this->entityFactory->create();
-            $entity->setEntityId((int)$entityData['entity_id']);
+            $entity->setEntityId((string)$entityData['entity_id']);
             $entity->setAttributes($entityData['attributes'] ?? []);
 
             $entitiesArray[] = $entity;

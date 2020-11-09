@@ -10,7 +10,7 @@ namespace Magento\ProductReviewDataExporter\Plugin;
 
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\ProductReviewDataExporter\Model\Indexer\ReindexOnSaveAction;
 use Magento\Review\Model\ResourceModel\Review as ReviewResource;
 
 /**
@@ -19,14 +19,9 @@ use Magento\Review\Model\ResourceModel\Review as ReviewResource;
 class MarkRemovedReviewsOnProductDelete
 {
     /**
-     * Review feed indexer id
+     * @var ReindexOnSaveAction
      */
-    private const REVIEW_FEED_INDEXER = 'catalog_data_exporter_product_reviews';
-
-    /**
-     * @var IndexerRegistry
-     */
-    private $indexerRegistry;
+    private $reindexOnSaveAction;
 
     /**
      * @var FeedIndexMetadata
@@ -39,16 +34,16 @@ class MarkRemovedReviewsOnProductDelete
     private $resourceConnection;
 
     /**
-     * @param IndexerRegistry $indexerRegistry
+     * @param ReindexOnSaveAction $reindexOnSaveAction
      * @param FeedIndexMetadata $feedIndexMetadata
      * @param ResourceConnection $resourceConnection
      */
     public function __construct(
-        IndexerRegistry $indexerRegistry,
+        ReindexOnSaveAction $reindexOnSaveAction,
         FeedIndexMetadata $feedIndexMetadata,
         ResourceConnection $resourceConnection
     ) {
-        $this->indexerRegistry = $indexerRegistry;
+        $this->reindexOnSaveAction = $reindexOnSaveAction;
         $this->feedIndexMetadata = $feedIndexMetadata;
         $this->resourceConnection = $resourceConnection;
     }
@@ -69,10 +64,10 @@ class MarkRemovedReviewsOnProductDelete
         ReviewResource $result,
         int $productId
     ): ReviewResource {
-        $indexer = $this->indexerRegistry->get(self::REVIEW_FEED_INDEXER);
-        if (!$indexer->isScheduled()) {
-            $indexer->reindexList($this->fetchReviewIdsByProductId($productId));
-        }
+        $this->reindexOnSaveAction->execute(
+            ReindexOnSaveAction::REVIEW_FEED_INDEXER,
+            $this->fetchReviewIdsByProductId($productId)
+        );
 
         return $result;
     }

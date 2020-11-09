@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductReviewDataExporter\Plugin;
 
-use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\ProductReviewDataExporter\Model\Indexer\ReindexOnSaveAction;
 use Magento\Review\Model\Rating\Option;
 use Magento\Review\Model\ResourceModel\Rating\Option as RatingOptionResource;
 
@@ -18,22 +18,17 @@ use Magento\Review\Model\ResourceModel\Rating\Option as RatingOptionResource;
 class ReindexReviewFeedOnVoteAdd
 {
     /**
-     * Review feed indexer id
+     * @var ReindexOnSaveAction
      */
-    private const REVIEW_FEED_INDEXER = 'catalog_data_exporter_product_reviews';
+    private $reindexOnSaveAction;
 
     /**
-     * @var IndexerRegistry
-     */
-    private $indexerRegistry;
-
-    /**
-     * @param IndexerRegistry $indexerRegistry
+     * @param ReindexOnSaveAction $reindexOnSaveAction
      */
     public function __construct(
-        IndexerRegistry $indexerRegistry
+        ReindexOnSaveAction $reindexOnSaveAction
     ) {
-        $this->indexerRegistry = $indexerRegistry;
+        $this->reindexOnSaveAction = $reindexOnSaveAction;
     }
 
     /**
@@ -52,10 +47,7 @@ class ReindexReviewFeedOnVoteAdd
         RatingOptionResource $result,
         Option $option
     ): RatingOptionResource {
-        $indexer = $this->indexerRegistry->get(self::REVIEW_FEED_INDEXER);
-        if (!$indexer->isScheduled()) {
-            $indexer->reindexRow($option->getReviewId());
-        }
+        $this->reindexOnSaveAction->execute(ReindexOnSaveAction::REVIEW_FEED_INDEXER, [$option->getReviewId()]);
 
         return $result;
     }
