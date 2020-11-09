@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\ProductOverride\Model\Provider\ProductOverrides;
+namespace Magento\ProductOverride\Model\Provider;
 
 /**
  * Class ProductOverrides

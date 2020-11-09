@@ -8,7 +8,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_DataExporter:etc/et_schema.xsd">
     <record name="Export">
         <field name="productOverrides" type="ProductOverride" repeated="true"
-               provider="Magento\ProductOverride\Model\Provider\ProductOverrides\ProductOverrides">
+               provider="Magento\ProductOverride\Model\Provider\ProductOverrides">
             <using field="product_id" />
         </field>
     </record>
