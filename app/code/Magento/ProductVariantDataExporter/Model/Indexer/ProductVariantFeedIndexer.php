@@ -71,7 +71,6 @@ class ProductVariantFeedIndexer extends FeedIndexer
      */
     public function executeFull(): void
     {
-        $this->truncateFeedTable();
         foreach ($this->getAllIds() as $ids) {
             $this->process($ids);
         }
