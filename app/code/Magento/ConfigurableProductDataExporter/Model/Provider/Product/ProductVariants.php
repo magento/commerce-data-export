@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 
+use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants\ConfigurableId;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\IdFactory;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\OptionValueFactory;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariantsProviderInterface;
@@ -112,7 +113,7 @@ class ProductVariants implements ProductVariantsProviderInterface
      */
     private function getVariants(array $parentIds): array
     {
-        $variants  = [];
+        $variants = [];
         $idResolver = $this->idFactory->get('configurable');
         $optionValueResolver = $this->optionValueFactory->get('configurable');
 
@@ -120,7 +121,10 @@ class ProductVariants implements ProductVariantsProviderInterface
             $this->variantsOptionValuesQuery->getQuery($parentIds)
         );
         while ($row = $cursor->fetch()) {
-            $id = $idResolver->resolve($row['parentId'], $row['childId']);
+            $id = $idResolver->resolve([
+                ConfigurableId::PARENT_ID_KEY => $row['parentId'],
+                ConfigurableId::CHILD_ID_KEY => $row['childId']
+            ]);
             $optionValueUid = ($this->optionValueUid->resolve(
                 $row['attributeId'],
                 $row['attributeValue']

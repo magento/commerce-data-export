@@ -14,7 +14,7 @@
             <using field="storeViewCode"/>
         </field>
     </record>
-    <!-- TODO: delete deprecated "Variant" type. Moving this logic to "ProductVariants" -->
+    <!-- TODO: delete deprecated "Variant" type. https://github.com/magento/catalog-storefront/issues/419-->
     <record name="Variant">
         <field name="sku" type="String"/>
         <field name="minimumPrice" type="ProductPrice"/>

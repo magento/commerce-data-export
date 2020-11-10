@@ -17,6 +17,7 @@ interface IdInterface
      *
      * @param string[] $params
      * @return string
+     * @throws \InvalidArgumentException
      */
-    public function resolve(string ...$params) : string;
+    public function resolve(array $params) : string;
 }

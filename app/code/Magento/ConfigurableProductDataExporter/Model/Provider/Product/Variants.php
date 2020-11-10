@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Configurable product variant data provider
- * TODO: Deprecated. Remove this class and its query class.
+ *  TODO: Deprecated - remove this class and its query. https://github.com/magento/catalog-storefront/issues/419
  */
 class Variants
 {
