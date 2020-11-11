@@ -196,7 +196,10 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                 'selections' => $this->getVariantSelections($childProduct, $attributeCodes)
             ];
         }
-        $this->assertEquals($variants, $extract['feedData']['variants']);
+        $actualVariants = $extract['feedData']['variants'];
+        usort($actualVariants, function ($a, $b){return $a['sku'] <=> $b['sku'];});
+        usort($variants, function ($a, $b){return $a['sku'] <=> $b['sku'];});
+        $this->assertEquals($variants, $actualVariants);
     }
 
     /**
