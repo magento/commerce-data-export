@@ -58,4 +58,8 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Catalog\Model\ResourceModel\Product\Relation">
+        <plugin name="reindex_variants_on_relations_changes"
+                type="\Magento\ProductVariantDataExporter\Plugin\ReindexVariantsOnRelationsChange"/>
+    </type>
 </config>
