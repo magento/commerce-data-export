@@ -134,6 +134,10 @@
     </type>
 
     <!-- Plugins -->
+    <type name="Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery">
+        <plugin name="mark_inactive_entities"
+                type="Magento\ProductReviewDataExporter\Plugin\MarkRemovedEntitiesQueryPlugin"/>
+    </type>
     <type name="Magento\Review\Model\Rating">
         <plugin name="reindex_rating_metadata_feed"
                 type="Magento\ProductReviewDataExporter\Plugin\ReindexRatingMetadataFeed"/>

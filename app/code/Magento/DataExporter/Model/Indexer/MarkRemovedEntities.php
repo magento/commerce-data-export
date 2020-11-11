@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
+use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery;
 use Magento\Framework\App\ResourceConnection;
 
 /**
@@ -20,11 +21,20 @@ class MarkRemovedEntities implements MarkRemovedEntitiesInterface
     private $resourceConnection;
 
     /**
-     * @param ResourceConnection $resourceConnection
+     * @var MarkRemovedEntitiesQuery
      */
-    public function __construct(ResourceConnection $resourceConnection)
-    {
+    private $markRemovedEntitiesQuery;
+
+    /**
+     * @param ResourceConnection $resourceConnection
+     * @param MarkRemovedEntitiesQuery $markRemovedEntitiesQuery
+     */
+    public function __construct(
+        ResourceConnection $resourceConnection,
+        MarkRemovedEntitiesQuery $markRemovedEntitiesQuery
+    ) {
         $this->resourceConnection = $resourceConnection;
+        $this->markRemovedEntitiesQuery = $markRemovedEntitiesQuery;
     }
 
     /**
@@ -32,41 +42,14 @@ class MarkRemovedEntities implements MarkRemovedEntitiesInterface
      */
     public function execute(array $ids, FeedIndexMetadata $metadata): void
     {
+        $select = $this->markRemovedEntitiesQuery->getQuery($ids, $metadata);
         $connection = $this->resourceConnection->getConnection();
-        $select = $connection->select()
-            ->joinLeft(
-                ['s' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
-                \sprintf('f.%s = s.%s', $metadata->getFeedTableField(), $metadata->getSourceTableField()),
-                ['is_deleted' => new \Zend_Db_Expr('1')]
-            )
-            ->where(\sprintf('f.%s IN (?)', $metadata->getFeedTableField()), $ids);
-
-        if ($metadata->getScopeTableName()) {
-            $select
-                ->join(
-                    ['st' => $this->resourceConnection->getTableName('store')],
-                    'f.store_view_code = st.code',
-                    []
-                )
-                ->joinLeft(
-                    ['sc' => $this->resourceConnection->getTableName($metadata->getScopeTableName())],
-                    \sprintf(
-                        'sc.%s = s.%s AND sc.%3$s = st.%3$s',
-                        $metadata->getScopeTableField(),
-                        $metadata->getSourceTableField(),
-                        $metadata->getScopeCode(),
-                    ),
-                    []
-                )
-                ->where(\sprintf('sc.%s IS NULL', $metadata->getScopeTableField()));
-        } else {
-            $select->where(\sprintf('s.%s IS NULL', $metadata->getSourceTableField()));
-        }
 
         $update = $connection->updateFromSelect(
             $select,
             ['f' => $this->resourceConnection->getTableName($metadata->getFeedTableName())]
         );
+
         $connection->query($update);
     }
 }
