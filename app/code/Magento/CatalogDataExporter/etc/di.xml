@@ -435,6 +435,12 @@
         </arguments>
     </virtualType>
 
+    <type name="Magento\DataExporter\Model\Feed">
+        <arguments>
+            <argument name="serializer" xsi:type="object">Magento\Framework\Serialize\Serializer\GzcompressDecorator</argument>
+        </arguments>
+    </type>
+
     <type name="Magento\DataExporter\Model\FeedPool">
         <arguments>
             <argument name="classMap" xsi:type="array">
