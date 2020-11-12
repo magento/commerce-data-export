@@ -444,7 +444,6 @@
             </argument>
         </arguments>
     </type>
-
     <virtualType name="Magento\CatalogDataExporter\Model\Provider\Product\Downloadable\LinkSampleUrlProvider"
                  type="Magento\CatalogDataExporter\Model\Provider\Product\Downloadable\SampleUrlProvider">
         <arguments>
@@ -460,12 +459,42 @@
             </argument>
         </arguments>
     </type>
-
     <type name="Magento\Framework\Setup\Declaration\Schema\Operations\AddColumn">
         <arguments>
             <argument name="triggers" xsi:type="array">
                 <item name="migrateDataFromJSON" xsi:type="object">Magento\CatalogDataExporter\Plugin\DDLTrigger\MigrateDataFromJSON</item>
             </argument>
         </arguments>
+    </type>
+    <!-- Indexes mass-invalidation logic -->
+    <type name="Magento\CatalogDataExporter\Model\Indexer\IndexInvalidationManager">
+        <arguments>
+            <argument name="invalidationEvents" xsi:type="array">
+                <item name="store_changed" xsi:type="array">
+                    <item name="products" xsi:type="string">catalog_data_exporter_products</item>
+                    <item name="categories" xsi:type="string">catalog_data_exporter_product_attributes</item>
+                    <item name="product_attributes" xsi:type="string">catalog_data_exporter_categories</item>
+                </item>
+                <item name="website_changed" xsi:type="array">
+                    <item name="products" xsi:type="string">catalog_data_exporter_products</item>
+                    <item name="categories" xsi:type="string">catalog_data_exporter_product_attributes</item>
+                    <item name="product_attributes" xsi:type="string">catalog_data_exporter_categories</item>
+                </item>
+                <item name="group_changed" xsi:type="array">
+                    <item name="products" xsi:type="string">catalog_data_exporter_products</item>
+                    <item name="categories" xsi:type="string">catalog_data_exporter_product_attributes</item>
+                    <item name="product_attributes" xsi:type="string">catalog_data_exporter_categories</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Store\Model\ResourceModel\Website">
+        <plugin name="invalidate_feed_index_on_store_change" type="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnWebsiteChange" />
+    </type>
+    <type name="Magento\Store\Model\ResourceModel\Group">
+        <plugin name="invalidate_feed_index_on_group_change" type="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnGroupChange" />
+    </type>
+    <type name="Magento\Store\Model\ResourceModel\Store">
+        <plugin name="invalidate_feed_index_on_website_change" type="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnStoreChange" />
     </type>
 </config>

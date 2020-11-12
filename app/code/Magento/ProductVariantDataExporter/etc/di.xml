@@ -59,7 +59,11 @@
         </arguments>
     </type>
     <type name="Magento\Catalog\Model\ResourceModel\Product\Relation">
-        <plugin name="reindex_variants_on_relations_changes"
+        <plugin name="reindex_product_variants_on_relations_changes"
                 type="\Magento\ProductVariantDataExporter\Plugin\ReindexVariantsOnRelationsChange"/>
+    </type>
+    <type name="Magento\Catalog\Model\ResourceModel\Product">
+        <plugin name="reindex_product_variants_on_delete"
+                type="\Magento\ProductVariantDataExporter\Plugin\ReindexVariantsOnDelete"/>
     </type>
 </config>
