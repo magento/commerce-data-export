@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Plugin;
 
-use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\ResourceModel\Product as ResourceProduct;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Indexer\IndexerRegistry;
