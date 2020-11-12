@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Indexer;
 
-use Magento\Indexer\Model\Indexer;
+use Magento\Indexer\Model\IndexerFactory;
 
 /**
  * Class IndexInvalidationManager
@@ -17,9 +17,9 @@ use Magento\Indexer\Model\Indexer;
 class IndexInvalidationManager
 {
     /**
-     * @var Indexer
+     * @var IndexerFactory
      */
-    private $indexer;
+    private $indexerFactory;
 
     /**
      * @var array
@@ -29,14 +29,14 @@ class IndexInvalidationManager
     /**
      * IndexInvalidationManager constructor.
      *
-     * @param Indexer $indexer
+     * @param IndexerFactory $indexerFactory
      * @param array $invalidationEvents
      */
     public function __construct(
-        Indexer $indexer,
+        IndexerFactory $indexerFactory,
         array $invalidationEvents
     ) {
-        $this->indexer = $indexer;
+        $this->indexerFactory = $indexerFactory;
         $this->invalidationEvents = $invalidationEvents;
     }
 
@@ -48,8 +48,8 @@ class IndexInvalidationManager
     public function invalidate(string $eventName): void
     {
         $indexers = isset($this->invalidationEvents[$eventName]) ? $this->invalidationEvents[$eventName] : [];
-        foreach ($indexers as $indexer) {
-            $this->indexer->load($indexer)->invalidate();
+        foreach ($indexers as $indexerId) {
+            $this->indexerFactory->create()->load($indexerId)->invalidate();
         }
     }
 }
