@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Magento\ProductVariantDataExporter\Plugin;
 
 use Magento\Catalog\Model\ResourceModel\Product\Relation;
+use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer;
 
 /**
@@ -15,25 +16,23 @@ use Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer;
  */
 class ReindexVariantsOnRelationsChange
 {
-    /**
-     * @var ProductVariantFeedIndexer
-     */
-    private $feedIndexer;
 
     /**
-     * ReindexVariantsOnRelationsChange constructor.
-     * @param ProductVariantFeedIndexer $feedIndexer
+     * @var IndexerRegistry
+     */
+    private $indexerRegistry;
+
+    /**
+     * @param IndexerRegistry $indexerRegistry
      */
     public function __construct(
-        ProductVariantFeedIndexer $feedIndexer
+        IndexerRegistry $indexerRegistry
     ) {
-        $this->feedIndexer = $feedIndexer;
+        $this->indexerRegistry = $indexerRegistry;
     }
 
     /**
      * Reindex variants after additon of new relations
-     *
-     * TODO: Add indexOnSchedule conditional and fix mview
      *
      * @param Relation $subject
      * @param Relation $result
@@ -47,17 +46,15 @@ class ReindexVariantsOnRelationsChange
         Relation $result,
         int $parentId,
         array $childIds
-    ) {
+    ): Relation {
         if (!empty($childIds)) {
-            $this->feedIndexer->executeRow($parentId);
+            $this->reindexVariants($parentId);
         }
         return $result;
     }
 
     /**
      * Reindex variants after removal of relations
-     *
-     * TODO: Add indexOnSchedule conditional and fix mview
      *
      * @param Relation $subject
      * @param Relation $result
@@ -71,10 +68,24 @@ class ReindexVariantsOnRelationsChange
         Relation $result,
         int $parentId,
         array $childIds
-    ) {
+    ): Relation {
         if (!empty($childIds)) {
-            $this->feedIndexer->executeRow($parentId);
+            $this->reindexVariants($parentId);
         }
         return $result;
+    }
+
+    /**
+     * Reindex product variants
+     *
+     * @param int $parentId
+     * @return void
+     */
+    private function reindexVariants(int $parentId): void
+    {
+        $indexer = $this->indexerRegistry->get(ProductVariantFeedIndexer::INDEXER_ID);
+        if (!$indexer->isScheduled()) {
+            $indexer->reindexRow($parentId);
+        }
     }
 }
