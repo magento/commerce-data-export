@@ -10,6 +10,7 @@ namespace Magento\ProductVariantDataExporter\Plugin;
 use Magento\Catalog\Model\ResourceModel\Product\Relation;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer;
+use Magento\ProductVariantDataExporter\Model\Indexer\UpdateChangeLog;
 
 /**
  * Plugin to trigger reindex on variants when relations are changed
@@ -23,12 +24,20 @@ class ReindexVariantsOnRelationsChange
     private $indexerRegistry;
 
     /**
+     * @var UpdateChangeLog
+     */
+    private $updateChangeLog;
+
+    /**
      * @param IndexerRegistry $indexerRegistry
+     * @param UpdateChangeLog $updateChangeLog
      */
     public function __construct(
-        IndexerRegistry $indexerRegistry
+        IndexerRegistry $indexerRegistry,
+        UpdateChangeLog $updateChangeLog
     ) {
         $this->indexerRegistry = $indexerRegistry;
+        $this->updateChangeLog = $updateChangeLog;
     }
 
     /**
@@ -78,14 +87,17 @@ class ReindexVariantsOnRelationsChange
     /**
      * Reindex product variants
      *
-     * @param int $parentId
+     * @param int $id
      * @return void
      */
-    private function reindexVariants(int $parentId): void
+    private function reindexVariants(int $id): void
     {
         $indexer = $this->indexerRegistry->get(ProductVariantFeedIndexer::INDEXER_ID);
-        if (!$indexer->isScheduled()) {
-            $indexer->reindexRow($parentId);
+
+        if ($indexer->isScheduled()) {
+            $this->updateChangeLog->execute($indexer->getViewId(), [$id]);
+        } else {
+            $indexer->reindexRow($id);
         }
     }
 }
