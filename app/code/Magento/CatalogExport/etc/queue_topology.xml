@@ -9,5 +9,6 @@
     <exchange name="catalog.export.exchange" type="topic" connection="amqp">
         <binding id="catalog.product.export.consumer" topic="catalog.export.product.data" destinationType="queue" destination="catalog.product.export.queue"/>
         <binding id="catalog.category.export.consumer" topic="catalog.export.category.data" destinationType="queue" destination="catalog.category.export.queue"/>
+        <binding id="catalog.product.variants.export.consumer" topic="catalog.export.product.variants.data" destinationType="queue" destination="catalog.product.variants.export.queue"/>
     </exchange>
 </config>
