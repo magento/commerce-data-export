@@ -197,8 +197,18 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
             ];
         }
         $actualVariants = $extract['feedData']['variants'];
-        usort($actualVariants, function ($a, $b){return $a['sku'] <=> $b['sku'];});
-        usort($variants, function ($a, $b){return $a['sku'] <=> $b['sku'];});
+        \usort(
+            $actualVariants,
+            function ($a, $b) {
+                return $a['sku'] <=> $b['sku'];
+            }
+        );
+        \usort(
+            $variants,
+            function ($a, $b) {
+                return $a['sku'] <=> $b['sku'];
+            }
+        );
         $this->assertEquals($variants, $actualVariants);
     }
 
