@@ -22,7 +22,6 @@
     "guzzlehttp/guzzle": "*",
     "guzzlehttp/psr7": "~1.0",
     "magento/framework": "*",
-    "magento/module-data-exporter": "*",
-    "magento/module-catalog": "*"
+    "magento/module-data-exporter": "*"
   }
 }
