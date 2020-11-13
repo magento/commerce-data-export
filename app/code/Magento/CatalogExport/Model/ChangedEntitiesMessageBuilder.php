@@ -65,7 +65,7 @@ class ChangedEntitiesMessageBuilder
      *
      * @return \Magento\CatalogExport\Event\Data\ChangedEntities
      */
-    public function build(string $eventType, array $entities, string $scope): ChangedEntities
+    public function build(string $eventType, array $entities, ?string $scope = null): ChangedEntities
     {
         $meta = $this->metaFactory->create();
         $meta->setScope($scope);

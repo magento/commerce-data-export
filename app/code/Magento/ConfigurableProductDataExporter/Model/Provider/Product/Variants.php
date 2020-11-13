@@ -7,13 +7,14 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 
-use Magento\ConfigurableProductDataExporter\Model\Query\ProductVariantQuery;
+use Magento\ConfigurableProductDataExporter\Model\Query\VariantsQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Psr\Log\LoggerInterface;
 
 /**
  * Configurable product variant data provider
+ *  TODO: Deprecated - remove this class and its query. https://github.com/magento/catalog-storefront/issues/419
  */
 class Variants
 {
@@ -23,9 +24,9 @@ class Variants
     private $resourceConnection;
 
     /**
-     * @var ProductVariantQuery
+     * @var VariantsQuery
      */
-    private $productVariantQuery;
+    private $variantQuery;
 
     /**
      * @var LoggerInterface
@@ -35,16 +36,16 @@ class Variants
     /**
      * Variants constructor.
      * @param ResourceConnection $resourceConnection
-     * @param ProductVariantQuery $productVariantQuery
+     * @param VariantsQuery $variantQuery
      * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
-        ProductVariantQuery $productVariantQuery,
+        VariantsQuery $variantQuery,
         LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
-        $this->productVariantQuery = $productVariantQuery;
+        $this->variantQuery = $variantQuery;
         $this->logger = $logger;
     }
 
@@ -65,7 +66,7 @@ class Variants
                 $queryArguments['productId'][$value['productId']] = $value['productId'];
                 $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
             }
-            $select = $this->productVariantQuery->getQuery($queryArguments);
+            $select = $this->variantQuery->getQuery($queryArguments);
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {
                 $key = $row['sku'] . '-' . $row['storeViewCode'];

@@ -13,7 +13,7 @@ use Magento\Framework\DB\Select;
 /**
  * Product variant query builder
  */
-class ProductVariantQuery
+class VariantsQuery
 {
     /**
      * @var ResourceConnection
@@ -21,7 +21,7 @@ class ProductVariantQuery
     private $resourceConnection;
 
     /**
-     * ProductVariantQuery constructor.
+     * VariantsQuery constructor.
      *
      * @param ResourceConnection $resourceConnection
      */

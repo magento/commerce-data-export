@@ -10,7 +10,7 @@ namespace Magento\ConfigurableProductDataExporter\Test\Integration;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\CatalogDataExporter\Test\Integration\AbstractProductTestHelper;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ConfigurableAttributeUid;
+use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ConfigurableOptionValueUid;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -27,9 +27,9 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     private $configurable;
 
     /**
-     * @var ConfigurableAttributeUid
+     * @var ConfigurableOptionValueUid
      */
-    private $configurableAttributeUid;
+    private $optionValueUid;
 
     /**
      * Setup tests
@@ -38,7 +38,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     {
         parent::setUp();
         $this->configurable = Bootstrap::getObjectManager()->create(Configurable::class);
-        $this->configurableAttributeUid = Bootstrap::getObjectManager()->create(ConfigurableAttributeUid::class);
+        $this->optionValueUid = Bootstrap::getObjectManager()->create(ConfigurableOptionValueUid::class);
     }
 
     /**
@@ -196,13 +196,25 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                 'selections' => $this->getVariantSelections($childProduct, $attributeCodes)
             ];
         }
-        $this->assertEquals($variants, $extract['feedData']['variants']);
+        $actualVariants = $extract['feedData']['variants'];
+        \usort(
+            $actualVariants,
+            function ($a, $b) {
+                return $a['sku'] <=> $b['sku'];
+            }
+        );
+        \usort(
+            $variants,
+            function ($a, $b) {
+                return $a['sku'] <=> $b['sku'];
+            }
+        );
+        $this->assertEquals($variants, $actualVariants);
     }
 
     /**
      * Get partially hardcoded option values to compare to extracted product data
      *
-     * @param string $attributeId
      * @param array $optionValues
      * @return array
      */
@@ -211,7 +223,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
         $values = [];
         $i = 1;
         foreach ($optionValues as $optionValue) {
-            $id = $this->configurableAttributeUid->resolve($attributeId, $optionValue['value_index']);
+            $id = $this->optionValueUid->resolve($attributeId, $optionValue['value_index']);
             $values[$id] = [
                 'id' => $id,
                 'label' => 'Option ' . $i,

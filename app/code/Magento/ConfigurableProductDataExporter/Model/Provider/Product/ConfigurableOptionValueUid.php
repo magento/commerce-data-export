@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 
 /**
- * Format new option uid in base64 encode for super attribute options
+ * Create configurable product option value uid in base64 encode
  */
-class ConfigurableAttributeUid
+class ConfigurableOptionValueUid
 {
     /**
      * Option type name
@@ -18,7 +18,7 @@ class ConfigurableAttributeUid
     public const OPTION_TYPE = 'configurable';
 
     /**
-     * Returns uid based on attribute id and option value index
+     * Returns uid based on attribute id and option value
      *
      * @param string $attributeId
      * @param string $valueIndex

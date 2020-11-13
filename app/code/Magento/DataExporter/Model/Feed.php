@@ -21,22 +21,22 @@ class Feed implements FeedInterface
      *
      * @var int
      */
-    private const OFFSET = 100;
+    protected const OFFSET = 100;
 
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    protected $resourceConnection;
 
     /**
      * @var SerializerInterface
      */
-    private $serializer;
+    protected $serializer;
 
     /**
      * @var FeedIndexMetadata
      */
-    private $feedIndexMetadata;
+    protected $feedIndexMetadata;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -159,7 +159,7 @@ class Feed implements FeedInterface
      * @return array
      * @throws \Zend_Db_Statement_Exception
      */
-    private function fetchData($select, array $attributes): array
+    protected function fetchData($select, array $attributes): array
     {
         $connection = $this->resourceConnection->getConnection();
         $recentTimestamp = null;

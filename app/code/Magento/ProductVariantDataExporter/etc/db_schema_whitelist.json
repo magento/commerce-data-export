@@ -1,0 +1,17 @@
+{
+    "catalog_data_exporter_product_variants": {
+        "index": {
+            "CATALOG_DATA_EXPORTER_PRODUCT_VARIANTS_MODIFIED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "column": {
+            "parent_id": true,
+            "id": true,
+            "feed_data": true,
+            "modified_at": true,
+            "is_deleted": true
+        }
+    }
+}
