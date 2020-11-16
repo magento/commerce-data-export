@@ -27,6 +27,7 @@
             <argument name="mapping" xsi:type="array">
                 <item name="id" xsi:type="string">id</item>
                 <item name="parent_id" xsi:type="string">parent_id</item>
+                <item name="product_id" xsi:type="string">product_id</item>
             </argument>
         </arguments>
     </virtualType>

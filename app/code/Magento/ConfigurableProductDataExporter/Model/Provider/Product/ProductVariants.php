@@ -95,6 +95,7 @@ class ProductVariants implements ProductVariantsProviderInterface
                     'id' => $id,
                     'option_values' => $optionValues['optionValues'],
                     'parent_id' => $optionValues['parentId'],
+                    'product_id' => $optionValues['childId']
                 ];
             }
         } catch (\Throwable $exception) {
@@ -131,6 +132,7 @@ class ProductVariants implements ProductVariantsProviderInterface
             ));
             $optionValue = $optionValueResolver->resolve($row['parentId'], $row['attributeCode'], $optionValueUid);
             $variants[$id]['parentId'] = $row['parentId'];
+            $variants[$id]['childId'] = $row['childId'];
             $variants[$id]['optionValues'][] = $optionValue;
         }
         return $variants;

@@ -32,6 +32,9 @@ class ProductVariant
     /** @var string */
     private $parentId;
 
+//    /** @var string */
+//    private $productId;
+
     /**
      * Get id
      *
@@ -93,5 +96,26 @@ class ProductVariant
     public function setParentId(?string $parentId): void
     {
         $this->parentId = $parentId;
+    }
+
+    /**
+     * Get product id
+     *
+     * @return string
+     */
+    public function getProductId(): ?string
+    {
+        return $this->productId;
+    }
+
+    /**
+     * Set product id
+     *
+     * @param string $productId
+     * @return void
+     */
+    public function setProductId(?string $productId): void
+    {
+        $this->productId = $productId;
     }
 }
