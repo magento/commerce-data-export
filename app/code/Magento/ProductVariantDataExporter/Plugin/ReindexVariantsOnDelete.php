@@ -80,7 +80,6 @@ class ReindexVariantsOnDelete
     private function reindexVariants(array $ids): void
     {
         $indexer = $this->indexerRegistry->get(ProductVariantFeedIndexer::INDEXER_ID);
-
         if ($indexer->isScheduled()) {
             $this->updateChangeLog->execute($indexer->getViewId(), $ids);
         } else {

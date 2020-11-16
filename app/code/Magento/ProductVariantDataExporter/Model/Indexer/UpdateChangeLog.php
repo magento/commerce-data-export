@@ -19,6 +19,7 @@ class UpdateChangeLog
      * @var ResourceConnection
      */
     private $resourceConnection;
+
     /**
      * @var LoggerInterface
      */
