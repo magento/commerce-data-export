@@ -13,5 +13,8 @@
     >
         <title translate="true">Product Variant Feed</title>
         <description translate="true">Collects data for a Product Variants Feed</description>
+        <dependencies>
+            <indexer id="catalog_product_category" />
+        </dependencies>
     </indexer>
 </config>
