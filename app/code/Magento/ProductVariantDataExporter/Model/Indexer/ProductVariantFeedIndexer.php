@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Magento\ProductVariantDataExporter\Model\Indexer;
 
 use Magento\DataExporter\Model\Indexer\FeedIndexer;
+use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Select;
 
 /**
@@ -122,26 +123,17 @@ class ProductVariantFeedIndexer extends FeedIndexer
     /**
      * Indexer feed data processor
      *
-     * TODO: currently reindexAll is going reindex all the products, should base that on catalog_product_relation
-     *
      * @param array $indexData
      * @return void
      */
     private function process($indexData = []): void
     {
-        $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
+        $parentIds = \array_column($indexData, $this->feedIndexMetadata->getFeedTableParentField());
+        $deleteIds = $this->getRemovedIds($parentIds);
         $data = $this->processor->process($this->feedIndexMetadata->getFeedName(), $indexData);
-        $deleteIds = $this->fetchFeedDataIds(
-            \array_column($indexData, $this->feedIndexMetadata->getFeedTableParentField())
-        );
         $chunks = array_chunk($data, $this->feedIndexMetadata->getBatchSize());
         $connection = $this->resourceConnection->getConnection();
         foreach ($chunks as $chunk) {
-            foreach ($chunk as $updatedEntity) {
-                if (array_key_exists($updatedEntity[$feedIdentity], $deleteIds)) {
-                    unset($deleteIds[$updatedEntity[$feedIdentity]]);
-                }
-            }
             $connection->insertOnDuplicate(
                 $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName()),
                 $this->dataSerializer->serialize($chunk),
@@ -178,11 +170,72 @@ class ProductVariantFeedIndexer extends FeedIndexer
      */
     private function markRemoved(array $ids): void
     {
-        $connection = $this->resourceConnection->getConnection();
+        $connection = $this->getConnection();
         $connection->update(
             $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName()),
             ['is_deleted' => new \Zend_Db_Expr('1')],
             [\sprintf('%s IN (?)', $this->feedIndexMetadata->getFeedTableField()) => $ids]
         );
+    }
+
+    /**
+     * Get removed variant ids by parent product id by comparing indexer entries with relations table.
+     *
+     * @param array $parentIds
+     * @return array
+     */
+    private function getRemovedIds(array $parentIds): array
+    {
+        $connection = $this->getConnection();
+        $joinField = $connection->getAutoIncrementField(
+            $this->resourceConnection->getTableName($this->feedIndexMetadata->getSourceTableName())
+        );
+        $subSelect = $select = $connection->select()
+            ->from(
+                ['cpe' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getSourceTableName())],
+                [$joinField]
+            )->where(
+                \sprintf(
+                    'cpe.%1$s = index.%2$s',
+                    $this->feedIndexMetadata->getSourceTableField(),
+                    $this->feedIndexMetadata->getFeedTableParentField()
+                )
+            );
+        $select = $connection->select()
+            ->from(
+                ['index' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName())],
+                ['id']
+            )
+            ->joinLeft(
+                ['cpr' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getRelationsTableName())],
+                \sprintf(
+                    'cpr.%1$s = index.%2$s AND cpr.%3$s = (%4$s)',
+                    $this->feedIndexMetadata->getRelationsTableChildField(),
+                    $this->feedIndexMetadata->getFeedTableChildField(),
+                    $this->feedIndexMetadata->getRelationsTableParentField(),
+                    $subSelect->assemble()
+                ),
+                []
+            )
+            ->where(
+                \sprintf(
+                    'index.%s IN (?)',
+                    $this->feedIndexMetadata->getFeedTableParentField()
+                ),
+                $parentIds
+            )
+            ->where('index.is_deleted = 0')
+            ->where(\sprintf('cpr.%s IS NULL', $this->feedIndexMetadata->getRelationsTableParentField()));
+        return $connection->fetchCol($select);
+    }
+
+    /**
+     * Get db connection
+     *
+     * @return AdapterInterface
+     */
+    private function getConnection(): AdapterInterface
+    {
+        return $this->resourceConnection->getConnection();
     }
 }
