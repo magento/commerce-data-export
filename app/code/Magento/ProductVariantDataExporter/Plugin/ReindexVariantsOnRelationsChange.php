@@ -48,10 +48,10 @@ class ReindexVariantsOnRelationsChange
 
     /**
      * @param IndexerRegistry $indexerRegistry
+     * @param UpdateChangeLog $updateChangeLog
      * @param MetadataPool $metadataPool
      * @param ResourceConnection $resourceConnection
      * @param LoggerInterface $logger
-     * @param UpdateChangeLog $updateChangeLog
      */
     public function __construct(
         IndexerRegistry $indexerRegistry,
@@ -162,7 +162,7 @@ class ReindexVariantsOnRelationsChange
         if (($linkField = $this->getProductEntityLinkField()) !== 'entity_id') {
             $connection = $this->resourceConnection->getConnection();
             $select = $connection->select()->from(
-                ['cpe' => $catalogProductTable = $this->resourceConnection->getTableName('catalog_product_entity')],
+                ['cpe' => $this->resourceConnection->getTableName('catalog_product_entity')],
                 ['entity_id']
             )->where(
                 sprintf('%1$s = ?', $linkField),

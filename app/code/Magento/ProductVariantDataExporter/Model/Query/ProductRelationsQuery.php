@@ -10,7 +10,7 @@ namespace Magento\ProductVariantDataExporter\Model\Query;
 use Magento\Framework\App\ResourceConnection;
 
 /**
- * Product relations query class
+ * Retrieve product relations
  */
 class ProductRelationsQuery
 {
