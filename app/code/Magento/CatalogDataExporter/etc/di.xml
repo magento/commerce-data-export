@@ -472,18 +472,18 @@
             <argument name="invalidationEvents" xsi:type="array">
                 <item name="store_changed" xsi:type="array">
                     <item name="products" xsi:type="string">catalog_data_exporter_products</item>
-                    <item name="categories" xsi:type="string">catalog_data_exporter_product_attributes</item>
-                    <item name="product_attributes" xsi:type="string">catalog_data_exporter_categories</item>
+                    <item name="categories" xsi:type="string">catalog_data_exporter_categories</item>
+                    <item name="product_attributes" xsi:type="string">catalog_data_exporter_product_attributes</item>
                 </item>
                 <item name="website_changed" xsi:type="array">
                     <item name="products" xsi:type="string">catalog_data_exporter_products</item>
-                    <item name="categories" xsi:type="string">catalog_data_exporter_product_attributes</item>
-                    <item name="product_attributes" xsi:type="string">catalog_data_exporter_categories</item>
+                    <item name="categories" xsi:type="string">catalog_data_exporter_categories</item>
+                    <item name="product_attributes" xsi:type="string">catalog_data_exporter_product_attributes</item>
                 </item>
                 <item name="group_changed" xsi:type="array">
                     <item name="products" xsi:type="string">catalog_data_exporter_products</item>
-                    <item name="categories" xsi:type="string">catalog_data_exporter_product_attributes</item>
-                    <item name="product_attributes" xsi:type="string">catalog_data_exporter_categories</item>
+                    <item name="categories" xsi:type="string">catalog_data_exporter_categories</item>
+                    <item name="product_attributes" xsi:type="string">catalog_data_exporter_product_attributes</item>
                 </item>
             </argument>
         </arguments>
