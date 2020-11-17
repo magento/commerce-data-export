@@ -27,8 +27,13 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
      * @param string $feedTableName
      * @param string $feedTableField
      * @param array $feedTableMutableColumns
+     * @param string $scopeTableName
+     * @param string $scopeTableField
+     * @param string $scopeCode
      * @param int $batchSize
      * @param string|null $feedTableParentField
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         string $feedName,
@@ -38,6 +43,9 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
         string $feedTableName,
         string $feedTableField,
         array $feedTableMutableColumns,
+        string $scopeTableName = '',
+        string $scopeTableField = '',
+        string $scopeCode = '',
         int $batchSize = 100,
         string $feedTableParentField = null
     ) {
@@ -49,6 +57,9 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
             $feedTableName,
             $feedTableField,
             $feedTableMutableColumns,
+            $scopeTableName,
+            $scopeTableField,
+            $scopeCode,
             $batchSize
         );
         $this->feedTableParentField = $feedTableParentField;
