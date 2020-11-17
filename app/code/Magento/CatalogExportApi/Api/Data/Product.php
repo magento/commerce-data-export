@@ -188,6 +188,9 @@ class Product
     /** @var bool */
     private $lowStock;
 
+    /** @var \Magento\CatalogExportApi\Api\Data\UrlRewrite[]|null */
+    private $urlRewrites;
+
     /**
      * Get sku
      *
@@ -1341,5 +1344,26 @@ class Product
     public function setLowStock(?bool $lowStock): void
     {
         $this->lowStock = $lowStock;
+    }
+
+    /**
+     * Get url rewrites
+     *
+     * @return \Magento\CatalogExportApi\Api\Data\UrlRewrite[]|null
+     */
+    public function getUrlRewrites(): ?array
+    {
+        return $this->urlRewrites;
+    }
+
+    /**
+     * Set url rewrites
+     *
+     * @param \Magento\CatalogExportApi\Api\Data\UrlRewrite[] $urlRewrites
+     * @return void
+     */
+    public function setUrlRewrites(?array $urlRewrites = null): void
+    {
+        $this->urlRewrites = $urlRewrites;
     }
 }

@@ -8,10 +8,13 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Magento\CatalogExportApi\Api\ProductRepositoryInterface" type="Magento\CatalogExport\Model\ProductRepository"/>
     <preference for="Magento\CatalogExportApi\Api\CategoryRepositoryInterface" type="Magento\CatalogExport\Model\CategoryRepository"/>
+    <preference for="Magento\CatalogExportApi\Api\ProductVariantRepositoryInterface" type="Magento\CatalogExport\Model\ProductVariantRepository"/>
     <preference for="Magento\CatalogExportApi\Api\ReviewRepositoryInterface" type="Magento\CatalogExport\Model\ReviewRepository"/>
     <preference for="Magento\CatalogExportApi\Api\RatingMetadataRepositoryInterface" type="Magento\CatalogExport\Model\RatingMetadataRepository"/>
+
     <preference for="Magento\CatalogDataExporter\Model\Indexer\ProductIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ProductIndexerCallback" />
     <preference for="Magento\CatalogDataExporter\Model\Indexer\CategoryIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback" />
+    <preference for="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ProductVariantIndexerCallback"/>
     <preference for="Magento\ProductReviewDataExporter\Model\Indexer\ReviewsIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ReviewIndexerCallback" />
     <preference for="Magento\ProductReviewDataExporter\Model\Indexer\RatingMetadataIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\RatingMetadataIndexerCallback" />
 
@@ -32,6 +35,16 @@
             <argument name="topicName" xsi:type="string">catalog.export.product.data</argument>
             <argument name="updatedEventType" xsi:type="string">products_updated</argument>
             <argument name="deletedEventType" xsi:type="string">products_deleted</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogExport\Model\Indexer\ProductVariantIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">catalog.export.product.variants.data</argument>
+            <argument name="updatedEventType" xsi:type="string">product_variants_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">product_variants_deleted</argument>
         </arguments>
     </virtualType>
 

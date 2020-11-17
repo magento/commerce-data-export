@@ -30,7 +30,7 @@ class ProductVariant
     private $optionValues;
 
     /** @var string */
-    private $productId;
+    private $parentId;
 
     /**
      * Get id
@@ -75,23 +75,23 @@ class ProductVariant
     }
 
     /**
-     * Get product id
+     * Get parent id
      *
      * @return string
      */
-    public function getProductId(): ?string
+    public function getParentId(): ?string
     {
-        return $this->productId;
+        return $this->parentId;
     }
 
     /**
-     * Set product id
+     * Set parent id
      *
-     * @param string $productId
+     * @param string $parentId
      * @return void
      */
-    public function setProductId(?string $productId): void
+    public function setParentId(?string $parentId): void
     {
-        $this->productId = $productId;
+        $this->parentId = $parentId;
     }
 }

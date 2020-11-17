@@ -22,37 +22,37 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     /**
      * @var Processor
      */
-    private $processor;
+    protected $processor;
 
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    protected $resourceConnection;
 
     /**
      * @var FeedIndexMetadata
      */
-    private $feedIndexMetadata;
+    protected $feedIndexMetadata;
 
     /**
      * @var DataSerializerInterface
      */
-    private $dataSerializer;
+    protected $dataSerializer;
 
     /**
      * @var FeedIndexerCallbackInterface
      */
-    private $feedIndexerCallback;
+    protected $feedIndexerCallback;
 
     /**
      * @var array
      */
-    private $callbackSkipAttributes;
+    protected $callbackSkipAttributes;
 
     /**
      * @var FeedPool
      */
-    private $feedPool;
+    protected $feedPool;
 
     /**
      * @var MarkRemovedEntitiesInterface
@@ -328,7 +328,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      *
      * @return void
      */
-    private function truncateFeedTable(): void
+    protected function truncateFeedTable(): void
     {
         $connection = $this->resourceConnection->getConnection();
         $feedTable = $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName());

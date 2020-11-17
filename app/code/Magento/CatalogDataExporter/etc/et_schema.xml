@@ -19,10 +19,6 @@
                provider="Magento\CatalogDataExporter\Model\Provider\ProductMetadata">
             <using field="id" />
         </field>
-        <field name="variants" type="ProductVariant" repeated="true"
-               provider="Magento\CatalogDataExporter\Model\Provider\ProductVariants">
-            <using field="product_id" />
-        </field>
     </record>
 
     <!-- TODO: delete deprecated "ImageDeprecated" type. use "Image" instead -->
@@ -251,14 +247,6 @@
     <record name="TierPrice">
         <field name="qty" type="Float"/>
         <field name="price" type="Float"/>
-    </record>
-    <record name="ProductVariant">
-        <!-- variant identifier following the convention :prefix:/:parentId:/:entityId: -->
-        <field name="id" type="ID" />
-        <!-- parent_id:option_id/optionValue.uid -->
-        <field name="option_values" type="String" repeated="true" />
-        <!-- link to product id that represents variant, for custom option must be null-->
-        <field name="product_id" type="String"/>
     </record>
     <record name="Price">
         <field name="regularPrice" type="Float"/>

@@ -27,7 +27,7 @@ interface FeedInterface
     /**
      * Get feed data by IDs
      *
-     * @param int[] $ids
+     * @param string[]|int[] $ids
      * @param null|string[] $storeViewCodes
      * @param array $attributes // entity_id => attributes_array relation
      *
@@ -38,7 +38,7 @@ interface FeedInterface
     /**
      * Get deleted entities by IDs
      *
-     * @param string[] $ids
+     * @param string[]|int[] $ids
      * @param null|string[] $storeViewCodes
      * @return array
      */

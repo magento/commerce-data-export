@@ -10,6 +10,7 @@
         <sequence>
             <module name="Magento_CatalogDataExporter"/>
             <module name="Magento_ProductReviewDataExporter"/>
+            <module name="Magento_ProductVariantDataExporter"/>
         </sequence>
     </module>
 </config>
