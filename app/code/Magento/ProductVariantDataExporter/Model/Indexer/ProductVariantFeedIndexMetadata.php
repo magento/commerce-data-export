@@ -53,6 +53,7 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
      * @param string $relationsTableParentField
      * @param string $relationsTableChildField
      * @param int $batchSize
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         string $feedName,

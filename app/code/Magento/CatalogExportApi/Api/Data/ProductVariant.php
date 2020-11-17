@@ -32,8 +32,8 @@ class ProductVariant
     /** @var string */
     private $parentId;
 
-//    /** @var string */
-//    private $productId;
+    /** @var string */
+    private $productId;
 
     /**
      * Get id
