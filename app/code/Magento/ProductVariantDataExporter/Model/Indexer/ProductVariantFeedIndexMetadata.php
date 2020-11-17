@@ -17,17 +17,17 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
     /**
      * @var string
      */
-    protected $feedTableParentField;
+    private $feedTableParentField;
 
     /**
      * @var string
      */
-    protected $feedTableChildField;
+    private $feedTableChildField;
 
     /**
      * @var string
      */
-    protected $relationsTableName;
+    private $relationsTableName;
 
     /**
      * @var string
