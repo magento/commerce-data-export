@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
+    <query name="productPriceOverrider">
+        <source name="catalog_product_index_price">
+            <attribute name="entity_id"/>
+            <attribute name="customer_group_id"/>
+            <attribute name="website_id"/>
+            <attribute name="tax_class_id"/>
+            <attribute name="price"/>
+            <attribute name="final_price"/>
+            <attribute name="min_price"/>
+            <filter glue="and">
+                <condition attribute="entity_id" operator="in" type="placeholder">entityIds</condition>
+            </filter>
+            <link-source name="store_website">
+                <attribute name="code" alias="websiteCode"/>
+                <using glue="and">
+                    <condition attribute="website_id" operator="eq" type="identifier">website_id</condition>
+                </using>
+            </link-source>
+        </source>
+    </query>
+</config>
