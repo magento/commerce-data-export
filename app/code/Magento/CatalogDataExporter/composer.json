@@ -26,6 +26,7 @@
     "magento/module-directory": "*",
     "magento/module-data-exporter": "*",
     "magento/module-customer": "*",
-    "magento/module-downloadable": "*"
+    "magento/module-downloadable": "*",
+    "magento/module-indexer": "*"
   }
 }

@@ -8,23 +8,17 @@ declare(strict_types=1);
 namespace Magento\ProductVariantDataExporter\Plugin;
 
 use Magento\Catalog\Model\ResourceModel\Product as ResourceProduct;
-use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Framework\Model\AbstractModel;
 use Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer;
 use Magento\ProductVariantDataExporter\Model\Indexer\UpdateChangeLog;
-use Psr\Log\LoggerInterface;
+use Magento\ProductVariantDataExporter\Model\Query\ProductRelationsQuery;
 
 /**
  * Plugin to trigger reindex on product variants upon product deletion
  */
 class ReindexVariantsOnDelete
 {
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
-
     /**
      * @var IndexerRegistry
      */
@@ -36,26 +30,23 @@ class ReindexVariantsOnDelete
     private $updateChangeLog;
 
     /**
-     * @var LoggerInterface
+     * @var ProductRelationsQuery
      */
-    private $logger;
+    private $productRelationsQuery;
 
     /**
-     * @param ResourceConnection $resourceConnection
      * @param IndexerRegistry $indexerRegistry
-     * @param LoggerInterface $logger
      * @param UpdateChangeLog $updateChangeLog
+     * @param ProductRelationsQuery $productRelationsQuery
      */
     public function __construct(
-        ResourceConnection $resourceConnection,
         IndexerRegistry $indexerRegistry,
-        LoggerInterface $logger,
-        UpdateChangeLog $updateChangeLog
+        UpdateChangeLog $updateChangeLog,
+        ProductRelationsQuery $productRelationsQuery
     ) {
-        $this->resourceConnection = $resourceConnection;
         $this->indexerRegistry = $indexerRegistry;
         $this->updateChangeLog = $updateChangeLog;
-        $this->logger = $logger;
+        $this->productRelationsQuery = $productRelationsQuery;
     }
 
     /**
@@ -72,20 +63,7 @@ class ReindexVariantsOnDelete
         \Closure $proceed,
         AbstractModel $product
     ): ResourceProduct {
-        $ids = [];
-        try {
-            $connection = $this->resourceConnection->getConnection();
-            $select = $connection->select()->from(
-                'catalog_product_relation',
-                ['parent_id']
-            )->where(
-                sprintf('(parent_id = "%1$s" OR child_id = "%1$s")', (string)$product->getId())
-            );
-            $ids = array_filter($connection->fetchCol($select));
-        } catch (\Exception $e) {
-            $this->logger->error('Failed to retrieve product relation information ' . $e->getMessage());
-        }
-
+        $ids = $this->productRelationsQuery->getRelationsParentIds([$product->getId()]);
         $result = $proceed($product);
         if (!empty($ids)) {
             $this->reindexVariants($ids);
@@ -102,7 +80,6 @@ class ReindexVariantsOnDelete
     private function reindexVariants(array $ids): void
     {
         $indexer = $this->indexerRegistry->get(ProductVariantFeedIndexer::INDEXER_ID);
-
         if ($indexer->isScheduled()) {
             $this->updateChangeLog->execute($indexer->getViewId(), $ids);
         } else {

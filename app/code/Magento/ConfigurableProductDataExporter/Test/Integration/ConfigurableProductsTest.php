@@ -205,7 +205,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
         );
         \usort(
             $variants,
-            function ($a, $b){
+            function ($a, $b) {
                 return $a['sku'] <=> $b['sku'];
             }
         );
