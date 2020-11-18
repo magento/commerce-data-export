@@ -66,7 +66,6 @@ class ProductOverrides
             $this->logger->critical($exception);
             throw new UnableRetrieveData('Unable retrieve product data');
         }
-
         return !empty($output) ? \array_merge(...$output) : [];
     }
 }

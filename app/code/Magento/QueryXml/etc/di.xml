@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\QueryXml\Model\Config\ConfigInterface" type="Magento\QueryXml\Model\Config\Config" />
+    <type name="Magento\QueryXml\Model\Config\Config">
+        <arguments>
+            <argument name="data" xsi:type="object">Magento\QueryXml\Model\Config\Data</argument>
+        </arguments>
+    </type>
+    <virtualType name="Magento\QueryXml\Model\Config\Data" type="Magento\Framework\Config\Data">
+        <arguments>
+            <argument name="reader" xsi:type="object">Magento\QueryXml\Model\Config\Reader</argument>
+            <argument name="cacheId" xsi:type="string">Magento_QueryXml_CacheId</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\QueryXml\Model\Config\SchemaLocator" type="Magento\Framework\Config\SchemaLocator">
+        <arguments>
+            <argument name="realPath" xsi:type="string">urn:magento:module:Magento_QueryXml:etc/query.xsd</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\QueryXml\Model\Config\Reader" type="Magento\Framework\Config\Reader\Filesystem">
+        <arguments>
+            <argument name="converter" xsi:type="object">Magento\QueryXml\Model\Config\Converter</argument>
+            <argument name="schemaLocator" xsi:type="object">Magento\QueryXml\Model\Config\SchemaLocator</argument>
+            <argument name="fileName" xsi:type="string">query.xml</argument>
+            <argument name="idAttributes" xsi:type="array">
+                <item name="/config/report" xsi:type="string">name</item>
+                <item name="/config/report/source/link-source" xsi:type="array">
+                    <item name="name" xsi:type="string">name</item>
+                    <item name="alias" xsi:type="string">alias</item>
+                </item>
+                <item name="/config/report/source/attribute" xsi:type="string">name</item>
+                <item name="/config/report/source/link-source/attribute" xsi:type="string">name</item>
+                <!-- filter conditions for main source-->
+                <item name="/config/report/source(/filter)+" xsi:type="string">glue</item>
+                <item name="/config/report/source(/filter)+/condition" xsi:type="array">
+                    <item name="attribute" xsi:type="string">attribute</item>
+                    <item name="operator" xsi:type="string">operator</item>
+                </item>
+                <!-- filter conditions for joined source-->
+                <item name="/config/report/source/link-source(/filter)+" xsi:type="string">glue</item>
+                <item name="/config/report/source/link-source(/filter)+/condition" xsi:type="array">
+                    <item name="attribute" xsi:type="string">attribute</item>
+                    <item name="operator" xsi:type="string">operator</item>
+                </item>
+                <!-- join conditions for joined source-->
+                <item name="/config/report/source/link-source/using" xsi:type="string">glue</item>
+                <item name="/config/report/source/link-source/using/condition" xsi:type="array">
+                    <item name="attribute" xsi:type="string">attribute</item>
+                    <item name="operator" xsi:type="string">operator</item>
+                </item>
+                <item name="/config/report/source/link-source/using(/filter)+" xsi:type="string">glue</item>
+                <item name="/config/report/source/link-source/using(/filter)+/condition" xsi:type="array">
+                    <item name="attribute" xsi:type="string">attribute</item>
+                    <item name="operator" xsi:type="string">operator</item>
+                </item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\QueryXml\Model\QueryFactory">
+        <arguments>
+            <argument name="assemblers" xsi:type="array">
+                <item name="from" xsi:type="object">Magento\QueryXml\Model\DB\Assembler\FromAssembler</item>
+                <item name="filter" xsi:type="object">Magento\QueryXml\Model\DB\Assembler\FilterAssembler</item>
+                <item name="join" xsi:type="object">Magento\QueryXml\Model\DB\Assembler\JoinAssembler</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
