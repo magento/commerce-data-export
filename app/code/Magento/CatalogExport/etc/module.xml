@@ -6,11 +6,5 @@
 */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="Magento_CatalogExport">
-        <sequence>
-            <module name="Magento_CatalogDataExporter"/>
-            <module name="Magento_ProductReviewDataExporter"/>
-            <module name="Magento_ProductVariantDataExporter"/>
-        </sequence>
-    </module>
+    <module name="Magento_CatalogExport" />
 </config>

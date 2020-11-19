@@ -33,10 +33,15 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\ReviewsIndexerCallbackInterface"
-                 type="Magento\DataExporter\Model\Indexer\FeedIndexerCallbackInterface"/>
-    <preference for="Magento\ProductReviewDataExporter\Model\Indexer\ReviewsIndexerCallbackInterface"
-                type="Magento\DataExporter\Model\Indexer\EmptyIndexerCallback" />
+    <virtualType name="Magento\CatalogExport\Model\Indexer\ReviewIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">export.product.reviews</argument>
+            <argument name="updatedEventType" xsi:type="string">reviews_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">reviews_deleted</argument>
+        </arguments>
+    </virtualType>
 
     <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexer"
                  type="Magento\DataExporter\Model\Indexer\FeedIndexer">
@@ -45,7 +50,7 @@
                 Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexMetadata
             </argument>
             <argument name="feedIndexerCallback" xsi:type="object">
-                Magento\ProductReviewDataExporter\Model\Indexer\ReviewsIndexerCallbackInterface
+                Magento\CatalogExport\Model\Indexer\ReviewIndexerCallback
             </argument>
             <argument name="serializer" xsi:type="object">
                 Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsDataSerializer
@@ -91,10 +96,15 @@
         </arguments>
     </type>
 
-    <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\RatingMetadataIndexerCallbackInterface"
-                 type="Magento\DataExporter\Model\Indexer\FeedIndexerCallbackInterface"/>
-    <preference for="Magento\ProductReviewDataExporter\Model\Indexer\RatingMetadataIndexerCallbackInterface"
-                type="Magento\DataExporter\Model\Indexer\EmptyIndexerCallback" />
+    <virtualType name="Magento\CatalogExport\Model\Indexer\RatingMetadataIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">export.rating.metadata</argument>
+            <argument name="updatedEventType" xsi:type="string">rating_metadata_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">rating_metadata_deleted</argument>
+        </arguments>
+    </virtualType>
 
     <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexer"
                  type="Magento\DataExporter\Model\Indexer\FeedIndexer">
@@ -103,7 +113,7 @@
                 Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexMetadata
             </argument>
             <argument name="feedIndexerCallback" xsi:type="object">
-                Magento\ProductReviewDataExporter\Model\Indexer\RatingMetadataIndexerCallbackInterface
+                Magento\CatalogExport\Model\Indexer\RatingMetadataIndexerCallback
             </argument>
             <argument name="serializer" xsi:type="object">
                 Magento\ProductReviewDataExporter\Model\Indexer\RatingDataSerializer
