@@ -66,26 +66,22 @@ class ChangedConfigMessageBuilder
      */
     public function build(string $eventType, array $configData): ChangedConfig
     {
-        $meta = $this->metaFactory->create();
-        $meta->setEventType($eventType);
         $configArray = [];
 
         foreach ($configData as $item) {
-            $config = $this->configFactory->create();
-            $config->setStore((int)$item['scope_id']);
-            $config->setName((string)$item['path']);
-            $config->setValue($item['value']);
-
-            $configArray[] = $config;
+            $configArray[] = $this->configFactory->create(
+                [
+                    'store' => (int)$item['scope_id'],
+                    'name' => (string)$item['path'],
+                    'value' => $item['value']
+                ]
+            );
         }
-
-        $data = $this->dataFactory->create();
-        $data->setConfig($configArray);
 
         return $this->changedConfigFactory->create(
             [
-                'meta' => $meta,
-                'data' => $data
+                'meta' => $this->metaFactory->create(['event' => $eventType]),
+                'data' => $this->dataFactory->create(['config' => $configArray])
             ]
         );
     }

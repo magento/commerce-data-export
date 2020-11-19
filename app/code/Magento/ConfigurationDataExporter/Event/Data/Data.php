@@ -13,9 +13,17 @@ namespace Magento\ConfigurationDataExporter\Event\Data;
 class Data
 {
     /**
-     * @var Config[]
+     * @var \Magento\ConfigurationDataExporter\Event\Data\Config[]
      */
     private $config;
+
+    /**
+     * @param \Magento\ConfigurationDataExporter\Event\Data\Config[] $config
+     */
+    public function __construct(array $config = [])
+    {
+        $this->config = $config;
+    }
 
     /**
      * Get config.

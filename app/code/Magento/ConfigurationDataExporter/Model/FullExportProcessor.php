@@ -39,8 +39,6 @@ class FullExportProcessor implements FullExportProcessorInterface
     private $logger;
 
     /**
-     * FullExportProcessor constructor.
-     *
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param ConfigExportCallbackInterface $configExportCallback
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager

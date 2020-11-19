@@ -1,5 +1,5 @@
 {
-    "name": "magento/module-configuration-export",
+    "name": "magento/module-configuration-data-exporter",
     "description": "N/A",
     "config": {
         "sort-packages": true

@@ -15,26 +15,34 @@ class Meta
     /**
      * @var string
      */
-    private $eventType;
+    private $event;
+
+    /**
+     * @param string $event
+     */
+    public function __construct(string $event)
+    {
+        $this->event = $event;
+    }
 
     /**
      * Get changed config event type
      *
      * @return string
      */
-    public function getEventType(): string
+    public function getEvent(): string
     {
-        return (string)$this->eventType;
+        return (string)$this->event;
     }
 
     /**
      * Set eventType for changed entities
      *
-     * @param string $eventType
+     * @param string $event
      * @return void
      */
-    public function setEventType(string $eventType): void
+    public function setEvent(string $event): void
     {
-        $this->eventType = $eventType;
+        $this->event = $event;
     }
 }

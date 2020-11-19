@@ -34,8 +34,6 @@ class ConfigChange implements \Magento\Framework\Event\ObserverInterface
     private $logger;
 
     /**
-     * ConfigChange constructor.
-     *
      * @param \Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface $configRegistry
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Config\Model\ResourceModel\Config\Data\CollectionFactory $collectionFactory
@@ -66,10 +64,10 @@ class ConfigChange implements \Magento\Framework\Event\ObserverInterface
         $configData = $observer->getData('data_object');
 
         if ($configData->isValueChanged()) {
-            $scope = $configData->getScope();
-            $path = $configData->getPath();
+            $scope = (string)$configData->getScope();
+            $path = (string)$configData->getPath();
+            $scopeId = (int)$configData->getScopeId();
             $value = $configData->getValue();
-            $scopeId = $configData->getScopeId();
 
             if (in_array($scope, [ScopeInterface::SCOPE_STORE, ScopeInterface::SCOPE_STORES])) {
                 // if config changed on store view scope - just add to registry
@@ -99,13 +97,13 @@ class ConfigChange implements \Magento\Framework\Event\ObserverInterface
     /**
      * Get store ids that need to be updated with new config value.
      *
-     * @param $scope
-     * @param $scopeId
-     * @param $path
+     * @param string $scope
+     * @param int $scopeId
+     * @param string $path
      * @return array|null
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    private function getStoreIdsForUpdate($scope, $scopeId, $path)
+    private function getStoreIdsForUpdate(string $scope, int $scopeId, string $path): array
     {
         $collection = $this->collectionFactory->create();
 

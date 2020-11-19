@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurationDataExporter\Setup;
 
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 
@@ -16,12 +15,17 @@ use Magento\Framework\Setup\ModuleDataSetupInterface;
  */
 class RecurringData implements \Magento\Framework\Setup\InstallDataInterface
 {
-    private \Magento\ConfigurationDataExporter\Model\FullExportProcessorInterface $exportProcessor;
-    private \Psr\Log\LoggerInterface $logger;
+    /**
+     * @var \Magento\ConfigurationDataExporter\Model\FullExportProcessorInterface
+     */
+    private $exportProcessor;
 
     /**
-     * RecurringData constructor.
-     *
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @param \Magento\ConfigurationDataExporter\Model\FullExportProcessorInterface $exportProcessor
      * @param \Psr\Log\LoggerInterface $logger
      */

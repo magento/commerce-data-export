@@ -27,8 +27,6 @@ class FullSyncCommand extends \Symfony\Component\Console\Command\Command
     private $exportProcessor;
 
     /**
-     * FullSyncCommand constructor.
-     *
      * @param \Magento\ConfigurationDataExporter\Model\FullExportProcessorInterface $exportProcessor
      */
     public function __construct(

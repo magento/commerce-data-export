@@ -29,6 +29,18 @@ class Config
     private $value;
 
     /**
+     * @param int $store
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __construct(int $store, string $name, $value)
+    {
+        $this->store = $store;
+        $this->name = $name;
+        $this->value = $value;
+    }
+
+    /**
      * Get config store id.
      *
      * @return int

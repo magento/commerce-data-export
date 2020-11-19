@@ -93,7 +93,6 @@ class ConfigExportCallback implements ConfigExportCallbackInterface
                 ),
                 ['exception' => $e]
             );
-             $this->logger->error($e->getTraceAsString());
         }
     }
 }

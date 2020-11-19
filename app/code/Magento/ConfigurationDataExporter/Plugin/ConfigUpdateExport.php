@@ -7,23 +7,29 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurationDataExporter\Plugin;
 
+use Magento\Config\Model\Config;
+use Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface;
+use Magento\ConfigurationDataExporter\Model\ConfigExportCallbackInterface;
+
 class ConfigUpdateExport
 {
     /**
-     * @var \Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface
+     * @var ConfigRegistryInterface
      */
     private $configRegistry;
-    private \Magento\ConfigurationDataExporter\Model\ConfigExportCallbackInterface $configExportCallback;
 
     /**
-     * ConfigUpdateExport constructor.
-     *
-     * @param \Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface $configRegistry
-     * @param \Magento\ConfigurationDataExporter\Model\ConfigExportCallbackInterface $configExportCallback
+     * @var ConfigExportCallbackInterface
+     */
+    private $configExportCallback;
+
+    /**
+     * @param ConfigRegistryInterface $configRegistry
+     * @param ConfigExportCallbackInterface $configExportCallback
      */
     public function __construct(
-        \Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface $configRegistry,
-        \Magento\ConfigurationDataExporter\Model\ConfigExportCallbackInterface $configExportCallback
+        ConfigRegistryInterface $configRegistry,
+        ConfigExportCallbackInterface $configExportCallback
     ) {
         $this->configRegistry = $configRegistry;
         $this->configExportCallback = $configExportCallback;
@@ -32,15 +38,15 @@ class ConfigUpdateExport
     /**
      * Trigger configuration publish.
      *
-     * @param \Magento\Config\Model\Config $subject
+     * @param Config $subject
      * @param $result
      * @return mixed
      */
-    public function afterSave(\Magento\Config\Model\Config $subject, $result)
+    public function afterSave(Config $subject, $result): Config
     {
         if (!$this->configRegistry->isEmpty()) {
             $this->configExportCallback->execute(
-                \Magento\ConfigurationDataExporter\Model\ConfigExportCallback::EVENT_TYPE_UPDATE,
+                ConfigExportCallbackInterface::EVENT_TYPE_UPDATE,
                 $this->configRegistry->getValues()
             );
         }
