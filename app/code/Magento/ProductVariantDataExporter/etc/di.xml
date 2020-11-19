@@ -31,17 +31,11 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantIndexerCallbackInterface"
-                 type="Magento\DataExporter\Model\Indexer\FeedIndexerCallbackInterface"/>
-
-    <preference for="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantIndexerCallbackInterface"
-                type="Magento\DataExporter\Model\Indexer\EmptyIndexerCallback"/>
-
     <type name="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantDataSerializer</argument>
-            <argument name="feedIndexerCallback" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantIndexerCallbackInterface</argument>
+            <argument name="feedIndexerCallback" xsi:type="object">Magento\CatalogExport\Model\Indexer\ProductVariantIndexerCallback</argument>
         </arguments>
     </type>
 
