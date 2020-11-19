@@ -12,6 +12,7 @@ use Magento\ConfigurationDataExporter\Event\Data\ChangedConfigFactory;
 use Magento\ConfigurationDataExporter\Event\Data\MetaFactory;
 use Magento\ConfigurationDataExporter\Event\Data\ConfigFactory;
 use Magento\ConfigurationDataExporter\Event\Data\DataFactory;
+use Magento\ConfigurationDataExporter\Api\WhitelistProviderInterface;
 
 /**
  * Class that builds queue message for changed config
@@ -39,21 +40,29 @@ class ChangedConfigMessageBuilder
     private $configFactory;
 
     /**
+     * @var WhitelistProviderInterface
+     */
+    private $whitelistProviderPool;
+
+    /**
      * @param ChangedConfigFactory $changedConfigFactory
      * @param MetaFactory $metaFactory
      * @param DataFactory $dataFactory
      * @param ConfigFactory $configFactory
+     * @param WhitelistProviderInterface $whitelistProviderPool
      */
     public function __construct(
         ChangedConfigFactory $changedConfigFactory,
         MetaFactory $metaFactory,
         DataFactory $dataFactory,
-        ConfigFactory $configFactory
+        ConfigFactory $configFactory,
+        WhitelistProviderInterface $whitelistProviderPool
     ) {
         $this->changedConfigFactory = $changedConfigFactory;
         $this->metaFactory = $metaFactory;
         $this->dataFactory = $dataFactory;
         $this->configFactory = $configFactory;
+        $this->whitelistProviderPool = $whitelistProviderPool;
     }
 
     /**
@@ -67,15 +76,18 @@ class ChangedConfigMessageBuilder
     public function build(string $eventType, array $configData): ChangedConfig
     {
         $configArray = [];
+        $whitelistedPaths = $this->whitelistProviderPool->getWhitelist();
 
         foreach ($configData as $item) {
-            $configArray[] = $this->configFactory->create(
-                [
-                    'store' => (int)$item['scope_id'],
-                    'name' => (string)$item['path'],
-                    'value' => $item['value']
-                ]
-            );
+            if (in_array($item['path'], $whitelistedPaths)) {
+                $configArray[] = $this->configFactory->create(
+                    [
+                        'store' => (int)$item['scope_id'],
+                        'name' => (string)$item['path'],
+                        'value' => $item['value']
+                    ]
+                );
+            }
         }
 
         return $this->changedConfigFactory->create(

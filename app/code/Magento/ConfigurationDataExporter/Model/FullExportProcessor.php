@@ -16,7 +16,7 @@ use Magento\Store\Model\ScopeInterface;
 class FullExportProcessor implements FullExportProcessorInterface
 {
     const ERROR_EMPTY_CONFIGURATION_MSG = 'Full configuration export for store - %s skipped. Empty configuration.';
-    const SUCCESS_CONFIGURATION_EXPORT_MSG = 'Full configuration export for store - %s : $s items processed.';
+    const SUCCESS_CONFIGURATION_EXPORT_MSG = 'Full configuration export for store - %s : %s items processed.';
 
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
