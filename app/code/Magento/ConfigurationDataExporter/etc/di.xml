@@ -19,6 +19,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="configuration_export_full" xsi:type="object">Magento\ConfigurationDataExporter\Console\Command\FullSyncCommand</item>
+                 <item name="configuration_add_path_to_export_whitelist" xsi:type="object">Magento\ConfigurationDataExporter\Console\Command\AddPathToWhitelist</item>
             </argument>
         </arguments>
     </type>

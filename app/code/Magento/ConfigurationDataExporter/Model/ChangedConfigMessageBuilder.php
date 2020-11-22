@@ -79,7 +79,11 @@ class ChangedConfigMessageBuilder
         $whitelistedPaths = $this->whitelistProviderPool->getWhitelist();
 
         foreach ($configData as $item) {
-            if (in_array($item['path'], $whitelistedPaths)) {
+            $isPathAllowed = array_filter($whitelistedPaths, function ($path) use ($item) {
+                return strpos($item['path'], $path) === 0;
+            });
+
+            if (!empty($isPathAllowed)) {
                 $configArray[] = $this->configFactory->create(
                     [
                         'store' => (int)$item['scope_id'],

@@ -9,7 +9,7 @@ Module performs full configuration export to keep in sync configuration that set
 
 There is 2 ways to perform full export:
 1. In recurring data upgrade script (to automatically sync configuration on every deployment)
-2. By running `bin/magento config-export:sync:full` with optional argument `--store`
+2. By running `bin/magento commerce-data-export:config:export` with optional argument `--store`
 
 ###Export configuration updates
 
@@ -46,3 +46,11 @@ To allow export of configuration specific paths need to be whitelisted:
 
 3. Or create own implementation of `Magento\ConfigurationDataExporter\Api\WhitelistProviderInterface` and inject it into 
 `Magento\ConfigurationDataExporter\Model\WhitelistProviderPool`
+
+###Add paths to white list:
+
+Configuration path can be added to whitelist by running `bin/magento commerce-data-export:config:add-paths-to-whitelist`
+with space-separated paths as argument.
+
+Note: to allow export of whole section (group) of configuration paths - just define path without specific field e.g.:
+`catalog/layered_navigation` - all configuration fields of catalog layered navigation will be allowed for export.

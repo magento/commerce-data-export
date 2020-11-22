@@ -81,18 +81,21 @@ class ConfigExportCallback implements ConfigExportCallbackInterface
     private function publishMessage(array $configData, string $evenType): void
     {
         $message = $this->messageBuilder->build($evenType, $configData);
+        $configToPublish = $message->getData() ? $message->getData()->getConfig() : [];
 
-        try {
-            $this->queuePublisher->publish($this->topicName, $message);
-        } catch (\Throwable $e) {
-            $this->logger->error(
-                sprintf(
-                    'topic "%s": error on publish message "%s"',
-                    $this->topicName,
-                    \json_encode(['event_type' => $evenType])
-                ),
-                ['exception' => $e]
-            );
+        if (!empty($configToPublish)) {
+            try {
+                $this->queuePublisher->publish($this->topicName, $message);
+            } catch (\Throwable $e) {
+                $this->logger->error(
+                    sprintf(
+                        'topic "%s": error on publish message "%s"',
+                        $this->topicName,
+                        \json_encode(['event_type' => $evenType])
+                    ),
+                    ['exception' => $e]
+                );
+            }
         }
     }
 }

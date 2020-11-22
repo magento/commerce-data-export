@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace Magento\ConfigurationDataExporter\Console\Command;
 
 use Magento\Framework\Console\Cli;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class FullSyncCommand extends \Symfony\Component\Console\Command\Command
 {
-    const COMMAND_NAME = 'config-export:sync:full';
+    const COMMAND_NAME = 'commerce-data-export:config:export';
     const INPUT_OPTION_STORE_ID = 'store';
 
     /**
