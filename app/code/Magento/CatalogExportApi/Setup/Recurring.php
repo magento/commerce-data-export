@@ -4,53 +4,23 @@
  * See COPYING.txt for license details.
  */
 
-declare(strict_types=1);
+namespace Magento\CatalogExportApi\Setup;
 
-namespace Magento\CatalogExport\Console\Command;
-
-use Magento\Framework\Console\Cli;
+use Magento\DataExporter\Config\ConfigInterface;
 use Magento\Framework\Exception\FileSystemException;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\RuntimeException;
 use Magento\Framework\Filesystem\Driver\File;
-use Magento\Framework\Phrase;
-use Magento\Framework\Xml\Parser;
+use Magento\Framework\Setup\InstallSchemaInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\Setup\SchemaSetupInterface;
 use Nette\PhpGenerator\PhpFile;
 use Nette\PhpGenerator\PsrPrinter;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Magento\DataExporter\Config\ConfigInterface;
+use Magento\Framework\App\Filesystem\DirectoryList;
 
 /**
- * Class Generate
- *
- * Nette is required for this module - 'composer require nette/php-generator'
- *
- * A destination folder is required to define where the files will be generated.
- *
- * php bin/magento dto:generate --destination-folder
- *   /var/www/commerce-data-export/app/code/Magento/CatalogExportApi/Api/Data
- *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @SuppressWarnings(PHPMD.CyclomaticComplexity)
- * @SuppressWarnings(PHPMD.NPathComplexity)
- *
+ * Class for generating ExportApi DTOs
  */
-class GenerateDTOFiles extends Command
+class Recurring implements InstallSchemaInterface
 {
-    /**
-     * Command Option
-     * @var string
-     */
-    private const DESTINATION_FOLDER = 'destination-folder';
-
-    /**
-     * @var Parser
-     */
-    private $parser;
-
     /**
      * @var File
      */
@@ -62,85 +32,66 @@ class GenerateDTOFiles extends Command
     private $config;
 
     /**
-     * @var string[]
+     * @var DirectoryList
      */
-    private $baseConfigEntities = [
-        'Product',
-        'Category',
-        'ProductVariant',
-    ];
+    private $dirList;
 
     /**
-     * @param Parser $parser
+     * @var array
+     */
+    private $baseConfigEntities;
+
+    /**
      * @param File $fileDriver
      * @param ConfigInterface $config
-     * @param $string|null $name
+     * @param DirectoryList $dirList
+     * @param array $baseConfigEntities
      */
     public function __construct(
-        Parser $parser,
         File $fileDriver,
         ConfigInterface $config,
-        $name = null
+        DirectoryList $dirList,
+        array $baseConfigEntities
     ) {
-        parent::__construct($name);
-        $this->parser = $parser;
         $this->fileDriver = $fileDriver;
         $this->config = $config;
+        $this->dirList = $dirList;
+        $this->baseConfigEntities = $baseConfigEntities;
     }
 
     /**
-     * @inheritdoc
-     */
-    protected function configure()
-    {
-        $this->setName('dto:generate');
-        $this->setDescription(
-            'This will generate the provider class for a module or file. A output path must be defined.'
-        );
-        $this->addOption(
-            self::DESTINATION_FOLDER,
-            null,
-            InputOption::VALUE_REQUIRED,
-            __('Destination Folder')
-        );
-        parent::configure();
-    }
-
-    /**
-     * Generate classes
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @throws LocalizedException
-     * @throws RuntimeException
+     * {@inheritdoc}
      * @throws FileSystemException
-     * @return int|void
+     * @throws \RuntimeException
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
-        if (!$outPutLocation = $input->getOption(self::DESTINATION_FOLDER)) {
-            throw new RuntimeException(new Phrase('Destination not defined'));
-        }
-
-        $baseNamespace = $this->resolveNameSpace($outPutLocation);
+        $outputDir = $this->dirList->getPath(DirectoryList::GENERATED_CODE) . '/Magento/CatalogExportApi';
+        $baseNamespace = $this->resolveNameSpace($outputDir);
         $parsedEntities = [];
         foreach ($this->baseConfigEntities as $node) {
             $parsedEntities[] = $this->getConfig($node);
         }
         $parsedArray = \array_merge(...$parsedEntities);
-
         $classesData = $this->prepareDtoClassData($parsedArray, $baseNamespace);
-
-        $this->createDirectory($outPutLocation);
+        $this->createDirectory($outputDir);
         try {
-            $this->generateFiles($classesData, $baseNamespace, $outPutLocation);
+            $this->generateFiles($classesData, $baseNamespace, $outputDir);
         } catch (\Throwable $e) {
-            $output->writeln('Error: ' . $e->getMessage());
-            return Cli::RETURN_FAILURE;
+            throw new \RuntimeException('Could not generate ExportApi DTO\'s ' . $e);
         }
-        $output->writeln('Files has been generated');
+    }
 
-        return Cli::RETURN_SUCCESS;
+    /**
+     * Resolve namespace
+     *
+     * @param string $filePath
+     * @return string
+     */
+    private function resolveNameSpace(string $filePath): string
+    {
+        $filePath = trim($filePath, DIRECTORY_SEPARATOR);
+        return str_replace('/', '\\', strstr($filePath, 'Magento'));
     }
 
     /**
@@ -150,7 +101,7 @@ class GenerateDTOFiles extends Command
      * @param array $parsedArray
      * @return array
      */
-    private function getConfig(string $entity, $parsedArray = [])
+    private function getConfig(string $entity, $parsedArray = []): array
     {
         $parsedEntity = $this->config->get($entity);
         if ($parsedEntity) {
@@ -168,11 +119,11 @@ class GenerateDTOFiles extends Command
     /**
      * Build structure required to build DTO
      *
-     * @param array  $parsedArray
+     * @param array $parsedArray
      * @param string $baseNamespace
      * @return array
      */
-    private function prepareDtoClassData(array $parsedArray, string $baseNamespace)
+    private function prepareDtoClassData(array $parsedArray, string $baseNamespace): array
     {
         $result = [];
         if (empty($parsedArray)) {
@@ -184,23 +135,10 @@ class GenerateDTOFiles extends Command
                 $field['type'] = $this->mapType($field['type'], $baseNamespace);
                 $field['name'] = lcfirst(str_replace('_', '', ucwords($field['name'], '_')));
             }
-
             $result[$schemaConfig['name']] = $schemaConfig['field'];
         }
 
         return $result;
-    }
-
-    /**
-     * Resolve namespace
-     *
-     * @param string $filePath
-     * @return string
-     */
-    private function resolveNameSpace(string $filePath): string
-    {
-        $filePath =  trim($filePath, DIRECTORY_SEPARATOR);
-        return str_replace('/', '\\', strstr($filePath, 'Magento'));
     }
 
     /**
@@ -234,13 +172,27 @@ class GenerateDTOFiles extends Command
     }
 
     /**
+     * Create directory
+     *
+     * @param string $outPutLocation
+     * @return void
+     * @throws FileSystemException
+     */
+    private function createDirectory(string $outPutLocation): void
+    {
+        if (!$this->fileDriver->isExists($outPutLocation)) {
+            $this->fileDriver->createDirectory($outPutLocation, 0775);
+        }
+    }
+
+    /**
      * Generate files
      *
      * @param array $generateArray
      * @param string $baseNameSpace
      * @param string $baseFileLocation
-     * @throws FileSystemException
      * @return void
+     * @throws FileSystemException
      */
     private function generateFiles(array $generateArray, string $baseNameSpace, string $baseFileLocation): void
     {
@@ -339,26 +291,12 @@ class GenerateDTOFiles extends Command
     }
 
     /**
-     * Create directory
-     *
-     * @param string $outPutLocation
-     * @throws FileSystemException
-     * @return void
-     */
-    private function createDirectory(string $outPutLocation): void
-    {
-        if (!$this->fileDriver->isExists($outPutLocation)) {
-            $this->fileDriver->createDirectory($outPutLocation, 0755);
-        }
-    }
-
-    /**
      * Write to file
      *
      * @param string $fileLocation
      * @param string $output
-     * @throws FileSystemException
      * @return void
+     * @throws FileSystemException
      */
     private function writeToFile(string $fileLocation, string $output): void
     {

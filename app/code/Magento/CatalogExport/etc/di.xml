@@ -42,14 +42,4 @@
             <argument name="deletedEventType" xsi:type="string">product_variants_deleted</argument>
         </arguments>
     </virtualType>
-
-    <type name="Magento\Framework\Console\CommandListInterface">
-        <arguments>
-            <argument name="commands" xsi:type="array">
-                <item name="dto_auto_generation" xsi:type="object">
-                    Magento\CatalogExport\Console\Command\GenerateDTOFiles
-                </item>
-            </argument>
-        </arguments>
-    </type>
 </config>
