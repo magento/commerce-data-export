@@ -20,5 +20,5 @@ interface RatingMetadataRepositoryInterface
      *
      * @throws \InvalidArgumentException
      */
-    public function get(EntityRequest $request);
+    public function get(EntityRequest $request): array;
 }

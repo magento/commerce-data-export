@@ -61,7 +61,7 @@ class ReviewRepository implements ReviewRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function get(EntityRequest $request)
+    public function get(EntityRequest $request): array
     {
         $ids = \array_map(function (Item $item) {
             return $item->getEntityId();

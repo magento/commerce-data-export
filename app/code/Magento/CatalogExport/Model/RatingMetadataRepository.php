@@ -61,7 +61,7 @@ class RatingMetadataRepository implements RatingMetadataRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function get(EntityRequest $request)
+    public function get(EntityRequest $request): array
     {
         $storeViewCodes = $request->getStoreViewCodes();
         $ids = \array_map(function (Item $item) {
