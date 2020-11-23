@@ -9,7 +9,6 @@
         "magento/framework": "*",
         "magento/framework-message-queue": "*",
         "magento/module-catalog-export-api": "*",
-        "magento/module-product-variant-data-exporter": "*",
         "magento/module-data-exporter": "*"
     },
     "type": "magento2-module",
