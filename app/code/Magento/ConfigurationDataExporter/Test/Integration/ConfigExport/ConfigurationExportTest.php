@@ -57,6 +57,11 @@ class ConfigurationExportTest extends TestCase
      */
     public function testConfigUpdateExport(array $configs, array $expected): void
     {
+        // to avoid consuming of incorrect message we need to purge queue before running test
+        /** @var \Magento\Framework\Amqp\Config $amqpConfig */
+        $amqpConfig = Bootstrap::getObjectManager()->get(\Magento\Framework\Amqp\Config::class);
+        $amqpConfig->getChannel()->queue_purge(self::QUEUE_NAME);
+
         $whitelist = $expected['whitelist']??[];
 
         // configure whitelist before running test
@@ -102,6 +107,7 @@ class ConfigurationExportTest extends TestCase
 
         $this->assertEquals($expected['collected_paths'], count($configRegistry->getValues()));
 
+        // just to be sure that message was already published i queue
         sleep(1);
 
         $queue = $this->queueRepository->get(self::CONNECTION_AMPQ, self::QUEUE_NAME);
