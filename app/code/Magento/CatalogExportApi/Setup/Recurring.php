@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
 
 namespace Magento\CatalogExportApi\Setup;
 
@@ -61,8 +62,6 @@ class Recurring implements InstallSchemaInterface
 
     /**
      * {@inheritdoc}
-     * @throws FileSystemException
-     * @throws \RuntimeException
      */
     public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
@@ -193,12 +192,13 @@ class Recurring implements InstallSchemaInterface
      * @param string $baseFileLocation
      * @return void
      * @throws FileSystemException
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function generateFiles(array $generateArray, string $baseNameSpace, string $baseFileLocation): void
     {
         $nonRequiredMethods = ['id'];
         foreach ($generateArray as $className => $phpClassFields) {
-            // phpstan:ignore "Class Nette\PhpGenerator\PhpFile not found."
             $file = new PhpFile();
             $file->addComment('Copyright © Magento, Inc. All rights reserved.');
             $file->addComment('See COPYING.txt for license details.');
@@ -284,7 +284,6 @@ class Recurring implements InstallSchemaInterface
                 $method->setReturnType('void');
                 $method->addBody('$this->' . $name . ' = $' . $name . ';');
             }
-            // phpstan:ignore "Class Nette\PhpGenerator\PsrPrinter not found."
             $print = new PsrPrinter();
             $this->writeToFile($baseFileLocation . '/' . $className . '.php', $print->printFile($file));
         }
