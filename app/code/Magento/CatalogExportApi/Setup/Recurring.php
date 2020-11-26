@@ -61,9 +61,11 @@ class Recurring implements InstallSchemaInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
+     * @throws \RuntimeException
+     * @throws FileSystemException
      */
-    public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
+    public function install(SchemaSetupInterface $setup, ModuleContextInterface $context): void
     {
         $outputDir = $this->dirList->getPath(DirectoryList::GENERATED_CODE) . '/Magento/CatalogExportApi';
         $baseNamespace = $this->resolveNameSpace($outputDir);
