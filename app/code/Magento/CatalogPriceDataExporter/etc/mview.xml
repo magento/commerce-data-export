@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
+    <view id="catalog_data_exporter_product_prices"
+          class="Magento\CatalogPriceDataExporter\Model\Indexer\ProductPricesFeedIndexer"
+          group="indexer"
+          walker="Magento\CatalogPriceDataExporter\Model\Indexer\ChangeLogBatchWalker"
+    >
+        <subscriptions>
+            <!-- Price & special price -->
+            <table name="catalog_product_entity_decimal" entity_column="entity_id">
+                <additionalColumns>
+                    <column name="store_id" cl_name="scope_id" />
+                    <column name="attribute_id" cl_name="attribute_id" />
+                    <column name="price_type" cl_name="price_type" constant="product_price" />
+                </additionalColumns>
+            </table>
+
+            <!-- Tier prices -->
+            <table name="catalog_product_entity_tier_price" entity_column="entity_id">
+                <additionalColumns>
+                    <column name="website_id" cl_name="scope_id" />
+                    <column name="all_groups" cl_name="all_groups" />
+                    <column name="customer_group_id" cl_name="customer_group_id" />
+                    <column name="qty" cl_name="qty" />
+                    <column name="price_type" cl_name="price_type" constant="tier_price" />
+                </additionalColumns>
+            </table>
+
+            <!-- Custom options -->
+            <table name="catalog_product_option_price" entity_column="option_id">
+                <additionalColumns>
+                    <column name="store_id" cl_name="scope_id" />
+                    <column name="price_type" cl_name="price_type" constant="custom_option_price" />
+                </additionalColumns>
+            </table>
+
+            <!-- Downloadable links -->
+            <table name="downloadable_link_price" entity_column="link_id">
+                <additionalColumns>
+                    <column name="website_id" cl_name="scope_id" />
+                    <column name="price_type" cl_name="price_type" constant="downloadable_link" />
+                </additionalColumns>
+            </table>
+
+            <!-- Bundle variation add / remove -->
+            <table name="catalog_product_bundle_selection" entity_column="parent_product_id">
+                <additionalColumns>
+                    <column name="product_id" cl_name="variation_id" />
+                    <column name="price_type" cl_name="price_type" constant="bundle_variation" />
+                </additionalColumns>
+            </table>
+
+            <!-- Configurable variation add / remove -->
+            <table name="catalog_product_super_link" entity_column="parent_id">
+                <additionalColumns>
+                    <column name="product_id" cl_name="variation_id" />
+                    <column name="price_type" cl_name="price_type" constant="configurable_variation" />
+                </additionalColumns>
+            </table>
+        </subscriptions>
+    </view>
+</config>

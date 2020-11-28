@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\CatalogPriceDataExporter\Model\Event\EventPool">
+        <arguments>
+            <argument name="priceTypeMap" xsi:type="array">
+                <item name="product_price" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\ProductPriceEvent
+                </item>
+                <item name="tier_price" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\TierPriceEvent
+                </item>
+                <item name="custom_option_price" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\CustomOptionPriceEvent
+                </item>
+                <item name="downloadable_link" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\DownloadableLinkPriceEvent
+                </item>
+                <item name="bundle_variation" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\BundleProductEvent
+                </item>
+                <item name="configurable_variation" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\ConfigurableProductEvent
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Event\ConfigurableProductEvent"
+                 type="Magento\CatalogPriceDataExporter\Model\Event\ComplexProductEvent">
+        <arguments>
+            <argument name="linkType" xsi:type="string">configurable</argument>
+            <argument name="complexProductLink" xsi:type="object">
+                Magento\CatalogPriceDataExporter\Model\Query\ConfigurableProductLink
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Event\BundleProductEvent"
+                 type="Magento\CatalogPriceDataExporter\Model\Event\ComplexProductEvent">
+        <arguments>
+            <argument name="linkType" xsi:type="string">bundle</argument>
+            <argument name="complexProductLink" xsi:type="object">
+                Magento\CatalogPriceDataExporter\Model\Query\BundleProductLink
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Query\ConfigurableProductLink"
+                 type="Magento\CatalogPriceDataExporter\Model\Query\ComplexProductLink">
+        <arguments>
+            <argument name="linkTable" xsi:type="string">catalog_product_super_link</argument>
+            <argument name="parentColumn" xsi:type="string">parent_id</argument>
+            <argument name="variationColumn" xsi:type="string">product_id</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Query\BundleProductLink"
+                 type="Magento\CatalogPriceDataExporter\Model\Query\ComplexProductLink">
+        <arguments>
+            <argument name="linkTable" xsi:type="string">catalog_product_bundle_selection</argument>
+            <argument name="parentColumn" xsi:type="string">parent_product_id</argument>
+            <argument name="variationColumn" xsi:type="string">product_id</argument>
+        </arguments>
+    </virtualType>
+</config>
