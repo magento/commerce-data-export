@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace Magento\ProductOverrideDataExporter\Model\Provider\Override;
 
 use Magento\QueryXml\Model\QueryProcessor;
+use Magento\Customer\Model\Group;
+use Magento\Store\Api\Data\WebsiteInterface;
 
 class PriceOverrides
 {
@@ -20,23 +22,64 @@ class PriceOverrides
 
     public function __construct(
         QueryProcessor $queryProcessor
-    ) {
+    )
+    {
         $this->queryProcessor = $queryProcessor;
+    }
+
+    private function priceDiffersFromDefault(array $default, array $override): bool
+    {
+        return (
+            $default['prices']['minimumPrice']['finalPrice'] != $override['finalPrice'] ||
+            $default['prices']['minimumPrice']['regularPrice'] != $override['regularPrice']
+        );
+    }
+
+    /**
+     * Format data to reflect the message structure
+     *
+     * @param array $row
+     * @return array
+     */
+    private function format(array $row): array
+    {
+        return [
+            'productId' => $row['productId'],
+            'websiteCode' => $row['websiteCode'],
+            'customerGroupCode' => $row['customerGroupCode'],
+            'prices' => [
+                'minimumPrice' => [
+                    'finalPrice' => $row['finalPrice'],
+                    'regularPrice' => $row['regularPrice']
+                ]
+            ]
+        ];
     }
 
     /**
      * @param array $values
      * @return array
+     * @throws \Zend_Db_Statement_Exception
      */
-    public function get(array $values) : array
+    public function get(array $values): array
     {
         foreach ($values as $value) {
-            $queryArguments['productId'][$value['productId']] = $value['productId'];
+            $queryArguments['entityIds'][] = $value['productId'];
         }
         $output = [];
         $cursor = $this->queryProcessor->execute('productPriceOverrider', $queryArguments);
-        for ($row = $cursor->fetch()) {
-            $output[] = $row;
+        while ($row = $cursor->fetch()) {
+            $defaultPriceKey = $row['productId'] . WebsiteInterface::ADMIN_CODE . Group::NOT_LOGGED_IN_ID;
+            $actualPriceKey = $row['productId'] . $row['websiteCode'] . $row['customerGroupCode'];
+            $output[$actualPriceKey] = $row;
+            if (!isset($output[$defaultPriceKey]) || $this->priceDiffersFromDefault(
+                    $output[$defaultPriceKey],
+                    $row
+                )
+            ) {
+                $output[$actualPriceKey] = $this->format($row);
+            }
         }
+        return $output;
     }
 }

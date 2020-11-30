@@ -62,6 +62,11 @@ class SelectBuilder
     private $having = [];
 
     /**
+     * @var array
+     */
+    private $sort = [];
+
+    /**
      * SelectBuilder constructor.
      *
      * @param ResourceConnection $resourceConnection
@@ -230,6 +235,13 @@ class SelectBuilder
         if (!empty($this->getGroup())) {
             $select->group(implode(', ', $this->getGroup()));
         }
+        if (!empty($this->getSort())) {
+            $sort = [];
+            foreach ($this->getSort() as $expression => $direction) {
+                $sort[] = $expression . ' ' . $direction;
+            }
+            $select->order($sort);
+        }
         return $select;
     }
 
@@ -252,6 +264,29 @@ class SelectBuilder
     public function setGroup($group)
     {
         $this->group = $group;
+
+        return $this;
+    }
+
+    /**
+     * Returns sort
+     *
+     * @return array
+     */
+    public function getSort(): array
+    {
+        return $this->sort;
+    }
+
+    /**
+     * Set sort
+     *
+     * @param $sort
+     * @return $this
+     */
+    public function setSort($sort)
+    {
+        $this->sort = $sort;
 
         return $this;
     }

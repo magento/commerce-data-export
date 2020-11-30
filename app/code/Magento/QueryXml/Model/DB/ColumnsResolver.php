@@ -69,6 +69,7 @@ class ColumnsResolver
             return [];
         }
         $group = [];
+        $sort = [];
         $columns = $selectBuilder->getColumns();
         foreach ($entityConfig['attribute'] as $attributeData) {
             $columnAlias = $this->nameResolver->getAlias($attributeData);
@@ -91,8 +92,12 @@ class ColumnsResolver
             if (isset($attributeData['group'])) {
                 $group[$columnAlias] = $expression;
             }
+            if (isset($attributeData['sort'])) {
+                $sort[$expression] = $attributeData['sort'];
+            }
         }
         $selectBuilder->setGroup(array_merge($selectBuilder->getGroup(), $group));
+        $selectBuilder->setSort(array_merge($selectBuilder->getSort(), $sort));
         return $columns;
     }
 }

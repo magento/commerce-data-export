@@ -8,12 +8,12 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
     <query name="productPriceOverrider">
         <source name="catalog_product_index_price">
-            <attribute name="entity_id"/>
-            <attribute name="customer_group_id"/>
-            <attribute name="website_id"/>
+            <attribute name="entity_id" alias="productId" />
+            <attribute name="customer_group_id" alias="customerGroupCode" sort="asc"/>
+            <attribute name="website_id" sort="asc"/>
             <attribute name="tax_class_id"/>
-            <attribute name="price"/>
-            <attribute name="final_price"/>
+            <attribute name="price" alias="regularPrice"/>
+            <attribute name="final_price" alias="finalPrice"/>
             <attribute name="min_price"/>
             <filter glue="and">
                 <condition attribute="entity_id" operator="in" type="placeholder">entityIds</condition>

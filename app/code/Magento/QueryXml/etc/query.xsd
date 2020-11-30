@@ -46,6 +46,7 @@
         <xs:attribute name="alias" type="xs:string"/>
         <xs:attribute name="function" type="functionDeclaration"/>
         <xs:attribute name="group" type="xs:boolean" default="false"/>
+        <xs:attribute name="sort" type="sortDeclaration" default="asc"/>
         <xs:attribute name="distinct" type="xs:boolean" default="false"/>
     </xs:complexType>
     <xs:complexType name="filterDeclaration">
@@ -78,6 +79,12 @@
             <xs:enumeration value="avg" />
             <xs:enumeration value="min" />
             <xs:enumeration value="sha1" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="sortDeclaration">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="asc" />
+            <xs:enumeration value="desc" />
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="glueType">

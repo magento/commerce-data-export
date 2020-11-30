@@ -70,7 +70,7 @@ class FeedIndexMetadata
         string $feedTableName,
         string $feedTableField,
         array $feedTableMutableColumns,
-        int $batchSize = 100
+        int $batchSize = 1000
     ) {
         $this->sourceTableName = $sourceTableName;
         $this->sourceTableField = $sourceTableField;

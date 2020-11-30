@@ -49,4 +49,11 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\ProductOverrideDataExporter\Model\Provider\ProductOverrides">
+        <arguments>
+            <argument name="overrideProviders" xsi:type="array">
+                <item name="productPriceOverrides" xsi:type="string">Magento\ProductOverrideDataExporter\Model\Provider\Override\PriceOverrides</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

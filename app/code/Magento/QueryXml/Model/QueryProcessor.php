@@ -44,6 +44,7 @@ class QueryProcessor
      */
     private function processPlaceholders(AdapterInterface $connection, string $sql, $arguments) : string
     {
+        // TODO: add support for repeatable variables
         foreach ($arguments as $name => $value) {
             $sql = str_replace(sprintf('::%s::', $name), '?', $sql);
             $sql = $connection->quoteInto($sql, $value);
