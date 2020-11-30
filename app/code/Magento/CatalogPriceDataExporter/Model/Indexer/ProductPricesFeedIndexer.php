@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model\Indexer;
 
-use Magento\CatalogPriceDataExporter\Model\Event\EventPool;
+use Magento\CatalogPriceDataExporter\Model\EventPool;
 use Magento\Framework\Indexer\ActionInterface as IndexerActionInterface;
 use Magento\Framework\Mview\ActionInterface as MviewActionInterface;
 use Psr\Log\LoggerInterface;

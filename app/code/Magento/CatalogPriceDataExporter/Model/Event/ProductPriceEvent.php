@@ -10,6 +10,7 @@ namespace Magento\CatalogPriceDataExporter\Model\Event;
 
 use Magento\CatalogPriceDataExporter\Model\EventBuilder;
 use Magento\CatalogPriceDataExporter\Model\Query\ProductPrice;
+use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
@@ -66,14 +67,14 @@ class ProductPriceEvent implements ProductPriceEventInterface
     /**
      * @inheritdoc
      */
-    public function retrieve(array $data): array
+    public function retrieve(array $indexData): array
     {
         $result = [];
         $events = [];
 
         try {
-            $attributes = \array_unique(\explode(',', $data['attributes']));
-            $select = $this->productPrice->getQuery($data['entity_id'], $data['scope_id'], $attributes);
+            $attributes = \array_unique(\explode(',', $indexData['attributes']));
+            $select = $this->productPrice->getQuery($indexData['entity_id'], $indexData['scope_id'], $attributes);
             $cursor = $this->resourceConnection->getConnection()->query($select);
 
             while ($row = $cursor->fetch()) {
@@ -81,11 +82,11 @@ class ProductPriceEvent implements ProductPriceEventInterface
             }
 
             foreach ($attributes as $attributeCode) {
-                $events[] = $this->getEventData($attributeCode, $data, $result[$attributeCode]['value'] ?? null);
+                $events[] = $this->getEventData($attributeCode, $indexData, $result[$attributeCode]['value'] ?? null);
             }
         } catch (\Throwable $exception) {
-            // TODO log error, throw exception
-            $this->logger->error('Error retrieving product price data.', ['exception' => $exception->getMessage()]);
+            $this->logger->error($exception->getMessage());
+            throw new UnableRetrieveData('Unable to retrieve product price data.');
         }
 
         return $events;
@@ -95,21 +96,21 @@ class ProductPriceEvent implements ProductPriceEventInterface
      * Retrieve event data.
      *
      * @param string $attributeCode
-     * @param array $data
+     * @param array $indexData
      * @param string|null $attributeValue
      *
      * @return array
      *
      * @throws NoSuchEntityException
      */
-    private function getEventData(string $attributeCode, array $data, ?string $attributeValue): array
+    private function getEventData(string $attributeCode, array $indexData, ?string $attributeValue): array
     {
-        $scopeCode = $this->storeManager->getStore($data['scope_id'])->getWebsite()->getCode();
+        $scopeCode = $this->storeManager->getStore($indexData['scope_id'])->getWebsite()->getCode();
         $eventType = null === $attributeValue ? self::EVENT_PRICE_DELETED : self::EVENT_PRICE_CHANGED;
 
         return $this->eventBuilder->build(
             $eventType,
-            $data['entity_id'],
+            $indexData['entity_id'],
             $scopeCode,
             null,
             $attributeValue,

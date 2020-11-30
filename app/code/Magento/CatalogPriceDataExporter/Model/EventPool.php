@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Magento\CatalogPriceDataExporter\Model\Event;
+namespace Magento\CatalogPriceDataExporter\Model;
 
+use Magento\CatalogPriceDataExporter\Model\Event\ProductPriceEventInterface;
+
+/**
+ * Pool of all existing price events data providers
+ */
 class EventPool
 {
     /**

@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
+use Magento\DataExporter\Exception\UnableRetrieveData;
+
 interface ProductPriceEventInterface
 {
     /**
@@ -19,6 +21,8 @@ interface ProductPriceEventInterface
     public const EVENT_TIER_PRICE_DELETED = 'tier_price_deleted';
     public const EVENT_CUSTOM_OPTION_PRICE_CHANGED = 'custom_option_price_changed';
     public const EVENT_CUSTOM_OPTION_PRICE_DELETED = 'custom_option_price_deleted';
+    public const EVENT_CUSTOM_OPTION_DELETED = 'custom_option_deleted';
+    public const EVENT_DOWNLOADABLE_LINK_DELETED = 'downloadable_link_deleted';
     public const EVENT_DOWNLOADABLE_LINK_PRICE_CHANGED = 'downloadable_link_price_changed';
     public const EVENT_DOWNLOADABLE_LINK_PRICE_DELETED = 'downloadable_link_price_deleted';
     public const EVENT_VARIATION_CHANGED = 'variation_changed';
@@ -27,9 +31,11 @@ interface ProductPriceEventInterface
     /**
      * Retrieve product price event data.
      *
-     * @param array $data
+     * @param array $indexData
      *
      * @return array
+     *
+     * @throws UnableRetrieveData
      */
-    public function retrieve(array $data): array;
+    public function retrieve(array $indexData): array;
 }

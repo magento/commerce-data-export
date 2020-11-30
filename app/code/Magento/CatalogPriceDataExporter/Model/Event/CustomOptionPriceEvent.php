@@ -10,6 +10,7 @@ namespace Magento\CatalogPriceDataExporter\Model\Event;
 
 use Magento\CatalogPriceDataExporter\Model\EventBuilder;
 use Magento\CatalogPriceDataExporter\Model\Query\CustomOptionPrice;
+use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
@@ -66,17 +67,17 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
     /**
      * @inheritdoc
      */
-    public function retrieve(array $data): array
+    public function retrieve(array $indexData): array
     {
         $events = [];
 
         try {
-            $select = $this->customOptionPrice->getQuery($data['entity_id'], $data['scope_id']);
+            $select = $this->customOptionPrice->getQuery($indexData['entity_id'], $indexData['scope_id']);
             $result = $this->resourceConnection->getConnection()->fetchRow($select) ?: null;
-            $events[] = $this->getEventData($data, $result);
+            $events[] = $this->getEventData($indexData, $result);
         } catch (\Throwable $exception) {
-            // TODO log error, throw exception
-            $this->logger->error('Error retrieving custom option price data.', ['exception' => $exception->getMessage()]);
+            $this->logger->error($exception->getMessage());
+            throw new UnableRetrieveData('Unable to retrieve product custom options price data.');
         }
 
         return $events;
@@ -85,17 +86,17 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
     /**
      * Retrieve event data.
      *
-     * @param array $data
+     * @param array $indexData
      * @param array|null $result
      *
      * @return array
      *
      * @throws LocalizedException
      */
-    private function getEventData(array $data, ?array $result): array
+    private function getEventData(array $indexData, ?array $result): array
     {
         $additionalData = [];
-        $scopeCode = $this->storeManager->getStore($data['scope_id'])->getWebsite()->getCode();
+        $scopeCode = $this->storeManager->getStore($indexData['scope_id'])->getWebsite()->getCode();
         $eventType = null === $result ? self::EVENT_CUSTOM_OPTION_PRICE_DELETED :
             self::EVENT_CUSTOM_OPTION_PRICE_CHANGED;
 
@@ -105,7 +106,7 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
 
         return $this->eventBuilder->build(
             $eventType,
-            $data['entity_id'], // TODO base64_encode with correct format
+            $indexData['entity_id'], // TODO base64_encode with correct format
             $scopeCode,
             null,
             $result['value'] ?? null,

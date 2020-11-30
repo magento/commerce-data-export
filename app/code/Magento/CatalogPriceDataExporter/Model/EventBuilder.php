@@ -6,6 +6,9 @@ namespace Magento\CatalogPriceDataExporter\Model;
 
 use Magento\Store\Api\Data\WebsiteInterface;
 
+/**
+ * Class responsible for building event data array
+ */
 class EventBuilder
 {
     /**
