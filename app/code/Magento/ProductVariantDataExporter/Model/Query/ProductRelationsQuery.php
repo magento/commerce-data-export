@@ -52,5 +52,4 @@ class ProductRelationsQuery
         );
         return array_filter($connection->fetchCol($select));
     }
-
 }
