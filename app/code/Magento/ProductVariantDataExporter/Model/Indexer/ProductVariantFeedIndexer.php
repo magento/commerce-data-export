@@ -17,6 +17,11 @@ use Magento\Framework\DB\Select;
 class ProductVariantFeedIndexer extends FeedIndexer
 {
     /**
+     * Product variant feed indexer id
+     */
+    public const INDEXER_ID = 'catalog_data_exporter_product_variants';
+
+    /**
      * Get Ids select
      *
      * @param int $lastKnownId
