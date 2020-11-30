@@ -76,35 +76,30 @@ class ReindexVariantsAfterSave
     ): ResourceProduct {
         if (\in_array($product->getTypeId(), [Type::TYPE_SIMPLE, Type::TYPE_VIRTUAL], true)) {
             $select = $this->linkedAttributesQuery->getQuery((int)$product->getId());
-            $connection = $this->resourceConnection->getConnection();
-            $configurableLinks = $connection->query($select)->fetchAll();
-            $changedConfigurableIds = [];
-            foreach ($configurableLinks as $link) {
-                if ($product->getOrigData($link['attributeCode']) !== $product->getData($link['attributeCode'])) {
-                    $changedConfigurableIds[] = $link['parentId'];
+            $linkedAttributes = $this->resourceConnection->getConnection()->fetchCol($select);
+            foreach ($linkedAttributes as $linkAttribute) {
+                if ($product->getOrigData($linkAttribute) !== $product->getData($linkAttribute)) {
+                    $this->reindexVariant((int)$product->getId());
+                    break;
                 }
-            }
-            if (!empty($changedConfigurableIds)) {
-                $this->reindexVariants($changedConfigurableIds);
             }
         }
         return $result;
     }
 
     /**
-     * Reindex product variants
+     * Reindex product variant
      *
-     * @param int[] $ids
+     * @param int $id
      * @return void
      */
-    private function reindexVariants(array $ids): void
+    private function reindexVariant(int $id): void
     {
         $indexer = $this->indexerRegistry->get(ProductVariantFeedIndexer::INDEXER_ID);
-
         if ($indexer->isScheduled()) {
-            $this->updateChangeLog->execute($indexer->getViewId(), $ids);
+            $this->updateChangeLog->execute($indexer->getViewId(), [$id]);
         } else {
-            $indexer->reindexList($ids);
+            $indexer->reindexRow($id);
         }
     }
 }

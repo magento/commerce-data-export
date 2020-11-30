@@ -29,7 +29,7 @@ class ProductVariantFeedIndexer extends FeedIndexer
      */
     private function getIdsSelect(int $lastKnownId): Select
     {
-        $sourceTableField = $this->feedIndexMetadata->getSourceTableField();
+        $sourceTableField = $this->feedIndexMetadata->getRelationsTableChildField();
         $columnExpression = sprintf(
             's.%s',
             $sourceTableField
@@ -38,9 +38,9 @@ class ProductVariantFeedIndexer extends FeedIndexer
         $connection = $this->resourceConnection->getConnection();
         return $connection->select()
             ->from(
-                ['s' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getSourceTableName())],
+                ['s' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getRelationsTableName())],
                 [
-                    $this->feedIndexMetadata->getFeedTableParentField() => 's.' . $sourceTableField
+                    $this->feedIndexMetadata->getFeedTableChildField() => 's.' . $sourceTableField
                 ]
             )
             ->where($whereClause, $lastKnownId)
@@ -64,7 +64,7 @@ class ProductVariantFeedIndexer extends FeedIndexer
                 $continueReindex = false;
             } else {
                 yield $ids;
-                $lastKnownId = end($ids)[$this->feedIndexMetadata->getFeedTableParentField()];
+                $lastKnownId = end($ids)[$this->feedIndexMetadata->getFeedTableChildField()];
             }
         }
     }
@@ -92,7 +92,7 @@ class ProductVariantFeedIndexer extends FeedIndexer
     {
         $arguments = [];
         foreach ($ids as $id) {
-            $arguments[] = [$this->feedIndexMetadata->getFeedTableParentField() => $id];
+            $arguments[] = [$this->feedIndexMetadata->getFeedTableChildField() => $id];
         }
         $this->process($arguments);
     }
@@ -105,7 +105,7 @@ class ProductVariantFeedIndexer extends FeedIndexer
      */
     public function executeRow($id): void
     {
-        $this->process([[$this->feedIndexMetadata->getFeedTableParentField() => $id]]);
+        $this->process([[$this->feedIndexMetadata->getFeedTableChildField() => $id]]);
     }
 
     /**
@@ -119,7 +119,7 @@ class ProductVariantFeedIndexer extends FeedIndexer
     {
         $arguments = [];
         foreach ($ids as $id) {
-            $arguments[] = [$this->feedIndexMetadata->getFeedTableParentField() => $id];
+            $arguments[] = [$this->feedIndexMetadata->getFeedTableChildField() => $id];
         }
 
         $this->process($arguments);
@@ -133,8 +133,8 @@ class ProductVariantFeedIndexer extends FeedIndexer
      */
     private function process($indexData = []): void
     {
-        $parentIds = \array_column($indexData, $this->feedIndexMetadata->getFeedTableParentField());
-        $deleteIds = $this->getRemovedIds($parentIds);
+        $childIds = \array_column($indexData, $this->feedIndexMetadata->getFeedTableChildField());
+        $deleteIds = $this->getRemovedIds($childIds);
         $data = $this->processor->process($this->feedIndexMetadata->getFeedName(), $indexData);
         $chunks = array_chunk($data, $this->feedIndexMetadata->getBatchSize());
         $connection = $this->resourceConnection->getConnection();
@@ -184,12 +184,12 @@ class ProductVariantFeedIndexer extends FeedIndexer
     }
 
     /**
-     * Get removed variant ids by parent product id by comparing indexer entries with relations table.
+     * Get removed variant ids by variant product id by comparing indexer entries with relations table.
      *
-     * @param array $parentIds
+     * @param array $childIds
      * @return array
      */
-    private function getRemovedIds(array $parentIds): array
+    private function getRemovedIds(array $childIds): array
     {
         $connection = $this->getConnection();
         $joinField = $connection->getAutoIncrementField(
@@ -225,9 +225,9 @@ class ProductVariantFeedIndexer extends FeedIndexer
             ->where(
                 \sprintf(
                     'index.%s IN (?)',
-                    $this->feedIndexMetadata->getFeedTableParentField()
+                    $this->feedIndexMetadata->getFeedTableChildField()
                 ),
-                $parentIds
+                $childIds
             )
             ->where('index.is_deleted = 0')
             ->where(\sprintf('cpr.%s IS NULL', $this->feedIndexMetadata->getRelationsTableParentField()));

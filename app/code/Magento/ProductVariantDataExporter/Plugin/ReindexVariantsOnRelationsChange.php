@@ -7,10 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Plugin;
 
-use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\ResourceModel\Product\Relation;
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\EntityManager\MetadataPool;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer;
 use Magento\ProductVariantDataExporter\Model\Indexer\UpdateChangeLog;
@@ -32,16 +29,6 @@ class ReindexVariantsOnRelationsChange
     private $updateChangeLog;
 
     /**
-     * @var MetadataPool
-     */
-    private $metadataPool;
-
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
-
-    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -49,21 +36,15 @@ class ReindexVariantsOnRelationsChange
     /**
      * @param IndexerRegistry $indexerRegistry
      * @param UpdateChangeLog $updateChangeLog
-     * @param MetadataPool $metadataPool
-     * @param ResourceConnection $resourceConnection
      * @param LoggerInterface $logger
      */
     public function __construct(
         IndexerRegistry $indexerRegistry,
         UpdateChangeLog $updateChangeLog,
-        MetadataPool $metadataPool,
-        ResourceConnection $resourceConnection,
         LoggerInterface $logger
     ) {
         $this->indexerRegistry = $indexerRegistry;
         $this->updateChangeLog = $updateChangeLog;
-        $this->metadataPool = $metadataPool;
-        $this->resourceConnection = $resourceConnection;
         $this->logger = $logger;
     }
 
@@ -85,8 +66,7 @@ class ReindexVariantsOnRelationsChange
     ): Relation {
         if (!empty($childIds)) {
             try {
-                $parentId = $this->getProductEntityId($parentLinkId);
-                $this->addCommitCallback($subject, (int)$parentId);
+                $this->addCommitCallback($subject, $childIds);
             } catch (\Exception $e) {
                 $this->logger->error(sprintf(
                     'Failed to reindex product variants after product relation addition: "%s"',
@@ -115,8 +95,7 @@ class ReindexVariantsOnRelationsChange
     ): Relation {
         if (!empty($childIds)) {
             try {
-                $parentId = $this->getProductEntityId($parentLinkId);
-                $this->addCommitCallback($subject, (int)$parentId);
+                $this->addCommitCallback($subject, $childIds);
             } catch (\Exception $e) {
                 $this->logger->error(sprintf(
                     'Failed to reindex product variants after product relation removal: "%s"',
@@ -131,56 +110,22 @@ class ReindexVariantsOnRelationsChange
      * Reindex product variants after commit
      *
      * @param Relation $subject
-     * @param int $id
+     * @param array $childIds
      * @return void
      */
-    private function addCommitCallback(Relation $subject, int $id): void
+    private function addCommitCallback(Relation $subject, array $childIds): void
     {
         $indexer = $this->indexerRegistry->get(ProductVariantFeedIndexer::INDEXER_ID);
         $viewId = $indexer->getViewId();
 
         if ($indexer->isScheduled()) {
-            $subject->addCommitCallback(function () use ($viewId, $id) {
-                $this->updateChangeLog->execute($viewId, [$id]);
+            $subject->addCommitCallback(function () use ($viewId, $childIds) {
+                $this->updateChangeLog->execute($viewId, $childIds);
             });
         } else {
-            $subject->addCommitCallback(function () use ($indexer, $id) {
-                $indexer->reindexRow($id);
+            $subject->addCommitCallback(function () use ($indexer, $childIds) {
+                $indexer->reindexList($childIds);
             });
         }
-    }
-
-    /**
-     * Get product entity id from product link id
-     *
-     * @param int $linkId
-     * @return int
-     * @throws \Exception
-     */
-    private function getProductEntityId(int $linkId): int
-    {
-        if (($linkField = $this->getProductEntityLinkField()) !== 'entity_id') {
-            $connection = $this->resourceConnection->getConnection();
-            $select = $connection->select()->from(
-                ['cpe' => $this->resourceConnection->getTableName('catalog_product_entity')],
-                ['entity_id']
-            )->where(
-                sprintf('%1$s = ?', $linkField),
-                $linkId
-            );
-            return (int)$connection->fetchOne($select);
-        }
-        return $linkId;
-    }
-
-    /**
-     * Get product entity link field
-     *
-     * @return string
-     * @throws \Exception
-     */
-    private function getProductEntityLinkField(): string
-    {
-        return $this->metadataPool->getMetadata(ProductInterface::class)->getLinkField();
     }
 }

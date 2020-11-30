@@ -34,16 +34,16 @@ class ProductRelationsQuery
      * @param int[] $ids
      * @return array
      */
-    public function getRelationsParentIds(array $ids): array
+    public function getRelationsChildIds(array $ids): array
     {
         $connection = $this->resourceConnection->getConnection();
         $select = $connection->select()->from(
             ['cpr' => $this->resourceConnection->getTableName('catalog_product_relation')],
-            []
+            ['child_id']
         )->join(
             ['cpe' => $catalogProductTable = $this->resourceConnection->getTableName('catalog_product_entity')],
             \sprintf('cpe.%1$s = cpr.parent_id', $connection->getAutoIncrementField($catalogProductTable)),
-            ['entity_id']
+            []
         )->where(
             sprintf(
                 'cpe.entity_id IN ("%1$s") OR cpr.child_id IN ("%1$s")',
@@ -52,4 +52,5 @@ class ProductRelationsQuery
         );
         return array_filter($connection->fetchCol($select));
     }
+
 }

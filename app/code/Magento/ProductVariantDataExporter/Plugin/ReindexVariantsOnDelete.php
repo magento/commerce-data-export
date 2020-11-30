@@ -63,7 +63,7 @@ class ReindexVariantsOnDelete
         \Closure $proceed,
         AbstractModel $product
     ): ResourceProduct {
-        $ids = $this->productRelationsQuery->getRelationsParentIds([$product->getId()]);
+        $ids = $this->productRelationsQuery->getRelationsChildIds([$product->getId()]);
         $result = $proceed($product);
         if (!empty($ids)) {
             $this->reindexVariants($ids);
