@@ -423,7 +423,7 @@ class Application
             $sequence = $objectManager->get(\Magento\TestFramework\Db\Sequence::class);
             $sequence->generateSequences();
         }
-        $this->createDynamicTables();
+        //$this->createDynamicTables();
         $objectManager->create(\Magento\TestFramework\Config::class, ['configPath' => $this->globalConfigFile])
             ->rewriteAdditionalConfig();
     }
