@@ -68,15 +68,22 @@ class EntityDeleteEvent implements ProductPriceEventInterface
      */
     public function retrieve(array $indexData): array
     {
-        $events = [];
+        $result = [];
+        $queryArguments = [];
 
         try {
-            $select = $this->entityDelete->getQuery($indexData['entity_id']);
-            $result = $this->resourceConnection->getConnection()->fetchOne($select);
-
-            if (false === $result) {
-                $events[] = $this->getEventData($indexData);
+            foreach ($indexData as $data) {
+                $queryArguments[] = $data['entity_id'];
             }
+
+            $select = $this->entityDelete->getQuery($queryArguments);
+            $cursor = $this->resourceConnection->getConnection()->query($select);
+
+            while ($row = $cursor->fetch()) {
+                $result[$row['entity_id']] = $row;
+            }
+
+            $events = $this->getEventsData($indexData, $result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve entity delete event data.');
@@ -86,13 +93,34 @@ class EntityDeleteEvent implements ProductPriceEventInterface
     }
 
     /**
-     * Retrieve event data.
+     * Retrieve prices event data
+     *
+     * @param array $indexData
+     * @param array $actualData
+     *
+     * @return array
+     */
+    private function getEventsData(array $indexData, array $actualData): array
+    {
+        $events = [];
+
+        foreach ($indexData as $data) {
+            if (!isset($actualData[$data['entity_id']])) {
+                $events[] = $this->buildEventData($data);
+            }
+        }
+
+        return $events;
+    }
+
+    /**
+     * Build event data.
      *
      * @param array $indexData
      *
      * @return array
      */
-    private function getEventData(array $indexData): array
+    private function buildEventData(array $indexData): array
     {
         return $this->eventBuilder->build(
             $this->eventType,

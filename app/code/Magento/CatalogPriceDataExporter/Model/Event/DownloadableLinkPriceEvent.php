@@ -78,12 +78,24 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
      */
     public function retrieve(array $indexData): array
     {
-        $events = [];
+        $result = [];
+        $queryArguments = [];
 
         try {
-            $select = $this->downloadableLinkPrice->getQuery($indexData['entity_id'], $indexData['scope_id']);
-            $result = $this->resourceConnection->getConnection()->fetchRow($select) ?: null;
-            $events[] = $this->getEventData($indexData, $result);
+            foreach ($indexData as $data) {
+                $queryArguments[$data['scope_id']][] = $data['entity_id'];
+            }
+
+            foreach ($queryArguments as $scopeId => $ids) {
+                $select = $this->downloadableLinkPrice->getQuery($ids, $scopeId);
+                $cursor = $this->resourceConnection->getConnection()->query($select);
+
+                while ($row = $cursor->fetch()) {
+                    $result[$row['entity_id']][$scopeId] = $row['value'];
+                }
+            }
+
+            $events = $this->getEventsData($indexData, $result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve downloadable link price data.');
@@ -93,19 +105,41 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
     }
 
     /**
-     * Retrieve event data.
+     * Retrieve prices event data
      *
      * @param array $indexData
-     * @param array|null $result
+     * @param array $actualData
      *
      * @return array
      *
      * @throws LocalizedException
      */
-    private function getEventData(array $indexData, ?array $result): array
+    private function getEventsData(array $indexData, array $actualData): array
+    {
+        $events = [];
+
+        foreach ($indexData as $data) {
+            $value = $actualData[$data['entity_id']][$data['scope_id']] ?? null;
+            $events[] = $this->buildEventData($data, $value);
+        }
+
+        return $events;
+    }
+
+    /**
+     * Build event data.
+     *
+     * @param array $indexData
+     * @param string|null $value
+     *
+     * @return array
+     *
+     * @throws LocalizedException
+     */
+    private function buildEventData(array $indexData, ?string $value): array
     {
         $scopeCode = $this->storeManager->getWebsite($indexData['scope_id'])->getCode();
-        $eventType = null === $result ? self::EVENT_DOWNLOADABLE_LINK_PRICE_DELETED :
+        $eventType = null === $value ? self::EVENT_DOWNLOADABLE_LINK_PRICE_DELETED :
             self::EVENT_DOWNLOADABLE_LINK_PRICE_CHANGED;
 
         return $this->eventBuilder->build(
@@ -113,7 +147,7 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
             $this->downloadableLinksOptionUid->resolve($indexData['entity_id']),
             $scopeCode,
             null,
-            $result['value'] ?? null
+            $value
         );
     }
 }

@@ -31,12 +31,12 @@ class DownloadableLinkPrice
     /**
      * Retrieve query for custom option price.
      *
-     * @param string $linkId
-     * @param string $scopeId
+     * @param array $linkIds
+     * @param int $scopeId
      *
      * @return Select
      */
-    public function getQuery(string $linkId, string $scopeId): Select
+    public function getQuery(array $linkIds, int $scopeId): Select
     {
         $connection = $this->resourceConnection->getConnection();
 
@@ -44,10 +44,11 @@ class DownloadableLinkPrice
             ->from(['dlp' => $this->resourceConnection->getTableName('downloadable_link_price')], [])
             ->columns(
                 [
+                    'entity_id' => 'dlp.link_id',
                     'value' => 'dlp.price',
                 ]
             )
-            ->where('dlp.link_id = ?', $linkId)
+            ->where('dlp.link_id in (?)', $linkIds)
             ->where('dlp.website_id = ?', $scopeId);
     }
 }

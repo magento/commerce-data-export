@@ -69,11 +69,22 @@ class TierPriceEvent implements ProductPriceEventInterface
      */
     public function retrieve(array $indexData): array
     {
-        $events = [];
+        $queryArguments = [];
+        $result = [];
 
         try {
-            $result = $this->resourceConnection->getConnection()->fetchRow($this->tierPrice->getQuery($indexData)) ?: null;
-            $events[] = $this->getEventData($indexData, $result);
+            foreach ($indexData as $data) {
+                $queryArguments[] = $data['value_id'];
+            }
+
+            $select = $this->tierPrice->getQuery($queryArguments);
+            $cursor = $this->resourceConnection->getConnection()->query($select);
+
+            while ($row = $cursor->fetch()) {
+                $result[$row['value_id']] = $row;
+            }
+
+            $events = $this->getEventData($indexData, $result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product tier price data.');
@@ -83,7 +94,28 @@ class TierPriceEvent implements ProductPriceEventInterface
     }
 
     /**
-     * Retrieve event data.
+     * Retrieve prices event data
+     *
+     * @param array $indexData
+     * @param array $actualData
+     *
+     * @return array
+     *
+     * @throws LocalizedException
+     */
+    private function getEventData(array $indexData, array $actualData)
+    {
+        $events = [];
+
+        foreach ($indexData as $data) {
+            $events[] = $this->buildEventData($data, $actualData[$data['value_id']] ?? null);
+        }
+
+        return $events;
+    }
+
+    /**
+     * Build event data.
      *
      * @param array $indexData
      * @param array|null $result
@@ -92,7 +124,7 @@ class TierPriceEvent implements ProductPriceEventInterface
      *
      * @throws LocalizedException
      */
-    private function getEventData(array $indexData, ?array $result): array
+    private function buildEventData(array $indexData, ?array $result): array
     {
         $additionalData = [];
         $scopeCode = $this->storeManager->getWebsite($indexData['scope_id'])->getCode();

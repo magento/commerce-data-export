@@ -45,13 +45,13 @@ class EntityDelete
     }
 
     /**
-     * Retrieve query for deleted entity.
+     * Retrieve query for deleted entities.
      *
-     * @param string $optionId
+     * @param array $optionIds
      *
      * @return Select
      */
-    public function getQuery(string $optionId): Select
+    public function getQuery(array $optionIds): Select
     {
         $connection = $this->resourceConnection->getConnection();
 
@@ -59,9 +59,9 @@ class EntityDelete
             ->from($this->resourceConnection->getTableName($this->tableName), [])
             ->columns(
                 [
-                    'is_active' => new Expression(1),
+                    'entity_id' => $this->entityColumnName,
                 ]
             )
-            ->where(\sprintf('%s = ?', $this->entityColumnName), $optionId);
+            ->where(\sprintf('%s in (?)', $this->entityColumnName), $optionIds);
     }
 }
