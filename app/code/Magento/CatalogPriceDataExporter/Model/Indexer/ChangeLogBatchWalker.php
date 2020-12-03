@@ -42,7 +42,7 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
      * @inheritdoc
      * @throws \Exception
      */
-    public function walk(ChangelogInterface $changelog, int $fromVersionId, int $toVersion, int $batchSize)
+    public function walk(ChangelogInterface $changelog, int $fromVersionId, int $toVersion, int $batchSize): array
     {
         $connection = $this->resourceConnection->getConnection();
         $changelogTableName = $this->resourceConnection->getTableName($changelog->getName());
@@ -73,7 +73,7 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                     'cl.all_groups',
                     'cl.customer_group_id',
                     'cl.qty',
-                    'cl.variation_id',
+                    'cl.value_id',
                 ]
             )
             ->columns(
@@ -85,7 +85,7 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                     'all_groups' => 'cl.all_groups',
                     'customer_group_id' => 'cl.customer_group_id',
                     'qty' => 'cl.qty',
-                    'variation_id' => 'cl.variation_id',
+                    'value_id' => 'cl.value_id',
                 ]
             )
             ->limit($batchSize);

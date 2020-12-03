@@ -30,13 +30,13 @@ class ProductPrice
     /**
      * Retrieve query for product price.
      *
-     * @param string $entityId
-     * @param string $scopeId
+     * @param array $ids
+     * @param int $scopeId
      * @param array $attributes
      *
      * @return Select
      */
-    public function getQuery(string $entityId, string $scopeId, array $attributes): Select
+    public function getQuery(array $ids, int $scopeId, array $attributes): Select
     {
         $connection = $this->resourceConnection->getConnection();
         $productEntityTable = $this->resourceConnection->getTableName('catalog_product_entity');
@@ -56,12 +56,13 @@ class ProductPrice
             )
             ->columns(
                 [
+                    'entity_id' => 'cpe.entity_id',
                     'attribute_code' => 'eav.attribute_code',
                     'value' => 'cped.value',
                 ]
             )
             ->where('eav.attribute_code IN (?)', $attributes)
             ->where('cped.store_id = ?', $scopeId)
-            ->where('cpe.entity_id = ?', $entityId);
+            ->where('cpe.entity_id IN (?)', $ids);
     }
 }

@@ -5,7 +5,8 @@
  * See COPYING.txt for license details.
  */
 -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
     <view id="catalog_data_exporter_product_prices"
           class="Magento\CatalogPriceDataExporter\Model\Indexer\ProductPricesFeedIndexer"
           group="indexer"
@@ -28,6 +29,7 @@
                     <column name="all_groups" cl_name="all_groups" />
                     <column name="customer_group_id" cl_name="customer_group_id" />
                     <column name="qty" cl_name="qty" />
+                    <column name="value_id" cl_name="value_id" />
                     <column name="price_type" cl_name="price_type" constant="tier_price" />
                 </additionalColumns>
             </table>
@@ -63,7 +65,7 @@
             <!-- Bundle variation add / remove -->
             <table name="catalog_product_bundle_selection" entity_column="parent_product_id">
                 <additionalColumns>
-                    <column name="product_id" cl_name="variation_id" />
+                    <column name="product_id" cl_name="value_id" />
                     <column name="price_type" cl_name="price_type" constant="bundle_variation" />
                 </additionalColumns>
             </table>
@@ -71,7 +73,7 @@
             <!-- Configurable variation add / remove -->
             <table name="catalog_product_super_link" entity_column="parent_id">
                 <additionalColumns>
-                    <column name="product_id" cl_name="variation_id" />
+                    <column name="product_id" cl_name="value_id" />
                     <column name="price_type" cl_name="price_type" constant="configurable_variation" />
                 </additionalColumns>
             </table>

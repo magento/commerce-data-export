@@ -70,20 +70,26 @@ class ProductPriceEvent implements ProductPriceEventInterface
     public function retrieve(array $indexData): array
     {
         $result = [];
-        $events = [];
+        $queryArguments = [];
 
         try {
-            $attributes = \array_unique(\explode(',', $indexData['attributes']));
-            $select = $this->productPrice->getQuery($indexData['entity_id'], $indexData['scope_id'], $attributes);
-            $cursor = $this->resourceConnection->getConnection()->query($select);
-
-            while ($row = $cursor->fetch()) {
-                $result[$row['attribute_code']] = $row;
+            foreach ($indexData as &$data) {
+                $data['attributes'] = \array_unique(\explode(',', $data['attributes']));
+                $queryArguments[$data['scope_id']]['ids'][] = $data['entity_id'];
+                $queryArguments[$data['scope_id']]['attributes'][] = $data['attributes'];
             }
 
-            foreach ($attributes as $attributeCode) {
-                $events[] = $this->getEventData($attributeCode, $indexData, $result[$attributeCode]['value'] ?? null);
+            foreach ($queryArguments as $scopeId => $queryData) {
+                $attributes = \array_merge($queryData['attributes']);
+                $select = $this->productPrice->getQuery($queryData['ids'], $scopeId, $attributes);
+                $cursor = $this->resourceConnection->getConnection()->query($select);
+
+                while ($row = $cursor->fetch()) {
+                    $result[$row['entity_id']][$scopeId][$row['attribute_code']] = $row['value'];
+                }
             }
+
+            $events = $this->getEventsData($indexData, $result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product price data.');
@@ -93,7 +99,31 @@ class ProductPriceEvent implements ProductPriceEventInterface
     }
 
     /**
-     * Retrieve event data.
+     * Retrieve prices event data
+     *
+     * @param array $indexData
+     * @param array $actualData
+     *
+     * @return array
+     *
+     * @throws NoSuchEntityException
+     */
+    private function getEventsData(array $indexData, array $actualData): array
+    {
+        $events = [];
+
+        foreach ($indexData as $data) {
+            foreach ($data['attributes'] as $attributeCode) {
+                $value = $actualData[$data['entity_id']][$data['scope_id']][$attributeCode] ?? null;
+                $events[] = $this->buildEventData($attributeCode, $data, $value);
+            }
+        }
+
+        return $events;
+    }
+
+    /**
+     * Build event data.
      *
      * @param string $attributeCode
      * @param array $indexData
@@ -103,7 +133,7 @@ class ProductPriceEvent implements ProductPriceEventInterface
      *
      * @throws NoSuchEntityException
      */
-    private function getEventData(string $attributeCode, array $indexData, ?string $attributeValue): array
+    private function buildEventData(string $attributeCode, array $indexData, ?string $attributeValue): array
     {
         $scopeCode = $this->storeManager->getStore($indexData['scope_id'])->getWebsite()->getCode();
         $eventType = null === $attributeValue ? self::EVENT_PRICE_DELETED : self::EVENT_PRICE_CHANGED;

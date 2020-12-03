@@ -66,17 +66,35 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     {
         $events = [];
 
-        // TODO handle equal events.
-        foreach ($ids as $data) {
-            if (!\is_array($data)) {
-                continue; // TODO throw exception / log error
-            }
+        $indexData = $this->prepareIndexData($ids);
 
-            $events[] = $this->eventPool->getEventResolver($data['price_type'])->retrieve($data);
+        foreach ($indexData as $priceType => $data) {
+            $events[] = $this->eventPool->getEventResolver($priceType)->retrieve($data);
         }
 
         $events = !empty($events) ? \array_merge(...$events) : [];
 
         $this->logger->info('Product price events.', ['events' => $events]);
+    }
+
+    /**
+     * Prepare index data
+     *
+     * @param array $indexData
+     *
+     * @return array
+     */
+    private function prepareIndexData(array $indexData): array
+    {
+        $output = [];
+        foreach ($indexData as $data) {
+            if (!\is_array($data)) {
+                continue; // TODO throw exception / log error
+            }
+
+            $output[$data['price_type']][] = $data;
+        }
+
+        return $output;
     }
 }
