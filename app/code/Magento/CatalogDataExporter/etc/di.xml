@@ -267,15 +267,22 @@
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductIndexerCallbackInterface"
-                 type="Magento\DataExporter\Model\Indexer\FeedIndexerCallbackInterface"/>
-    <preference for="Magento\CatalogDataExporter\Model\Indexer\ProductIndexerCallbackInterface"
-                type="Magento\DataExporter\Model\Indexer\EmptyIndexerCallback"/>
+
+    <virtualType name="Magento\CatalogExport\Model\Indexer\ProductIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">catalog.export.product.data</argument>
+            <argument name="updatedEventType" xsi:type="string">products_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">products_deleted</argument>
+        </arguments>
+    </virtualType>
+
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductDataSerializer</argument>
-            <argument name="feedIndexerCallback" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductIndexerCallbackInterface</argument>
+            <argument name="feedIndexerCallback" xsi:type="object">Magento\CatalogExport\Model\Indexer\ProductIndexerCallback</argument>
             <argument name="callbackSkipAttributes" xsi:type="array">
                 <item name="store_view_code" xsi:type="string">storeViewCode</item>
                 <item name="store_code" xsi:type="string">storeCode</item>
@@ -412,15 +419,22 @@
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\CategoryIndexerCallbackInterface"
-                 type="Magento\DataExporter\Model\Indexer\FeedIndexerCallbackInterface"/>
-    <preference for="Magento\CatalogDataExporter\Model\Indexer\CategoryIndexerCallbackInterface"
-                type="Magento\DataExporter\Model\Indexer\EmptyIndexerCallback" />
+
+    <virtualType name="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">catalog.export.category.data</argument>
+            <argument name="updatedEventType" xsi:type="string">categories_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">categories_deleted</argument>
+        </arguments>
+    </virtualType>
+
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\CategoryDataSerializer</argument>
-            <argument name="feedIndexerCallback" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\CategoryIndexerCallbackInterface</argument>
+            <argument name="feedIndexerCallback" xsi:type="object">Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback</argument>
             <argument name="callbackSkipAttributes" xsi:type="array">
                 <item name="store_view_code" xsi:type="string">storeViewCode</item>
                 <item name="category_id" xsi:type="string">categoryId</item>
