@@ -15,6 +15,13 @@
             length="64"
             comment="Parent product Id"
         />
+        <column
+            xsi:type="varchar"
+            name="product_id"
+            nullable="false"
+            length="64"
+            comment="Variant product Id"
+        />
         <column xsi:type="varchar"
                 name="id"
                 nullable="false"
