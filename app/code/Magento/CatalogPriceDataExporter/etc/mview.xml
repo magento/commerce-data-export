@@ -62,14 +62,6 @@
                 </additionalColumns>
             </table>
 
-            <!-- Bundle variation add / remove -->
-            <table name="catalog_product_bundle_selection" entity_column="product_id">
-                <additionalColumns>
-                    <column name="parent_product_id" cl_name="parent_id"/>
-                    <column name="price_type" cl_name="price_type" constant="bundle_variation"/>
-                </additionalColumns>
-            </table>
-
             <!-- Configurable variation add / remove -->
             <table name="catalog_product_super_link" entity_column="product_id">
                 <additionalColumns>
@@ -78,5 +70,14 @@
                 </additionalColumns>
             </table>
         </subscriptions>
+
+        <!-- Bundle variation add / remove -->
+        <!-- todo: uncomment when trigger issue resolved. -->
+<!--        <table name="catalog_product_bundle_selection" entity_column="product_id">-->
+<!--            <additionalColumns>-->
+<!--                <column name="parent_product_id" cl_name="parent_id"/>-->
+<!--                <column name="price_type" cl_name="price_type" constant="bundle_variation"/>-->
+<!--            </additionalColumns>-->
+<!--        </table>-->
     </view>
 </config>
