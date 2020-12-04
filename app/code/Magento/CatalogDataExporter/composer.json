@@ -27,6 +27,7 @@
     "magento/module-data-exporter": "*",
     "magento/module-customer": "*",
     "magento/module-downloadable": "*",
-    "magento/module-indexer": "*"
+    "magento/module-indexer": "*",
+    "magento/module-catalog-export": "*"
   }
 }
