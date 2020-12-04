@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurationDataExporter\Test\Integration\ConfigExport;
 
-use PHPUnit\Framework\TestCase;
 use Magento\TestFramework\Helper\Bootstrap;
+use PHPUnit\Framework\TestCase;
 
 class ConfigurationExportTest extends TestCase
 {
@@ -17,7 +17,6 @@ class ConfigurationExportTest extends TestCase
     const TOPIC_NAME = 'system.configuration.export';
     const TEST_CONFIG_PATH = 'section/group/field';
     const TEST_CONFIG_VALUE = 'test value';
-    const TEST_CONFIG_VALUE_CHANGED = 'test value changed';
     const TEST_CONFIG_SCOPE = 'stores';
     const TEST_CONFIG_SCOPE_ID = 1;
 
@@ -47,6 +46,7 @@ class ConfigurationExportTest extends TestCase
         $this->configValueFactory = $objectManager->create(\Magento\Config\Model\Config\Factory::class);
         $this->queueRepository = $objectManager->create(\Magento\Framework\MessageQueue\QueueRepository::class);
         $this->messageEncoder = $objectManager->create(\Magento\Framework\MessageQueue\MessageEncoder::class);
+        $this->removeConfigTestRecoedrsFromDb();
     }
 
     /**
@@ -95,13 +95,7 @@ class ConfigurationExportTest extends TestCase
             $config->setDataByPath($item['path'], $item['value']);
         }
 
-//        /** @var \Magento\Framework\App\Cache\TypeListInterface $cache */
-//        $cache = Bootstrap::getObjectManager()->get(\Magento\Framework\App\Cache\TypeListInterface::class);
-//        $cache->invalidate(\Magento\Framework\App\Cache\Type\Config::TYPE_IDENTIFIER);
-
         $config->save();
-//        $config->setDataByPath(self::TEST_CONFIG_PATH, self::TEST_CONFIG_VALUE_CHANGED);
-//        $config->save();
 
         /** @var \Magento\ConfigurationDataExporter\Api\WhitelistProviderInterface $whitelistPool */
         $whitelistPool = Bootstrap::getObjectManager()
@@ -182,5 +176,9 @@ class ConfigurationExportTest extends TestCase
                 ]
             ]
         ];
+    }
+
+    private function removeConfigTestRecordsFromDb()
+    {
     }
 }
