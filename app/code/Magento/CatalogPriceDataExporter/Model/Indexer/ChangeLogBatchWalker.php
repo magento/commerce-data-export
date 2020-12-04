@@ -59,6 +59,11 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                 'cl.attribute_id = eav.attribute_id',
                 []
             )
+            ->joinLeft(
+                ['cpe' => $productEntityTable = $this->resourceConnection->getTableName('catalog_product_entity')],
+                \sprintf('cpe.%s = cl.parent_id', $connection->getAutoIncrementField($productEntityTable)),
+                []
+            )
             ->where('version_id > ?', $fromVersionId)
             ->where('version_id <= ?', $toVersion)
             ->where(\implode(' OR ', [
@@ -70,9 +75,6 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                     'cl.' . $changelog->getColumnName(),
                     'cl.scope_id',
                     'cl.price_type',
-                    'cl.all_groups',
-                    'cl.customer_group_id',
-                    'cl.qty',
                     'cl.value_id',
                 ]
             )
@@ -86,6 +88,7 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                     'customer_group_id' => 'cl.customer_group_id',
                     'qty' => 'cl.qty',
                     'value_id' => 'cl.value_id',
+                    'parent_id' => 'cpe.entity_id',
                 ]
             )
             ->limit($batchSize);

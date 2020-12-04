@@ -55,17 +55,37 @@ class ComplexProductLink
     /**
      * Retrieve query for complex product.
      *
-     * @param string $entityId
-     * @param string $variationId
+     * @param int[] $parentIds
+     * @param int[] $variationIds
      *
      * @return Select
      */
-    public function getQuery(string $entityId, string $variationId): Select
+    public function getQuery(array $parentIds, array $variationIds = []): Select
     {
-        return $this->resourceConnection->getConnection()
+        $connection = $this->resourceConnection->getConnection();
+        $productEntityTable = $this->resourceConnection->getTableName('catalog_product_entity');
+        $joinField = $connection->getAutoIncrementField($productEntityTable);
+
+        $select = $this->resourceConnection->getConnection()
             ->select()
-            ->from($this->resourceConnection->getTableName($this->linkTable), ['is_active' => new Expression(1)])
-            ->where(\sprintf('%s = ?', $this->parentColumn), $entityId)
-            ->where(\sprintf('%s = ?', $this->variationColumn), $variationId);
+            ->from(['cpe' => $productEntityTable], [])
+            ->join(
+                ['link' => $this->resourceConnection->getTableName($this->linkTable)],
+                \sprintf('cpe.%s = link.%s', $joinField, $this->parentColumn),
+                []
+            )
+            ->columns(
+                [
+                    'parent_id' => 'cpe.entity_id',
+                    'variation_id' => \sprintf('link.%s', $this->variationColumn),
+                ]
+            )
+            ->where('cpe.entity_id in (?)', $parentIds);
+
+        if (!empty($variationIds)) {
+            $select->where(\sprintf('link.%s in (?)', $this->variationColumn), $variationIds);
+        }
+
+        return $select;
     }
 }

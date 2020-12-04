@@ -68,12 +68,24 @@ class ComplexProductEvent implements ProductPriceEventInterface
      */
     public function retrieve(array $indexData): array
     {
-        $events = [];
+        $result = [];
+        $parentIds = [];
+        $variationIds = [];
 
         try {
-            $select = $this->complexProductLink->getQuery($indexData['entity_id'], $indexData['variation_id']);
-            $result = $this->resourceConnection->getConnection()->fetchRow($select) ?: null;
-            $events[] = $this->getEventData($indexData, $result);
+            foreach ($indexData as $data) {
+                $parentIds[] = $data['parent_id'];
+                $variationIds[] = $data['entity_id'];
+            }
+
+            $select = $this->complexProductLink->getQuery($parentIds, $variationIds);
+            $cursor = $this->resourceConnection->getConnection()->query($select);
+
+            while ($row = $cursor->fetch()) {
+                $result[$row['parent_id']][] = $row['variation_id'];
+            }
+
+            $events = $this->getEventData($indexData, $result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve complex product link data.');
@@ -83,25 +95,47 @@ class ComplexProductEvent implements ProductPriceEventInterface
     }
 
     /**
-     * Retrieve event data.
+     * Retrieve prices event data
      *
      * @param array $indexData
-     * @param array|null $result
+     * @param array $actualData
      *
      * @return array
      */
-    private function getEventData(array $indexData, ?array $result): array
+    private function getEventData(array $indexData, array $actualData): array
+    {
+        $events = [];
+
+        foreach ($indexData as $data) {
+            $actualVariations = $actualData[$data['parent_id']] ?? [];
+            $event = \in_array($data['entity_id'], $actualVariations) ? self::EVENT_VARIATION_CHANGED
+                : self::EVENT_VARIATION_DELETED;
+
+            $events[] = $this->buildEventData($data['parent_id'], $data['entity_id'], $event);
+        }
+
+        return $events;
+    }
+
+    /**
+     * Build event data.
+     *
+     * @param string $parentId
+     * @param string $variationId
+     * @param string $eventType
+     *
+     * @return array
+     */
+    private function buildEventData(string $parentId, string $variationId, string $eventType): array
     {
         $additionalData = [
             'meta' => ['price_type' => $this->linkType],
-            'data' => ['variation_id' => $indexData['variation_id']]
+            'data' => ['variation_id' => $variationId]
         ];
-
-        $eventType = null === $result ? self::EVENT_VARIATION_DELETED : self::EVENT_VARIATION_CHANGED;
 
         return $this->eventBuilder->build(
             $eventType,
-            $indexData['entity_id'],
+            $parentId,
             WebsiteInterface::ADMIN_CODE,
             null,
             null,

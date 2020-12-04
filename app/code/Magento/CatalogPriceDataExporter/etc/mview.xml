@@ -63,17 +63,17 @@
             </table>
 
             <!-- Bundle variation add / remove -->
-            <table name="catalog_product_bundle_selection" entity_column="parent_product_id">
+            <table name="catalog_product_bundle_selection" entity_column="product_id">
                 <additionalColumns>
-                    <column name="product_id" cl_name="value_id" />
-                    <column name="price_type" cl_name="price_type" constant="bundle_variation" />
+                    <column name="parent_product_id" cl_name="parent_id"/>
+                    <column name="price_type" cl_name="price_type" constant="bundle_variation"/>
                 </additionalColumns>
             </table>
 
             <!-- Configurable variation add / remove -->
-            <table name="catalog_product_super_link" entity_column="parent_id">
+            <table name="catalog_product_super_link" entity_column="product_id">
                 <additionalColumns>
-                    <column name="product_id" cl_name="value_id" />
+                    <column name="parent_id" cl_name="parent_id" />
                     <column name="price_type" cl_name="price_type" constant="configurable_variation" />
                 </additionalColumns>
             </table>
