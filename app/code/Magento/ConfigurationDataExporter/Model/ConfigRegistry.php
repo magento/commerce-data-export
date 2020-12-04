@@ -30,7 +30,7 @@ class ConfigRegistry implements \Magento\ConfigurationDataExporter\Api\ConfigReg
      */
     public function addValue(array $value = []): void
     {
-        if (!empty($value)) {
+        if (!empty($value) && !in_array($value, $this->values)) {
             $this->values[] = $value;
         }
     }
