@@ -39,6 +39,7 @@ class RecurringData implements \Magento\Framework\Setup\InstallDataInterface
 
     /**
      * Export configuration on every setup:upgrade run.
+     *
      * @param ModuleDataSetupInterface $setup
      * @param ModuleContextInterface   $context
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)

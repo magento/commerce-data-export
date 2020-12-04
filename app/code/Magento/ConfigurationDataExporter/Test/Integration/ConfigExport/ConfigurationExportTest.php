@@ -46,7 +46,6 @@ class ConfigurationExportTest extends TestCase
         $this->configValueFactory = $objectManager->create(\Magento\Config\Model\Config\Factory::class);
         $this->queueRepository = $objectManager->create(\Magento\Framework\MessageQueue\QueueRepository::class);
         $this->messageEncoder = $objectManager->create(\Magento\Framework\MessageQueue\MessageEncoder::class);
-        $this->removeConfigTestRecoedrsFromDb();
     }
 
     /**
@@ -103,7 +102,7 @@ class ConfigurationExportTest extends TestCase
 
         self::assertEquals($whitelist, $whitelistPool->getWhitelist());
 
-        /** @var \Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface $configRegistry */
+        /** @var \Magento\ConfigurationDataExporter\Api\ConfigRegistryself::ce $configRegistry */
         $configRegistry = Bootstrap::getObjectManager()
             ->get(\Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface::class);
 
@@ -118,7 +117,7 @@ class ConfigurationExportTest extends TestCase
 
         $changedConfig = $this->messageEncoder->decode(self::TOPIC_NAME, $msg->getBody());
 
-        $this->assertInstanceOf(
+        self::assertInstanceOf(
             \Magento\ConfigurationDataExporter\Event\Data\ChangedConfig::class,
             $changedConfig
         );
@@ -136,8 +135,8 @@ class ConfigurationExportTest extends TestCase
             ];
         }
 
-        $this->assertEquals($expected['exported_paths'], count($exportedConfigs));
-        $this->assertEquals($expected['result'], $actual);
+        self::assertEquals($expected['exported_paths'], count($exportedConfigs));
+        self::assertEquals($expected['result'], $actual);
     }
 
     /**
@@ -176,9 +175,5 @@ class ConfigurationExportTest extends TestCase
                 ]
             ]
         ];
-    }
-
-    private function removeConfigTestRecordsFromDb()
-    {
     }
 }
