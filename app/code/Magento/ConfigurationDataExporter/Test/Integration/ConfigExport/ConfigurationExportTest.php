@@ -17,6 +17,7 @@ class ConfigurationExportTest extends TestCase
     const TOPIC_NAME = 'system.configuration.export';
     const TEST_CONFIG_PATH = 'section/group/field';
     const TEST_CONFIG_VALUE = 'test value';
+    const TEST_CONFIG_VALUE_CHANGED = 'test value changed';
     const TEST_CONFIG_SCOPE = 'stores';
     const TEST_CONFIG_SCOPE_ID = 1;
 
@@ -73,7 +74,8 @@ class ConfigurationExportTest extends TestCase
             ],
         ]);
 
-        // add export observer to config_data_save_after event (config_data_save_commit_after not available on integration tests)
+        // add export observer to config_data_save_after event
+        // (config_data_save_commit_after not available on integration tests)
         /** @var \Magento\Framework\Event\Config\Data $eventConfig */
         $eventConfig = Bootstrap::getObjectManager()->get(\Magento\Framework\Event\Config\Data::class);
         $eventConfig->merge([
@@ -93,19 +95,25 @@ class ConfigurationExportTest extends TestCase
             $config->setDataByPath($item['path'], $item['value']);
         }
 
+//        /** @var \Magento\Framework\App\Cache\TypeListInterface $cache */
+//        $cache = Bootstrap::getObjectManager()->get(\Magento\Framework\App\Cache\TypeListInterface::class);
+//        $cache->invalidate(\Magento\Framework\App\Cache\Type\Config::TYPE_IDENTIFIER);
+
         $config->save();
+//        $config->setDataByPath(self::TEST_CONFIG_PATH, self::TEST_CONFIG_VALUE_CHANGED);
+//        $config->save();
 
         /** @var \Magento\ConfigurationDataExporter\Api\WhitelistProviderInterface $whitelistPool */
         $whitelistPool = Bootstrap::getObjectManager()
             ->get(\Magento\ConfigurationDataExporter\Api\WhitelistProviderInterface::class);
 
-        $this->assertEquals($whitelist, $whitelistPool->getWhitelist());
+        self::assertEquals($whitelist, $whitelistPool->getWhitelist());
 
         /** @var \Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface $configRegistry */
         $configRegistry = Bootstrap::getObjectManager()
             ->get(\Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface::class);
 
-        $this->assertEquals($expected['collected_paths'], count($configRegistry->getValues()));
+        self::assertEquals($expected['collected_paths'], count($configRegistry->getValues()));
 
         // just to be sure that message was already published i queue
         sleep(1);
