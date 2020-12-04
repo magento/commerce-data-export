@@ -64,6 +64,8 @@ class GenerateDTOs
 
     /**
      * Generate export DTOs
+     *
+     * @return void
      * @throws \RuntimeException
      */
     public function execute(): void
