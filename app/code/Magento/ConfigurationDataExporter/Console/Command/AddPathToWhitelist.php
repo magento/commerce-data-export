@@ -63,8 +63,6 @@ class AddPathToWhitelist extends \Symfony\Component\Console\Command\Command
 
     /**
      * Add configuration paths to whitelist
-     *
-     * @inheritdoc
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {

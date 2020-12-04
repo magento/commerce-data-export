@@ -36,6 +36,7 @@ class WhitelistProviderPool implements WhitelistProviderInterface
 
         foreach ($this->providers as $provider) {
             if ($provider instanceof WhitelistProviderInterface) {
+                // phpcs:ignore Magento2.Performance.ForeachArrayMerge
                 $whitelist = array_merge($whitelist, $provider->getWhitelist());
             }
         }

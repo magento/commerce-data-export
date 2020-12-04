@@ -39,8 +39,6 @@ class RecurringData implements \Magento\Framework\Setup\InstallDataInterface
 
     /**
      * Export configuration on every setup:upgrade run.
-     *
-     * {@inheritdoc}
      */
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {

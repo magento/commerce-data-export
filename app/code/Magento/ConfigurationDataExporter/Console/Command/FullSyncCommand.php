@@ -55,8 +55,6 @@ class FullSyncCommand extends \Symfony\Component\Console\Command\Command
 
     /**
      * Execute full configuration export from magento to queue.
-     *
-     * @inheritdoc
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {

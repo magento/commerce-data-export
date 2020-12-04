@@ -59,7 +59,6 @@ class FullExportProcessor implements FullExportProcessorInterface
     /**
      * Process export of system configuration for each store view.
      *
-     * @inheritdoc
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function process(?int $storeId = null): void

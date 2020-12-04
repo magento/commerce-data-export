@@ -117,7 +117,8 @@ class ConfigChange implements \Magento\Framework\Event\ObserverInterface
                     ['store_id']
                 )->joinLeft(
                     ['c' => $connection->getTableName('core_config_data')],
-                    '(s.store_id = c.scope_id AND c.scope = "stores") OR (s.website_id = c.scope_id AND c.scope = "websites")',
+                    '(s.store_id = c.scope_id AND c.scope = "stores") OR '.
+                    '(s.website_id = c.scope_id AND c.scope = "websites")',
                     []
                 )->where('c.path = ?', $path);
 
