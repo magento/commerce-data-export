@@ -39,22 +39,17 @@ class DynamicAttributesTest extends WebapiAbstract
         'sku',
         'name',
         'type',
-        //'meta_description',
-        //'meta_keyword',
-        //'meta_title',
         'status',
         'tax_class_id',
         'created_at',
         'updated_at',
         'url_key',
         'visibility',
-        //'weight',
         'currency',
         'displayable',
         'buyable',
         'attributes',
         'categories',
-        'options',
         'in_stock',
         'low_stock',
         'url',
@@ -84,8 +79,6 @@ class DynamicAttributesTest extends WebapiAbstract
     public function testExport()
     {
         $this->_markTestAsRestOnly('SOAP will be covered in another test');
-
-        $this->reindex();
 
         /** @var \Magento\Catalog\Api\ProductRepositoryInterface $productRepository */
         $productRepository = $this->objectManager->get(\Magento\Catalog\Api\ProductRepositoryInterface::class);
@@ -152,16 +145,6 @@ class DynamicAttributesTest extends WebapiAbstract
     private function camelToSnakeCase($string)
     {
         return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $string));
-    }
-
-    /**
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    private function reindex()
-    {
-        $appDir = dirname(Bootstrap::getInstance()->getAppTempDir());
-        // phpcs:ignore Magento2.Security.InsecureFunction
-        exec("php -f {$appDir}/bin/magento indexer:reindex");
     }
 
     /**
@@ -321,7 +304,6 @@ class DynamicAttributesTest extends WebapiAbstract
     public function getProductApiResult($sku)
     {
         $this->_markTestAsRestOnly('SOAP will be covered in another test');
-        $this->reindex();
 
         /** @var \Magento\Catalog\Api\ProductRepositoryInterface $productRepository */
         $productRepository = $this->objectManager->get(\Magento\Catalog\Api\ProductRepositoryInterface::class);

@@ -225,6 +225,7 @@ class GenerateDTOs
      *
      * @param string $className
      * @param string $baseNameSpace
+     * @param PhpFile $file
      * @return ClassType
      */
     private function generateClass(string $className, string $baseNameSpace, PhpFile $file): ClassType
