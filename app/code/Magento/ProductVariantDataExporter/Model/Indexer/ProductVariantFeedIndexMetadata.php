@@ -15,9 +15,29 @@ use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
 {
     /**
-     * @var string|null
+     * @var string
      */
-    protected $feedTableParentField;
+    private $feedTableParentField;
+
+    /**
+     * @var string
+     */
+    private $feedTableChildField;
+
+    /**
+     * @var string
+     */
+    private $relationsTableName;
+
+    /**
+     * @var string
+     */
+    private $relationsTableParentField;
+
+    /**
+     * @var string
+     */
+    private $relationsTableChildField;
 
     /**
      * @param string $feedName
@@ -27,11 +47,15 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
      * @param string $feedTableName
      * @param string $feedTableField
      * @param array $feedTableMutableColumns
+     * @param string $feedTableParentField
+     * @param string $feedTableChildField
+     * @param string $relationsTableName
+     * @param string $relationsTableParentField
+     * @param string $relationsTableChildField
      * @param string $scopeTableName
      * @param string $scopeTableField
      * @param string $scopeCode
      * @param int $batchSize
-     * @param string|null $feedTableParentField
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -43,11 +67,15 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
         string $feedTableName,
         string $feedTableField,
         array $feedTableMutableColumns,
+        string $feedTableParentField,
+        string $feedTableChildField,
+        string $relationsTableName,
+        string $relationsTableParentField,
+        string $relationsTableChildField,
         string $scopeTableName = '',
         string $scopeTableField = '',
         string $scopeCode = '',
-        int $batchSize = 100,
-        string $feedTableParentField = null
+        int $batchSize = 100
     ) {
         parent::__construct(
             $feedName,
@@ -63,6 +91,20 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
             $batchSize
         );
         $this->feedTableParentField = $feedTableParentField;
+        $this->feedTableChildField = $feedTableChildField;
+        $this->relationsTableName = $relationsTableName;
+        $this->relationsTableParentField = $relationsTableParentField;
+        $this->relationsTableChildField = $relationsTableChildField;
+    }
+
+    /**
+     * Get feed table variant parent product field
+     *
+     * @return string
+     */
+    public function getFeedTableParentField(): string
+    {
+        return $this->feedTableParentField;
     }
 
     /**
@@ -70,8 +112,38 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
      *
      * @return string
      */
-    public function getFeedTableParentField(): string
+    public function getFeedTableChildField(): string
     {
-        return $this->feedTableParentField;
+        return $this->feedTableChildField;
+    }
+
+    /**
+     * Get relations table name
+     *
+     * @return string
+     */
+    public function getRelationsTableName(): string
+    {
+        return $this->relationsTableName;
+    }
+
+    /**
+     * Get relations table child field
+     *
+     * @return string
+     */
+    public function getRelationsTableChildField(): string
+    {
+        return $this->relationsTableChildField;
+    }
+
+    /**
+     * Get relations table parent field
+     *
+     * @return string
+     */
+    public function getRelationsTableParentField(): string
+    {
+        return $this->relationsTableParentField;
     }
 }

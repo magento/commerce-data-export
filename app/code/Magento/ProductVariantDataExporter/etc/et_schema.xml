@@ -17,7 +17,9 @@
         <field name="id" type="ID" />
         <!-- parent_id:option_id/optionValue.uid -->
         <field name="option_values" type="String" repeated="true" />
-        <!-- link to product id that represents variant, for custom option must be null-->
+        <!-- link to parent product id that represents variant-->
         <field name="parent_id" type="String"/>
+        <!-- link to product id that represents variant, for custom option must be null-->
+        <field name="product_id" type="String"/>
     </record>
 </config>
