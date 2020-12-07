@@ -9,39 +9,6 @@
     <preference for="Magento\CatalogExportApi\Api\ProductRepositoryInterface" type="Magento\CatalogExport\Model\ProductRepository"/>
     <preference for="Magento\CatalogExportApi\Api\CategoryRepositoryInterface" type="Magento\CatalogExport\Model\CategoryRepository"/>
     <preference for="Magento\CatalogExportApi\Api\ProductVariantRepositoryInterface" type="Magento\CatalogExport\Model\ProductVariantRepository"/>
-    <preference for="Magento\CatalogDataExporter\Model\Indexer\ProductIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ProductIndexerCallback" />
-    <preference for="Magento\CatalogDataExporter\Model\Indexer\CategoryIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback" />
-    <preference for="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantIndexerCallbackInterface" type="Magento\CatalogExport\Model\Indexer\ProductVariantIndexerCallback"/>
-
-    <virtualType name="Magento\CatalogExport\Model\Indexer\CategoryIndexerCallback"
-                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
-        <arguments>
-            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata</argument>
-            <argument name="topicName" xsi:type="string">catalog.export.category.data</argument>
-            <argument name="updatedEventType" xsi:type="string">categories_updated</argument>
-            <argument name="deletedEventType" xsi:type="string">categories_deleted</argument>
-        </arguments>
-    </virtualType>
-
-    <virtualType name="Magento\CatalogExport\Model\Indexer\ProductIndexerCallback"
-                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
-        <arguments>
-            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
-            <argument name="topicName" xsi:type="string">catalog.export.product.data</argument>
-            <argument name="updatedEventType" xsi:type="string">products_updated</argument>
-            <argument name="deletedEventType" xsi:type="string">products_deleted</argument>
-        </arguments>
-    </virtualType>
-
-    <virtualType name="Magento\CatalogExport\Model\Indexer\ProductVariantIndexerCallback"
-                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
-        <arguments>
-            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata</argument>
-            <argument name="topicName" xsi:type="string">catalog.export.product.variants.data</argument>
-            <argument name="updatedEventType" xsi:type="string">product_variants_updated</argument>
-            <argument name="deletedEventType" xsi:type="string">product_variants_deleted</argument>
-        </arguments>
-    </virtualType>
 
     <type name="Magento\CatalogExport\Model\GenerateDTOs">
         <arguments>
@@ -52,7 +19,6 @@
             </argument>
         </arguments>
     </type>
-
     <type name="Magento\Setup\Module\Di\App\Task\Operation\ApplicationCodeGenerator">
         <plugin name="GenerateExportDTOs" type="Magento\CatalogExport\Plugin\GenerateApplicationCode" sortOrder="0"/>
     </type>

@@ -15,6 +15,10 @@
             <argument name="feedTableName" xsi:type="string">catalog_data_exporter_product_variants</argument>
             <argument name="feedTableField" xsi:type="string">id</argument>
             <argument name="feedTableParentField" xsi:type="string">parent_id</argument>
+            <argument name="feedTableChildField" xsi:type="string">product_id</argument>
+            <argument name="relationsTableName" xsi:type="string">catalog_product_relation</argument>
+            <argument name="relationsTableParentField" xsi:type="string">parent_id</argument>
+            <argument name="relationsTableChildField" xsi:type="string">child_id</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
@@ -27,21 +31,26 @@
             <argument name="mapping" xsi:type="array">
                 <item name="id" xsi:type="string">id</item>
                 <item name="parent_id" xsi:type="string">parent_id</item>
+                <item name="product_id" xsi:type="string">product_id</item>
             </argument>
         </arguments>
     </virtualType>
 
-    <virtualType name="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantIndexerCallbackInterface"
-                 type="Magento\DataExporter\Model\Indexer\FeedIndexerCallbackInterface"/>
-
-    <preference for="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantIndexerCallbackInterface"
-                type="Magento\DataExporter\Model\Indexer\EmptyIndexerCallback"/>
+    <virtualType name="Magento\CatalogExport\Model\Indexer\ProductVariantIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">catalog.export.product.variants.data</argument>
+            <argument name="updatedEventType" xsi:type="string">product_variants_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">product_variants_deleted</argument>
+        </arguments>
+    </virtualType>
 
     <type name="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantDataSerializer</argument>
-            <argument name="feedIndexerCallback" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantIndexerCallbackInterface</argument>
+            <argument name="feedIndexerCallback" xsi:type="object">Magento\CatalogExport\Model\Indexer\ProductVariantIndexerCallback</argument>
         </arguments>
     </type>
 
@@ -57,5 +66,13 @@
                 <item name="variants" xsi:type="string">Magento\ProductVariantDataExporter\Model\ProductVariantFeed</item>
             </argument>
         </arguments>
+    </type>
+    <type name="Magento\Catalog\Model\ResourceModel\Product\Relation">
+        <plugin name="reindex_product_variants_on_relations_changes"
+                type="\Magento\ProductVariantDataExporter\Plugin\ReindexVariantsOnRelationsChange"/>
+    </type>
+    <type name="Magento\Catalog\Model\ResourceModel\Product">
+        <plugin name="reindex_product_variants_on_delete"
+                type="\Magento\ProductVariantDataExporter\Plugin\ReindexVariantsOnDelete"/>
     </type>
 </config>

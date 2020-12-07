@@ -30,7 +30,7 @@ class LinkedAttributesQuery
     }
 
     /**
-     * Get query
+     * Get linked attributes query
      *
      * @param int $productId
      * @return Select
@@ -38,10 +38,7 @@ class LinkedAttributesQuery
     public function getQuery(int $productId): Select
     {
         $connection = $this->resourceConnection->getConnection();
-        $joinField = $connection->getAutoIncrementField(
-            $this->resourceConnection->getTableName('catalog_product_entity')
-        );
-        $select = $connection->select()
+        return $connection->select()
             ->from(
                 ['cpsl' => $this->resourceConnection->getTableName('catalog_product_super_link')],
                 []
@@ -56,18 +53,11 @@ class LinkedAttributesQuery
                 'ea.attribute_id = cpsa.attribute_id',
                 []
             )
-            ->joinInner(
-                ['cpe' => $this->resourceConnection->getTableName('catalog_product_entity')],
-                sprintf('cpe.%1$s = cpsa.product_id', $joinField),
-                []
-            )
             ->columns(
                 [
-                    'parentId' => 'cpe.entity_id',
                     'attributeCode' => 'ea.attribute_code',
                 ]
             )
             ->where('cpsl.product_id = ?', $productId);
-        return $select;
     }
 }
