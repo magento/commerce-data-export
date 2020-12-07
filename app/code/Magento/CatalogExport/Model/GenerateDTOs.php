@@ -10,6 +10,7 @@ namespace Magento\CatalogExport\Model;
 use Magento\DataExporter\Config\ConfigInterface;
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Filesystem\Driver\File;
+use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\PhpFile;
 use Nette\PhpGenerator\PsrPrinter;
 use Magento\Framework\App\Filesystem\DirectoryList;
@@ -169,7 +170,7 @@ class GenerateDTOs
                 $type = 'float';
                 break;
             default:
-                $type = '\\' . $baseNameSpace . '\\' . $type . '[]|null';
+                $type = '\\' . $baseNameSpace . '\\' . $type;
         }
 
         return $type;
@@ -202,96 +203,129 @@ class GenerateDTOs
      */
     private function generateFiles(array $generateArray, string $baseNameSpace, string $baseFileLocation): void
     {
-        $nonRequiredMethods = ['id'];
         foreach ($generateArray as $className => $phpClassFields) {
             $file = new PhpFile();
-            $file->addComment('Copyright © Magento, Inc. All rights reserved.');
-            $file->addComment('See COPYING.txt for license details.');
-            $file->addComment('');
-            $file->addComment('Generated from et_schema.xml. DO NOT EDIT!');
-            $file->setStrictTypes();
-            $namespace = $file->addNamespace($baseNameSpace);
-            $class = $namespace->addClass($className);
-            $class->addComment($className . ' entity');
-            $class->addComment('');
-            $class->addComment('phpcs:disable Magento2.PHP.FinalImplementation');
-            $class->addComment('@SuppressWarnings(PHPMD.BooleanGetMethodName)');
-            $class->addComment('@SuppressWarnings(PHPMD.TooManyFields)');
-            $class->addComment('@SuppressWarnings(PHPMD.ExcessivePublicCount)');
-            $class->addComment('@SuppressWarnings(PHPMD.ExcessiveClassComplexity)');
-            $class->addComment('@SuppressWarnings(PHPMD.CouplingBetweenObjects)');
+            $class = $this->generateClass($className, $baseNameSpace, $file);
             foreach ($phpClassFields as $field) {
                 $repeated = $field['repeated'];
                 $name = $field['name'];
-                $type = $field['type'];
-
-                $commentName = preg_replace('/(?<!\ )[A-Z]/', ' $0', $field['name']);
-                $property = $class->addProperty($field['name'])->setPrivate();
-
-                if (true === $repeated) {
-                    if (substr($type, -4) !== 'null') {
-                        $property->addComment('@var ' . 'array');
-                    } else {
-                        $property->addComment('@var ' . $type);
-                    }
-                } else {
-                    $property->addComment('@var ' . str_replace('[]|null', '', $type));
-                }
-                $method = $class->addMethod('get' . ucfirst($name));
-                $method->addComment('Get ' . strtolower($commentName));
-                $method->addComment('');
-                if (true === $repeated) {
-                    if (substr($type, -4) !== 'null') {
-                        $method->addComment('@return ' . $type . '[]');
-                    } else {
-                        $method->addComment('@return ' . $type);
-                    }
-                } else {
-                    $method->addComment('@return ' . str_replace('[]|null', '', $type));
-                }
-                if (true === $repeated) {
-                    $method->setReturnType('array');
-                } else {
-                    $method->setReturnType(str_replace('[]|null', '', $type));
-                }
-                if (!in_array($name, $nonRequiredMethods)) {
-                    $method->setReturnNullable();
-                }
-                $method->addBody('return $this->' . $name . ';');
-                $method = $class->addMethod('set' . ucfirst($name));
-                $method->addComment('Set ' . strtolower($commentName));
-                $method->addComment('');
-                if (true === $repeated) {
-                    $method->addComment(
-                        '@param ' . str_replace('[]|null', '', $type) . '[] $' . $name
-                    );
-                } else {
-                    $method->addComment(
-                        '@param ' . str_replace('[]|null', '', $type) . ' $' . $name
-                    );
-                }
-                $method->addComment('@return void');
-                if (true === $repeated) {
-                    if (!in_array($name, $nonRequiredMethods)) {
-                        $method->addParameter($name, null)->setType('array')->setNullable();
-                    } else {
-                        $method->addParameter($name, null)->setType('array');
-                    }
-                } else {
-                    if (!in_array($name, $nonRequiredMethods)) {
-                        $method->addParameter($name)
-                            ->setType(str_replace('[]|null', '', $type))
-                            ->setNullable();
-                    } else {
-                        $method->addParameter($name)->setType(str_replace('[]|null', '', $type));
-                    }
-                }
-                $method->setReturnType('void');
-                $method->addBody('$this->' . $name . ' = $' . $name . ';');
+                $type = $repeated === true ? $field['type'] . '[]' : $field['type'];
+                $commentName = preg_replace('/(?<!\ )[A-Z]/', ' $0', $name);
+                $this->addProperty($class, $name, $type);
+                $this->generateGetter($class, $type, $name, $repeated, $commentName);
+                $this->generateSetter($class, $type, $name, $repeated, $commentName);
             }
             $print = new PsrPrinter();
             $this->writeToFile($baseFileLocation . '/' . $className . '.php', $print->printFile($file));
         }
+    }
+
+    /**
+     * Generate object class
+     *
+     * @param string $className
+     * @param string $baseNameSpace
+     * @return ClassType
+     */
+    private function generateClass(string $className, string $baseNameSpace, PhpFile $file): ClassType
+    {
+        $file->addComment('Copyright © Magento, Inc. All rights reserved.');
+        $file->addComment('See COPYING.txt for license details.');
+        $file->setStrictTypes();
+        $namespace = $file->addNamespace($baseNameSpace);
+        $class = $namespace->addClass($className);
+        $class->addComment($className . ' entity');
+        $class->addComment('');
+        $class->addComment('phpcs:disable Magento2.PHP.FinalImplementation');
+        $class->addComment('@SuppressWarnings(PHPMD.BooleanGetMethodName)');
+        $class->addComment('@SuppressWarnings(PHPMD.TooManyFields)');
+        $class->addComment('@SuppressWarnings(PHPMD.ExcessivePublicCount)');
+        $class->addComment('@SuppressWarnings(PHPMD.ExcessiveClassComplexity)');
+        $class->addComment('@SuppressWarnings(PHPMD.CouplingBetweenObjects)');
+        return $class;
+    }
+
+    /**
+     * Add a property
+     *
+     * @param ClassType $class
+     * @param string $name
+     * @param string $type
+     * @return void
+     */
+    private function addProperty(ClassType $class, string $name, string $type): void
+    {
+        $property = $class->addProperty($name)->setPrivate();
+        $property->addComment('@var ' . $type . '|null');
+    }
+
+    /**
+     * Generate a getter method
+     *
+     * @param ClassType $class
+     * @param string $type
+     * @param string $name
+     * @param bool $repeated
+     * @param string $commentName
+     */
+    private function generateGetter(
+        ClassType $class,
+        string $type,
+        string $name,
+        bool $repeated,
+        string $commentName
+    ): void {
+        $method = $class->addMethod('get' . ucfirst($name));
+        $method->addComment('Get ' . strtolower($commentName));
+        $method->addComment('');
+
+        /** Docblock @return */
+        $method->addComment('@return ' . $type . '|null');
+
+        /** Return typehint */
+        if (true === $repeated) {
+            $method->setReturnType('array');
+        } else {
+            $method->setReturnType($type);
+        }
+        $method->setReturnNullable();
+        $method->addBody('return $this->' . $name . ';');
+    }
+
+    /**
+     * Generate a setter method
+     *
+     * @param ClassType $class
+     * @param string $type
+     * @param string $name
+     * @param bool $repeated
+     * @param string $commentName
+     */
+    private function generateSetter(
+        ClassType $class,
+        string $type,
+        string $name,
+        bool $repeated,
+        string $commentName
+    ): void {
+        $method = $class->addMethod('set' . ucfirst($name));
+        $method->addComment('Set ' . strtolower($commentName));
+        $method->addComment('');
+
+        /** Docblock @param */
+        $method->addComment('@param ' . $type . '|null $' . $name);
+        $method->addComment('@return void');
+
+        /** Variable typehint */
+        if (true === $repeated) {
+            $method->addParameter($name, null)->setType('array')->setNullable();
+        } else {
+            $method->addParameter($name, null)
+                ->setType($type)
+                ->setNullable();
+        }
+        $method->setReturnType('void');
+        $method->addBody('$this->' . $name . ' = $' . $name . ';');
     }
 
     /**
