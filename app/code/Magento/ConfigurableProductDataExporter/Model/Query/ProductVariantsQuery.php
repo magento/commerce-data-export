@@ -47,20 +47,20 @@ class ProductVariantsQuery
                 ['cpsa' => $this->resourceConnection->getTableName('catalog_product_super_attribute')],
                 ['attribute_id']
             )
-            ->where(\sprintf('cpsa.product_id IN (cpe.%s)', $joinField));
+            ->where(\sprintf('cpsa.product_id IN (cpep.%s)', $joinField));
         $select = $connection->select()
             ->from(
-                ['cpe' => $this->resourceConnection->getTableName('catalog_product_entity')],
+                ['cpec' => $this->resourceConnection->getTableName('catalog_product_entity')],
                 []
             )
             ->joinInner(
                 ['cpsl' => $this->resourceConnection->getTableName('catalog_product_super_link')],
-                \sprintf('cpsl.parent_id = cpe.%s', $joinField),
+                \sprintf('cpsl.product_id = cpec.entity_id'),
                 []
             )
             ->joinInner(
-                ['cpec' => $this->resourceConnection->getTableName('catalog_product_entity')],
-                'cpec.entity_id = cpsl.product_id',
+                ['cpep' => $this->resourceConnection->getTableName('catalog_product_entity')],
+                \sprintf('cpep.%s = cpsl.parent_id', $joinField),
                 []
             )
             ->joinInner(
@@ -79,14 +79,14 @@ class ProductVariantsQuery
             )
             ->columns(
                 [
-                    'parentId' => 'cpe.entity_id',
+                    'parentId' => 'cpep.entity_id',
                     'childId' => 'cpec.entity_id',
                     'attributeId' => 'cpei.attribute_id',
                     'attributeCode' => 'ea.attribute_code',
                     'attributeValue' => 'cpei.value'
                 ]
             )
-            ->where('cpe.entity_id IN (?)', $parentIds);
+            ->where('cpec.entity_id IN (?)', $parentIds);
         return $select;
     }
 }

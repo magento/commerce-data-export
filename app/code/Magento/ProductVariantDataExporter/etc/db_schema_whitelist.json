@@ -8,6 +8,7 @@
         },
         "column": {
             "parent_id": true,
+            "product_id": true,
             "id": true,
             "feed_data": true,
             "modified_at": true,

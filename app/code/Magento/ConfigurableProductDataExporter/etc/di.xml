@@ -48,7 +48,7 @@
         </arguments>
     </type>
     <type name="Magento\Catalog\Model\ResourceModel\Product">
-        <plugin name="trigger_reindex_on_configurable_parent_product_variants"
-                type="Magento\ConfigurableProductDataExporter\Plugin\ReindexVariants"/>
+        <plugin name="reindex_configurable_variants_after_save"
+                type="Magento\ConfigurableProductDataExporter\Plugin\ReindexVariantsAfterSave"/>
     </type>
 </config>
