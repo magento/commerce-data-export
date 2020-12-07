@@ -11,13 +11,15 @@ use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\ResourceModel\Product as ResourceProduct;
 use Magento\ConfigurableProductDataExporter\Model\Query\LinkedAttributesQuery;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Framework\Model\AbstractModel;
 use Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer;
+use Magento\ProductVariantDataExporter\Model\Indexer\UpdateChangeLog;
 
 /**
  * Plugin to trigger reindex on parent products, when a super attribute value is changed on a child product
  */
-class ReindexVariants
+class ReindexVariantsAfterSave
 {
     /**
      * @var ResourceConnection
@@ -30,27 +32,35 @@ class ReindexVariants
     private $linkedAttributesQuery;
 
     /**
-     * @var ProductVariantFeedIndexer
+     * @var IndexerRegistry
      */
-    private $feedIndexer;
+    private $indexerRegistry;
+
+    /**
+     * @var UpdateChangeLog
+     */
+    private $updateChangeLog;
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param LinkedAttributesQuery $linkedAttributesQuery
-     * @param ProductVariantFeedIndexer $feedIndexer
+     * @param IndexerRegistry $indexerRegistry
+     * @param UpdateChangeLog $updateChangeLog
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         LinkedAttributesQuery $linkedAttributesQuery,
-        ProductVariantFeedIndexer $feedIndexer
+        IndexerRegistry $indexerRegistry,
+        UpdateChangeLog $updateChangeLog
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->linkedAttributesQuery = $linkedAttributesQuery;
-        $this->feedIndexer = $feedIndexer;
+        $this->indexerRegistry = $indexerRegistry;
+        $this->updateChangeLog = $updateChangeLog;
     }
 
     /**
-     * Reindex parent product on change of super attribute value.
+     * Reindex parent products on change of child product attribute value
      *
      * @param ResourceProduct $subject
      * @param ResourceProduct $result
@@ -66,18 +76,30 @@ class ReindexVariants
     ): ResourceProduct {
         if (\in_array($product->getTypeId(), [Type::TYPE_SIMPLE, Type::TYPE_VIRTUAL], true)) {
             $select = $this->linkedAttributesQuery->getQuery((int)$product->getId());
-            $connection = $this->resourceConnection->getConnection();
-            $configurableLinks = $connection->query($select)->fetchAll();
-            $changedConfigurableIds = [];
-            foreach ($configurableLinks as $link) {
-                if ($product->getOrigData($link['attributeCode']) !== $product->getData($link['attributeCode'])) {
-                    $changedConfigurableIds[] = $link['parentId'];
+            $linkedAttributes = $this->resourceConnection->getConnection()->fetchCol($select);
+            foreach ($linkedAttributes as $linkAttribute) {
+                if ($product->getOrigData($linkAttribute) !== $product->getData($linkAttribute)) {
+                    $this->reindexVariant((int)$product->getId());
+                    break;
                 }
-            }
-            if (!empty($changedConfigurableIds)) {
-                $this->feedIndexer->executeList(array_filter($changedConfigurableIds));
             }
         }
         return $result;
+    }
+
+    /**
+     * Reindex product variant
+     *
+     * @param int $id
+     * @return void
+     */
+    private function reindexVariant(int $id): void
+    {
+        $indexer = $this->indexerRegistry->get(ProductVariantFeedIndexer::INDEXER_ID);
+        if ($indexer->isScheduled()) {
+            $this->updateChangeLog->execute($indexer->getViewId(), [$id]);
+        } else {
+            $indexer->reindexRow($id);
+        }
     }
 }

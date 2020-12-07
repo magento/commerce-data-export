@@ -83,18 +83,19 @@ class ProductVariants implements ProductVariantsProviderInterface
     public function get(array $values): array
     {
         $output = [];
-        $parentIds = [];
+        $childIds = [];
         foreach ($values as $value) {
-            $parentIds[$value['parent_id']] = $value['parent_id'];
+            $childIds[$value['product_id']] = $value['product_id'];
         }
 
         try {
-            $variants = $this->getVariants($parentIds);
+            $variants = $this->getVariants($childIds);
             foreach ($variants as $id => $optionValues) {
                 $output[] = [
                     'id' => $id,
                     'option_values' => $optionValues['optionValues'],
                     'parent_id' => $optionValues['parentId'],
+                    'product_id' => $optionValues['childId']
                 ];
             }
         } catch (\Throwable $exception) {
@@ -107,18 +108,18 @@ class ProductVariants implements ProductVariantsProviderInterface
     /**
      * Get configurable product variants
      *
-     * @param array $parentIds
+     * @param array $childIds
      * @return array
      * @throws \Zend_Db_Statement_Exception
      */
-    private function getVariants(array $parentIds): array
+    private function getVariants(array $childIds): array
     {
         $variants = [];
         $idResolver = $this->idFactory->get('configurable');
         $optionValueResolver = $this->optionValueFactory->get('configurable');
 
         $cursor = $this->resourceConnection->getConnection()->query(
-            $this->variantsOptionValuesQuery->getQuery($parentIds)
+            $this->variantsOptionValuesQuery->getQuery($childIds)
         );
         while ($row = $cursor->fetch()) {
             $id = $idResolver->resolve([
@@ -131,6 +132,7 @@ class ProductVariants implements ProductVariantsProviderInterface
             ));
             $optionValue = $optionValueResolver->resolve($row['parentId'], $row['attributeCode'], $optionValueUid);
             $variants[$id]['parentId'] = $row['parentId'];
+            $variants[$id]['childId'] = $row['childId'];
             $variants[$id]['optionValues'][] = $optionValue;
         }
         return $variants;
