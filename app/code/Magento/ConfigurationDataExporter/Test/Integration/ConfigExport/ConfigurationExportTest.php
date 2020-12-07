@@ -54,6 +54,7 @@ class ConfigurationExportTest extends TestCase
      * @return void
      * @throws \Magento\Framework\Exception\LocalizedException
      * @dataProvider configExportDataProvider
+     * @magentoDbIsolation enabled
      */
     public function testConfigUpdateExport(array $configs, array $expected): void
     {
@@ -100,7 +101,7 @@ class ConfigurationExportTest extends TestCase
         $whitelistPool = Bootstrap::getObjectManager()
             ->get(\Magento\ConfigurationDataExporter\Api\WhitelistProviderInterface::class);
 
-        self::assertEquals($whitelist, $whitelistPool->getWhitelist());
+        self::assertTrue(in_array(self::TEST_CONFIG_PATH, $whitelistPool->getWhitelist()));
 
         /** @var \Magento\ConfigurationDataExporter\Api\ConfigRegistryself::ce $configRegistry */
         $configRegistry = Bootstrap::getObjectManager()
