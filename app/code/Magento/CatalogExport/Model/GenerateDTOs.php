@@ -12,10 +12,8 @@ use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Filesystem\Driver\File;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\PhpFile;
-use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\PsrPrinter;
 use Magento\Framework\App\Filesystem\DirectoryList;
-use Magento\Framework\Code\Reader\ScalarTypesProvider;
 
 /**
  * Class for generating ExportApi DTOs
@@ -48,28 +46,20 @@ class GenerateDTOs
     private $baseConfigEntities;
 
     /**
-     * @var ScalarTypesProvider
-     */
-    private $scalarTypes;
-
-    /**
      * @param File $fileDriver
      * @param ConfigInterface $config
      * @param DirectoryList $dirList
-     * @param ScalarTypesProvider $scalarTypes
      * @param array $baseConfigEntities
      */
     public function __construct(
         File $fileDriver,
         ConfigInterface $config,
         DirectoryList $dirList,
-        ScalarTypesProvider $scalarTypes,
         array $baseConfigEntities
     ) {
         $this->fileDriver = $fileDriver;
         $this->config = $config;
         $this->dirList = $dirList;
-        $this->scalarTypes = $scalarTypes;
         $this->baseConfigEntities = $baseConfigEntities;
     }
 
@@ -83,14 +73,15 @@ class GenerateDTOs
     {
         try {
             $outputDir = $this->dirList->getPath(DirectoryList::GENERATED_CODE) . self::EXPORT_DTO_OUTPUT_DIR;
+            $baseNamespace = $this->resolveNameSpace($outputDir);
             $parsedEntities = [];
             foreach ($this->baseConfigEntities as $node) {
                 $parsedEntities[] = $this->getConfig($node);
             }
             $parsedArray = \array_merge(...$parsedEntities);
-            $classesData = $this->prepareDtoClassData($parsedArray);
+            $classesData = $this->prepareDtoClassData($parsedArray, $baseNamespace);
             $this->createDirectory($outputDir);
-            $this->generateFiles($classesData, $outputDir);
+            $this->generateFiles($classesData, $baseNamespace, $outputDir);
         } catch (\Throwable $e) {
             throw new \RuntimeException('Could not generate ExportApi DTO\'s ' . $e);
         }
@@ -134,9 +125,10 @@ class GenerateDTOs
      * Build structure required to build DTO
      *
      * @param array $parsedArray
+     * @param string $baseNamespace
      * @return array
      */
-    private function prepareDtoClassData(array $parsedArray): array
+    private function prepareDtoClassData(array $parsedArray, string $baseNamespace): array
     {
         $result = [];
         if (empty($parsedArray)) {
@@ -145,7 +137,7 @@ class GenerateDTOs
 
         foreach ($parsedArray as $schemaConfig) {
             foreach ($schemaConfig['field'] as &$field) {
-                $field['type'] = $this->mapType($field['type']);
+                $field['type'] = $this->mapType($field['type'], $baseNamespace);
                 $field['name'] = lcfirst(str_replace('_', '', ucwords($field['name'], '_')));
             }
             $result[$schemaConfig['name']] = $schemaConfig['field'];
@@ -158,9 +150,10 @@ class GenerateDTOs
      * Map type
      *
      * @param string $type
+     * @param string $baseNameSpace
      * @return string
      */
-    private function mapType(string $type): string
+    private function mapType(string $type, string $baseNameSpace): string
     {
         switch ($type) {
             case 'Int':
@@ -176,6 +169,8 @@ class GenerateDTOs
             case 'Float':
                 $type = 'float';
                 break;
+            default:
+                $type = '\\' . $baseNameSpace . '\\' . $type;
         }
 
         return $type;
@@ -199,29 +194,26 @@ class GenerateDTOs
      * Generate files
      *
      * @param array $generateArray
+     * @param string $baseNameSpace
      * @param string $baseFileLocation
      * @return void
      * @throws FileSystemException
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    private function generateFiles(array $generateArray, string $baseFileLocation): void
+    private function generateFiles(array $generateArray, string $baseNameSpace, string $baseFileLocation): void
     {
-        $baseNameSpace = $this->resolveNameSpace($baseFileLocation);
         foreach ($generateArray as $className => $phpClassFields) {
             $file = new PhpFile();
-            $file->addComment('Copyright © Magento, Inc. All rights reserved.');
-            $file->addComment('See COPYING.txt for license details.');
-            $file->setStrictTypes();
-            $namespace = $file->addNamespace($baseNameSpace);
-            $class = $this->generateClass($className, $baseNameSpace, $namespace);
+            $class = $this->generateClass($className, $baseNameSpace, $file);
             foreach ($phpClassFields as $field) {
                 $repeated = $field['repeated'];
                 $name = $field['name'];
                 $type = $repeated === true ? $field['type'] . '[]' : $field['type'];
+                $commentName = preg_replace('/(?<!\ )[A-Z]/', ' $0', $name);
                 $this->addProperty($class, $name, $type);
-                $this->generateGetter($class, $type, $name, $repeated, $baseNameSpace);
-                $this->generateSetter($class, $type, $name, $repeated, $baseNameSpace);
+                $this->generateGetter($class, $type, $name, $repeated, $commentName);
+                $this->generateSetter($class, $type, $name, $repeated, $commentName);
             }
             $print = new PsrPrinter();
             $this->writeToFile($baseFileLocation . '/' . $className . '.php', $print->printFile($file));
@@ -233,11 +225,15 @@ class GenerateDTOs
      *
      * @param string $className
      * @param string $baseNameSpace
-     * @param PhpNamespace $namespace
+     * @param PhpFile $file
      * @return ClassType
      */
-    private function generateClass(string $className, string $baseNameSpace, PhpNamespace $namespace): ClassType
+    private function generateClass(string $className, string $baseNameSpace, PhpFile $file): ClassType
     {
+        $file->addComment('Copyright © Magento, Inc. All rights reserved.');
+        $file->addComment('See COPYING.txt for license details.');
+        $file->setStrictTypes();
+        $namespace = $file->addNamespace($baseNameSpace);
         $class = $namespace->addClass($className);
         $class->addComment($className . ' entity');
         $class->addComment('');
@@ -271,17 +267,17 @@ class GenerateDTOs
      * @param string $type
      * @param string $name
      * @param bool $repeated
-     * @param string $baseNameSpace
+     * @param string $commentName
      */
     private function generateGetter(
         ClassType $class,
         string $type,
         string $name,
         bool $repeated,
-        string $baseNameSpace
+        string $commentName
     ): void {
         $method = $class->addMethod('get' . ucfirst($name));
-        $method->addComment('Get ' . strtolower(preg_replace('/(?<!\ )[A-Z]/', ' $0', $name)));
+        $method->addComment('Get ' . strtolower($commentName));
         $method->addComment('');
 
         /** Docblock @return */
@@ -291,7 +287,7 @@ class GenerateDTOs
         if (true === $repeated) {
             $method->setReturnType('array');
         } else {
-            $method->setReturnType($this->resolveTypeWithNameSpace($baseNameSpace, $type));
+            $method->setReturnType($type);
         }
         $method->setReturnNullable();
         $method->addBody('return $this->' . $name . ';');
@@ -304,17 +300,17 @@ class GenerateDTOs
      * @param string $type
      * @param string $name
      * @param bool $repeated
-     * @param string $baseNameSpace
+     * @param string $commentName
      */
     private function generateSetter(
         ClassType $class,
         string $type,
         string $name,
         bool $repeated,
-        string $baseNameSpace
+        string $commentName
     ): void {
         $method = $class->addMethod('set' . ucfirst($name));
-        $method->addComment('Set ' . strtolower(preg_replace('/(?<!\ )[A-Z]/', ' $0', $name)));
+        $method->addComment('Set ' . strtolower($commentName));
         $method->addComment('');
 
         /** Docblock @param */
@@ -326,26 +322,11 @@ class GenerateDTOs
             $method->addParameter($name, null)->setType('array')->setNullable();
         } else {
             $method->addParameter($name, null)
-                ->setType($this->resolveTypeWithNameSpace($baseNameSpace, $type))
+                ->setType($type)
                 ->setNullable();
         }
         $method->setReturnType('void');
         $method->addBody('$this->' . $name . ' = $' . $name . ';');
-    }
-
-    /**
-     * Add namespace to type if it is not scalar
-     *
-     * @param $baseNameSpace
-     * @param $type
-     * @return string
-     */
-    private function resolveTypeWithNameSpace($baseNameSpace, $type): string
-    {
-        if (!in_array($type, $this->scalarTypes->getTypes())) {
-            return '\\' . $baseNameSpace . '\\' . $type;
-        }
-        return $type;
     }
 
     /**
