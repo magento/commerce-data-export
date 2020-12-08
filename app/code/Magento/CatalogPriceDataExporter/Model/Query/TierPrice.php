@@ -12,6 +12,9 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\DB\Sql\Expression;
 
+/**
+ * Products tier prices query provider class
+ */
 class TierPrice
 {
     /**
@@ -31,19 +34,32 @@ class TierPrice
     /**
      * Retrieve query for tier prices.
      *
-     * @param array $valueIds
+     * @param array $ids
+     * @param int|null $scopeId
      *
      * @return Select
      */
-    public function getQuery(array $valueIds): Select
+    public function getQuery(array $ids, ?int $scopeId): Select
     {
         $connection = $this->resourceConnection->getConnection();
+        $productEntityTable = $this->resourceConnection->getTableName('catalog_product_entity');
+        $joinField = $connection->getAutoIncrementField($productEntityTable);
 
         $select = $connection->select()
-            ->from(['cpetp' => $this->resourceConnection->getTableName('catalog_product_entity_tier_price')], [])
+            ->from(['cpe' => $productEntityTable], [])
+            ->join(
+                ['cpetp' => $this->resourceConnection->getTableName('catalog_product_entity_tier_price')],
+                \sprintf('cpe.%1$s = cpetp.%1$s', $joinField),
+                []
+            )
             ->columns(
                 [
-                    'value_id' => 'cpetp.value_id',
+                    'entity_id' => 'cpe.entity_id',
+                    'qty' => 'cpetp.qty',
+                    'scope_id' => 'cpetp.website_id',
+                    'customer_group_id' => new Expression(
+                        'CASE WHEN cpetp.all_groups = 1 THEN NULL ELSE cpetp.customer_group_id END'
+                    ),
                     'group_price_type' => new Expression(
                         'CASE WHEN cpetp.percentage_value IS NOT NULL THEN "percent" ELSE "fixed" END'
                     ),
@@ -51,10 +67,11 @@ class TierPrice
                         'CASE WHEN cpetp.percentage_value IS NOT NULL THEN cpetp.percentage_value ELSE cpetp.value END'
                     ),
                 ]
-            );
+            )
+            ->where('cpe.entity_id in (?)', $ids);
 
-        if (!empty($valueIds)) {
-            $select->where('cpetp.value_id in (?)', $valueIds);
+        if (null !== $scopeId) {
+            $select->where('cpetp.website_id = ?', $scopeId);
         }
 
         return $select;

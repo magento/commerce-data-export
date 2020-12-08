@@ -16,6 +16,9 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class responsible for providing product price / special price events
+ */
 class ProductPriceEvent implements ProductPriceEventInterface
 {
     /**

@@ -64,8 +64,9 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                 \sprintf('cpe.%s = cl.parent_id', $connection->getAutoIncrementField($productEntityTable)),
                 []
             )
-            ->where('version_id > ?', $fromVersionId)
-            ->where('version_id <= ?', $toVersion)
+            ->where('cl.version_id > ?', $fromVersionId)
+            ->where('cl.version_id <= ?', $toVersion)
+            ->where('cl.entity_id != 0')
             ->where(\implode(' OR ', [
                 $connection->quoteInto('eav.attribute_code IN (?)', $this->priceAttributes),
                 'eav.attribute_code IS NULL'
@@ -75,7 +76,8 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                     'cl.' . $changelog->getColumnName(),
                     'cl.scope_id',
                     'cl.price_type',
-                    'cl.value_id',
+                    'cl.qty',
+                    'customer_group',
                 ]
             )
             ->columns(
@@ -84,10 +86,10 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                     'attributes' => new Expression('GROUP_CONCAT(eav.attribute_code)'),
                     'scope_id' => 'cl.scope_id',
                     'price_type' => 'cl.price_type',
-                    'all_groups' => 'cl.all_groups',
-                    'customer_group_id' => 'cl.customer_group_id',
+                    'customer_group' => new Expression(
+                        'CASE WHEN cl.all_groups = 1 THEN NULL ELSE cl.customer_group_id END'
+                    ),
                     'qty' => 'cl.qty',
-                    'value_id' => 'cl.value_id',
                     'parent_id' => 'cpe.entity_id',
                 ]
             )

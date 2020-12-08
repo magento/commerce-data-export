@@ -29,7 +29,6 @@
                     <column name="all_groups" cl_name="all_groups" />
                     <column name="customer_group_id" cl_name="customer_group_id" />
                     <column name="qty" cl_name="qty" />
-                    <column name="value_id" cl_name="value_id" />
                     <column name="price_type" cl_name="price_type" constant="tier_price" />
                 </additionalColumns>
             </table>
@@ -69,15 +68,15 @@
                     <column name="price_type" cl_name="price_type" constant="configurable_variation" />
                 </additionalColumns>
             </table>
-        </subscriptions>
 
-        <!-- Bundle variation add / remove -->
-        <!-- todo: uncomment when trigger issue resolved. -->
-<!--        <table name="catalog_product_bundle_selection" entity_column="product_id">-->
-<!--            <additionalColumns>-->
-<!--                <column name="parent_product_id" cl_name="parent_id"/>-->
-<!--                <column name="price_type" cl_name="price_type" constant="bundle_variation"/>-->
-<!--            </additionalColumns>-->
-<!--        </table>-->
+            <!-- Bundle variation add / remove -->
+            <!-- todo: uncomment after https://github.com/magento/magento2/issues/31192 resolution. -->
+<!--            <table name="catalog_product_bundle_selection" entity_column="product_id">-->
+<!--                <additionalColumns>-->
+<!--                    <column name="parent_product_id" cl_name="parent_product_id"/>-->
+<!--                    <column name="price_type" cl_name="price_type" constant="bundle_variation"/>-->
+<!--                </additionalColumns>-->
+<!--            </table>-->
+        </subscriptions>
     </view>
 </config>

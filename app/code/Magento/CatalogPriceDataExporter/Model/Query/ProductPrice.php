@@ -11,6 +11,9 @@ namespace Magento\CatalogPriceDataExporter\Model\Query;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 
+/**
+ * Products base / special prices query provider class
+ */
 class ProductPrice
 {
     /**

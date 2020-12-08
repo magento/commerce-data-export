@@ -16,6 +16,9 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class responsible for providing product tier prices events
+ */
 class TierPriceEvent implements ProductPriceEventInterface
 {
     /**
@@ -69,19 +72,21 @@ class TierPriceEvent implements ProductPriceEventInterface
      */
     public function retrieve(array $indexData): array
     {
-        $queryArguments = [];
         $result = [];
+        $queryArguments = [];
 
         try {
             foreach ($indexData as $data) {
-                $queryArguments[] = $data['value_id'];
+                $queryArguments[$data['scope_id']][] = $data['entity_id'];
             }
 
-            $select = $this->tierPrice->getQuery($queryArguments);
-            $cursor = $this->resourceConnection->getConnection()->query($select);
+            foreach ($queryArguments as $scopeId => $entityIds) {
+                $select = $this->tierPrice->getQuery($entityIds, $scopeId);
+                $cursor = $this->resourceConnection->getConnection()->query($select);
 
-            while ($row = $cursor->fetch()) {
-                $result[$row['value_id']] = $row;
+                while ($row = $cursor->fetch()) {
+                    $result[$row['entity_id']][$row['scope_id']][$row['qty']][$row['customer_group_id']] = $row;
+                }
             }
 
             $events = $this->getEventData($indexData, $result);
@@ -103,12 +108,13 @@ class TierPriceEvent implements ProductPriceEventInterface
      *
      * @throws LocalizedException
      */
-    private function getEventData(array $indexData, array $actualData)
+    private function getEventData(array $indexData, array $actualData): array
     {
         $events = [];
 
         foreach ($indexData as $data) {
-            $events[] = $this->buildEventData($data, $actualData[$data['value_id']] ?? null);
+            $row = $actualData[$data['entity_id']][$data['scope_id']][$data['qty']][$data['customer_group']] ?? null;
+            $events[] = $this->buildEventData($data, $row);
         }
 
         return $events;
@@ -128,7 +134,6 @@ class TierPriceEvent implements ProductPriceEventInterface
     {
         $additionalData = [];
         $scopeCode = $this->storeManager->getWebsite($indexData['scope_id'])->getCode();
-        $customerGroupId = true === (bool)$indexData['all_groups'] ? null : $indexData['customer_group_id'];
 
         // TODO refactor
         if (null === $result || null === $result['value']) {
@@ -144,14 +149,14 @@ class TierPriceEvent implements ProductPriceEventInterface
         if ($indexData['qty'] > 1) {
             $additionalData['data']['qty'] = $indexData['qty'];
         } else {
-            $additionalData['meta']['code'] = 'price';
+            $additionalData['meta']['code'] = 'tier_price';
         }
 
         return $this->eventBuilder->build(
             $eventType,
             $indexData['entity_id'],
             $scopeCode,
-            $customerGroupId,
+            $indexData['customer_group'],
             $result['value'] ?? null,
             $additionalData
         );

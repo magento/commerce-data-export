@@ -10,6 +10,9 @@ namespace Magento\CatalogPriceDataExporter\Model\Event;
 
 use Magento\DataExporter\Exception\UnableRetrieveData;
 
+/**
+ * Interface for product price events providers
+ */
 interface ProductPriceEventInterface
 {
     /**
