@@ -9,7 +9,7 @@ a merchant will notice new indexers in the corresponding admin menu,
 where each indexer represents a data feed.
 
 ### Code generation
-Magento_CatalogExportApi module automatically generates DTOs on every run of setup:upgrade and setup:di:compile. 
+Magento_CatalogExportApi module contains DTOs that are automatically generated on every run of setup:upgrade and setup:di:compile. 
 
 ## Requirements and Dependencies
 The export component is a set Magento modules and requires Magento 2.3 and higher.
