@@ -34,7 +34,7 @@ class SelectableOptions implements ProductOptionProviderInterface
     private $customOptionsRepository;
 
     /**
-     * @var OptionValueUid
+     * @var CustomizableSelectedOptionValueUid
      */
     private $optionValueUid;
 
@@ -42,11 +42,11 @@ class SelectableOptions implements ProductOptionProviderInterface
      * SelectableOptions constructor.
      *
      * @param CustomOptionsRepository $customOptionsRepository
-     * @param OptionValueUid $optionValueUid
+     * @param CustomizableSelectedOptionValueUid $optionValueUid
      */
     public function __construct(
         CustomOptionsRepository $customOptionsRepository,
-        OptionValueUid $optionValueUid
+        CustomizableSelectedOptionValueUid $optionValueUid
     ) {
         $this->customOptionsRepository = $customOptionsRepository;
         $this->optionValueUid = $optionValueUid;
@@ -56,6 +56,7 @@ class SelectableOptions implements ProductOptionProviderInterface
      * @inheritdoc
      *
      * @param array $values
+     *
      * @return array
      */
     public function get(array $values) : array
@@ -95,6 +96,7 @@ class SelectableOptions implements ProductOptionProviderInterface
      * Process option values.
      *
      * @param array $option
+     *
      * @return array
      */
     private function processOptionValues(
@@ -107,7 +109,10 @@ class SelectableOptions implements ProductOptionProviderInterface
         }
         foreach ($values as $value) {
             $resultValues[] = [
-                'id' => $this->optionValueUid->resolve($value['option_id'], $value['option_type_id']),
+                'id' => $this->optionValueUid->resolve([
+                    CustomizableSelectedOptionValueUid::OPTION_ID => $value['option_id'],
+                    CustomizableSelectedOptionValueUid::OPTION_VALUE_ID => $value['option_type_id']
+                ]),
                 'label' => $value['title'],
                 'sort_order' => $value['sort_order'],
                 'default' => $value['default'] ?? false,

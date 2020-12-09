@@ -11,7 +11,7 @@ namespace Magento\CatalogPriceDataExporter\Model\Query;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 
-class CustomOptionPrice
+class CustomOptionTypePrice
 {
     /**
      * @var ResourceConnection
@@ -30,25 +30,34 @@ class CustomOptionPrice
     /**
      * Retrieve query for custom option price.
      *
-     * @param array $optionIds
+     * @param array $optionTypeIds
      * @param int $scopeId
      *
      * @return Select
      */
-    public function getQuery(array $optionIds, int $scopeId): Select
+    public function getQuery(array $optionTypeIds, int $scopeId): Select
     {
         $connection = $this->resourceConnection->getConnection();
 
         return $connection->select()
-            ->from(['cpop' => $this->resourceConnection->getTableName('catalog_product_option_price')], [])
+            ->from(
+                ['cpotp' => $this->resourceConnection->getTableName('catalog_product_option_type_price')],
+                []
+            )
+            ->join(
+                ['cpotv' => $this->resourceConnection->getTableName('catalog_product_option_type_value')],
+                'cpotv.option_type_id = cpotp.option_type_id',
+                []
+            )
             ->columns(
                 [
-                    'option_id' => 'cpop.option_id',
-                    'price' => 'cpop.price',
-                    'price_type' => 'cpop.price_type',
+                    'option_id' => 'cpotv.option_id',
+                    'option_type_id' => 'cpotp.option_type_id',
+                    'price' => 'cpotp.price',
+                    'price_type' => 'cpotp.price_type',
                 ]
             )
-            ->where('cpop.option_id IN (?)', $optionIds)
-            ->where('cpop.store_id = ?', $scopeId);
+            ->where('cpotp.option_type_id IN (?)', $optionTypeIds)
+            ->where('cpotp.store_id = ?', $scopeId);
     }
 }

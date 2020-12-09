@@ -43,24 +43,32 @@ class EntityDeleteEvent implements ProductPriceEventInterface
     private $eventType;
 
     /**
+     * @var array|null
+     */
+    private $idProvider;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param EntityDelete $entityDelete
      * @param EventBuilder $eventBuilder
      * @param LoggerInterface $logger
      * @param string $eventType
+     * @param array|null $idProvider
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         EntityDelete $entityDelete,
         EventBuilder $eventBuilder,
         LoggerInterface $logger,
-        string $eventType
+        string $eventType,
+        ?array $idProvider = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->entityDelete = $entityDelete;
         $this->eventBuilder = $eventBuilder;
         $this->logger = $logger;
         $this->eventType = $eventType;
+        $this->idProvider = $idProvider;
     }
 
     /**
@@ -122,12 +130,32 @@ class EntityDeleteEvent implements ProductPriceEventInterface
      */
     private function buildEventData(array $indexData): array
     {
+        $id = $this->resolveId($indexData);
         return $this->eventBuilder->build(
             $this->eventType,
-            $indexData['entity_id'], // TODO base64_encode with correct format
+            $id,
             WebsiteInterface::ADMIN_CODE,
             null,
             null
         );
+    }
+
+    /**
+     * Resolve price entity id
+     *
+     * @param array $indexData
+     *
+     * @return string
+     */
+    private function resolveId(array $indexData): string
+    {
+        if ($this->idProvider === null) {
+            return base64_encode($indexData['entity_id']);
+        }
+        $parameters = [];
+        foreach ($this->idProvider['parameters'] as $param) {
+            $parameters[$param['parameterKey']] = $indexData[$param['valueKey']];
+        }
+        return $this->idProvider['class']->resolve($parameters);
     }
 }

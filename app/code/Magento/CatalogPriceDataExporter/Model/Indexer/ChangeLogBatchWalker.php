@@ -77,6 +77,7 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                     'cl.scope_id',
                     'cl.price_type',
                     'cl.qty',
+                    'cl.option_id',
                     'customer_group',
                 ]
             )
@@ -90,6 +91,7 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                         'CASE WHEN cl.all_groups = 1 THEN NULL ELSE cl.customer_group_id END'
                     ),
                     'qty' => 'cl.qty',
+                    'cl.option_id',
                     'parent_id' => 'cpe.entity_id',
                 ]
             )
