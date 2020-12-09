@@ -15,6 +15,9 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Store\Api\Data\WebsiteInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class responsible for providing complex product variation change events
+ */
 class ComplexProductEvent implements ProductPriceEventInterface
 {
     /**
@@ -73,7 +76,12 @@ class ComplexProductEvent implements ProductPriceEventInterface
         $variationIds = [];
 
         try {
-            foreach ($indexData as $data) {
+            foreach ($indexData as $key => $data) {
+                if (null === $data['parent_id']) {
+                    unset($indexData[$key]);
+                    continue;
+                }
+
                 $parentIds[] = $data['parent_id'];
                 $variationIds[] = $data['entity_id'];
             }

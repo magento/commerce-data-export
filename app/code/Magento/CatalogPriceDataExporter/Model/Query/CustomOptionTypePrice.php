@@ -11,6 +11,9 @@ namespace Magento\CatalogPriceDataExporter\Model\Query;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 
+/**
+ * Products custom selectable option price query provider class
+ */
 class CustomOptionTypePrice
 {
     /**

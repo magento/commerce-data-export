@@ -17,6 +17,9 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class responsible for providing custom option price events
+ */
 class CustomOptionPriceEvent implements ProductPriceEventInterface
 {
     /**
@@ -79,6 +82,8 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
     public function retrieve(array $indexData): array
     {
         $result = [];
+        $queryArguments = [];
+
         try {
             foreach ($indexData as $data) {
                 $queryArguments[$data['scope_id']]['optionIds'][] = $data['entity_id'];
@@ -111,6 +116,7 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
      * @return array
      *
      * @throws NoSuchEntityException
+     * @throws \InvalidArgumentException
      */
     private function getEventsData(array $indexData, array $actualData): array
     {
@@ -118,10 +124,12 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
         foreach ($indexData as $data) {
             $price = $actualData[$data['entity_id']][$data['scope_id']]['price'] ?? null;
             $priceType = $actualData[$data['entity_id']][$data['scope_id']]['price_type'] ?? null;
+
             if ($price !== null && $priceType !== null) {
                 $events[] = $this->buildEventData($data, $price, $priceType);
             }
         }
+
         return $events;
     }
 
@@ -135,11 +143,13 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
      * @return array
      *
      * @throws NoSuchEntityException
+     * @throws \InvalidArgumentException
      */
     private function buildEventData(array $indexData, string $price, string $priceType): array
     {
         $scopeCode = $this->storeManager->getStore($indexData['scope_id'])->getWebsite()->getCode();
         $id = $this->optionValueUid->resolve([CustomizableEnteredOptionValueUid::OPTION_ID => $indexData['entity_id']]);
+
         return $this->eventBuilder->build(
             self::EVENT_CUSTOM_OPTION_PRICE_CHANGED,
             $id,

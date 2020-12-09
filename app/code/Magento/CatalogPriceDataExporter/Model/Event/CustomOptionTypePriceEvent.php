@@ -17,6 +17,9 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class responsible for providing custom selectable option price events
+ */
 class CustomOptionTypePriceEvent implements ProductPriceEventInterface
 {
     /**
@@ -79,6 +82,8 @@ class CustomOptionTypePriceEvent implements ProductPriceEventInterface
     public function retrieve(array $indexData): array
     {
         $result = [];
+        $queryArguments = [];
+
         try {
             foreach ($indexData as $data) {
                 $queryArguments[$data['scope_id']]['optionTypeIds'][] = $data['entity_id'];
@@ -112,6 +117,7 @@ class CustomOptionTypePriceEvent implements ProductPriceEventInterface
      * @return array
      *
      * @throws NoSuchEntityException
+     * @throws \InvalidArgumentException
      */
     private function getEventsData(array $indexData, array $actualData): array
     {
@@ -120,10 +126,12 @@ class CustomOptionTypePriceEvent implements ProductPriceEventInterface
             $price = $actualData[$data['entity_id']][$data['scope_id']]['price'] ?? null;
             $priceType = $actualData[$data['entity_id']][$data['scope_id']]['price_type'] ?? null;
             $optionId = $actualData[$data['entity_id']][$data['scope_id']]['option_id'] ?? null;
+
             if ($price !== null && $priceType !== null && $optionId !== null) {
                 $events[] = $this->buildEventData($data, $price, $priceType, $optionId);
             }
         }
+
         return $events;
     }
 
@@ -138,6 +146,7 @@ class CustomOptionTypePriceEvent implements ProductPriceEventInterface
      * @return array
      *
      * @throws NoSuchEntityException
+     * @throws \InvalidArgumentException
      */
     private function buildEventData(array $indexData, string $price, string $priceType, string $optionId): array
     {
