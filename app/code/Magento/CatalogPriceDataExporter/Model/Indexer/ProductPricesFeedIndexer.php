@@ -10,6 +10,7 @@ namespace Magento\CatalogPriceDataExporter\Model\Indexer;
 
 use Magento\CatalogPriceDataExporter\Model\EventPool;
 use Magento\Framework\Indexer\ActionInterface as IndexerActionInterface;
+use Magento\Framework\MessageQueue\PublisherInterface;
 use Magento\Framework\Mview\ActionInterface as MviewActionInterface;
 use Psr\Log\LoggerInterface;
 
@@ -26,13 +27,22 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     private $logger;
 
     /**
+     * @var PublisherInterface
+     */
+    private $publisher;
+
+    /**
      * @param EventPool $eventPool
      * @param LoggerInterface $logger
      */
-    public function __construct(EventPool $eventPool, LoggerInterface $logger)
-    {
+    public function __construct(
+        EventPool $eventPool,
+        LoggerInterface $logger,
+        PublisherInterface $publisher
+    ) {
         $this->eventPool = $eventPool;
         $this->logger = $logger;
+        $this->publisher = $publisher;
     }
 
     /**
@@ -73,8 +83,10 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
         }
 
         $events = !empty($events) ? \array_merge(...$events) : [];
-
         $this->logger->info('Product price events.', ['events' => $events]);
+
+        //todo: add a callback
+        $this->publisher->publish('export.product.prices', json_encode($events));
     }
 
     /**
