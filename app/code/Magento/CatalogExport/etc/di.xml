@@ -18,6 +18,8 @@
                 <item name="Product" xsi:type="string">Product</item>
                 <item name="Category" xsi:type="string">Category</item>
                 <item name="ProductVariant" xsi:type="string">ProductVariant</item>
+                <item name="Review" xsi:type="string">Review</item>
+                <item name="RatingMetadata" xsi:type="string">RatingMetadata</item>
             </argument>
         </arguments>
     </type>
