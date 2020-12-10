@@ -10,7 +10,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions;
 /**
  * Customizable entered option value uid generator
  */
-class CustomizableEnteredOptionValueUid implements CustomizableOptionValueUidInterface
+class CustomizableEnteredOptionValueUid implements OptionValueUidInterface
 {
     /**
      * Customizable Option type name

@@ -116,6 +116,7 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
      * @return array
      *
      * @throws LocalizedException
+     * @throws \InvalidArgumentException
      */
     private function getEventsData(array $indexData, array $actualData): array
     {
@@ -138,6 +139,7 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
      * @return array
      *
      * @throws LocalizedException
+     * @throws \InvalidArgumentException
      */
     private function buildEventData(array $indexData, ?string $value): array
     {
@@ -147,7 +149,11 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
 
         return $this->eventBuilder->build(
             $eventType,
-            $this->downloadableLinksOptionUid->resolve($indexData['entity_id']),
+            $this->downloadableLinksOptionUid->resolve(
+                [
+                    DownloadableLinksOptionUid::OPTION_ID => $indexData['entity_id'],
+                ]
+            ),
             $scopeCode,
             null,
             $value

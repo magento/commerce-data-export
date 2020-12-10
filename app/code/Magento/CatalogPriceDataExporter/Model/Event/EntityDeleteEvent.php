@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
+use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\OptionValueUidInterface;
 use Magento\CatalogPriceDataExporter\Model\EventBuilder;
 use Magento\CatalogPriceDataExporter\Model\Query\EntityDelete;
 use Magento\DataExporter\Exception\UnableRetrieveData;
@@ -15,6 +16,9 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Store\Api\Data\WebsiteInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class responsible for providing product options and links delete price events
+ */
 class EntityDeleteEvent implements ProductPriceEventInterface
 {
     /**
@@ -45,7 +49,7 @@ class EntityDeleteEvent implements ProductPriceEventInterface
     /**
      * @var array|null
      */
-    private $idProvider;
+    private $uidResolverData;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -53,7 +57,7 @@ class EntityDeleteEvent implements ProductPriceEventInterface
      * @param EventBuilder $eventBuilder
      * @param LoggerInterface $logger
      * @param string $eventType
-     * @param array|null $idProvider
+     * @param array|null $uidResolverData
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -61,14 +65,14 @@ class EntityDeleteEvent implements ProductPriceEventInterface
         EventBuilder $eventBuilder,
         LoggerInterface $logger,
         string $eventType,
-        ?array $idProvider = null
+        ?array $uidResolverData = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->entityDelete = $entityDelete;
         $this->eventBuilder = $eventBuilder;
         $this->logger = $logger;
         $this->eventType = $eventType;
-        $this->idProvider = $idProvider;
+        $this->uidResolverData = $uidResolverData;
     }
 
     /**
@@ -107,6 +111,8 @@ class EntityDeleteEvent implements ProductPriceEventInterface
      * @param array $actualData
      *
      * @return array
+     *
+     * @throws \InvalidArgumentException
      */
     private function getEventsData(array $indexData, array $actualData): array
     {
@@ -127,13 +133,14 @@ class EntityDeleteEvent implements ProductPriceEventInterface
      * @param array $indexData
      *
      * @return array
+     *
+     * @throws \InvalidArgumentException
      */
     private function buildEventData(array $indexData): array
     {
-        $id = $this->resolveId($indexData);
         return $this->eventBuilder->build(
             $this->eventType,
-            $id,
+            $this->resolveId($indexData),
             WebsiteInterface::ADMIN_CODE,
             null,
             null
@@ -146,16 +153,23 @@ class EntityDeleteEvent implements ProductPriceEventInterface
      * @param array $indexData
      *
      * @return string
+     *
+     * @throws \InvalidArgumentException
      */
     private function resolveId(array $indexData): string
     {
-        if ($this->idProvider === null) {
-            return base64_encode($indexData['entity_id']);
+        if ($this->uidResolverData === null) {
+            return $indexData['entity_id'];
         }
+
         $parameters = [];
-        foreach ($this->idProvider['parameters'] as $param) {
+        foreach ($this->uidResolverData['parameters'] as $param) {
             $parameters[$param['parameterKey']] = $indexData[$param['valueKey']];
         }
-        return $this->idProvider['class']->resolve($parameters);
+
+        /* @var OptionValueUidInterface $resolver */
+        $resolver = $this->uidResolverData['class'];
+
+        return $resolver->resolve($parameters);
     }
 }

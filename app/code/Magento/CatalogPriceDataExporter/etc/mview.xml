@@ -34,11 +34,11 @@
             </table>
 
             <!-- Customizable options-->
-<!--            <table name="catalog_product_option" entity_column="option_id">-->
-<!--                <additionalColumns>-->
-<!--                    <column name="price_type" cl_name="price_type" constant="custom_option" />-->
-<!--                </additionalColumns>-->
-<!--            </table>-->
+            <table name="catalog_product_option" entity_column="option_id">
+                <additionalColumns>
+                    <column name="price_type" cl_name="price_type" constant="custom_option" />
+                </additionalColumns>
+            </table>
             <table name="catalog_product_option_price" entity_column="option_id">
                 <additionalColumns>
                     <column name="store_id" cl_name="scope_id" />
@@ -61,11 +61,11 @@
             </table>
 
             <!-- Downloadable links -->
-<!--            <table name="downloadable_link" entity_column="link_id">-->
-<!--                <additionalColumns>-->
-<!--                    <column name="price_type" cl_name="price_type" constant="downloadable_link" />-->
-<!--                </additionalColumns>-->
-<!--            </table>-->
+            <table name="downloadable_link" entity_column="link_id">
+                <additionalColumns>
+                    <column name="price_type" cl_name="price_type" constant="downloadable_link" />
+                </additionalColumns>
+            </table>
             <table name="downloadable_link_price" entity_column="link_id">
                 <additionalColumns>
                     <column name="website_id" cl_name="scope_id" />

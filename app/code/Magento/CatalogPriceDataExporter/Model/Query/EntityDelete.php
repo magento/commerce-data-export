@@ -12,6 +12,9 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\DB\Sql\Expression;
 
+/**
+ * Products options and downloadable links query provider class
+ */
 class EntityDelete
 {
     /**

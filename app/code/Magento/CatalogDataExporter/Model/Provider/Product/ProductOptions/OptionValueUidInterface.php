@@ -8,15 +8,17 @@ declare(strict_types=1);
 namespace Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions;
 
 /**
- * Customizable option value uid provider interface
+ * Option value uid provider interface
  */
-interface CustomizableOptionValueUidInterface
+interface OptionValueUidInterface
 {
     /**
      * Get option value uid
      *
      * @param string[] $params
+     *
      * @return string
+     *
      * @throws \InvalidArgumentException
      */
     public function resolve(array $params) : string;

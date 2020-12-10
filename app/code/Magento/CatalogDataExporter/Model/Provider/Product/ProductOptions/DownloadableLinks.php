@@ -107,6 +107,7 @@ class DownloadableLinks
      * @return array
      *
      * @throws NoSuchEntityException
+     * @throws \InvalidArgumentException
      */
     private function format(array $attributes, string $storeViewCode): array
     {
@@ -137,6 +138,7 @@ class DownloadableLinks
      * @return array
      *
      * @throws NoSuchEntityException
+     * @throws \InvalidArgumentException
      */
     private function processOptionValues(string $productId, string $storeViewCode): array
     {
@@ -144,7 +146,11 @@ class DownloadableLinks
         foreach ($this->linkOptions as $key => $option) {
             if ($productId == $option['entity_id']) {
                 $values[] = [
-                    'id' => $this->downloadableLinksOptionUid->resolve($option['link_id']),
+                    'id' => $this->downloadableLinksOptionUid->resolve(
+                        [
+                            DownloadableLinksOptionUid::OPTION_ID => $option['link_id'],
+                        ]
+                    ),
                     'label' => $option['title'],
                     'sort_order' => $option['sort_order'],
                     'info_url' => $this->getLinkSampleUrl($option, $storeViewCode),
