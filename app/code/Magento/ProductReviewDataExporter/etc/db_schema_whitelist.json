@@ -1,0 +1,32 @@
+{
+    "catalog_data_exporter_product_reviews": {
+        "column": {
+            "id": true,
+            "feed_data": true,
+            "modified_at": true,
+            "is_deleted": true,
+            "product_id": true
+        },
+        "index": {
+            "CATALOG_DATA_EXPORTER_PRODUCT_REVIEWS_MODIFIED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "catalog_data_exporter_rating_metadata": {
+        "column": {
+            "id": true,
+            "store_view_code": true,
+            "feed_data": true,
+            "modified_at": true,
+            "is_deleted": true
+        },
+        "index": {
+            "CATALOG_DATA_EXPORTER_RATING_METADATA_MODIFIED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

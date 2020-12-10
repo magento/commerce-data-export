@@ -52,7 +52,11 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
      * @param string $relationsTableName
      * @param string $relationsTableParentField
      * @param string $relationsTableChildField
+     * @param string $scopeTableName
+     * @param string $scopeTableField
+     * @param string $scopeCode
      * @param int $batchSize
+     *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -68,6 +72,9 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
         string $relationsTableName,
         string $relationsTableParentField,
         string $relationsTableChildField,
+        string $scopeTableName = '',
+        string $scopeTableField = '',
+        string $scopeCode = '',
         int $batchSize = 100
     ) {
         parent::__construct(
@@ -78,6 +85,9 @@ class ProductVariantFeedIndexMetadata extends FeedIndexMetadata
             $feedTableName,
             $feedTableField,
             $feedTableMutableColumns,
+            $scopeTableName,
+            $scopeTableField,
+            $scopeCode,
             $batchSize
         );
         $this->feedTableParentField = $feedTableParentField;

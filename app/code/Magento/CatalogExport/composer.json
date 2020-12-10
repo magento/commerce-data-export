@@ -9,7 +9,8 @@
         "magento/framework": "*",
         "magento/framework-message-queue": "*",
         "magento/module-catalog-export-api": "*",
-        "magento/module-data-exporter": "*"
+        "magento/module-data-exporter": "*",
+        "nette/php-generator": "3.5.1"
     },
     "type": "magento2-module",
     "license": [

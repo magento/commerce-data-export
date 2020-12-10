@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="catalog_data_exporter_product_reviews"
+           resource="default"
+           engine="innodb"
+           comment="Product Reviews Feed Storage">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" comment="ID"/>
+        <column xsi:type="int"
+                name="product_id"
+                unsigned="true"
+                nullable="false"
+                identity="false"
+                comment="Product ID"
+        />
+        <column xsi:type="mediumtext"
+                name="feed_data"
+                nullable="false"
+                comment="Feed Data"
+        />
+        <column xsi:type="timestamp"
+                name="modified_at"
+                on_update="true"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"
+                comment="Created At"
+        />
+        <column xsi:type="tinyint"
+                name="is_deleted"
+                nullable="false"
+                default="0"
+                comment="Product Deleted"
+        />
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <index referenceId="catalog_data_exporter_product_reviews_modified_at" indexType="btree">
+            <column name="modified_at"/>
+        </index>
+    </table>
+
+    <table name="catalog_data_exporter_rating_metadata"
+           resource="default"
+           engine="innodb"
+           comment="Product Rating Metadata Feed Storage">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" comment="ID"/>
+        <column xsi:type="varchar"
+                name="store_view_code"
+                nullable="false"
+                length="64"
+                comment="Store view code"
+        />
+        <column xsi:type="mediumtext"
+                name="feed_data"
+                nullable="false"
+                comment="Feed Data"
+        />
+        <column xsi:type="timestamp"
+                name="modified_at"
+                on_update="true"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"
+                comment="Created At"
+        />
+        <column xsi:type="tinyint"
+                name="is_deleted"
+                nullable="false"
+                default="0"
+                comment="Product Deleted"
+        />
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+            <column name="store_view_code"/>
+        </constraint>
+        <index referenceId="catalog_data_exporter_rating_metadata_modified_at" indexType="btree">
+            <column name="modified_at"/>
+        </index>
+    </table>
+</schema>

@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Product review feed -->
+    <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexMetadata"
+                 type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="feedName" xsi:type="string">reviews</argument>
+            <argument name="feedIdentity" xsi:type="string">reviewId</argument>
+            <argument name="sourceTableName" xsi:type="string">review</argument>
+            <argument name="sourceTableField" xsi:type="string">review_id</argument>
+            <argument name="feedTableName" xsi:type="string">catalog_data_exporter_product_reviews</argument>
+            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableMutableColumns" xsi:type="array">
+                <item name="feed_data" xsi:type="string">feed_data</item>
+                <item name="is_deleted" xsi:type="string">is_deleted</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsDataSerializer"
+                 type="Magento\DataExporter\Model\Indexer\DataSerializer">
+        <arguments>
+            <argument name="mapping" xsi:type="array">
+                <item name="id" xsi:type="string">reviewId</item>
+                <item name="product_id" xsi:type="string">productId</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogExport\Model\Indexer\ReviewIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">export.product.reviews</argument>
+            <argument name="updatedEventType" xsi:type="string">reviews_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">reviews_deleted</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexer"
+                 type="Magento\DataExporter\Model\Indexer\FeedIndexer">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexMetadata
+            </argument>
+            <argument name="feedIndexerCallback" xsi:type="object">
+                Magento\CatalogExport\Model\Indexer\ReviewIndexerCallback
+            </argument>
+            <argument name="serializer" xsi:type="object">
+                Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsDataSerializer
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\ProductReviewDataExporter\Model\ReviewsFeed" type="Magento\DataExporter\Model\Feed">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexMetadata
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Rating metadata feed -->
+    <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexMetadata"
+                 type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="feedName" xsi:type="string">ratingMetadata</argument>
+            <argument name="feedIdentity" xsi:type="string">ratingId</argument>
+            <argument name="sourceTableName" xsi:type="string">rating</argument>
+            <argument name="sourceTableField" xsi:type="string">rating_id</argument>
+            <argument name="scopeTableName" xsi:type="string">rating_store</argument>
+            <argument name="scopeTableField" xsi:type="string">rating_id</argument>
+            <argument name="scopeCode" xsi:type="string">store_id</argument>
+            <argument name="feedTableName" xsi:type="string">catalog_data_exporter_rating_metadata</argument>
+            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableMutableColumns" xsi:type="array">
+                <item name="feed_data" xsi:type="string">feed_data</item>
+                <item name="is_deleted" xsi:type="string">is_deleted</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\ProductReviewDataExporter\Model\Indexer\RatingDataSerializer">
+        <arguments>
+            <argument name="feedIdentity" xsi:type="string">ratingId</argument>
+            <argument name="mapping" xsi:type="array">
+                <item name="id" xsi:type="string">ratingId</item>
+                <item name="store_view_code" xsi:type="string">storeViewCode</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <virtualType name="Magento\CatalogExport\Model\Indexer\RatingMetadataIndexerCallback"
+                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexMetadata</argument>
+            <argument name="topicName" xsi:type="string">export.rating.metadata</argument>
+            <argument name="updatedEventType" xsi:type="string">rating_metadata_updated</argument>
+            <argument name="deletedEventType" xsi:type="string">rating_metadata_deleted</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexer"
+                 type="Magento\DataExporter\Model\Indexer\FeedIndexer">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexMetadata
+            </argument>
+            <argument name="feedIndexerCallback" xsi:type="object">
+                Magento\CatalogExport\Model\Indexer\RatingMetadataIndexerCallback
+            </argument>
+            <argument name="serializer" xsi:type="object">
+                Magento\ProductReviewDataExporter\Model\Indexer\RatingDataSerializer
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\ProductReviewDataExporter\Model\RatingMetadataFeed" type="Magento\DataExporter\Model\Feed">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexMetadata
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Feed pool -->
+    <type name="Magento\DataExporter\Model\FeedPool">
+        <arguments>
+            <argument name="classMap" xsi:type="array">
+                <item name="reviews" xsi:type="string">
+                    Magento\ProductReviewDataExporter\Model\ReviewsFeed
+                </item>
+                <item name="ratingMetadata" xsi:type="string">
+                    Magento\ProductReviewDataExporter\Model\RatingMetadataFeed
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Plugins -->
+    <type name="Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery">
+        <plugin name="mark_inactive_entities"
+                type="Magento\ProductReviewDataExporter\Plugin\MarkRemovedEntitiesQueryPlugin"/>
+    </type>
+    <type name="Magento\Review\Model\Rating">
+        <plugin name="reindex_rating_metadata_feed"
+                type="Magento\ProductReviewDataExporter\Plugin\ReindexRatingMetadataFeed"/>
+    </type>
+    <type name="Magento\Review\Model\Rating\Option">
+        <plugin name="reindex_rating_metadata_feed_on_option_save"
+                type="Magento\ProductReviewDataExporter\Plugin\ReindexRatingMetadataFeedOnOptionSave"/>
+    </type>
+    <type name="Magento\Review\Model\Review">
+        <plugin name="reindex_review_feed"
+                type="Magento\ProductReviewDataExporter\Plugin\ReindexReviewFeed"/>
+    </type>
+    <type name="Magento\Review\Model\ResourceModel\Rating\Option">
+        <plugin name="reindex_review_feed_on_vote_add"
+                type="Magento\ProductReviewDataExporter\Plugin\ReindexReviewFeedOnVoteAdd"/>
+    </type>
+    <type name="Magento\Review\Model\ResourceModel\Review">
+        <plugin name="reindex_review_feed_on_product_delete"
+                type="Magento\ProductReviewDataExporter\Plugin\MarkRemovedReviewsOnProductDelete"/>
+    </type>
+
+    <type name="Magento\ProductReviewDataExporter\Plugin\MarkRemovedReviewsOnProductDelete">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexMetadata
+            </argument>
+        </arguments>
+    </type>
+</config>

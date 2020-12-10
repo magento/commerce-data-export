@@ -9,6 +9,8 @@
     <preference for="Magento\CatalogExportApi\Api\ProductRepositoryInterface" type="Magento\CatalogExport\Model\ProductRepository"/>
     <preference for="Magento\CatalogExportApi\Api\CategoryRepositoryInterface" type="Magento\CatalogExport\Model\CategoryRepository"/>
     <preference for="Magento\CatalogExportApi\Api\ProductVariantRepositoryInterface" type="Magento\CatalogExport\Model\ProductVariantRepository"/>
+    <preference for="Magento\CatalogExportApi\Api\ReviewRepositoryInterface" type="Magento\CatalogExport\Model\ReviewRepository"/>
+    <preference for="Magento\CatalogExportApi\Api\RatingMetadataRepositoryInterface" type="Magento\CatalogExport\Model\RatingMetadataRepository"/>
 
     <type name="Magento\CatalogExport\Model\GenerateDTOs">
         <arguments>
@@ -16,6 +18,8 @@
                 <item name="Product" xsi:type="string">Product</item>
                 <item name="Category" xsi:type="string">Category</item>
                 <item name="ProductVariant" xsi:type="string">ProductVariant</item>
+                <item name="Review" xsi:type="string">Review</item>
+                <item name="RatingMetadata" xsi:type="string">RatingMetadata</item>
             </argument>
         </arguments>
     </type>

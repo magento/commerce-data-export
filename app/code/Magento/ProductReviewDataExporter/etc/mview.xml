@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
+    <view id="catalog_data_exporter_product_reviews"
+          class="Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexer"
+          group="indexer"
+    >
+        <subscriptions>
+            <table name="review" entity_column="review_id" />
+            <table name="review_detail" entity_column="review_id" />
+            <table name="review_store" entity_column="review_id" />
+            <table name="rating_option_vote" entity_column="review_id" />
+        </subscriptions>
+    </view>
+
+    <view id="catalog_data_exporter_rating_metadata"
+          class="Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexer"
+          group="indexer"
+    >
+        <subscriptions>
+            <table name="rating" entity_column="rating_id" />
+            <table name="rating_option" entity_column="rating_id" />
+            <table name="rating_store" entity_column="rating_id" />
+            <table name="rating_title" entity_column="rating_id" />
+        </subscriptions>
+    </view>
+</config>
