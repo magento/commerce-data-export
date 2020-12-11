@@ -8,11 +8,11 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
-use Magento\CatalogPriceDataExporter\Model\EventBuilder;
 use Magento\CatalogPriceDataExporter\Model\Query\TierPrice;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -37,11 +37,6 @@ class TierPriceEvent implements ProductPriceEventInterface
     private $storeManager;
 
     /**
-     * @var EventBuilder
-     */
-    private $eventBuilder;
-
-    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -50,20 +45,17 @@ class TierPriceEvent implements ProductPriceEventInterface
      * @param ResourceConnection $resourceConnection
      * @param TierPrice $tierPrice
      * @param StoreManagerInterface $storeManager
-     * @param EventBuilder $eventBuilder
      * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         TierPrice $tierPrice,
         StoreManagerInterface $storeManager,
-        EventBuilder $eventBuilder,
         LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->tierPrice = $tierPrice;
         $this->storeManager = $storeManager;
-        $this->eventBuilder = $eventBuilder;
         $this->logger = $logger;
     }
 
@@ -83,19 +75,19 @@ class TierPriceEvent implements ProductPriceEventInterface
             foreach ($queryArguments as $scopeId => $entityIds) {
                 $select = $this->tierPrice->getQuery($entityIds, $scopeId);
                 $cursor = $this->resourceConnection->getConnection()->query($select);
-
                 while ($row = $cursor->fetch()) {
-                    $result[$row['entity_id']][$row['scope_id']][$row['qty']][$row['customer_group_id']] = $row;
+                    $result[$row['scope_id']][$row['customer_group_id']][$row['entity_id']][$row['qty']] = $row;
                 }
             }
 
-            $events = $this->getEventData($indexData, $result);
+            $eventsData = $this->getEventData($indexData, $result);
+            $output = $this->formatEvents($eventsData);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product tier price data.');
         }
 
-        return $events;
+        return $output;
     }
 
     /**
@@ -105,60 +97,86 @@ class TierPriceEvent implements ProductPriceEventInterface
      * @param array $actualData
      *
      * @return array
-     *
-     * @throws LocalizedException
      */
     private function getEventData(array $indexData, array $actualData): array
     {
         $events = [];
-
-        foreach ($indexData as $data) {
-            $row = $actualData[$data['entity_id']][$data['scope_id']][$data['qty']][$data['customer_group']] ?? null;
-            $events[] = $this->buildEventData($data, $row);
+        foreach ($indexData as $indexDatum) {
+            $customerGroup = $indexDatum['customer_group'];
+            $scope = $indexDatum['scope_id'];
+            $qty = $indexDatum['qty'];
+            $data = $actualData[$scope][$customerGroup][$indexDatum['entity_id']][$qty] ?? null;
+            $eventType = $this->resolveEventType($qty, $data);
+            $events[$eventType][$scope][$customerGroup][] = $this->buildEventData($indexDatum, $data);
         }
-
         return $events;
+    }
+
+    /**
+     * Resolve event type
+     *
+     * @param string $qty
+     * @param array|null $data
+     *
+     * @return string
+     */
+    private function resolveEventType(string $qty, ?array $data)
+    {
+        if ($qty > 1) {
+            return $data === null ? self::EVENT_TIER_PRICE_DELETED : self::EVENT_TIER_PRICE_CHANGED;
+        }
+        return $data === null ? self::EVENT_PRICE_DELETED : self::EVENT_PRICE_CHANGED;
     }
 
     /**
      * Build event data.
      *
      * @param array $indexData
-     * @param array|null $result
+     * @param array|null $data
+     *
+     * @return array
+     */
+    private function buildEventData(array $indexData, ?array $data): array
+    {
+
+        //todo: Remove the qty, if its 1. remove the 'tier_price' if its 1?.
+        return [
+            'id' => $indexData['entity_id'],
+            'value' => $data['value'] ?? null,
+            'attribute_code' => 'tier_price',
+            'qty' => $indexData['qty'],
+            'price_type' => $data['group_price_type'] ?? null
+        ];
+    }
+
+    /**
+     * Format events output
+     *
+     * @param array $eventsData
      *
      * @return array
      *
-     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     * todo: Unify these functions across providers
      */
-    private function buildEventData(array $indexData, ?array $result): array
+    private function formatEvents(array $eventsData) : array
     {
-        $additionalData = [];
-        $scopeCode = $this->storeManager->getWebsite($indexData['scope_id'])->getCode();
-
-        // TODO refactor
-        if (null === $result || null === $result['value']) {
-            $eventType = $indexData['qty'] > 1 ? self::EVENT_TIER_PRICE_DELETED : self::EVENT_PRICE_DELETED;
-        } else {
-            $eventType = $indexData['qty'] > 1 ? self::EVENT_TIER_PRICE_CHANGED : self::EVENT_PRICE_CHANGED;
+        $output = [];
+        foreach ($eventsData as $eventType => $event) {
+            foreach ($event as $scopeId => $eventData) {
+                foreach ($eventData as $customerGroup => $eventDatum) {
+                    $scopeCode = $this->storeManager->getStore($scopeId)->getWebsite()->getCode();
+                    $output[$eventType][] = [
+                        'meta' => [
+                            'event_type' => $eventType,
+                            'website' => $scopeCode === WebsiteInterface::ADMIN_CODE ? null : $scopeCode,
+                            'customer_group' => $customerGroup,
+                        ],
+                        'data' => $eventData
+                    ];
+                }
+            }
         }
-
-        if (null !== $result) {
-            $additionalData['meta']['price_type'] = $result['group_price_type'];
-        }
-
-        if ($indexData['qty'] > 1) {
-            $additionalData['data']['qty'] = $indexData['qty'];
-        } else {
-            $additionalData['meta']['code'] = 'tier_price';
-        }
-
-        return $this->eventBuilder->build(
-            $eventType,
-            $indexData['entity_id'],
-            $scopeCode,
-            $indexData['customer_group'],
-            $result['value'] ?? null,
-            $additionalData
-        );
+        return $output;
     }
 }

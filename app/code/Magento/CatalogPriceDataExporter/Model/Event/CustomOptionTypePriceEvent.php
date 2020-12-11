@@ -9,11 +9,11 @@ declare(strict_types=1);
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableSelectedOptionValueUid;
-use Magento\CatalogPriceDataExporter\Model\EventBuilder;
 use Magento\CatalogPriceDataExporter\Model\Query\CustomOptionTypePrice;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -38,11 +38,6 @@ class CustomOptionTypePriceEvent implements ProductPriceEventInterface
     private $storeManager;
 
     /**
-     * @var EventBuilder
-     */
-    private $eventBuilder;
-
-    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -56,7 +51,6 @@ class CustomOptionTypePriceEvent implements ProductPriceEventInterface
      * @param ResourceConnection $resourceConnection
      * @param CustomOptionTypePrice $customOptionTypePrice
      * @param StoreManagerInterface $storeManager
-     * @param EventBuilder $eventBuilder
      * @param LoggerInterface $logger
      * @param CustomizableSelectedOptionValueUid $optionValueUid
      */
@@ -64,14 +58,12 @@ class CustomOptionTypePriceEvent implements ProductPriceEventInterface
         ResourceConnection $resourceConnection,
         CustomOptionTypePrice $customOptionTypePrice,
         StoreManagerInterface $storeManager,
-        EventBuilder $eventBuilder,
         LoggerInterface $logger,
         CustomizableSelectedOptionValueUid $optionValueUid
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->customOptionTypePrice = $customOptionTypePrice;
         $this->storeManager = $storeManager;
-        $this->eventBuilder = $eventBuilder;
         $this->logger = $logger;
         $this->optionValueUid = $optionValueUid;
     }
@@ -93,76 +85,91 @@ class CustomOptionTypePriceEvent implements ProductPriceEventInterface
                 $select = $this->customOptionTypePrice->getQuery($queryData['optionTypeIds'], $scopeId);
                 $cursor = $this->resourceConnection->getConnection()->query($select);
                 while ($row = $cursor->fetch()) {
-                    $result[$row['option_type_id']][$scopeId]['price'] = $row['price'];
-                    $result[$row['option_type_id']][$scopeId]['price_type'] = $row['price_type'];
-                    $result[$row['option_type_id']][$scopeId]['option_id'] = $row['option_id'];
+                    $result[$scopeId][$row['option_type_id']] = [
+                        'option_id' => $row['option_id'],
+                        'option_type_id' => $row['option_type_id'],
+                        'price' => $row['price'],
+                        'price_type' => $row['price_type']
+                    ];
                 }
             }
 
-            $events = $this->getEventsData($indexData, $result);
+            $eventsData = $this->getEventsData($result);
+            $output = $this->formatEvents($eventsData);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product custom option types price data.');
         }
 
-        return $events;
+        return $output;
     }
 
     /**
      * Retrieve prices event data
      *
-     * @param array $indexData
-     * @param array $actualData
+     * @param array $resultData
      *
      * @return array
-     *
-     * @throws NoSuchEntityException
-     * @throws \InvalidArgumentException
      */
-    private function getEventsData(array $indexData, array $actualData): array
+    private function getEventsData(array $resultData): array
     {
         $events = [];
-        foreach ($indexData as $data) {
-            $price = $actualData[$data['entity_id']][$data['scope_id']]['price'] ?? null;
-            $priceType = $actualData[$data['entity_id']][$data['scope_id']]['price_type'] ?? null;
-            $optionId = $actualData[$data['entity_id']][$data['scope_id']]['option_id'] ?? null;
-
-            if ($price !== null && $priceType !== null && $optionId !== null) {
-                $events[] = $this->buildEventData($data, $price, $priceType, $optionId);
+        foreach ($resultData as $scope => $data) {
+            foreach ($data as $priceData) {
+                $events[self::EVENT_CUSTOM_OPTION_TYPE_PRICE_CHANGED][$scope] = $this->buildEventData(
+                    $priceData,
+                );
             }
         }
-
         return $events;
     }
 
     /**
-     * Build event data.
+     * Build event data
      *
-     * @param array $indexData
-     * @param string $price
-     * @param string $priceType
-     * @param string $optionId
+     * @param array $data
+     *
+     * @return array
+     */
+    private function buildEventData(array $data): array
+    {
+        $id = $this->optionValueUid->resolve([
+            CustomizableSelectedOptionValueUid::OPTION_ID => $data['option_id'],
+            CustomizableSelectedOptionValueUid::OPTION_VALUE_ID => $data['option_type_id']
+        ]);
+
+        return [
+            'id' => $id,
+            'value' => $data['price'],
+            'price_type' => $data['price_type']
+        ];
+    }
+
+    /**
+     * Format events output
+     *
+     * @param array $eventsData
      *
      * @return array
      *
      * @throws NoSuchEntityException
-     * @throws \InvalidArgumentException
      */
-    private function buildEventData(array $indexData, string $price, string $priceType, string $optionId): array
+    private function formatEvents(array $eventsData): array
     {
-        $scopeCode = $this->storeManager->getStore($indexData['scope_id'])->getWebsite()->getCode();
-        $id = $this->optionValueUid->resolve([
-            CustomizableSelectedOptionValueUid::OPTION_ID => $optionId,
-            CustomizableSelectedOptionValueUid::OPTION_VALUE_ID => $indexData['entity_id']
-        ]);
-
-        return $this->eventBuilder->build(
-            self::EVENT_CUSTOM_OPTION_TYPE_PRICE_CHANGED,
-            $id,
-            $scopeCode,
-            null,
-            $price,
-            ['meta' => ['price_type' => $priceType]]
-        );
+        $output = [];
+        foreach ($eventsData as $eventType => $event) {
+            foreach ($event as $scopeId => $eventData) {
+                $scopeCode = $this->storeManager->getStore($scopeId)->getWebsite()->getCode();
+                $output[$eventType][] = [
+                    'meta' => [
+                        'event_type' => $eventType,
+                        'website' => $scopeCode === WebsiteInterface::ADMIN_CODE ? null : $scopeCode,
+                        'customer_group' => null,
+                    ],
+                    'data' => $eventData
+                ];
+            }
+        }
+        return $output;
     }
 }

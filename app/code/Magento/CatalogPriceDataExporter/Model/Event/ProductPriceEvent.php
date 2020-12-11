@@ -8,11 +8,11 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
-use Magento\CatalogPriceDataExporter\Model\EventBuilder;
 use Magento\CatalogPriceDataExporter\Model\Query\ProductPrice;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -37,11 +37,6 @@ class ProductPriceEvent implements ProductPriceEventInterface
     private $storeManager;
 
     /**
-     * @var EventBuilder
-     */
-    private $eventBuilder;
-
-    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -50,20 +45,17 @@ class ProductPriceEvent implements ProductPriceEventInterface
      * @param ResourceConnection $resourceConnection
      * @param ProductPrice $productPrice
      * @param StoreManagerInterface $storeManager
-     * @param EventBuilder $eventBuilder
      * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         ProductPrice $productPrice,
         StoreManagerInterface $storeManager,
-        EventBuilder $eventBuilder,
         LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->productPrice = $productPrice;
         $this->storeManager = $storeManager;
-        $this->eventBuilder = $eventBuilder;
         $this->logger = $logger;
     }
 
@@ -86,19 +78,19 @@ class ProductPriceEvent implements ProductPriceEventInterface
                 $attributes = \array_merge($queryData['attributes']);
                 $select = $this->productPrice->getQuery($queryData['ids'], $scopeId, $attributes);
                 $cursor = $this->resourceConnection->getConnection()->query($select);
-
                 while ($row = $cursor->fetch()) {
-                    $result[$row['entity_id']][$scopeId][$row['attribute_code']] = $row['value'];
+                    $result[$scopeId][$row['entity_id']][$row['attribute_code']] = $row['value'];
                 }
             }
 
-            $events = $this->getEventsData($indexData, $result);
+            $eventsData = $this->getEventsData($indexData, $result);
+            $output = $this->formatEvents($eventsData);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product price data.');
         }
 
-        return $events;
+        return $output;
     }
 
     /**
@@ -108,21 +100,19 @@ class ProductPriceEvent implements ProductPriceEventInterface
      * @param array $actualData
      *
      * @return array
-     *
-     * @throws NoSuchEntityException
      */
     private function getEventsData(array $indexData, array $actualData): array
     {
-        $events = [];
-
+        $eventsData = [];
         foreach ($indexData as $data) {
             foreach ($data['attributes'] as $attributeCode) {
-                $value = $actualData[$data['entity_id']][$data['scope_id']][$attributeCode] ?? null;
-                $events[] = $this->buildEventData($attributeCode, $data, $value);
+                $scope = $data['scope_id'];
+                $value = $actualData[$scope][$data['entity_id']][$attributeCode] ?? null;
+                $eventType = $value === null ? self::EVENT_PRICE_DELETED : self::EVENT_PRICE_CHANGED;
+                $eventsData[$eventType][$scope][] = $this->buildEventData($attributeCode, $data, $value);
             }
         }
-
-        return $events;
+        return $eventsData;
     }
 
     /**
@@ -133,21 +123,41 @@ class ProductPriceEvent implements ProductPriceEventInterface
      * @param string|null $attributeValue
      *
      * @return array
-     *
-     * @throws NoSuchEntityException
      */
     private function buildEventData(string $attributeCode, array $indexData, ?string $attributeValue): array
     {
-        $scopeCode = $this->storeManager->getStore($indexData['scope_id'])->getWebsite()->getCode();
-        $eventType = null === $attributeValue ? self::EVENT_PRICE_DELETED : self::EVENT_PRICE_CHANGED;
+        return [
+            'id' => $indexData['entity_id'],
+            'value' => $attributeValue,
+            'attribute_code' => $attributeCode
+        ];
+    }
 
-        return $this->eventBuilder->build(
-            $eventType,
-            $indexData['entity_id'],
-            $scopeCode,
-            null,
-            $attributeValue,
-            ['meta' => ['code' => $attributeCode]]
-        );
+    /**
+     * Format events output
+     *
+     * @param array $eventsData
+     *
+     * @return array
+     *
+     * @throws NoSuchEntityException
+     */
+    private function formatEvents(array $eventsData) : array
+    {
+        $output = [];
+        foreach ($eventsData as $eventType => $event) {
+            foreach ($event as $scopeId => $eventData) {
+                $scopeCode = $this->storeManager->getStore($scopeId)->getWebsite()->getCode();
+                $output[$eventType][] = [
+                    'meta' => [
+                        'event_type' => $eventType,
+                        'website' => $scopeCode === WebsiteInterface::ADMIN_CODE ? null : $scopeCode,
+                        'customer_group' => null,
+                    ],
+                    'data' => $eventData
+                ];
+            }
+        }
+        return $output;
     }
 }
