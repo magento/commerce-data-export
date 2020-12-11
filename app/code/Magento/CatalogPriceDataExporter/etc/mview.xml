@@ -47,12 +47,12 @@
             </table>
 
             <!-- Customizable option types -->
-<!--            <table name="catalog_product_option_type_value" entity_column="option_type_id">-->
-<!--                <additionalColumns>-->
-<!--                    <column name="option_id" cl_name="option_id" />-->
-<!--                    <column name="price_type" cl_name="price_type" constant="custom_option_type" />-->
-<!--                </additionalColumns>-->
-<!--            </table>-->
+            <table name="catalog_product_option_type_value" entity_column="option_type_id">
+                <additionalColumns>
+                    <column name="option_id" cl_name="option_id" />
+                    <column name="price_type" cl_name="price_type" constant="custom_option_type" />
+                </additionalColumns>
+            </table>
             <table name="catalog_product_option_type_price" entity_column="option_type_id">
                 <additionalColumns>
                     <column name="store_id" cl_name="scope_id" />
@@ -82,13 +82,12 @@
             </table>
 
             <!-- Bundle variation add / remove -->
-            <!-- todo: uncomment after https://github.com/magento/magento2/issues/31192 resolution. -->
-<!--            <table name="catalog_product_bundle_selection" entity_column="product_id">-->
-<!--                <additionalColumns>-->
-<!--                    <column name="parent_product_id" cl_name="parent_product_id"/>-->
-<!--                    <column name="price_type" cl_name="price_type" constant="bundle_variation"/>-->
-<!--                </additionalColumns>-->
-<!--            </table>-->
+            <table name="catalog_product_bundle_selection" entity_column="product_id">
+                <additionalColumns>
+                    <column name="parent_product_id" cl_name="parent_id"/>
+                    <column name="price_type" cl_name="price_type" constant="bundle_variation"/>
+                </additionalColumns>
+            </table>
         </subscriptions>
     </view>
 </config>

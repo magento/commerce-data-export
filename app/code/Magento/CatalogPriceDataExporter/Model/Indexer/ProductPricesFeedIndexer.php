@@ -14,6 +14,9 @@ use Magento\Framework\MessageQueue\PublisherInterface;
 use Magento\Framework\Mview\ActionInterface as MviewActionInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class responsible for indexing product prices and provide price change events
+ */
 class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInterface
 {
     /**
@@ -34,6 +37,7 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     /**
      * @param EventPool $eventPool
      * @param LoggerInterface $logger
+     * @param PublisherInterface $publisher
      */
     public function __construct(
         EventPool $eventPool,
