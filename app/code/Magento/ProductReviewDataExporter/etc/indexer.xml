@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
+    <indexer
+        id="catalog_data_exporter_product_reviews"
+        view_id="catalog_data_exporter_product_reviews"
+        class="Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexer"
+    >
+        <title translate="true">Product Reviews Feed</title>
+        <description translate="true">Collects data for a Product Reviews Feed</description>
+    </indexer>
+
+    <indexer
+            id="catalog_data_exporter_rating_metadata"
+            view_id="catalog_data_exporter_rating_metadata"
+            class="Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexer"
+    >
+        <title translate="true">Product Rating Metadata Feed</title>
+        <description translate="true">Collects data for a Product Rating Metadata Feed</description>
+    </indexer>
+</config>

@@ -20,6 +20,7 @@
             <using field="id" />
         </field>
     </record>
+
     <!-- TODO: delete deprecated "ImageDeprecated" type. use "Image" instead -->
     <record name="ImageDeprecated">
         <field name="url" type="String"/>
