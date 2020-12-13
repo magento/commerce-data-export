@@ -8,11 +8,11 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
+use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
 use Magento\CatalogPriceDataExporter\Model\Query\ProductPrice;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -37,6 +37,11 @@ class ProductPriceEvent implements ProductPriceEventInterface
     private $storeManager;
 
     /**
+     * @var EventKeyGenerator
+     */
+    private $eventKeyGenerator;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -45,17 +50,20 @@ class ProductPriceEvent implements ProductPriceEventInterface
      * @param ResourceConnection $resourceConnection
      * @param ProductPrice $productPrice
      * @param StoreManagerInterface $storeManager
+     * @param EventKeyGenerator $eventKeyGenerator
      * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         ProductPrice $productPrice,
         StoreManagerInterface $storeManager,
+        EventKeyGenerator $eventKeyGenerator,
         LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->productPrice = $productPrice;
         $this->storeManager = $storeManager;
+        $this->eventKeyGenerator = $eventKeyGenerator;
         $this->logger = $logger;
     }
 
@@ -83,8 +91,7 @@ class ProductPriceEvent implements ProductPriceEventInterface
                 }
             }
 
-            $eventsData = $this->getEventsData($indexData, $result);
-            $output = $this->formatEvents($eventsData);
+            $output = $this->getEventsData($indexData, $result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product price data.');
@@ -100,19 +107,23 @@ class ProductPriceEvent implements ProductPriceEventInterface
      * @param array $actualData
      *
      * @return array
+     *
+     * @throws NoSuchEntityException
      */
     private function getEventsData(array $indexData, array $actualData): array
     {
-        $eventsData = [];
+        $events = [];
         foreach ($indexData as $data) {
             foreach ($data['attributes'] as $attributeCode) {
-                $scope = $data['scope_id'];
-                $value = $actualData[$scope][$data['entity_id']][$attributeCode] ?? null;
+                $value = $actualData[$data['scope_id']][$data['entity_id']][$attributeCode] ?? null;
                 $eventType = $value === null ? self::EVENT_PRICE_DELETED : self::EVENT_PRICE_CHANGED;
-                $eventsData[$eventType][$scope][] = $this->buildEventData($attributeCode, $data, $value);
+                $websiteId = (string)$this->storeManager->getStore($data['scope_id'])->getWebsiteId();
+                $key = $this->eventKeyGenerator->generate($eventType, $websiteId, null);
+                $events[$key][] = $this->buildEventData($attributeCode, $data, $value);
             }
         }
-        return $eventsData;
+
+        return $events;
     }
 
     /**
@@ -128,36 +139,8 @@ class ProductPriceEvent implements ProductPriceEventInterface
     {
         return [
             'id' => $indexData['entity_id'],
+            'attribute_code' => $attributeCode,
             'value' => $attributeValue,
-            'attribute_code' => $attributeCode
         ];
-    }
-
-    /**
-     * Format events output
-     *
-     * @param array $eventsData
-     *
-     * @return array
-     *
-     * @throws NoSuchEntityException
-     */
-    private function formatEvents(array $eventsData) : array
-    {
-        $output = [];
-        foreach ($eventsData as $eventType => $event) {
-            foreach ($event as $scopeId => $eventData) {
-                $scopeCode = $this->storeManager->getStore($scopeId)->getWebsite()->getCode();
-                $output[$eventType][] = [
-                    'meta' => [
-                        'event_type' => $eventType,
-                        'website' => $scopeCode === WebsiteInterface::ADMIN_CODE ? null : $scopeCode,
-                        'customer_group' => null,
-                    ],
-                    'data' => $eventData
-                ];
-            }
-        }
-        return $output;
     }
 }

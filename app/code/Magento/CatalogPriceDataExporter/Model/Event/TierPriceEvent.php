@@ -8,11 +8,10 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
+use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
 use Magento\CatalogPriceDataExporter\Model\Query\TierPrice;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -37,6 +36,11 @@ class TierPriceEvent implements ProductPriceEventInterface
     private $storeManager;
 
     /**
+     * @var EventKeyGenerator
+     */
+    private $eventKeyGenerator;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -45,17 +49,20 @@ class TierPriceEvent implements ProductPriceEventInterface
      * @param ResourceConnection $resourceConnection
      * @param TierPrice $tierPrice
      * @param StoreManagerInterface $storeManager
+     * @param EventKeyGenerator $eventKeyGenerator
      * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         TierPrice $tierPrice,
         StoreManagerInterface $storeManager,
+        EventKeyGenerator $eventKeyGenerator,
         LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->tierPrice = $tierPrice;
         $this->storeManager = $storeManager;
+        $this->eventKeyGenerator = $eventKeyGenerator;
         $this->logger = $logger;
     }
 
@@ -80,8 +87,7 @@ class TierPriceEvent implements ProductPriceEventInterface
                 }
             }
 
-            $eventsData = $this->getEventData($indexData, $result);
-            $output = $this->formatEvents($eventsData);
+            $output = $this->getEventData($indexData, $result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product tier price data.');
@@ -101,14 +107,15 @@ class TierPriceEvent implements ProductPriceEventInterface
     private function getEventData(array $indexData, array $actualData): array
     {
         $events = [];
-        foreach ($indexData as $indexDatum) {
-            $customerGroup = $indexDatum['customer_group'];
-            $scope = $indexDatum['scope_id'];
-            $qty = $indexDatum['qty'];
-            $data = $actualData[$scope][$customerGroup][$indexDatum['entity_id']][$qty] ?? null;
-            $eventType = $this->resolveEventType($qty, $data);
-            $events[$eventType][$scope][$customerGroup][] = $this->buildEventData($indexDatum, $data);
+
+        foreach ($indexData as $data) {
+            $row = $actualData[$data['scope_id']][$data['customer_group']][$data['entity_id']][$data['qty']] ?? null;
+            $eventType = $this->resolveEventType($data['qty'], $row);
+
+            $key = $this->eventKeyGenerator->generate($eventType, $data['scope_id'], $data['customer_group']);
+            $events[$key][] = $this->buildEventData($data, $row);
         }
+
         return $events;
     }
 
@@ -120,11 +127,12 @@ class TierPriceEvent implements ProductPriceEventInterface
      *
      * @return string
      */
-    private function resolveEventType(string $qty, ?array $data)
+    private function resolveEventType(string $qty, ?array $data): string
     {
         if ($qty > 1) {
             return $data === null ? self::EVENT_TIER_PRICE_DELETED : self::EVENT_TIER_PRICE_CHANGED;
         }
+
         return $data === null ? self::EVENT_PRICE_DELETED : self::EVENT_PRICE_CHANGED;
     }
 
@@ -138,45 +146,12 @@ class TierPriceEvent implements ProductPriceEventInterface
      */
     private function buildEventData(array $indexData, ?array $data): array
     {
-
-        //todo: Remove the qty, if its 1. remove the 'tier_price' if its 1?.
         return [
             'id' => $indexData['entity_id'],
-            'value' => $data['value'] ?? null,
             'attribute_code' => 'tier_price',
             'qty' => $indexData['qty'],
-            'price_type' => $data['group_price_type'] ?? null
+            'price_type' => $data['group_price_type'] ?? null,
+            'value' => $data['value'] ?? null,
         ];
-    }
-
-    /**
-     * Format events output
-     *
-     * @param array $eventsData
-     *
-     * @return array
-     *
-     * @throws NoSuchEntityException
-     * todo: Unify these functions across providers
-     */
-    private function formatEvents(array $eventsData) : array
-    {
-        $output = [];
-        foreach ($eventsData as $eventType => $event) {
-            foreach ($event as $scopeId => $eventData) {
-                foreach ($eventData as $customerGroup => $eventDatum) {
-                    $scopeCode = $this->storeManager->getStore($scopeId)->getWebsite()->getCode();
-                    $output[$eventType][] = [
-                        'meta' => [
-                            'event_type' => $eventType,
-                            'website' => $scopeCode === WebsiteInterface::ADMIN_CODE ? null : $scopeCode,
-                            'customer_group' => $customerGroup,
-                        ],
-                        'data' => $eventData
-                    ];
-                }
-            }
-        }
-        return $output;
     }
 }

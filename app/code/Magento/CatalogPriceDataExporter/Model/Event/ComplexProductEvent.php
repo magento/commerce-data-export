@@ -8,11 +8,13 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
-use Magento\CatalogPriceDataExporter\Model\EventBuilder;
+use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
 use Magento\CatalogPriceDataExporter\Model\Query\ComplexProductLink;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Api\Data\WebsiteInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -26,14 +28,19 @@ class ComplexProductEvent implements ProductPriceEventInterface
     private $resourceConnection;
 
     /**
-     * @var EventBuilder
-     */
-    private $eventBuilder;
-
-    /**
      * @var ComplexProductLink
      */
     private $complexProductLink;
+
+    /**
+     * @var EventKeyGenerator
+     */
+    private $eventKeyGenerator;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
 
     /**
      * @var LoggerInterface
@@ -47,21 +54,24 @@ class ComplexProductEvent implements ProductPriceEventInterface
 
     /**
      * @param ResourceConnection $resourceConnection
-     * @param EventBuilder $eventBuilder
      * @param ComplexProductLink $complexProductLink
+     * @param EventKeyGenerator $eventKeyGenerator
+     * @param StoreManagerInterface $storeManager
      * @param LoggerInterface $logger
      * @param string $linkType
      */
     public function __construct(
         ResourceConnection $resourceConnection,
-        EventBuilder $eventBuilder,
         ComplexProductLink $complexProductLink,
+        EventKeyGenerator $eventKeyGenerator,
+        StoreManagerInterface $storeManager,
         LoggerInterface $logger,
         string $linkType
     ) {
         $this->resourceConnection = $resourceConnection;
-        $this->eventBuilder = $eventBuilder;
         $this->complexProductLink = $complexProductLink;
+        $this->eventKeyGenerator = $eventKeyGenerator;
+        $this->storeManager = $storeManager;
         $this->logger = $logger;
         $this->linkType = $linkType;
     }
@@ -109,6 +119,8 @@ class ComplexProductEvent implements ProductPriceEventInterface
      * @param array $actualData
      *
      * @return array
+     *
+     * @throws LocalizedException
      */
     private function getEventData(array $indexData, array $actualData): array
     {
@@ -116,10 +128,11 @@ class ComplexProductEvent implements ProductPriceEventInterface
 
         foreach ($indexData as $data) {
             $actualVariations = $actualData[$data['parent_id']] ?? [];
-            $event = \in_array($data['entity_id'], $actualVariations) ? self::EVENT_VARIATION_CHANGED
+            $eventType = \in_array($data['entity_id'], $actualVariations) ? self::EVENT_VARIATION_CHANGED
                 : self::EVENT_VARIATION_DELETED;
-
-            $events[] = $this->buildEventData($data['parent_id'], $data['entity_id'], $event);
+            $websiteId = (string)$this->storeManager->getWebsite(WebsiteInterface::ADMIN_CODE)->getWebsiteId();
+            $key = $this->eventKeyGenerator->generate($eventType, $websiteId, null);
+            $events[$key][] = $this->buildEventData($data['parent_id'], $data['entity_id']);
         }
 
         return $events;
@@ -130,24 +143,15 @@ class ComplexProductEvent implements ProductPriceEventInterface
      *
      * @param string $parentId
      * @param string $variationId
-     * @param string $eventType
      *
      * @return array
      */
-    private function buildEventData(string $parentId, string $variationId, string $eventType): array
+    private function buildEventData(string $parentId, string $variationId): array
     {
-        $additionalData = [
-            'meta' => ['price_type' => $this->linkType],
-            'data' => ['variation_id' => $variationId]
+        return [
+            'id' => $parentId,
+            'variation_id' => $variationId,
+            'price_type' => $this->linkType,
         ];
-
-        return $this->eventBuilder->build(
-            $eventType,
-            $parentId,
-            WebsiteInterface::ADMIN_CODE,
-            null,
-            null,
-            $additionalData
-        );
     }
 }

@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableEnteredOptionValueUid;
+use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
 use Magento\CatalogPriceDataExporter\Model\Query\CustomOptionPrice;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
@@ -38,34 +39,42 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
     private $storeManager;
 
     /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
      * @var CustomizableEnteredOptionValueUid
      */
     private $optionValueUid;
 
     /**
+     * @var EventKeyGenerator
+     */
+    private $eventKeyGenerator;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param CustomOptionPrice $customOptionPrice
      * @param StoreManagerInterface $storeManager
-     * @param LoggerInterface $logger
      * @param CustomizableEnteredOptionValueUid $optionValueUid
+     * @param EventKeyGenerator $eventKeyGenerator
+     * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         CustomOptionPrice $customOptionPrice,
         StoreManagerInterface $storeManager,
-        LoggerInterface $logger,
-        CustomizableEnteredOptionValueUid $optionValueUid
+        CustomizableEnteredOptionValueUid $optionValueUid,
+        EventKeyGenerator $eventKeyGenerator,
+        LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->customOptionPrice = $customOptionPrice;
         $this->storeManager = $storeManager;
-        $this->logger = $logger;
         $this->optionValueUid = $optionValueUid;
+        $this->eventKeyGenerator = $eventKeyGenerator;
+        $this->logger = $logger;
     }
 
     /**
@@ -88,12 +97,12 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
                     $result[$scopeId][$row['option_id']] = [
                         'option_id' => $row['option_id'],
                         'price' => $row['price'],
-                        'price_type' => $row['price_type']
+                        'price_type' => $row['price_type'],
                     ];
                 }
             }
-            $eventsData = $this->getEventData($result);
-            $output = $this->formatEvents($eventsData);
+
+            $output = $this->getEventData($result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product custom options price data.');
@@ -106,18 +115,24 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
      * Retrieve prices event data
      *
      * @param array $resultData
+     *
      * @return array
      *
      * @throws NoSuchEntityException
+     * @throws \InvalidArgumentException
      */
     private function getEventData(array $resultData): array
     {
         $events = [];
-        foreach ($resultData as $scope => $pricesData) {
+
+        foreach ($resultData as $scopeId => $pricesData) {
             foreach ($pricesData as $priceData) {
-                $events[self::EVENT_CUSTOM_OPTION_PRICE_CHANGED][$scope][] = $this->buildEventData($priceData);
+                $websiteId = (string)$this->storeManager->getStore($scopeId)->getWebsiteId();
+                $key = $this->eventKeyGenerator->generate(self::EVENT_CUSTOM_OPTION_PRICE_CHANGED, $websiteId, null);
+                $events[$key][] = $this->buildEventData($priceData);
             }
         }
+
         return $events;
     }
 
@@ -127,42 +142,17 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
      * @param array $data
      *
      * @return array
+     *
+     * @throws \InvalidArgumentException
      */
     private function buildEventData(array $data): array
     {
         $id = $this->optionValueUid->resolve([CustomizableEnteredOptionValueUid::OPTION_ID => $data['option_id']]);
+
         return [
             'id' => $id,
             'value' => $data['price'],
-            'price_type' => $data['price_type']
+            'price_type' => $data['price_type'],
         ];
-    }
-
-    /**
-     * Format events output
-     *
-     * @param array $eventsData
-     *
-     * @return array
-     *
-     * @throws NoSuchEntityException
-     */
-    private function formatEvents(array $eventsData): array
-    {
-        $output = [];
-        foreach ($eventsData as $eventType => $event) {
-            foreach ($event as $scopeId => $eventData) {
-                $scopeCode = $this->storeManager->getStore($scopeId)->getWebsite()->getCode();
-                $output[$eventType][] = [
-                    'meta' => [
-                        'event_type' => $eventType,
-                        'website' => $scopeCode === WebsiteInterface::ADMIN_CODE ? null : $scopeCode,
-                        'customer_group' => null,
-                    ],
-                    'data' => $eventData
-                ];
-            }
-        }
-        return $output;
     }
 }

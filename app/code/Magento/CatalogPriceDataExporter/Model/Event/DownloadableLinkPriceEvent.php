@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\DownloadableLinksOptionUid;
-use Magento\CatalogPriceDataExporter\Model\EventBuilder;
+use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
 use Magento\CatalogPriceDataExporter\Model\Query\DownloadableLinkPrice;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
@@ -38,14 +38,14 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
     private $storeManager;
 
     /**
-     * @var EventBuilder
-     */
-    private $eventBuilder;
-
-    /**
      * @var DownloadableLinksOptionUid
      */
     private $downloadableLinksOptionUid;
+
+    /**
+     * @var EventKeyGenerator
+     */
+    private $eventKeyGenerator;
 
     /**
      * @var LoggerInterface
@@ -56,23 +56,23 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
      * @param ResourceConnection $resourceConnection
      * @param DownloadableLinkPrice $downloadableLinkPrice
      * @param StoreManagerInterface $storeManager
-     * @param EventBuilder $eventBuilder
      * @param DownloadableLinksOptionUid $downloadableLinksOptionUid
+     * @param EventKeyGenerator $eventKeyGenerator
      * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         DownloadableLinkPrice $downloadableLinkPrice,
         StoreManagerInterface $storeManager,
-        EventBuilder $eventBuilder,
         DownloadableLinksOptionUid $downloadableLinksOptionUid,
+        EventKeyGenerator $eventKeyGenerator,
         LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->downloadableLinkPrice = $downloadableLinkPrice;
         $this->storeManager = $storeManager;
-        $this->eventBuilder = $eventBuilder;
         $this->downloadableLinksOptionUid = $downloadableLinksOptionUid;
+        $this->eventKeyGenerator = $eventKeyGenerator;
         $this->logger = $logger;
     }
 
@@ -124,7 +124,11 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
 
         foreach ($indexData as $data) {
             $value = $actualData[$data['entity_id']][$data['scope_id']] ?? null;
-            $events[] = $this->buildEventData($data, $value);
+            $eventType = null === $value ? self::EVENT_DOWNLOADABLE_LINK_PRICE_DELETED :
+                self::EVENT_DOWNLOADABLE_LINK_PRICE_CHANGED;
+            $websiteId = (string)$this->storeManager->getStore($data['scope_id'])->getWebsiteId();
+            $key = $this->eventKeyGenerator->generate($eventType, $websiteId, null);
+            $events[$key][] = $this->buildEventData($data, $value);
         }
 
         return $events;
@@ -138,25 +142,19 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
      *
      * @return array
      *
-     * @throws LocalizedException
      * @throws \InvalidArgumentException
      */
     private function buildEventData(array $indexData, ?string $value): array
     {
-        $scopeCode = $this->storeManager->getWebsite($indexData['scope_id'])->getCode();
-        $eventType = null === $value ? self::EVENT_DOWNLOADABLE_LINK_PRICE_DELETED :
-            self::EVENT_DOWNLOADABLE_LINK_PRICE_CHANGED;
-
-        return $this->eventBuilder->build(
-            $eventType,
-            $this->downloadableLinksOptionUid->resolve(
-                [
-                    DownloadableLinksOptionUid::OPTION_ID => $indexData['entity_id'],
-                ]
-            ),
-            $scopeCode,
-            null,
-            $value
+        $id = $this->downloadableLinksOptionUid->resolve(
+            [
+                DownloadableLinksOptionUid::OPTION_ID => $indexData['entity_id'],
+            ]
         );
+
+        return [
+            'id' => $id,
+            'value' => $value,
+        ];
     }
 }

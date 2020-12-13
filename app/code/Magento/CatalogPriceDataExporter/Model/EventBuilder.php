@@ -4,50 +4,72 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model;
 
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Api\Data\WebsiteInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
- * Class responsible for building event data array
+ * Class responsible for building event data array chunks
  */
 class EventBuilder
 {
     /**
-     * Build event data.
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+
+    /**
+     * @var EventKeyGenerator
+     */
+    private $eventKeyGenerator;
+
+    /**
+     * @var int
+     */
+    private $batchSize;
+
+    /**
+     * @param StoreManagerInterface $storeManager
+     * @param EventKeyGenerator $eventKeyGenerator
+     * @param int $batchSize
+     */
+    public function __construct(
+        StoreManagerInterface $storeManager,
+        EventKeyGenerator $eventKeyGenerator,
+        int $batchSize = 100
+    ) {
+        $this->storeManager = $storeManager;
+        $this->eventKeyGenerator = $eventKeyGenerator;
+        $this->batchSize = $batchSize;
+    }
+
+    /**
+     * Build events data chunks.
      *
-     * @param string $eventType
-     * @param string $entityId
-     * @param string $scopeCode
-     * @param string|null $customerGroup
-     * @param string|null $value
-     * @param array $additionalData
+     * @param array $priceEvents
      *
      * @return array
+     *
+     * @throws LocalizedException
      */
-    public function build(
-        string $eventType,
-        string $entityId,
-        string $scopeCode,
-        ?string $customerGroup,
-        ?string $value,
-        array $additionalData = []
-    ): array {
-        $output = [
-            'meta' => [
-                'type' => $eventType,
-            ],
-            'data' => [
-                'id' => $entityId,
-                'w' => $scopeCode === WebsiteInterface::ADMIN_CODE ? null : $scopeCode,
-                'cg' => $customerGroup,
-            ]
-        ];
+    public function build(array $priceEvents) : array
+    {
+        $output = [];
 
-        if (null !== $value) {
-            $output['data']['value'] = $value;
-        }
+        foreach ($priceEvents as $key => $data) {
+            $metaData = $this->eventKeyGenerator->resolveKey($key);
+            $websiteCode = $this->storeManager->getWebsite($metaData['website_id'])->getCode();
 
-        if (!empty($additionalData)) {
-            $output = \array_merge_recursive($output, $additionalData);
+            foreach (\array_chunk($data, $this->batchSize) as $events) {
+                $output[] = [
+                    'meta' => [
+                        'event_type' => $metaData['event_type'],
+                        'website' => $websiteCode === WebsiteInterface::ADMIN_CODE ? null : $websiteCode,
+                        'customer_group' => $metaData['customer_group_id'] ?: null,
+                    ],
+                    'data' => $events,
+                ];
+            }
         }
 
         return $output;

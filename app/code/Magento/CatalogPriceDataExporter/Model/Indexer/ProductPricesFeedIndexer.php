@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model\Indexer;
 
+use Magento\CatalogPriceDataExporter\Model\EventBuilder;
 use Magento\CatalogPriceDataExporter\Model\EventPool;
 use Magento\Framework\Indexer\ActionInterface as IndexerActionInterface;
 use Magento\Framework\MessageQueue\PublisherInterface;
@@ -25,6 +26,11 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     private $eventPool;
 
     /**
+     * @var EventBuilder
+     */
+    private $eventBuilder;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -36,15 +42,18 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
 
     /**
      * @param EventPool $eventPool
+     * @param EventBuilder $eventBuilder
      * @param LoggerInterface $logger
      * @param PublisherInterface $publisher
      */
     public function __construct(
         EventPool $eventPool,
+        EventBuilder $eventBuilder,
         LoggerInterface $logger,
         PublisherInterface $publisher
     ) {
         $this->eventPool = $eventPool;
+        $this->eventBuilder = $eventBuilder;
         $this->logger = $logger;
         $this->publisher = $publisher;
     }
@@ -52,7 +61,7 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     /**
      * @inheritdoc
      */
-    public function executeFull()
+    public function executeFull(): void
     {
         // TODO: Implement executeFull() method.
     }
@@ -60,7 +69,7 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     /**
      * @inheritdoc
      */
-    public function executeList(array $ids)
+    public function executeList(array $ids): void
     {
         // TODO: Implement executeList() method.
     }
@@ -68,7 +77,7 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     /**
      * @inheritdoc
      */
-    public function executeRow($id)
+    public function executeRow($id): void
     {
         // TODO: Implement executeRow() method.
     }
@@ -76,7 +85,7 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     /**
      * @inheritdoc
      */
-    public function execute($ids)
+    public function execute($ids): void
     {
         $events = [];
 
@@ -86,11 +95,17 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
             $events[] = $this->eventPool->getEventResolver($priceType)->retrieve($data);
         }
 
-        $events = !empty($events) ? \array_merge(...$events) : [];
-        $this->logger->info('Product price events.', ['events' => $events]);
+        $events = !empty($events) ? \array_merge_recursive(...$events) : [];
 
-        //todo: add a callback
-        $this->publisher->publish('export.product.prices', json_encode($events));
+        if (!empty($events)) {
+            $events = $this->eventBuilder->build($events);
+            $this->logger->info('Product price events.', ['events' => $events]);
+
+            //todo: add a callback
+            foreach ($events as $eventData) {
+                $this->publisher->publish('export.product.prices', \json_encode($eventData));
+            }
+        }
     }
 
     /**

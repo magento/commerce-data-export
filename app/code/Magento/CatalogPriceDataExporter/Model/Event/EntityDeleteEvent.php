@@ -9,11 +9,13 @@ declare(strict_types=1);
 namespace Magento\CatalogPriceDataExporter\Model\Event;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\OptionValueUidInterface;
-use Magento\CatalogPriceDataExporter\Model\EventBuilder;
+use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
 use Magento\CatalogPriceDataExporter\Model\Query\EntityDelete;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Api\Data\WebsiteInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -32,9 +34,14 @@ class EntityDeleteEvent implements ProductPriceEventInterface
     private $entityDelete;
 
     /**
-     * @var EventBuilder
+     * @var EventKeyGenerator
      */
-    private $eventBuilder;
+    private $eventKeyGenerator;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
 
     /**
      * @var LoggerInterface
@@ -54,7 +61,8 @@ class EntityDeleteEvent implements ProductPriceEventInterface
     /**
      * @param ResourceConnection $resourceConnection
      * @param EntityDelete $entityDelete
-     * @param EventBuilder $eventBuilder
+     * @param EventKeyGenerator $eventKeyGenerator
+     * @param StoreManagerInterface $storeManager
      * @param LoggerInterface $logger
      * @param string $eventType
      * @param array|null $uidResolverData
@@ -62,14 +70,16 @@ class EntityDeleteEvent implements ProductPriceEventInterface
     public function __construct(
         ResourceConnection $resourceConnection,
         EntityDelete $entityDelete,
-        EventBuilder $eventBuilder,
+        EventKeyGenerator $eventKeyGenerator,
+        StoreManagerInterface $storeManager,
         LoggerInterface $logger,
         string $eventType,
         ?array $uidResolverData = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->entityDelete = $entityDelete;
-        $this->eventBuilder = $eventBuilder;
+        $this->eventKeyGenerator = $eventKeyGenerator;
+        $this->storeManager = $storeManager;
         $this->logger = $logger;
         $this->eventType = $eventType;
         $this->uidResolverData = $uidResolverData;
@@ -113,6 +123,7 @@ class EntityDeleteEvent implements ProductPriceEventInterface
      * @return array
      *
      * @throws \InvalidArgumentException
+     * @throws LocalizedException
      */
     private function getEventsData(array $indexData, array $actualData): array
     {
@@ -120,31 +131,15 @@ class EntityDeleteEvent implements ProductPriceEventInterface
 
         foreach ($indexData as $data) {
             if (!isset($actualData[$data['entity_id']])) {
-                $events[] = $this->buildEventData($data);
+                $websiteId = (string)$this->storeManager->getWebsite(WebsiteInterface::ADMIN_CODE)->getWebsiteId();
+                $key = $this->eventKeyGenerator->generate($this->eventType, $websiteId, null);
+                $events[$key][] = [
+                    'id' => $this->resolveId($data),
+                ];
             }
         }
 
         return $events;
-    }
-
-    /**
-     * Build event data.
-     *
-     * @param array $indexData
-     *
-     * @return array
-     *
-     * @throws \InvalidArgumentException
-     */
-    private function buildEventData(array $indexData): array
-    {
-        return $this->eventBuilder->build(
-            $this->eventType,
-            $this->resolveId($indexData),
-            WebsiteInterface::ADMIN_CODE,
-            null,
-            null
-        );
     }
 
     /**
