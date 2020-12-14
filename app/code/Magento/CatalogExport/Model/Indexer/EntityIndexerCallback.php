@@ -103,23 +103,21 @@ class EntityIndexerCallback implements FeedIndexerCallbackInterface
     public function execute(array $entityData, array $deleteIds) : void
     {
         foreach ($this->getDeleteEntitiesData($deleteIds) as $storeCode => $entities) {
-            $scope = $storeCode ?: null;
             foreach (\array_chunk($entities, $this->batchSize) as $chunk) {
                 $this->publishMessage(
                     $this->deletedEventType,
                     $chunk,
-                    $scope
+                    $storeCode
                 );
             }
         }
 
         foreach ($this->getUpdateEntitiesData($entityData) as $storeCode => $entities) {
-            $scope = $storeCode ?: null;
             foreach (\array_chunk($entities, $this->batchSize) as $chunk) {
                 $this->publishMessage(
                     $this->updatedEventType,
                     $chunk,
-                    $scope
+                    $storeCode
                 );
             }
         }
@@ -138,7 +136,7 @@ class EntityIndexerCallback implements FeedIndexerCallbackInterface
         $feed = $this->feedPool->getFeed($this->feedIndexMetadata->getFeedName());
         foreach ($feed->getDeletedByIds($deleteIds) as $entity) {
             $deleted[$entity['storeViewCode'] ?? null][] = [
-                'entity_id' => (string)$entity[$this->feedIndexMetadata->getFeedIdentity()],
+                'entity_id' => $entity[$this->feedIndexMetadata->getFeedIdentity()],
             ];
         }
 
@@ -157,7 +155,7 @@ class EntityIndexerCallback implements FeedIndexerCallbackInterface
         $entitiesArray = [];
         foreach ($entityData as $entity) {
             $entitiesArray[$entity['storeViewCode'] ?? null][] = [
-                'entity_id' => (string)$entity[$this->feedIndexMetadata->getFeedIdentity()],
+                'entity_id' => $entity[$this->feedIndexMetadata->getFeedIdentity()],
                 'attributes' => $entity['attributes'] ?? [],
             ];
         }
@@ -170,13 +168,13 @@ class EntityIndexerCallback implements FeedIndexerCallbackInterface
      *
      * @param string $eventType
      * @param array $entities
-     * @param string|null $scope
+     * @param string $scope
      *
      * @return void
      */
-    private function publishMessage(string $eventType, array $entities, ?string $scope): void
+    private function publishMessage(string $eventType, array $entities, string $scope): void
     {
-        $message = $this->messageBuilder->build($eventType, $entities, $scope);
+        $message = $this->messageBuilder->build($eventType, $entities, $scope ?: null);
 
         try {
             $this->queuePublisher->publish($this->topicName, $message);

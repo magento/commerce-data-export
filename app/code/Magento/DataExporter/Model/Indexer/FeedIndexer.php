@@ -55,12 +55,18 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     protected $feedPool;
 
     /**
+     * @var MarkRemovedEntitiesInterface
+     */
+    private $markRemovedEntities;
+
+    /**
      * @param Processor $processor
      * @param ResourceConnection $resourceConnection
      * @param DataSerializerInterface $serializer
      * @param FeedIndexMetadata $feedIndexMetadata
      * @param FeedIndexerCallbackInterface $feedIndexerCallback
      * @param FeedPool $feedPool
+     * @param MarkRemovedEntitiesInterface $markRemovedEntities
      * @param array $callbackSkipAttributes
      */
     public function __construct(
@@ -70,6 +76,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         FeedIndexMetadata $feedIndexMetadata,
         FeedIndexerCallbackInterface $feedIndexerCallback,
         FeedPool $feedPool,
+        MarkRemovedEntitiesInterface $markRemovedEntities,
         array $callbackSkipAttributes = []
     ) {
         $this->processor = $processor;
@@ -78,6 +85,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         $this->dataSerializer = $serializer;
         $this->feedIndexerCallback = $feedIndexerCallback;
         $this->feedPool = $feedPool;
+        $this->markRemovedEntities = $markRemovedEntities;
         $this->callbackSkipAttributes = $callbackSkipAttributes;
     }
 
@@ -137,7 +145,10 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     {
         $this->truncateFeedTable();
         foreach ($this->getAllIds() as $ids) {
-            $this->markRemoved($ids);
+            $this->markRemovedEntities->execute(
+                \array_column($ids, $this->feedIndexMetadata->getFeedIdentity()),
+                $this->feedIndexMetadata
+            );
             $this->process($ids);
         }
     }
@@ -154,7 +165,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         foreach ($ids as $id) {
             $arguments[] = [$this->feedIndexMetadata->getFeedIdentity() => $id];
         }
-        $this->markRemoved($ids);
+        $this->markRemovedEntities->execute($ids, $this->feedIndexMetadata);
         $this->process($arguments);
     }
 
@@ -166,7 +177,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      */
     public function executeRow($id)
     {
-        $this->markRemoved([$id]);
+        $this->markRemovedEntities->execute([$id], $this->feedIndexMetadata);
         $this->process([[$this->feedIndexMetadata->getFeedIdentity() => $id]]);
     }
 
@@ -188,7 +199,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
             ];
         }
 
-        $this->markRemoved(\array_column($arguments, $feedIdentity));
+        $this->markRemovedEntities->execute(\array_column($arguments, $feedIdentity), $this->feedIndexMetadata);
         $this->process($arguments);
     }
 
@@ -269,7 +280,8 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
 
         foreach ($chunk as &$feedData) {
-            $existingData = $existingFeedData[$feedData['storeViewCode']][$feedData[$feedIdentity]] ?? null;
+            $storeViewCode = $feedData['storeViewCode'] ?? null;
+            $existingData = $existingFeedData[$storeViewCode][$feedData[$feedIdentity]] ?? null;
             $attributes = [];
 
             if (null !== $existingData) {
@@ -282,7 +294,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
             $callbackData[] = \array_filter(
                 [
                     $feedIdentity => $feedData[$feedIdentity],
-                    'storeViewCode' => $feedData['storeViewCode'],
+                    'storeViewCode' => $storeViewCode,
                     'attributes' => $attributes,
                 ]
             );
@@ -309,37 +321,6 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         }
 
         return $output;
-    }
-
-    /**
-     * Mark field removed
-     *
-     * @param array $ids
-     * @return void
-     */
-    private function markRemoved(array $ids) : void
-    {
-        $connection = $this->resourceConnection->getConnection();
-        $select = $connection->select()
-            ->joinLeft(
-                ['s' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getSourceTableName())],
-                sprintf(
-                    'f.%s = s.%s',
-                    $this->feedIndexMetadata->getFeedTableField(),
-                    $this->feedIndexMetadata->getSourceTableField()
-                ),
-                ['is_deleted' => new \Zend_Db_Expr('1')]
-            )
-            ->where(sprintf('s.%s IS NULL', $this->feedIndexMetadata->getSourceTableField()))
-            ->where(
-                sprintf('f.%s IN (?)', $this->feedIndexMetadata->getFeedTableField()),
-                $ids
-            );
-        $update = $connection->updateFromSelect(
-            $select,
-            ['f' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName())]
-        );
-        $connection->query($update);
     }
 
     /**

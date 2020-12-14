@@ -28,5 +28,8 @@ return [
         'Magento\Framework\MessageQueue'
     ],
     'app/code/Magento/ConfigurationDataExporter/etc/di.xml' => ['Magento\Config'],
-    'app/code/Magento/CatalogExport/etc/di.xml' => ['Magento\CatalogExportApi']
+    'app/code/Magento/CatalogExport/etc/di.xml' => ['Magento\CatalogExportApi'],
+    'app/code/Magento/CatalogExport/Model/GenerateDTOs.php' => [
+        'Magento\DataExporter',
+    ],
 ];

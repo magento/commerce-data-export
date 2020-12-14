@@ -249,6 +249,9 @@
             <argument name="feedIdentity" xsi:type="string">productId</argument>
             <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
+            <argument name="scopeTableName" xsi:type="string">catalog_product_website</argument>
+            <argument name="scopeTableField" xsi:type="string">product_id</argument>
+            <argument name="scopeCode" xsi:type="string">website_id</argument>
             <argument name="feedTableName" xsi:type="string">catalog_data_exporter_products</argument>
             <argument name="feedTableField" xsi:type="string">id</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">
