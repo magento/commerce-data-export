@@ -128,7 +128,7 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
                 self::EVENT_DOWNLOADABLE_LINK_PRICE_CHANGED;
             $websiteId = (string)$this->storeManager->getStore($data['scope_id'])->getWebsiteId();
             $key = $this->eventKeyGenerator->generate($eventType, $websiteId, null);
-            $events[$key][] = $this->buildEventData($data, $value);
+            $events[$key][] = $this->buildEventData($data['entity_id'], $value);
         }
 
         return $events;
@@ -137,20 +137,16 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
     /**
      * Build event data.
      *
-     * @param array $indexData
+     * @param string $entityId
      * @param string|null $value
      *
      * @return array
      *
      * @throws \InvalidArgumentException
      */
-    private function buildEventData(array $indexData, ?string $value): array
+    private function buildEventData(string $entityId, ?string $value): array
     {
-        $id = $this->downloadableLinksOptionUid->resolve(
-            [
-                DownloadableLinksOptionUid::OPTION_ID => $indexData['entity_id'],
-            ]
-        );
+        $id = $this->downloadableLinksOptionUid->resolve([DownloadableLinksOptionUid::OPTION_ID => $entityId]);
 
         return [
             'id' => $id,

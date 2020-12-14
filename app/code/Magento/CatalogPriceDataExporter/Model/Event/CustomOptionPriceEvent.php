@@ -93,6 +93,7 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
             foreach ($queryArguments as $scopeId => $queryData) {
                 $select = $this->customOptionPrice->getQuery($queryData['optionIds'], $scopeId);
                 $cursor = $this->resourceConnection->getConnection()->query($select);
+
                 while ($row = $cursor->fetch()) {
                     $result[$scopeId][$row['option_id']] = [
                         'option_id' => $row['option_id'],

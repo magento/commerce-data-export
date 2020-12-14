@@ -133,9 +133,7 @@ class EntityDeleteEvent implements ProductPriceEventInterface
             if (!isset($actualData[$data['entity_id']])) {
                 $websiteId = (string)$this->storeManager->getWebsite(WebsiteInterface::ADMIN_CODE)->getWebsiteId();
                 $key = $this->eventKeyGenerator->generate($this->eventType, $websiteId, null);
-                $events[$key][] = [
-                    'id' => $this->resolveId($data),
-                ];
+                $events[$key][] = ['id' => $this->resolveId($data)];
             }
         }
 

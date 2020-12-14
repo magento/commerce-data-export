@@ -86,6 +86,7 @@ class ProductPriceEvent implements ProductPriceEventInterface
                 $attributes = \array_merge($queryData['attributes']);
                 $select = $this->productPrice->getQuery($queryData['ids'], $scopeId, $attributes);
                 $cursor = $this->resourceConnection->getConnection()->query($select);
+
                 while ($row = $cursor->fetch()) {
                     $result[$scopeId][$row['entity_id']][$row['attribute_code']] = $row['value'];
                 }
@@ -119,7 +120,7 @@ class ProductPriceEvent implements ProductPriceEventInterface
                 $eventType = $value === null ? self::EVENT_PRICE_DELETED : self::EVENT_PRICE_CHANGED;
                 $websiteId = (string)$this->storeManager->getStore($data['scope_id'])->getWebsiteId();
                 $key = $this->eventKeyGenerator->generate($eventType, $websiteId, null);
-                $events[$key][] = $this->buildEventData($attributeCode, $data, $value);
+                $events[$key][] = $this->buildEventData($data['entity_id'], $attributeCode, $value);
             }
         }
 
@@ -129,16 +130,16 @@ class ProductPriceEvent implements ProductPriceEventInterface
     /**
      * Build event data.
      *
+     * @param string $entityId
      * @param string $attributeCode
-     * @param array $indexData
      * @param string|null $attributeValue
      *
      * @return array
      */
-    private function buildEventData(string $attributeCode, array $indexData, ?string $attributeValue): array
+    private function buildEventData(string $entityId, string $attributeCode, ?string $attributeValue): array
     {
         return [
-            'id' => $indexData['entity_id'],
+            'id' => $entityId,
             'attribute_code' => $attributeCode,
             'value' => $attributeValue,
         ];

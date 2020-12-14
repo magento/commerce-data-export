@@ -82,6 +82,7 @@ class TierPriceEvent implements ProductPriceEventInterface
             foreach ($queryArguments as $scopeId => $entityIds) {
                 $select = $this->tierPrice->getQuery($entityIds, $scopeId);
                 $cursor = $this->resourceConnection->getConnection()->query($select);
+
                 while ($row = $cursor->fetch()) {
                     $result[$row['scope_id']][$row['customer_group_id']][$row['entity_id']][$row['qty']] = $row;
                 }

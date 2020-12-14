@@ -93,12 +93,13 @@ class CustomOptionTypePriceEvent implements ProductPriceEventInterface
             foreach ($queryArguments as $scopeId => $queryData) {
                 $select = $this->customOptionTypePrice->getQuery($queryData['optionTypeIds'], $scopeId);
                 $cursor = $this->resourceConnection->getConnection()->query($select);
+
                 while ($row = $cursor->fetch()) {
                     $result[$scopeId][$row['option_type_id']] = [
                         'option_id' => $row['option_id'],
                         'option_type_id' => $row['option_type_id'],
                         'price' => $row['price'],
-                        'price_type' => $row['price_type']
+                        'price_type' => $row['price_type'],
                     ];
                 }
             }
@@ -129,7 +130,11 @@ class CustomOptionTypePriceEvent implements ProductPriceEventInterface
         foreach ($resultData as $scopeId => $data) {
             foreach ($data as $priceData) {
                 $websiteId = (string)$this->storeManager->getStore($scopeId)->getWebsiteId();
-                $key = $this->eventKeyGenerator->generate(self::EVENT_CUSTOM_OPTION_TYPE_PRICE_CHANGED, $websiteId, null);
+                $key = $this->eventKeyGenerator->generate(
+                    self::EVENT_CUSTOM_OPTION_TYPE_PRICE_CHANGED,
+                    $websiteId,
+                    null
+                );
                 $events[$key][] = $this->buildEventData($priceData);
             }
         }
