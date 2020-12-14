@@ -63,13 +63,14 @@ class EventBuilder
         foreach ($priceEvents as $key => $data) {
             $metaData = $this->eventKeyGenerator->resolveKey($key);
             $websiteCode = $this->storeManager->getWebsite($metaData['website_id'])->getCode();
+            $customerGroupId = \is_numeric($metaData['customer_group_id']) ? $metaData['customer_group_id'] : null;
 
             foreach (\array_chunk($data, $this->batchSize) as $events) {
                 $output[] = [
                     'meta' => [
                         'event_type' => $metaData['event_type'],
                         'website' => $websiteCode === WebsiteInterface::ADMIN_CODE ? null : $websiteCode,
-                        'customer_group' => $metaData['customer_group_id'] ?: null,
+                        'customer_group' => $customerGroupId,
                     ],
                     'data' => $events,
                 ];
