@@ -14,6 +14,9 @@ use Magento\Framework\Mview\View\ChangeLogBatchWalkerInterface;
 use Magento\Framework\Mview\View\ChangelogInterface;
 use Magento\Framework\Mview\View\ChangelogTableNotExistsException;
 
+/**
+ * Changelog table batch walker
+ */
 class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
 {
     /**
