@@ -19,6 +19,12 @@
   },
   "require": {
     "php": "~7.2.0||~7.3.0||~7.4.0",
-    "magento/framework": "*"
+    "magento/framework": "*",
+    "magento/module-store": "*",
+    "magento/module-data-exporter": "*",
+    "magento/module-catalog-data-exporter": "*",
+    "magento/module-catalog": "*",
+    "magento/module-downloadable": "*",
+    "magento/module-eav": "*"
   }
 }
