@@ -51,7 +51,6 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
             throw new ChangelogTableNotExistsException(__('Table %1 does not exist', [$changelogTableName]));
         }
 
-        // TODO handle columns in "more dynamic way"
         $select = $connection->select()
             ->from(['cl' => $changelogTableName], [])
             ->joinLeft(

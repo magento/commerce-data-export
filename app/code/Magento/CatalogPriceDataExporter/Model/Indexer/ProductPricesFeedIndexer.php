@@ -95,13 +95,9 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
             $events[] = $this->eventPool->getEventResolver($priceType)->retrieve($data);
         }
 
-        $events = !empty($events) ? \array_merge_recursive(...$events) : [];
-
         if (!empty($events)) {
-            $events = $this->eventBuilder->build($events);
-            $this->logger->info('Product price events.', ['events' => $events]);
+            $events = $this->eventBuilder->build(\array_merge_recursive(...$events));
 
-            //todo: add a callback
             foreach ($events as $eventData) {
                 $this->publisher->publish('export.product.prices', \json_encode($eventData));
             }
@@ -120,7 +116,7 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
         $output = [];
         foreach ($indexData as $data) {
             if (!\is_array($data)) {
-                continue; // TODO throw exception / log error
+                continue;
             }
 
             $output[$data['price_type']][] = $data;
