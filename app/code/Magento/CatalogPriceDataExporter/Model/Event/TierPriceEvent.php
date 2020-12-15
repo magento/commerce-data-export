@@ -69,8 +69,9 @@ class TierPriceEvent implements ProductPriceEventInterface
     /**
      * @inheritdoc
      */
-    public function retrieve(array $indexData): array
+    public function retrieve(array $indexData): \Generator
     {
+        yield [];
         $result = [];
         $queryArguments = [];
 

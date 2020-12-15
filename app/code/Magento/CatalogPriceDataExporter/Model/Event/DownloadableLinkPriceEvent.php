@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Class responsible for providing downloadable product link price events
  */
-class DownloadableLinkPriceEvent implements ProductPriceEventInterface
+class DownloadableLinkPriceEvent
 {
     /**
      * @var ResourceConnection

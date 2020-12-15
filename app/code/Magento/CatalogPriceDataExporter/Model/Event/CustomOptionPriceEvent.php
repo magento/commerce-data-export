@@ -21,7 +21,7 @@ use Magento\Store\Api\Data\WebsiteInterface;
 /**
  * Class responsible for providing custom option price events
  */
-class CustomOptionPriceEvent implements ProductPriceEventInterface
+class CustomOptionPriceEvent
 {
     /**
      * @var ResourceConnection

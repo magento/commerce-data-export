@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Class responsible for providing complex product variation change events
  */
-class ComplexProductEvent implements ProductPriceEventInterface
+class ComplexProductEvent
 {
     /**
      * @var ResourceConnection

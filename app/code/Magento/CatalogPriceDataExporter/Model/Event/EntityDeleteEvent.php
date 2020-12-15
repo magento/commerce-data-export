@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Class responsible for providing product options and links delete price events
  */
-class EntityDeleteEvent implements ProductPriceEventInterface
+class EntityDeleteEvent
 {
     /**
      * @var ResourceConnection

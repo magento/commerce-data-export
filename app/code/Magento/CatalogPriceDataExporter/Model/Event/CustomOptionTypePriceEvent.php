@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Class responsible for providing custom selectable option price events
  */
-class CustomOptionTypePriceEvent implements ProductPriceEventInterface
+class CustomOptionTypePriceEvent
 {
     /**
      * @var ResourceConnection
