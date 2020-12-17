@@ -18,7 +18,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class responsible for providing complex product variation change events
+ * Class responsible for providing complex product variation change events for full indexation
  */
 class ComplexProductEvent implements FullReindexPriceProviderInterface
 {
@@ -100,7 +100,7 @@ class ComplexProductEvent implements FullReindexPriceProviderInterface
             }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
-            throw new UnableRetrieveData('Unable to retrieve complex product link data.');
+            throw new UnableRetrieveData('Unable to retrieve complex product link data for full sync.');
         }
     }
 
@@ -116,10 +116,10 @@ class ComplexProductEvent implements FullReindexPriceProviderInterface
     private function getEventsData(array $data): array
     {
         $events = [];
+        $websiteId = (string)$this->storeManager->getWebsite(WebsiteInterface::ADMIN_CODE)->getWebsiteId();
+        $key = $this->eventKeyGenerator->generate(self::EVENT_VARIATION_CHANGED, $websiteId, null);
         foreach ($data as $parentId => $children) {
             foreach ($children as $variationId) {
-                $websiteId = (string)$this->storeManager->getWebsite(WebsiteInterface::ADMIN_CODE)->getWebsiteId();
-                $key = $this->eventKeyGenerator->generate(self::EVENT_VARIATION_CHANGED, $websiteId, null);
                 $events[$key][] = $this->buildEventData((string)$parentId, $variationId);
             }
         }

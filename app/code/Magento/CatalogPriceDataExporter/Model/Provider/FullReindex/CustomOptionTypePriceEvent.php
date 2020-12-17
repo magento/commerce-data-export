@@ -18,7 +18,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class responsible for providing custom selectable option price events
+ * Class responsible for providing custom selectable option price events for full indexation
  */
 class CustomOptionTypePriceEvent implements FullReindexPriceProviderInterface
 {
@@ -82,22 +82,21 @@ class CustomOptionTypePriceEvent implements FullReindexPriceProviderInterface
     public function retrieve(): \Generator
     {
         try {
-            $queryArguments = $this->buildQueryArguments();
-
-            foreach ($queryArguments as $scopeId => $optionTypeIds) {
+            foreach ($this->storeManager->getStores(true) as $store) {
+                $storeId = (int)$store->getId();
                 $continue = true;
                 $lastKnownId = 0;
                 while ($continue === true) {
                     $select = $this->customOptionTypePrice->getQuery(
-                        $optionTypeIds,
-                        $scopeId,
+                        [],
+                        $storeId,
                         $lastKnownId,
                         self::BATCH_SIZE
                     );
                     $cursor = $this->resourceConnection->getConnection()->query($select);
                     $result = [];
                     while ($row = $cursor->fetch()) {
-                        $result[$scopeId][$row['option_type_id']] = [
+                        $result[$row['option_type_id']] = [
                             'option_id' => $row['option_id'],
                             'option_type_id' => $row['option_type_id'],
                             'price' => $row['price'],
@@ -107,57 +106,39 @@ class CustomOptionTypePriceEvent implements FullReindexPriceProviderInterface
                     if (empty($result)) {
                         $continue = false;
                     } else {
-                        yield $this->getEventsData($result);
-                        $lastKnownId = array_key_last($result[$scopeId]);
+                        yield $this->getEventsData($result, $storeId);
+                        $lastKnownId = array_key_last($result);
                     }
                 }
             }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
-            throw new UnableRetrieveData('Unable to retrieve product custom option types price data.');
+            throw new UnableRetrieveData('Unable to retrieve product custom option types price data for full sync.');
         }
-    }
-
-    /**
-     * Build query arguments from index data or no data in case of full sync
-     * todo: remove this function
-     *
-     * @return array
-     */
-    private function buildQueryArguments(): array
-    {
-        $queryArguments = [];
-        foreach ($this->storeManager->getStores(true) as $store) {
-            $queryArguments[$store->getId()] = [];
-        }
-        return $queryArguments;
     }
 
     /**
      * Retrieve prices event data
      *
      * @param array $resultData
+     * @param int $storeId
      *
      * @return array
      *
      * @throws NoSuchEntityException
-     * @throws \InvalidArgumentException
      */
-    private function getEventsData(array $resultData): array
+    private function getEventsData(array $resultData, int $storeId): array
     {
         $events = [];
-        foreach ($resultData as $scopeId => $data) {
-            foreach ($data as $priceData) {
-                $websiteId = (string)$this->storeManager->getStore($scopeId)->getWebsiteId();
-                $key = $this->eventKeyGenerator->generate(
-                    self::EVENT_CUSTOM_OPTION_TYPE_PRICE_CHANGED,
-                    $websiteId,
-                    null
-                );
-                $events[$key][] = $this->buildEventData($priceData);
-            }
+        $websiteId = (string)$this->storeManager->getStore($storeId)->getWebsiteId();
+        $key = $this->eventKeyGenerator->generate(
+            self::EVENT_CUSTOM_OPTION_TYPE_PRICE_CHANGED,
+            $websiteId,
+            null
+        );
+        foreach ($resultData as $priceData) {
+            $events[$key][] = $this->buildEventData($priceData);
         }
-
         return $events;
     }
 

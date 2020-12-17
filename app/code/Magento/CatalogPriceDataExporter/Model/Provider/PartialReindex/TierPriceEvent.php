@@ -70,7 +70,7 @@ class TierPriceEvent implements PartialReindexPriceProviderInterface
                     $queryArguments[$data['scope_id']][] = $data['entity_id'];
                 }
                 foreach ($queryArguments as $scopeId => $entityIds) {
-                    $select = $this->tierPrice->getQuery($scopeId, $entityIds);
+                    $select = $this->tierPrice->getQuery($entityIds, $scopeId);
                     $cursor = $this->resourceConnection->getConnection()->query($select);
 
                     while ($row = $cursor->fetch()) {
@@ -79,7 +79,6 @@ class TierPriceEvent implements PartialReindexPriceProviderInterface
                 }
                 yield $this->getEventData($indexDataChunk, $result);
             }
-
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product tier price data.');

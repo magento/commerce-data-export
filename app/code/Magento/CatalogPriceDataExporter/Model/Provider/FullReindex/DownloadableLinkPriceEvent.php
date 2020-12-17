@@ -18,7 +18,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class responsible for providing downloadable product link price events
+ * Class responsible for providing downloadable product link price events for full indexation
  */
 class DownloadableLinkPriceEvent implements FullReindexPriceProviderInterface
 {
@@ -82,70 +82,52 @@ class DownloadableLinkPriceEvent implements FullReindexPriceProviderInterface
     public function retrieve(): \Generator
     {
         try {
-            $queryArguments = $this->buildQueryArguments();
-
-            foreach ($queryArguments as $scopeId => $ids) {
+            foreach ($this->storeManager->getStores(true) as $store) {
+                $storeId = (int)$store->getId();
                 $continue = true;
                 $lastKnownId = 0;
                 while ($continue === true) {
                     $result = [];
-                    $select = $this->downloadableLinkPrice->getQuery($ids, $scopeId, (int)$lastKnownId, self::BATCH_SIZE);
+                    $select = $this->downloadableLinkPrice->getQuery([], $storeId, (int)$lastKnownId, self::BATCH_SIZE);
                     $cursor = $this->resourceConnection->getConnection()->query($select);
                     while ($row = $cursor->fetch()) {
-                        $result[$row['entity_id']][$scopeId] = $row['value'];
+                        $result[$row['entity_id']] = $row['value'];
                         $lastKnownId = $row['link_id'];
                     }
                     if (empty($result)) {
                         $continue = false;
                     } else {
-                        yield $this->getEventsData($result);
+                        yield $this->getEventsData($result, $storeId);
                     }
                 }
             }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
-            throw new UnableRetrieveData('Unable to retrieve downloadable link price data.');
+            throw new UnableRetrieveData('Unable to retrieve downloadable link price data for full sync.');
         }
-    }
-
-    /**
-     * Build query arguments from index data or no data in case of full sync
-     * todo: remove this function
-     *
-     * @return array
-     */
-    private function buildQueryArguments(): array
-    {
-        $queryArguments = [];
-        foreach ($this->storeManager->getStores(true) as $store) {
-            $queryArguments[$store->getId()] = [];
-        }
-        return $queryArguments;
     }
 
     /**
      * Retrieve prices event data
      *
      * @param array $actualData
+     * @param int $storeId
      *
      * @return array
      *
-     * @throws LocalizedException
-     * @throws \InvalidArgumentException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    private function getEventsData(array $actualData): array
+    private function getEventsData(array $actualData, int $storeId): array
     {
         $events = [];
-        foreach ($actualData as $entityId => $data) {
-            foreach ($data as $scopeId => $value) {
-                $websiteId = (string)$this->storeManager->getStore($scopeId)->getWebsiteId();
-                $key = $this->eventKeyGenerator->generate(
-                    self::EVENT_DOWNLOADABLE_LINK_PRICE_CHANGED,
-                    $websiteId,
-                    null
-                );
-                $events[$key][] = $this->buildEventData((string)$entityId, $value);
-            }
+        $websiteId = (string)$this->storeManager->getStore($storeId)->getWebsiteId();
+        $key = $this->eventKeyGenerator->generate(
+            self::EVENT_DOWNLOADABLE_LINK_PRICE_CHANGED,
+            $websiteId,
+            null
+        );
+        foreach ($actualData as $entityId => $value) {
+            $events[$key][] = $this->buildEventData((string)$entityId, $value);
         }
         return $events;
     }
@@ -163,7 +145,6 @@ class DownloadableLinkPriceEvent implements FullReindexPriceProviderInterface
     private function buildEventData(string $entityId, string $value): array
     {
         $id = $this->downloadableLinksOptionUid->resolve([DownloadableLinksOptionUid::OPTION_ID => $entityId]);
-
         return [
             'id' => $id,
             'value' => $value,

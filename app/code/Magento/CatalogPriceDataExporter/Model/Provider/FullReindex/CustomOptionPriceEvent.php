@@ -18,7 +18,7 @@ use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class responsible for providing custom option price events
+ * Class responsible for providing custom option price events for full indexation
  */
 class CustomOptionPriceEvent implements FullReindexPriceProviderInterface
 {
@@ -82,16 +82,16 @@ class CustomOptionPriceEvent implements FullReindexPriceProviderInterface
     public function retrieve(): \Generator
     {
         try {
-            $queryArguments = $this->buildQueryArguments();
-            foreach ($queryArguments as $scopeId => $optionIds) {
+            foreach ($this->storeManager->getStores(true) as $store) {
+                $storeId = (int)$store->getId();
                 $continue = true;
                 $lastKnownId = 0;
                 while ($continue === true) {
-                    $select = $this->customOptionPrice->getQuery($optionIds, $scopeId, $lastKnownId, self::BATCH_SIZE);
-                    $cursor = $this->resourceConnection->getConnection()->query($select);
                     $result = [];
+                    $select = $this->customOptionPrice->getQuery([], $storeId, $lastKnownId, self::BATCH_SIZE);
+                    $cursor = $this->resourceConnection->getConnection()->query($select);
                     while ($row = $cursor->fetch()) {
-                        $result[$scopeId][$row['option_id']] = [
+                        $result[$row['option_id']] = [
                             'option_id' => $row['option_id'],
                             'price' => $row['price'],
                             'price_type' => $row['price_type'],
@@ -100,8 +100,8 @@ class CustomOptionPriceEvent implements FullReindexPriceProviderInterface
                     if (empty($result)) {
                         $continue = false;
                     } else {
-                        yield $this->getEventData($result);
-                        $lastKnownId = array_key_last($result[$scopeId]);
+                        yield $this->getEventData($result, $storeId);
+                        $lastKnownId = array_key_last($result);
                     }
                 }
             }
@@ -112,41 +112,23 @@ class CustomOptionPriceEvent implements FullReindexPriceProviderInterface
     }
 
     /**
-     * Build query arguments from index data or no data in case of full sync
-     * todo: remove this function
-     *
-     * @return array
-     */
-    private function buildQueryArguments(): array
-    {
-        $queryArguments = [];
-        foreach ($this->storeManager->getStores(true) as $store) {
-            $queryArguments[$store->getId()] = [];
-        }
-        return $queryArguments;
-    }
-
-    /**
      * Retrieve prices event data
      *
      * @param array $resultData
+     * @param int $storeId
      *
      * @return array
      *
      * @throws NoSuchEntityException
-     * @throws \InvalidArgumentException
      */
-    private function getEventData(array $resultData): array
+    private function getEventData(array $resultData, int $storeId): array
     {
         $events = [];
-        foreach ($resultData as $scopeId => $pricesData) {
-            foreach ($pricesData as $priceData) {
-                $websiteId = (string)$this->storeManager->getStore($scopeId)->getWebsiteId();
-                $key = $this->eventKeyGenerator->generate(self::EVENT_CUSTOM_OPTION_PRICE_CHANGED, $websiteId, null);
-                $events[$key][] = $this->buildEventData($priceData);
-            }
+        $websiteId = (string)$this->storeManager->getStore($storeId)->getWebsiteId();
+        $key = $this->eventKeyGenerator->generate(self::EVENT_CUSTOM_OPTION_PRICE_CHANGED, $websiteId, null);
+        foreach ($resultData as $priceData) {
+            $events[$key][] = $this->buildEventData($priceData);
         }
-
         return $events;
     }
 

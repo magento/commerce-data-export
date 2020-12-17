@@ -12,7 +12,7 @@ use Magento\CatalogPriceDataExporter\Model\Provider\ProductPriceProviderInterfac
 use Magento\DataExporter\Exception\UnableRetrieveData;
 
 /**
- * Interface for product price events providers
+ * Interface for product price events providers for partial indexation
  */
 interface PartialReindexPriceProviderInterface extends ProductPriceProviderInterface
 {
