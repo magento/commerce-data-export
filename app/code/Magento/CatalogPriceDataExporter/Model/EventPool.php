@@ -8,7 +8,8 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model;
 
-use Magento\CatalogPriceDataExporter\Model\Event\ProductPriceEventInterface;
+use Magento\CatalogPriceDataExporter\Model\Provider\FullReindex\FullReindexPriceProviderInterface;
+use Magento\CatalogPriceDataExporter\Model\Provider\PartialReindex\PartialReindexPriceProviderInterface;
 
 /**
  * Pool of all existing price events data providers
@@ -18,14 +19,23 @@ class EventPool
     /**
      * @var array
      */
-    private $priceTypeMap;
+    private $partialReindexProviders;
 
     /**
-     * @param ProductPriceEventInterface[] $priceTypeMap
+     * @var array
      */
-    public function __construct(array $priceTypeMap = [])
-    {
-        $this->priceTypeMap = $priceTypeMap;
+    private $fullReindexProviders;
+
+    /**
+     * @param PartialReindexPriceProviderInterface[] $partialReindexProviders
+     * @param FullReindexPriceProviderInterface[] $fullReindexProviders
+     */
+    public function __construct(
+        array $partialReindexProviders = [],
+        array $fullReindexProviders = []
+    ) {
+        $this->partialReindexProviders = $partialReindexProviders;
+        $this->fullReindexProviders = $fullReindexProviders;
     }
 
     /**
@@ -33,16 +43,28 @@ class EventPool
      *
      * @param string $priceType
      *
-     * @return ProductPriceEventInterface
+     * @return PartialReindexPriceProviderInterface
      *
      * @throws \InvalidArgumentException
      */
-    public function getEventResolver(string $priceType): ProductPriceEventInterface
+    public function getPartialReindexResolver(string $priceType): PartialReindexPriceProviderInterface
     {
-        if (!isset($this->priceTypeMap[$priceType])) {
+        if (!isset($this->partialReindexProviders[$priceType])) {
             throw new \InvalidArgumentException("Product price event for price type {$priceType} does not exist");
         }
 
-        return $this->priceTypeMap[$priceType];
+        return $this->partialReindexProviders[$priceType];
+    }
+
+    /**
+     * Retrieve product price event data resolver.
+     *
+     * @return FullReindexPriceProviderInterface[]
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function getFullReindexResolvers(): array
+    {
+        return $this->fullReindexProviders;
     }
 }

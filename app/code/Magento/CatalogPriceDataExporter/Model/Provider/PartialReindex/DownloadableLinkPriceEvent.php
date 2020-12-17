@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\CatalogPriceDataExporter\Model\Event;
+namespace Magento\CatalogPriceDataExporter\Model\Provider\PartialReindex;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\DownloadableLinksOptionUid;
 use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
@@ -17,10 +17,11 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
+
 /**
  * Class responsible for providing downloadable product link price events
  */
-class DownloadableLinkPriceEvent
+class DownloadableLinkPriceEvent implements PartialReindexPriceProviderInterface
 {
     /**
      * @var ResourceConnection
@@ -79,32 +80,32 @@ class DownloadableLinkPriceEvent
     /**
      * @inheritdoc
      */
-    public function retrieve(array $indexData): array
+    public function retrieve(array $indexData): \Generator
     {
-        $result = [];
-        $queryArguments = [];
-
         try {
-            foreach ($indexData as $data) {
-                $queryArguments[$data['scope_id']][] = $data['entity_id'];
-            }
+            foreach (\array_chunk($indexData, self::BATCH_SIZE) as $indexDataChunk) {
+                $result = [];
+                $queryArguments = [];
 
-            foreach ($queryArguments as $scopeId => $ids) {
-                $select = $this->downloadableLinkPrice->getQuery($ids, $scopeId);
-                $cursor = $this->resourceConnection->getConnection()->query($select);
-
-                while ($row = $cursor->fetch()) {
-                    $result[$row['entity_id']][$scopeId] = $row['value'];
+                foreach ($indexDataChunk as $data) {
+                    $queryArguments[$data['scope_id']][] = $data['entity_id'];
                 }
-            }
 
-            $events = $this->getEventsData($indexData, $result);
+                foreach ($queryArguments as $scopeId => $ids) {
+                    $select = $this->downloadableLinkPrice->getQuery($ids, $scopeId);
+                    $cursor = $this->resourceConnection->getConnection()->query($select);
+
+                    while ($row = $cursor->fetch()) {
+                        $result[$row['entity_id']][$scopeId] = $row['value'];
+                    }
+                }
+
+                yield $this->getEventsData($indexDataChunk, $result);
+            }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve downloadable link price data.');
         }
-
-        return $events;
     }
 
     /**

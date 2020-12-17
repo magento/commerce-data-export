@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\CatalogPriceDataExporter\Model\Event;
+namespace Magento\CatalogPriceDataExporter\Model\Provider\FullReindex;
 
 use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
 use Magento\CatalogPriceDataExporter\Model\Query\ProductPrice;
@@ -19,12 +19,12 @@ use Psr\Log\LoggerInterface;
 /**
  * Class responsible for providing product price / special price events
  */
-class ProductPriceEvent implements ProductPriceEventInterface
+class ProductPriceEvent implements FullReindexPriceProviderInterface
 {
     /**
      * Default price attributes
      */
-    private const PRICE_ATTRIBUTES = [['price'], ['special_price']];
+    private const PRICE_ATTRIBUTES = ['price', 'special_price'];
 
     /**
      * @var ResourceConnection
@@ -73,21 +73,22 @@ class ProductPriceEvent implements ProductPriceEventInterface
     }
 
     /**
-     * @inheritdoc
+     * @return \Generator
+     *
+     * @throws UnableRetrieveData
      */
-    public function retrieve(?array $indexData = []): \Generator
+    public function retrieve(): \Generator
     {
         try {
-            $queryArguments = $this->buildQueryArguments($indexData);
+            $queryArguments = $this->buildQueryArguments();
             foreach ($queryArguments as $scopeId => $queryData) {
-                $attributes = \array_merge($queryData['attributes']);
                 $continue = true;
                 $lastKnownId = 0;
                 while ($continue === true) {
                     $select = $this->productPrice->getQuery(
-                        $queryData['ids'],
+                        [],
                         $scopeId,
-                        $attributes,
+                        $queryData['attributes'],
                         $lastKnownId,
                         self::BATCH_SIZE
                     );
@@ -99,7 +100,7 @@ class ProductPriceEvent implements ProductPriceEventInterface
                     if (empty($result)) {
                         $continue = false;
                     } else {
-                        yield $this->getEventsData($indexData, $result);
+                        yield $this->getEventsData($result);
                         $lastKnownId = array_key_last($result[$scopeId]);
                     }
                 }
@@ -113,60 +114,36 @@ class ProductPriceEvent implements ProductPriceEventInterface
     /**
      * Build query arguments from index data or no data in case of full sync
      *
-     * @param array $indexData
-     *
      * @return array
      */
-    private function buildQueryArguments(array &$indexData): array
+    private function buildQueryArguments(): array
     {
         $queryArguments = [];
-        if (empty($indexData)) {
-            foreach ($this->storeManager->getStores(true) as $store) {
-                $storeId = $store->getId();
-                $queryArguments[$storeId]['attributes'] = self::PRICE_ATTRIBUTES;
-                $queryArguments[$storeId]['ids'] = [];
-            }
-        } else {
-            foreach ($indexData as &$data) {
-                $data['attributes'] = \array_unique(\explode(',', $data['attributes']));
-                $queryArguments[$data['scope_id']]['attributes'][] = $data['attributes'];
-                $queryArguments[$data['scope_id']]['ids'][] = $data['entity_id'];
-            }
+        foreach ($this->storeManager->getStores(true) as $store) {
+            $storeId = $store->getId();
+            $queryArguments[$storeId]['attributes'] = self::PRICE_ATTRIBUTES;
         }
         return $queryArguments;
     }
 
     /**
-     * Retrieve prices event data. If indexData is empty then all data is used.
+     * Retrieve prices event data.
      *
-     * @param array $indexData
-     * @param array $actualData
+     * @param array $data
      *
      * @return array
      *
      * @throws NoSuchEntityException
      */
-    private function getEventsData(array $indexData, array $actualData): array
+    private function getEventsData(array $data): array
     {
         $events = [];
-        if (empty($indexData)) {
-            foreach ($actualData as $scopeId => $eventData) {
-                $websiteId = (string)$this->storeManager->getStore($scopeId)->getWebsiteId();
-                foreach ($eventData as $entityId => $priceData) {
-                    foreach ($priceData as $attributeCode => $value) {
-                        $key = $this->eventKeyGenerator->generate(self::EVENT_PRICE_CHANGED, $websiteId, null);
-                        $events[$key][] = $this->buildEventData((string)$entityId, $attributeCode, $value);
-                    }
-                }
-            }
-        } else {
-            foreach ($indexData as $data) {
-                $websiteId = (string)$this->storeManager->getStore($data['scope_id'])->getWebsiteId();
-                foreach ($data['attributes'] as $attributeCode) {
-                    $value = $actualData[$data['scope_id']][$data['entity_id']][$attributeCode] ?? null;
-                    $eventType = $value === null ? self::EVENT_PRICE_DELETED : self::EVENT_PRICE_CHANGED;
-                    $key = $this->eventKeyGenerator->generate($eventType, $websiteId, null);
-                    $events[$key][] = $this->buildEventData($data['entity_id'], $attributeCode, $value);
+        foreach ($data as $scopeId => $eventData) {
+            $websiteId = (string)$this->storeManager->getStore($scopeId)->getWebsiteId();
+            foreach ($eventData as $entityId => $priceData) {
+                foreach ($priceData as $attributeCode => $value) {
+                    $key = $this->eventKeyGenerator->generate(self::EVENT_PRICE_CHANGED, $websiteId, null);
+                    $events[$key][] = $this->buildEventData((string)$entityId, $attributeCode, $value);
                 }
             }
         }

@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\CatalogPriceDataExporter\Model\Event;
+namespace Magento\CatalogPriceDataExporter\Model\Provider\PartialReindex;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\OptionValueUidInterface;
 use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
@@ -18,10 +18,11 @@ use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
+
 /**
  * Class responsible for providing product options and links delete price events
  */
-class EntityDeleteEvent
+class EntityDeleteEvent implements PartialReindexPriceProviderInterface
 {
     /**
      * @var ResourceConnection
@@ -88,30 +89,26 @@ class EntityDeleteEvent
     /**
      * @inheritdoc
      */
-    public function retrieve(array $indexData): array
+    public function retrieve(array $indexData): \Generator
     {
-        $result = [];
-        $queryArguments = [];
-
         try {
-            foreach ($indexData as $data) {
-                $queryArguments[] = $data['entity_id'];
+            foreach (array_chunk($indexData, self::BATCH_SIZE) as $batchedData) {
+                $result = [];
+                $queryArguments = [];
+                foreach ($batchedData as $data) {
+                    $queryArguments[] = $data['entity_id'];
+                }
+                $select = $this->entityDelete->getQuery($queryArguments);
+                $cursor = $this->resourceConnection->getConnection()->query($select);
+                while ($row = $cursor->fetch()) {
+                    $result[$row['entity_id']] = $row;
+                }
+                yield $this->getEventsData($batchedData, $result);
             }
-
-            $select = $this->entityDelete->getQuery($queryArguments);
-            $cursor = $this->resourceConnection->getConnection()->query($select);
-
-            while ($row = $cursor->fetch()) {
-                $result[$row['entity_id']] = $row;
-            }
-
-            $events = $this->getEventsData($indexData, $result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve entity delete event data.');
         }
-
-        return $events;
     }
 
     /**

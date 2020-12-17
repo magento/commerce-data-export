@@ -36,22 +36,33 @@ class DownloadableLinkPrice
      *
      * @param array $linkIds
      * @param int $scopeId
-     *
+     * @param int|null $lastKnownId
+     * @param int|null $batchSize
      * @return Select
      */
-    public function getQuery(array $linkIds, int $scopeId): Select
+    public function getQuery(array $linkIds, int $scopeId, ?int $lastKnownId = 0, ?int $batchSize = null): Select
     {
         $connection = $this->resourceConnection->getConnection();
 
-        return $connection->select()
+        $select = $connection->select()
             ->from(['dlp' => $this->resourceConnection->getTableName('downloadable_link_price')], [])
             ->columns(
                 [
                     'entity_id' => 'dlp.link_id',
                     'value' => 'dlp.price',
+                    'link_id' => 'dlp.link_id',
                 ]
             )
-            ->where('dlp.link_id in (?)', $linkIds)
-            ->where('dlp.website_id = ?', $scopeId);
+            ->where('dlp.website_id = ?', $scopeId)
+            ->where('dlp.link_id > ?', $lastKnownId)
+            ->order('dlp.link_id');
+
+        if (!empty($linkIds)) {
+            $select->where('dlp.link_id in (?)', $linkIds);
+        }
+        if (null !== $batchSize) {
+            $select->limit($batchSize);
+        }
+        return $select;
     }
 }

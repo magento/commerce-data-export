@@ -38,6 +38,11 @@ class ComplexProductLink
     private $variationColumn;
 
     /**
+     * @var string
+     */
+    private $linkIdColumn;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param string $linkTable
      * @param string $parentColumn
@@ -47,23 +52,26 @@ class ComplexProductLink
         ResourceConnection $resourceConnection,
         string $linkTable,
         string $parentColumn,
-        string $variationColumn
+        string $variationColumn,
+        string $linkIdColumn
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->linkTable = $linkTable;
         $this->parentColumn = $parentColumn;
         $this->variationColumn = $variationColumn;
+        $this->linkIdColumn = $linkIdColumn;
     }
 
     /**
      * Retrieve query for complex product.
      *
-     * @param int[] $parentIds
-     * @param int[] $variationIds
-     *
+     * @param int[]|null $parentIds
+     * @param int[]|null $variationIds
+     * @param int|null $lastKnownId
+     * @param int|null $batchSize
      * @return Select
      */
-    public function getQuery(array $parentIds, array $variationIds = []): Select
+    public function getQuery(?array $parentIds = [], ?array $variationIds = [], ?int $lastKnownId = 0, ?int $batchSize = null): Select
     {
         $connection = $this->resourceConnection->getConnection();
         $productEntityTable = $this->resourceConnection->getTableName('catalog_product_entity');
@@ -81,14 +89,22 @@ class ComplexProductLink
                 [
                     'parent_id' => 'cpe.entity_id',
                     'variation_id' => \sprintf('link.%s', $this->variationColumn),
+                    'link_id' => \sprintf('link.%s', $this->linkIdColumn),
+
                 ]
             )
-            ->where('cpe.entity_id in (?)', $parentIds);
+            ->where(\sprintf('link.%s > ?', $this->linkIdColumn), $lastKnownId)
+            ->order(\sprintf('link.%s', $this->linkIdColumn));
 
+        if (!empty($parentIds)) {
+            $select->where('cpe.entity_id in (?)', $parentIds);
+        }
         if (!empty($variationIds)) {
             $select->where(\sprintf('link.%s in (?)', $this->variationColumn), $variationIds);
         }
-
+        if (null !== $batchSize) {
+            $select->limit($batchSize);
+        }
         return $select;
     }
 }

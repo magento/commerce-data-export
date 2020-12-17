@@ -40,7 +40,7 @@ class ProductPrice
      * @param int $batchSize
      * @return Select
      */
-    public function getQuery(array $ids, int $scopeId, array $attributes, int $lastKnownId, int $batchSize): Select
+    public function getQuery(array $ids, int $scopeId, array $attributes, ?int $lastKnownId = 0, ?int $batchSize = null): Select
     {
         $connection = $this->resourceConnection->getConnection();
         $productEntityTable = $this->resourceConnection->getTableName('catalog_product_entity');
@@ -67,9 +67,11 @@ class ProductPrice
             ->where('eav.attribute_code IN (?)', $attributes)
             ->where('cped.store_id = ?', $scopeId)
             ->where('cpe.entity_id > ?', $lastKnownId)
-            ->order('cpe.entity_id')
-            ->limit($batchSize);
+            ->order('cpe.entity_id');
 
+        if ($batchSize !== null) {
+            $select->limit($batchSize);
+        }
         if (!empty($ids)) {
             $select->where('cpe.entity_id IN (?)', $ids);
         }

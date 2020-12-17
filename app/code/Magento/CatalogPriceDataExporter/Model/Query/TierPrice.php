@@ -34,12 +34,13 @@ class TierPrice
     /**
      * Retrieve query for tier prices.
      *
-     * @param array $ids
+     * @param array|null $ids
      * @param int|null $scopeId
-     *
+     * @param int|null $lastKnownId
+     * @param int|null $batchSize
      * @return Select
      */
-    public function getQuery(array $ids, ?int $scopeId): Select
+    public function getQuery(?int $scopeId, ?array $ids = null, ?int $lastKnownId = null, ?int $batchSize = null): Select
     {
         $connection = $this->resourceConnection->getConnection();
         $productEntityTable = $this->resourceConnection->getTableName('catalog_product_entity');
@@ -67,13 +68,21 @@ class TierPrice
                         'CASE WHEN cpetp.percentage_value IS NOT NULL THEN cpetp.percentage_value ELSE cpetp.value END'
                     ),
                 ]
-            )
-            ->where('cpe.entity_id in (?)', $ids);
-
+            );
         if (null !== $scopeId) {
             $select->where('cpetp.website_id = ?', $scopeId);
         }
-
+        if (null !== $ids) {
+            $select->where('cpe.entity_id IN (?)', $ids);
+        }
+        if (null !== $lastKnownId) {
+            $select
+                ->where('cpe.entity_id > ?', $lastKnownId)
+                ->order('cpe.entity_id');
+        }
+        if (null !== $batchSize) {
+            $select->limit($batchSize);
+        }
         return $select;
     }
 }

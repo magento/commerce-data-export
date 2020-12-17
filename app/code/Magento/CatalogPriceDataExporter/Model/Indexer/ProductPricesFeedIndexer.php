@@ -63,21 +63,11 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
      */
     public function executeFull(): void
     {
-        $indexData = [
-            'product_price' => [
-            ],
-//            'tier_price',
-//            'custom_option',
-//            'custom_option_price',
-//            'custom_option_type',
-//            'custom_option_type_price',
-//            'downloadable_link',
-//            'downloadable_link_price',
-//            'bundle_variation',
-//            'configurable_variation'
-        ];
-
-        $this->process($indexData);
+        foreach ($this->eventPool->getFullReindexResolvers() as $resolver) {
+            foreach ($resolver->retrieve() as $eventData) {
+                $this->processEvents($eventData);
+            }
+        }
     }
 
     /**
@@ -102,25 +92,26 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     public function execute($ids): void
     {
         $indexData = $this->prepareIndexData($ids);
-        $this->process($indexData);
+        foreach ($indexData as $priceType => $data) {
+            $eventResolver = $this->eventPool->getPartialReindexResolver($priceType);
+            foreach ($eventResolver->retrieve($data) as $eventData) {
+                $this->processEvents($eventData);
+            }
+        }
     }
 
     /**
-     * @param array $indexData
-     * @param bool $fullSync
-     * @throws \Magento\DataExporter\Exception\UnableRetrieveData
+     * Process event data
+     *
+     * @param array $eventData
+     *
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    private function process($indexData)
+    private function processEvents(array $eventData): void
     {
-        foreach ($indexData as $priceType => $data) {
-            $eventResolver = $this->eventPool->getEventResolver($priceType);
-            foreach ($eventResolver->retrieve($data) as $oneIteration) {
-                $events = $this->eventBuilder->build($oneIteration);
-                $this->publisher->publish('export.product.prices', \json_encode($events));
-                $this->logger->info(\json_encode($events));
-            }
-        }
+        $events = $this->eventBuilder->build($eventData);
+        $this->publisher->publish('export.product.prices', \json_encode($events));
+        $this->logger->info(\json_encode($events));
     }
 
     /**
@@ -137,10 +128,8 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
             if (!\is_array($data)) {
                 continue;
             }
-
             $output[$data['price_type']][] = $data;
         }
-
         return $output;
     }
 }

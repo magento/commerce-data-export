@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\CatalogPriceDataExporter\Model\Event;
+namespace Magento\CatalogPriceDataExporter\Model\Provider\FullReindex;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableEnteredOptionValueUid;
 use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
@@ -16,12 +16,11 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Store\Api\Data\WebsiteInterface;
 
 /**
  * Class responsible for providing custom option price events
  */
-class CustomOptionPriceEvent
+class CustomOptionPriceEvent implements FullReindexPriceProviderInterface
 {
     /**
      * @var ResourceConnection
@@ -80,36 +79,51 @@ class CustomOptionPriceEvent
     /**
      * @inheritdoc
      */
-    public function retrieve(array $indexData): array
+    public function retrieve(): \Generator
     {
-        $result = [];
-        $queryArguments = [];
-
         try {
-            foreach ($indexData as $data) {
-                $queryArguments[$data['scope_id']]['optionIds'][] = $data['entity_id'];
-            }
-
-            foreach ($queryArguments as $scopeId => $queryData) {
-                $select = $this->customOptionPrice->getQuery($queryData['optionIds'], $scopeId);
-                $cursor = $this->resourceConnection->getConnection()->query($select);
-
-                while ($row = $cursor->fetch()) {
-                    $result[$scopeId][$row['option_id']] = [
-                        'option_id' => $row['option_id'],
-                        'price' => $row['price'],
-                        'price_type' => $row['price_type'],
-                    ];
+            $queryArguments = $this->buildQueryArguments();
+            foreach ($queryArguments as $scopeId => $optionIds) {
+                $continue = true;
+                $lastKnownId = 0;
+                while ($continue === true) {
+                    $select = $this->customOptionPrice->getQuery($optionIds, $scopeId, $lastKnownId, self::BATCH_SIZE);
+                    $cursor = $this->resourceConnection->getConnection()->query($select);
+                    $result = [];
+                    while ($row = $cursor->fetch()) {
+                        $result[$scopeId][$row['option_id']] = [
+                            'option_id' => $row['option_id'],
+                            'price' => $row['price'],
+                            'price_type' => $row['price_type'],
+                        ];
+                    }
+                    if (empty($result)) {
+                        $continue = false;
+                    } else {
+                        yield $this->getEventData($result);
+                        $lastKnownId = array_key_last($result[$scopeId]);
+                    }
                 }
             }
-
-            $output = $this->getEventData($result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product custom options price data.');
         }
+    }
 
-        return $output;
+    /**
+     * Build query arguments from index data or no data in case of full sync
+     * todo: remove this function
+     *
+     * @return array
+     */
+    private function buildQueryArguments(): array
+    {
+        $queryArguments = [];
+        foreach ($this->storeManager->getStores(true) as $store) {
+            $queryArguments[$store->getId()] = [];
+        }
+        return $queryArguments;
     }
 
     /**
@@ -125,7 +139,6 @@ class CustomOptionPriceEvent
     private function getEventData(array $resultData): array
     {
         $events = [];
-
         foreach ($resultData as $scopeId => $pricesData) {
             foreach ($pricesData as $priceData) {
                 $websiteId = (string)$this->storeManager->getStore($scopeId)->getWebsiteId();

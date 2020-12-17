@@ -35,14 +35,14 @@ class CustomOptionPrice
      *
      * @param array $optionIds
      * @param int $scopeId
-     *
+     * @param int|null $lastKnownId
+     * @param int|null $batchSize
      * @return Select
      */
-    public function getQuery(array $optionIds, int $scopeId): Select
+    public function getQuery(array $optionIds, int $scopeId, ?int $lastKnownId = 0, ?int $batchSize = null): Select
     {
         $connection = $this->resourceConnection->getConnection();
-
-        return $connection->select()
+        $select = $connection->select()
             ->from(['cpop' => $this->resourceConnection->getTableName('catalog_product_option_price')], [])
             ->columns(
                 [
@@ -51,7 +51,15 @@ class CustomOptionPrice
                     'price_type' => 'cpop.price_type',
                 ]
             )
-            ->where('cpop.option_id IN (?)', $optionIds)
-            ->where('cpop.store_id = ?', $scopeId);
+            ->where('cpop.store_id = ?', $scopeId)
+            ->where('cpop.option_id > ?', $lastKnownId)
+            ->order('cpop.option_id');
+        if (!empty($optionIds)) {
+            $select->where('cpop.option_id IN (?)', $optionIds);
+        }
+        if (null !== $batchSize) {
+            $select->limit($batchSize);
+        }
+        return $select;
     }
 }

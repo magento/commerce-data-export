@@ -81,6 +81,7 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                     'cl.qty',
                     'cl.option_id',
                     'customer_group',
+                    'cl.parent_id'
                 ]
             )
             ->columns(
