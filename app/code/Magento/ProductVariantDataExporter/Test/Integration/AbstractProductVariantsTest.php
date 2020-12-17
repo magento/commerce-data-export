@@ -9,7 +9,6 @@ declare(strict_types=1);
 namespace Magento\ProductVariantDataExporter\Test\Integration;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\OptionValueUid;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\Eav\Model\AttributeRepository;
@@ -70,11 +69,6 @@ abstract class AbstractProductVariantsTest extends TestCase
     protected $productVariantsFeed;
 
     /**
-     * @var OptionValueUid
-     */
-    protected $optionValueUid;
-
-    /**
      * @var AttributeRepository
      */
     protected $attributeRepository;
@@ -102,7 +96,6 @@ abstract class AbstractProductVariantsTest extends TestCase
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
         $this->storeManager = Bootstrap::getObjectManager()->create(StoreManagerInterface::class);
         $this->productVariantsFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('variants');
-        $this->optionValueUid = Bootstrap::getObjectManager()->create(OptionValueUid::class);
         $this->attributeRepository = Bootstrap::getObjectManager()->create(AttributeRepository::class);
         $this->arrayUtils = $objectManager->create(ArrayUtils::class);
         $this->registry = Bootstrap::getObjectManager()->get(Registry::class);

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\ConfigurationDataExporter\Model\ConfigExportCallbackInterface" type="Magento\ConfigurationDataExporter\Model\ConfigExportCallback"/>
+    <preference for="Magento\ConfigurationDataExporter\Model\FullExportProcessorInterface" type="Magento\ConfigurationDataExporter\Model\FullExportProcessor"/>
+    <preference for="Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface" type="Magento\ConfigurationDataExporter\Model\ConfigRegistry"/>
+    <preference for="Magento\ConfigurationDataExporter\Api\WhitelistProviderInterface" type="Magento\ConfigurationDataExporter\Model\WhitelistProviderPool"/>
+    <type name="Magento\ConfigurationDataExporter\Model\ConfigExportCallback">
+        <arguments>
+            <argument name="topicName" xsi:type="string">system.configuration.export</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="configuration_export_full" xsi:type="object">Magento\ConfigurationDataExporter\Console\Command\FullSyncCommand</item>
+                 <item name="configuration_add_path_to_export_whitelist" xsi:type="object">Magento\ConfigurationDataExporter\Console\Command\AddPathToWhitelist</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Config\Model\Config">
+        <plugin name="Magento_ConfigurationDataExporter::exportConfigUpdates" type="Magento\ConfigurationDataExporter\Plugin\ConfigUpdateExport" />
+    </type>
+    <type name="Magento\ConfigurationDataExporter\Model\WhitelistProviderPool">
+        <arguments>
+            <argument name="providers" xsi:type="array">
+                <item name="environment" xsi:type="object">Magento\ConfigurationDataExporter\Model\Whitelist\EnvironmentProvider</item>
+                <item name="modular" xsi:type="object">Magento\ConfigurationDataExporter\Model\Whitelist\ModularProvider</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
