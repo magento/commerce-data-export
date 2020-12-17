@@ -66,7 +66,7 @@
         </arguments>
     </type>
 
-     Option, option type, downloadable link delete events
+<!--     Option, option type, downloadable link delete events-->
     <virtualType name="Magento\CatalogPriceDataExporter\Model\Provider\PartialReindex\CustomOptionDeleteEvent"
                  type="Magento\CatalogPriceDataExporter\Model\Provider\PartialReindex\EntityDeleteEvent">
         <arguments>
