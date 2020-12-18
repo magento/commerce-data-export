@@ -10,10 +10,9 @@ namespace Magento\CatalogPriceDataExporter\Model\Indexer;
 
 use Magento\CatalogPriceDataExporter\Model\EventBuilder;
 use Magento\CatalogPriceDataExporter\Model\EventPool;
+use Magento\CatalogPriceDataExporter\Model\EventPublisher;
 use Magento\Framework\Indexer\ActionInterface as IndexerActionInterface;
-use Magento\Framework\MessageQueue\PublisherInterface;
 use Magento\Framework\Mview\ActionInterface as MviewActionInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * Class responsible for indexing product prices and provide price change events
@@ -31,31 +30,23 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     private $eventBuilder;
 
     /**
-     * @var LoggerInterface
+     * @var EventPublisher
      */
-    private $logger;
-
-    /**
-     * @var PublisherInterface
-     */
-    private $publisher;
+    private $eventPublisher;
 
     /**
      * @param EventPool $eventPool
      * @param EventBuilder $eventBuilder
-     * @param LoggerInterface $logger
-     * @param PublisherInterface $publisher
+     * @param EventPublisher $eventPublisher
      */
     public function __construct(
         EventPool $eventPool,
         EventBuilder $eventBuilder,
-        LoggerInterface $logger,
-        PublisherInterface $publisher
+        EventPublisher $eventPublisher
     ) {
         $this->eventPool = $eventPool;
         $this->eventBuilder = $eventBuilder;
-        $this->logger = $logger;
-        $this->publisher = $publisher;
+        $this->eventPublisher = $eventPublisher;
     }
 
     /**
@@ -63,11 +54,9 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
      */
     public function executeFull(): void
     {
-        foreach ($this->eventPool->getFullReindexResolvers() as $resolver) {
-            foreach ($resolver->retrieve() as $eventData) {
-                $this->processEvents($eventData);
-            }
-        }
+        //  The logic for full synchronisation has been put in
+        //  \Magento\CatalogPriceDataExporter\Console\Command\FullSync:execute
+        //  This means that magento indexer:index will not launch this functionality needlessly
     }
 
     /**
@@ -110,8 +99,7 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
     private function processEvents(array $eventData): void
     {
         $events = $this->eventBuilder->build($eventData);
-        $this->publisher->publish('export.product.prices', \json_encode($events));
-        $this->logger->info(\json_encode($events));
+        $this->eventPublisher->publishEvents($events);
     }
 
     /**
