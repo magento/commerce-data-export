@@ -8,57 +8,41 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Console\Command;
 
-use Magento\CatalogPriceDataExporter\Model\EventPool;
-use Magento\CatalogPriceDataExporter\Model\EventPublisher;
+use Magento\CatalogPriceDataExporter\Model\Synchronize;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
-use Magento\Framework\Exception\LocalizedException;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Magento\CatalogPriceDataExporter\Model\EventBuilder;
 
 /**
- * CLI command for exporting/synchronising all price data
+ * CLI command for exporting/synchronising price data
  */
-class FullSync extends Command
+class SynchronizePrices extends Command
 {
+    const INPUT_PRICE_TYPES = 'Price types';
+
     /**
      * @var State
      */
     protected $state;
 
     /**
-     * @var EventPool
+     * @var Synchronize
      */
-    private $eventPool;
+    private $sync;
 
     /**
-     * @var EventBuilder
-     */
-    private $eventBuilder;
-
-    /**
-     * @var EventPublisher
-     */
-    private $eventPublisher;
-
-    /**
-     * @param EventPool $eventPool
-     * @param EventBuilder $eventBuilder
-     * @param EventPublisher $eventPublisher
+     * @param Synchronize $sync
      * @param State $state
      */
     public function __construct(
-        EventPool $eventPool,
-        EventBuilder $eventBuilder,
-        EventPublisher $eventPublisher,
+        Synchronize $sync,
         State $state
     ) {
         $this->state = $state;
-        $this->eventPool = $eventPool;
-        $this->eventBuilder = $eventBuilder;
-        $this->eventPublisher = $eventPublisher;
+        $this->sync = $sync;
         parent::__construct();
     }
 
@@ -67,6 +51,12 @@ class FullSync extends Command
      */
     protected function configure()
     {
+        $this->addArgument(
+            self::INPUT_PRICE_TYPES,
+            InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
+            'Optional list of price types to synchronize.',
+            []
+        );
         $this->setName('export:sync:prices')
             ->setDescription('Run full price export synchronisation');
         parent::configure();
@@ -81,15 +71,12 @@ class FullSync extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $requestedTypes = $input->getArgument(self::INPUT_PRICE_TYPES);
         $returnValue = Cli::RETURN_SUCCESS;
         try {
             $output->writeln('Full price synchronisation started');
             $startTime = microtime(true);
-            foreach ($this->eventPool->getFullReindexResolvers() as $resolver) {
-                foreach ($resolver->retrieve() as $eventData) {
-                    $this->processEvents($eventData);
-                }
-            }
+            $this->sync->execute($requestedTypes);
             $resultTime = microtime(true) - $startTime;
             $output->writeln(
                 __('Full price synchronisation finished in %time', ['time' => gmdate('H:i:s', (int)$resultTime)])
@@ -101,18 +88,5 @@ class FullSync extends Command
             $returnValue = Cli::RETURN_FAILURE;
         }
         return $returnValue;
-    }
-
-    /**
-     * Process event data
-     *
-     * @param array $eventData
-     *
-     * @throws LocalizedException
-     */
-    private function processEvents(array $eventData): void
-    {
-        $events = $this->eventBuilder->build($eventData);
-        $this->eventPublisher->publishEvents($events);
     }
 }

@@ -50,10 +50,26 @@ class EventPool
     public function getPartialReindexResolver(string $priceType): PartialReindexPriceProviderInterface
     {
         if (!isset($this->partialReindexProviders[$priceType])) {
-            throw new \InvalidArgumentException("Product price event for price type {$priceType} does not exist");
+            throw new \InvalidArgumentException("Product price provider for price type {$priceType} does not exist");
         }
 
         return $this->partialReindexProviders[$priceType];
+    }
+
+    /**
+     * Retrieve product price event data resolver.
+     *
+     * @param string $priceType
+     * @return FullReindexPriceProviderInterface
+     *
+     */
+    public function getFullReindexResolver(string $priceType): FullReindexPriceProviderInterface
+    {
+        if (!isset($this->fullReindexProviders[$priceType])) {
+            throw new \InvalidArgumentException("Product price provider for full reindexation for price type {$priceType} does not exist");
+        }
+
+        return $this->fullReindexProviders[$priceType];
     }
 
     /**

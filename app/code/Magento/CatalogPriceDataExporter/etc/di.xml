@@ -9,7 +9,7 @@
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="priceExportFullSync" xsi:type="object">Magento\CatalogPriceDataExporter\Console\Command\FullSync</item>
+                <item name="priceExportSynchronize" xsi:type="object">Magento\CatalogPriceDataExporter\Console\Command\SynchronizePrices</item>
             </argument>
         </arguments>
     </type>
@@ -237,7 +237,6 @@
             <argument name="linkTable" xsi:type="string">catalog_product_bundle_selection</argument>
             <argument name="parentColumn" xsi:type="string">parent_product_id</argument>
             <argument name="variationColumn" xsi:type="string">product_id</argument>
-<!--            todo: test if this column works for ordering data for batching purposes-->
             <argument name="linkIdColumn" xsi:type="string">selection_id</argument>
         </arguments>
     </virtualType>

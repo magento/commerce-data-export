@@ -67,7 +67,8 @@ class ProductPrice
             ->where('eav.attribute_code IN (?)', $attributes)
             ->where('cped.store_id = ?', $scopeId)
             ->where('cpe.entity_id > ?', $lastKnownId)
-            ->order('cpe.entity_id');
+            ->order('cpe.entity_id')
+            ->order('eav.attribute_code');
 
         if ($batchSize !== null) {
             $select->limit($batchSize);
