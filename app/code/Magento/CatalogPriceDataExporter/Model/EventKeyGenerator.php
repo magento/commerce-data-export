@@ -34,6 +34,7 @@ class EventKeyGenerator
      */
     public function generate(string $eventType, string $websiteId, ?string $customerGroupId): string
     {
+        // phpcs:ignore Magento2.Functions.DiscouragedFunction
         return \base64_encode(\implode(self::SEPARATOR, [$eventType, $websiteId, $customerGroupId]));
     }
 
@@ -46,6 +47,7 @@ class EventKeyGenerator
      */
     public function resolveKey(string $key): array
     {
+        // phpcs:ignore Magento2.Functions.DiscouragedFunction
         return \array_combine(self::KEY_ELEMENTS, \explode(self::SEPARATOR, \base64_decode($key)));
     }
 }

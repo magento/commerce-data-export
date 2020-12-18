@@ -1,5 +1,9 @@
 ## Release notes
 
+TODO: Move sync to cli command
+TODO: Add tests
+TODO: Unify the command for the initial event formatting, or create a ticket...
+
 *Magento_CatalogPriceDataExporter* module
 
 This module is responsible for sending price change notifications.
@@ -15,7 +19,7 @@ These changes are organised by price type:
     -custom_option_type_price
     -downloadable_link_price
     -bundle_variation (no price is sent)
-    -configurable_variation (no price is sent)
+    -configurable_variatiComplexProductLinkon (no price is sent)
     -price/product deletion for all the preceding (only for partial sync)
 
 When indexer is set `On Schedule` each price type change creates a different entry in the changelog table with relevant ids,values,etc.

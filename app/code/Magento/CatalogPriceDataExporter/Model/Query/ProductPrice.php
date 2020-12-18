@@ -36,8 +36,8 @@ class ProductPrice
      * @param array $ids
      * @param int $scopeId
      * @param array $attributes
-     * @param int $lastKnownId
-     * @param int $batchSize
+     * @param int|null $lastKnownId
+     * @param int|null $batchSize
      * @return Select
      */
     public function getQuery(array $ids, int $scopeId, array $attributes, ?int $lastKnownId = 0, ?int $batchSize = null): Select

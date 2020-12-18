@@ -18,7 +18,6 @@ use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
-
 /**
  * Class responsible for providing product options and links delete price events
  */

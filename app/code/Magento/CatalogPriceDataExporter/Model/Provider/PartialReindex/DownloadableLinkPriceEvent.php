@@ -17,7 +17,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
-
 /**
  * Class responsible for providing downloadable product link price events
  */

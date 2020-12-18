@@ -38,7 +38,8 @@ class CustomizableSelectedOptionValueUid implements OptionValueUidInterface
     {
         if (!isset($params[self::OPTION_ID], $params[self::OPTION_VALUE_ID])) {
             throw new \InvalidArgumentException(
-                'Cannot generate customizable selectable option value uid, because option id or option value id is missing'
+                'Cannot generate customizable selectable option value uid,
+                because option id or option value id is missing'
             );
         }
 

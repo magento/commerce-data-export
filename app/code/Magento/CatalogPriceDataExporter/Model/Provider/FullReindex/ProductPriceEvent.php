@@ -22,9 +22,9 @@ use Psr\Log\LoggerInterface;
 class ProductPriceEvent implements FullReindexPriceProviderInterface
 {
     /**
-     * Default price attributes
+     * Product price eav attributes
      */
-    private const PRICE_ATTRIBUTES = ['price', 'special_price'];
+    public const PRICE_ATTRIBUTES = ['price', 'special_price'];
 
     /**
      * @var ResourceConnection
@@ -73,9 +73,7 @@ class ProductPriceEvent implements FullReindexPriceProviderInterface
     }
 
     /**
-     * @return \Generator
-     *
-     * @throws UnableRetrieveData
+     * @inheritdoc
      */
     public function retrieve(): \Generator
     {

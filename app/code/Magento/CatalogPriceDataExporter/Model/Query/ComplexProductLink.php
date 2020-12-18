@@ -47,6 +47,7 @@ class ComplexProductLink
      * @param string $linkTable
      * @param string $parentColumn
      * @param string $variationColumn
+     * @param string $linkIdColumn
      */
     public function __construct(
         ResourceConnection $resourceConnection,
