@@ -98,8 +98,6 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
         if (!empty($events)) {
             $events = $this->eventBuilder->build(\array_merge_recursive(...$events));
 
-            $this->logger->info('Product price events.', ['events' => $events]);
-
             foreach ($events as $eventData) {
                 $this->publisher->publish('export.product.prices', \json_encode($eventData));
             }
