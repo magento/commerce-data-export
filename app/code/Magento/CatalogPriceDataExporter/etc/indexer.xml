@@ -14,4 +14,14 @@
         <title translate="true">Product Price Data Exporter</title>
         <description translate="true">Exporter for product price data</description>
     </indexer>
+
+    <!-- todo: move to EE -->
+    <indexer
+            id="catalog_data_exporter_giftcard_prices"
+            view_id="catalog_data_exporter_giftcard_prices"
+            class="Magento\CatalogPriceDataExporter\Model\Indexer\ProductPricesFeedIndexer"
+    >
+        <title translate="true">Gift Card Price Data Exporter</title>
+        <description translate="true">Exporter for gift card price data</description>
+    </indexer>
 </config>
