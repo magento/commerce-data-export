@@ -90,4 +90,22 @@
             </table>
         </subscriptions>
     </view>
+
+    <!-- todo: move to EE -->
+    <view id="catalog_data_exporter_giftcard_prices"
+          class="Magento\CatalogPriceDataExporter\Model\Indexer\ProductPricesFeedIndexer"
+          group="indexer"
+          walker="Magento\CatalogPriceDataExporter\Model\Indexer\GiftCardChangeLogBatchWalker"
+    >
+        <subscriptions>
+            <table name="magento_giftcard_amount" entity_column="row_id">
+                <additionalColumns>
+                    <column name="website_id" cl_name="scope_id" />
+                    <column name="attribute_id" cl_name="attribute_id" />
+                    <column name="value" cl_name="value" />
+                    <column name="price_type" cl_name="price_type" constant="gift_card_price"/>
+                </additionalColumns>
+            </table>
+        </subscriptions>
+    </view>
 </config>
