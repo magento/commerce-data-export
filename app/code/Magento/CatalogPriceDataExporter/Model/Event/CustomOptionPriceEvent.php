@@ -16,7 +16,6 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
-use Magento\Store\Api\Data\WebsiteInterface;
 
 /**
  * Class responsible for providing custom option price events
