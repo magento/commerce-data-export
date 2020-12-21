@@ -122,7 +122,7 @@ class PriceBuilder
     }
 
     /**
-     * Build event data.
+     * Build product price event data.
      *
      * @param string $entityId
      * @param string $attributeCode
@@ -140,7 +140,7 @@ class PriceBuilder
     }
 
     /**
-     * Build event data.
+     * Build tier price event data.
      *
      * @param string $entityId
      * @param string $qty
