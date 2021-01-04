@@ -15,7 +15,7 @@
             nullable="false"
             comment="ID"
         />
-        <column xsi:type="int"
+        <column xsi:type="varchar"
             name="customer_group_code"
             nullable="false"
             length="64"
