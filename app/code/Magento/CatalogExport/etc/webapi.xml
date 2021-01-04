@@ -23,6 +23,7 @@
 <!--            <resource ref="Magento_Catalog::categories" />-->
         </resources>
     </route>
+
     <route url="/V1/catalog-export/product-variants" method="GET">
         <service class="Magento\CatalogExportApi\Api\ProductVariantRepositoryInterface" method="get"/>
         <resources>
@@ -37,6 +38,19 @@
             <resource ref="anonymous" />
 <!--            TODO: permissions-->
 <!--            <resource ref="Magento_Catalog::products" />-->
+        </resources>
+    </route>
+
+    <route url="/V1/reviews-export/reviews" method="GET">
+        <service class="Magento\CatalogExportApi\Api\ReviewRepositoryInterface" method="get"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
+    <route url="/V1/reviews-export/ratings-metadata" method="GET">
+        <service class="Magento\CatalogExportApi\Api\RatingMetadataRepositoryInterface" method="get"/>
+        <resources>
+            <resource ref="anonymous" />
         </resources>
     </route>
 </routes>

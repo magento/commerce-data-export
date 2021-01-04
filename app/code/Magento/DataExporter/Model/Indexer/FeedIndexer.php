@@ -1,10 +1,8 @@
 <?php
-
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-
 declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
@@ -57,12 +55,18 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     protected $feedPool;
 
     /**
+     * @var MarkRemovedEntitiesInterface
+     */
+    private $markRemovedEntities;
+
+    /**
      * @param Processor $processor
      * @param ResourceConnection $resourceConnection
      * @param DataSerializerInterface $serializer
      * @param FeedIndexMetadata $feedIndexMetadata
      * @param FeedIndexerCallbackInterface $feedIndexerCallback
      * @param FeedPool $feedPool
+     * @param MarkRemovedEntitiesInterface $markRemovedEntities
      * @param array $callbackSkipAttributes
      */
     public function __construct(
@@ -72,6 +76,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         FeedIndexMetadata $feedIndexMetadata,
         FeedIndexerCallbackInterface $feedIndexerCallback,
         FeedPool $feedPool,
+        MarkRemovedEntitiesInterface $markRemovedEntities,
         array $callbackSkipAttributes = []
     ) {
         $this->processor = $processor;
@@ -80,6 +85,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         $this->dataSerializer = $serializer;
         $this->feedIndexerCallback = $feedIndexerCallback;
         $this->feedPool = $feedPool;
+        $this->markRemovedEntities = $markRemovedEntities;
         $this->callbackSkipAttributes = $callbackSkipAttributes;
     }
 
@@ -139,7 +145,10 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     {
         $this->truncateFeedTable();
         foreach ($this->getAllIds() as $ids) {
-            $this->markRemoved($ids);
+            $this->markRemovedEntities->execute(
+                \array_column($ids, $this->feedIndexMetadata->getFeedIdentity()),
+                $this->feedIndexMetadata
+            );
             $this->process($ids);
         }
     }
@@ -156,7 +165,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         foreach ($ids as $id) {
             $arguments[] = [$this->feedIndexMetadata->getFeedIdentity() => $id];
         }
-        $this->markRemoved($ids);
+        $this->markRemovedEntities->execute($ids, $this->feedIndexMetadata);
         $this->process($arguments);
     }
 
@@ -168,7 +177,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      */
     public function executeRow($id)
     {
-        $this->markRemoved([$id]);
+        $this->markRemovedEntities->execute([$id], $this->feedIndexMetadata);
         $this->process([[$this->feedIndexMetadata->getFeedIdentity() => $id]]);
     }
 
@@ -181,8 +190,37 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      */
     public function execute($ids)
     {
-        $this->markRemoved($ids);
-        $this->process($ids);
+        $arguments = [];
+        $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
+
+        foreach ($ids as $id) {
+            $arguments[] = \is_array($id) ? $this->prepareIndexData($id) : [
+                $feedIdentity => $id,
+            ];
+        }
+
+        $this->markRemovedEntities->execute(\array_column($arguments, $feedIdentity), $this->feedIndexMetadata);
+        $this->process($arguments);
+    }
+
+    /**
+     * Prepare index data
+     *
+     * @param array $indexData
+     *
+     * @return array
+     */
+    private function prepareIndexData(array $indexData): array
+    {
+        $attributeIds = !empty($indexData['attribute_ids'])
+            ? \array_unique(\explode(',', $indexData['attribute_ids']))
+            : [];
+
+        return [
+            $this->feedIndexMetadata->getFeedIdentity() => $indexData['entity_id'],
+            'attribute_ids' => $attributeIds,
+            'scopeId' => $indexData['store_id'] ?? null,
+        ];
     }
 
     /**
@@ -194,47 +232,95 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      */
     private function process($indexData = []) : void
     {
+        $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
         $data = $this->processor->process($this->feedIndexMetadata->getFeedName(), $indexData);
         $chunks = array_chunk($data, $this->feedIndexMetadata->getBatchSize());
         $connection = $this->resourceConnection->getConnection();
+        $callbackData = [];
+        $existingFeedData = [];
+
+        $updateEntities = \array_filter($indexData, function ($data) {
+            return !empty($data['attribute_ids']);
+        });
+
+        if (!empty($updateEntities)) {
+            $existingFeedData = $this->fetchFeedData(\array_column($updateEntities, $feedIdentity));
+        }
+
         foreach ($chunks as $chunk) {
             $connection->insertOnDuplicate(
                 $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName()),
-                $this->dataSerializer->serialize($chunk),
+                $this->dataSerializer->serialize($this->prepareChunkData($chunk, $existingFeedData, $callbackData)),
                 $this->feedIndexMetadata->getFeedTableMutableColumns()
             );
         }
+
+        $deleteIds = [];
+        $callbackIds = \array_column($callbackData, $feedIdentity);
+        foreach ($indexData as $data) {
+            if (!\in_array($data[$feedIdentity], $callbackIds)) {
+                $deleteIds[] = $data[$feedIdentity];
+            }
+        }
+
+        $this->feedIndexerCallback->execute($callbackData, $deleteIds);
     }
 
     /**
-     * Mark field removed
+     * Prepare chunk data
      *
-     * @param array $ids
-     * @return void
+     * @param array $chunk
+     * @param array $existingFeedData
+     * @param array $callbackData
+     *
+     * @return array
      */
-    private function markRemoved(array $ids) : void
+    private function prepareChunkData(array $chunk, array $existingFeedData, array &$callbackData): array
     {
-        $connection = $this->resourceConnection->getConnection();
-        $select = $connection->select()
-            ->joinLeft(
-                ['s' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getSourceTableName())],
-                sprintf(
-                    'f.%s = s.%s',
-                    $this->feedIndexMetadata->getFeedTableField(),
-                    $this->feedIndexMetadata->getSourceTableField()
-                ),
-                ['is_deleted' => new \Zend_Db_Expr('1')]
-            )
-            ->where(sprintf('s.%s IS NULL', $this->feedIndexMetadata->getSourceTableField()))
-            ->where(
-                sprintf('f.%s IN (?)', $this->feedIndexMetadata->getFeedTableField()),
-                $ids
+        $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
+
+        foreach ($chunk as &$feedData) {
+            $storeViewCode = $feedData['storeViewCode'] ?? null;
+            $existingData = $existingFeedData[$storeViewCode][$feedData[$feedIdentity]] ?? null;
+            $attributes = [];
+
+            if (null !== $existingData) {
+                $attributes = \array_filter(\array_keys($feedData), function ($code) {
+                    return !\in_array($code, $this->callbackSkipAttributes);
+                });
+                $feedData = \array_replace_recursive($existingData, $feedData);
+            }
+
+            $callbackData[] = \array_filter(
+                [
+                    $feedIdentity => $feedData[$feedIdentity],
+                    'storeViewCode' => $storeViewCode,
+                    'attributes' => $attributes,
+                ]
             );
-        $update = $connection->updateFromSelect(
-            $select,
-            ['f' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName())]
-        );
-        $connection->query($update);
+        }
+
+        return $chunk;
+    }
+
+    /**
+     * Fetch feed data
+     *
+     * @param int[] $ids
+     *
+     * @return array
+     */
+    private function fetchFeedData(array $ids): array
+    {
+        $feedData = $this->feedPool->getFeed($this->feedIndexMetadata->getFeedName())->getFeedByIds($ids);
+        $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
+        $output = [];
+
+        foreach ($feedData['feed'] as $feedItem) {
+            $output[$feedItem['storeViewCode']][$feedItem[$feedIdentity]] = $feedItem;
+        }
+
+        return $output;
     }
 
     /**

@@ -9,15 +9,21 @@
     <preference for="Magento\CatalogExportApi\Api\ProductRepositoryInterface" type="Magento\CatalogExport\Model\ProductRepository"/>
     <preference for="Magento\CatalogExportApi\Api\CategoryRepositoryInterface" type="Magento\CatalogExport\Model\CategoryRepository"/>
     <preference for="Magento\CatalogExportApi\Api\ProductVariantRepositoryInterface" type="Magento\CatalogExport\Model\ProductVariantRepository"/>
+    <preference for="Magento\CatalogExportApi\Api\ReviewRepositoryInterface" type="Magento\CatalogExport\Model\ReviewRepository"/>
+    <preference for="Magento\CatalogExportApi\Api\RatingMetadataRepositoryInterface" type="Magento\CatalogExport\Model\RatingMetadataRepository"/>
 
-    <type name="Magento\Framework\Console\CommandListInterface">
+    <type name="Magento\CatalogExport\Model\GenerateDTOs">
         <arguments>
-            <argument name="commands" xsi:type="array">
-                <item name="dto_auto_generation" xsi:type="object">
-                    Magento\CatalogExport\Console\Command\GenerateDTOFiles
-                </item>
+            <argument name="baseConfigEntities" xsi:type="array">
+                <item name="Product" xsi:type="string">Product</item>
+                <item name="Category" xsi:type="string">Category</item>
+                <item name="ProductVariant" xsi:type="string">ProductVariant</item>
+                <item name="Review" xsi:type="string">Review</item>
+                <item name="RatingMetadata" xsi:type="string">RatingMetadata</item>
             </argument>
         </arguments>
     </type>
-
+    <type name="Magento\Setup\Module\Di\App\Task\Operation\ApplicationCodeGenerator">
+        <plugin name="GenerateExportDTOs" type="Magento\CatalogExport\Plugin\GenerateApplicationCode" sortOrder="0"/>
+    </type>
 </config>

@@ -14,7 +14,7 @@ namespace Magento\CatalogExportApi\Api\EntityRequest;
 class Item
 {
     /**
-     * @var int
+     * @var string
      */
     private $entityId;
 
@@ -26,9 +26,9 @@ class Item
     /**
      * Get requested entity id.
      *
-     * @return int
+     * @return string
      */
-    public function getEntityId(): int
+    public function getEntityId(): string
     {
         return $this->entityId;
     }
@@ -36,11 +36,11 @@ class Item
     /**
      * Set requested entity id.
      *
-     * @param int $entityId
+     * @param string $entityId
      *
      * @return void
      */
-    public function setEntityId(int $entityId): void
+    public function setEntityId(string $entityId): void
     {
         $this->entityId = $entityId;
     }

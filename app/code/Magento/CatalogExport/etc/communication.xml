@@ -9,4 +9,6 @@
     <topic name="catalog.export.product.data" request="Magento\CatalogExport\Event\Data\ChangedEntities"/>
     <topic name="catalog.export.category.data" request="Magento\CatalogExport\Event\Data\ChangedEntities"/>
     <topic name="catalog.export.product.variants.data" request="Magento\CatalogExport\Event\Data\ChangedEntities"/>
+    <topic name="export.product.reviews" request="Magento\CatalogExport\Event\Data\ChangedEntities"/>
+    <topic name="export.rating.metadata" request="Magento\CatalogExport\Event\Data\ChangedEntities"/>
 </config>
