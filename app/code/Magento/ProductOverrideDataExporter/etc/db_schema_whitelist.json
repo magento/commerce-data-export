@@ -1,7 +1,7 @@
 {
     "catalog_data_exporter_product_overrides": {
         "index": {
-            "catalog_data_exporter_product_overrides_MODIFIED_AT": true
+            "CATALOG_DATA_EXPORTER_PRODUCT_OVERRIDES_MODIFIED_AT": true
         },
         "constraint": {
             "PRIMARY": true
