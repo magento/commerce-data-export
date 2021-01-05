@@ -32,4 +32,12 @@ return [
     'app/code/Magento/CatalogExport/Model/GenerateDTOs.php' => [
         'Magento\DataExporter',
     ],
+    'app/code/Magento/CatalogExport/Model/RatingMetadataRepository.php' => [
+        'Magento\CatalogExportApi',
+        'Magento\DataExporter',
+    ],
+    'app/code/Magento/CatalogExport/Model/ReviewRepository.php' => [
+        'Magento\CatalogExportApi',
+        'Magento\DataExporter',
+    ],
 ];
