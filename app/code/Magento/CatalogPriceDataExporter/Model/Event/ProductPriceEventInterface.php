@@ -31,8 +31,6 @@ interface ProductPriceEventInterface
     public const EVENT_DOWNLOADABLE_LINK_PRICE_DELETED = 'downloadable_link_price_deleted';
     public const EVENT_VARIATION_CHANGED = 'variation_changed';
     public const EVENT_VARIATION_DELETED = 'variation_deleted';
-    public const EVENT_GIFT_CARD_PRICE_CHANGED = 'giftcard_price_changed';
-    public const EVENT_GIFT_CARD_PRICE_DELETED = 'giftcard_price_deleted';
 
     /**
      * Retrieve product price event data.

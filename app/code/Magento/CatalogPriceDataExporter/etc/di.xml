@@ -39,9 +39,6 @@
                 <item name="configurable_variation" xsi:type="object">
                     Magento\CatalogPriceDataExporter\Model\Event\ConfigurableProductEvent
                 </item>
-                <item name="gift_card_price" xsi:type="object">
-                    Magento\CatalogPriceDataExporter\Model\Event\GiftCardPriceEvent
-                </item>
             </argument>
         </arguments>
     </type>
