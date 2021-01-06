@@ -1,0 +1,190 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\CatalogPriceDataExporter\Model\EventPool">
+        <arguments>
+            <argument name="priceTypeMap" xsi:type="array">
+                <item name="product_price" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\ProductPriceEvent
+                </item>
+                <item name="tier_price" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\TierPriceEvent
+                </item>
+                <item name="custom_option" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\CustomOptionDeleteEvent
+                </item>
+                <item name="custom_option_price" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\CustomOptionPriceEvent
+                </item>
+                <item name="custom_option_type" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\CustomOptionTypeDeleteEvent
+                </item>
+                <item name="custom_option_type_price" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\CustomOptionTypePriceEvent
+                </item>
+                <item name="downloadable_link" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\DownloadableLinkDeleteEvent
+                </item>
+                <item name="downloadable_link_price" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\DownloadableLinkPriceEvent
+                </item>
+                <item name="bundle_variation" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\BundleProductEvent
+                </item>
+                <item name="configurable_variation" xsi:type="object">
+                    Magento\CatalogPriceDataExporter\Model\Event\ConfigurableProductEvent
+                </item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Option, option type, downloadable link delete events -->
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Event\CustomOptionDeleteEvent"
+                 type="Magento\CatalogPriceDataExporter\Model\Event\EntityDeleteEvent">
+        <arguments>
+            <argument name="entityDelete" xsi:type="object">
+                Magento\CatalogPriceDataExporter\Model\Query\CustomOptionDelete
+            </argument>
+            <argument name="eventType" xsi:type="const">
+                Magento\CatalogPriceDataExporter\Model\Event\ProductPriceEventInterface::EVENT_CUSTOM_OPTION_DELETED
+            </argument>
+            <argument name="uidResolverData" xsi:type="array">
+                <item name="class" xsi:type="object">
+                    Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableEnteredOptionValueUid
+                </item>
+                <item name="parameters" xsi:type="array">
+                    <item name="optionId" xsi:type="array">
+                        <item name="parameterKey" xsi:type="const">
+                            Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableEnteredOptionValueUid::OPTION_ID
+                        </item>
+                        <item name="valueKey" xsi:type="string">entity_id</item>
+                    </item>
+                </item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Event\CustomOptionTypeDeleteEvent"
+                 type="Magento\CatalogPriceDataExporter\Model\Event\EntityDeleteEvent">
+        <arguments>
+            <argument name="entityDelete" xsi:type="object">
+                Magento\CatalogPriceDataExporter\Model\Query\CustomOptionTypeDelete
+            </argument>
+            <argument name="eventType" xsi:type="const">
+                Magento\CatalogPriceDataExporter\Model\Event\ProductPriceEventInterface::EVENT_CUSTOM_OPTION_TYPE_DELETED
+            </argument>
+            <argument name="uidResolverData" xsi:type="array">
+                <item name="class" xsi:type="object">
+                    Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableSelectedOptionValueUid
+                </item>
+                <item name="parameters" xsi:type="array">
+                    <item name="optionId" xsi:type="array">
+                        <item name="parameterKey" xsi:type="const">
+                            Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableSelectedOptionValueUid::OPTION_ID
+                        </item>
+                        <item name="valueKey" xsi:type="string">option_id</item>
+                    </item>
+                    <item name="optionValueId" xsi:type="array">
+                        <item name="parameterKey" xsi:type="const">
+                            Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableSelectedOptionValueUid::OPTION_VALUE_ID
+                        </item>
+                        <item name="valueKey" xsi:type="string">entity_id</item>
+                    </item>
+                </item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Event\DownloadableLinkDeleteEvent"
+                 type="Magento\CatalogPriceDataExporter\Model\Event\EntityDeleteEvent">
+        <arguments>
+            <argument name="entityDelete" xsi:type="object">
+                Magento\CatalogPriceDataExporter\Model\Query\DownloadableLinkDelete
+            </argument>
+            <argument name="eventType" xsi:type="const">
+                Magento\CatalogPriceDataExporter\Model\Event\ProductPriceEventInterface::EVENT_DOWNLOADABLE_LINK_DELETED
+            </argument>
+            <argument name="uidResolverData" xsi:type="array">
+                <item name="class" xsi:type="object">
+                    Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\DownloadableLinksOptionUid
+                </item>
+                <item name="parameters" xsi:type="array">
+                    <item name="optionId" xsi:type="array">
+                        <item name="parameterKey" xsi:type="const">
+                            Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\DownloadableLinksOptionUid::OPTION_ID
+                        </item>
+                        <item name="valueKey" xsi:type="string">entity_id</item>
+                    </item>
+                </item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Query\CustomOptionDelete"
+                 type="Magento\CatalogPriceDataExporter\Model\Query\EntityDelete">
+        <arguments>
+            <argument name="tableName" xsi:type="string">catalog_product_option</argument>
+            <argument name="entityColumnName" xsi:type="string">option_id</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Query\CustomOptionTypeDelete"
+                 type="Magento\CatalogPriceDataExporter\Model\Query\EntityDelete">
+        <arguments>
+            <argument name="tableName" xsi:type="string">catalog_product_option_type_value</argument>
+            <argument name="entityColumnName" xsi:type="string">option_type_id</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Query\DownloadableLinkDelete"
+                 type="Magento\CatalogPriceDataExporter\Model\Query\EntityDelete">
+        <arguments>
+            <argument name="tableName" xsi:type="string">downloadable_link</argument>
+            <argument name="entityColumnName" xsi:type="string">link_id</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Complex product events -->
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Event\ConfigurableProductEvent"
+                 type="Magento\CatalogPriceDataExporter\Model\Event\ComplexProductEvent">
+        <arguments>
+            <argument name="linkType" xsi:type="string">configurable</argument>
+            <argument name="complexProductLink" xsi:type="object">
+                Magento\CatalogPriceDataExporter\Model\Query\ConfigurableProductLink
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Event\BundleProductEvent"
+                 type="Magento\CatalogPriceDataExporter\Model\Event\ComplexProductEvent">
+        <arguments>
+            <argument name="linkType" xsi:type="string">bundle</argument>
+            <argument name="complexProductLink" xsi:type="object">
+                Magento\CatalogPriceDataExporter\Model\Query\BundleProductLink
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Query\ConfigurableProductLink"
+                 type="Magento\CatalogPriceDataExporter\Model\Query\ComplexProductLink">
+        <arguments>
+            <argument name="linkTable" xsi:type="string">catalog_product_super_link</argument>
+            <argument name="parentColumn" xsi:type="string">parent_id</argument>
+            <argument name="variationColumn" xsi:type="string">product_id</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\CatalogPriceDataExporter\Model\Query\BundleProductLink"
+                 type="Magento\CatalogPriceDataExporter\Model\Query\ComplexProductLink">
+        <arguments>
+            <argument name="linkTable" xsi:type="string">catalog_product_bundle_selection</argument>
+            <argument name="parentColumn" xsi:type="string">parent_product_id</argument>
+            <argument name="variationColumn" xsi:type="string">product_id</argument>
+        </arguments>
+    </virtualType>
+</config>

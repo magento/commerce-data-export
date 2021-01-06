@@ -9,4 +9,5 @@ magento/module-catalog-export
 magento/module-catalog-export-api
 magento/module-parent-product-data-exporter
 magento/module-product-variant-data-exporter
+magento/module-catalog-price-data-exporter
 magento/module-configuration-data-exporter
