@@ -25,6 +25,7 @@
     "magento/module-catalog-data-exporter": "*",
     "magento/module-catalog": "*",
     "magento/module-downloadable": "*",
-    "magento/module-eav": "*"
+    "magento/module-eav": "*",
+    "magento/module-message-queue": "*"
   }
 }
