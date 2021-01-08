@@ -26,6 +26,6 @@
     "magento/module-catalog": "*",
     "magento/module-downloadable": "*",
     "magento/module-eav": "*",
-    "magento/module-message-queue": "*"
+    "magento/framework-message-queue": "*"
   }
 }
