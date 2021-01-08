@@ -53,9 +53,13 @@ class DownloadableLinkPrice
                     'link_id' => 'dlp.link_id',
                 ]
             )
-            ->where('dlp.website_id = ?', $scopeId)
-            ->where('dlp.link_id > ?', $lastKnownId)
-            ->order('dlp.link_id');
+            ->where('dlp.website_id = ?', $scopeId);
+
+        if (null !== $lastKnownId) {
+            $select
+                ->where('dlp.link_id > ?', $lastKnownId)
+                ->order('dlp.link_id');
+        }
 
         if (!empty($linkIds)) {
             $select->where('dlp.link_id in (?)', $linkIds);

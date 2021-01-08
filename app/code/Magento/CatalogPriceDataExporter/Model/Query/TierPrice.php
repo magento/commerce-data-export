@@ -72,7 +72,7 @@ class TierPrice
         if (null !== $scopeId) {
             $select->where('cpetp.website_id = ?', $scopeId);
         }
-        if (null !== $ids) {
+        if (!empty($ids)) {
             $select->where('cpe.entity_id IN (?)', $ids);
         }
         if (null !== $lastKnownId) {

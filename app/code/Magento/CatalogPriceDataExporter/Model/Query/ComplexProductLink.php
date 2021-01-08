@@ -93,10 +93,13 @@ class ComplexProductLink
                     'link_id' => \sprintf('link.%s', $this->linkIdColumn),
 
                 ]
-            )
-            ->where(\sprintf('link.%s > ?', $this->linkIdColumn), $lastKnownId)
-            ->order(\sprintf('link.%s', $this->linkIdColumn));
+            );
 
+        if (null !== $lastKnownId) {
+            $select
+                ->where(\sprintf('link.%s > ?', $this->linkIdColumn), $lastKnownId)
+                ->order(\sprintf('link.%s', $this->linkIdColumn));
+        }
         if (!empty($parentIds)) {
             $select->where('cpe.entity_id in (?)', $parentIds);
         }

@@ -61,9 +61,14 @@ class CustomOptionTypePrice
                     'price_type' => 'cpotp.price_type',
                 ]
             )
-            ->where('cpotp.store_id = ?', $scopeId)
-            ->where('cpotp.option_type_id > ?', $lastKnownId)
-            ->order('cpotp.option_type_id');
+            ->where('cpotp.store_id = ?', $scopeId);
+
+        if (null !== $lastKnownId) {
+            $select
+                ->where('cpotp.option_type_id > ?', $lastKnownId)
+                ->order('cpotp.option_type_id');
+        }
+
         if (!empty($optionTypeIds)) {
             $select->where('cpotp.option_type_id IN (?)', $optionTypeIds);
         }
