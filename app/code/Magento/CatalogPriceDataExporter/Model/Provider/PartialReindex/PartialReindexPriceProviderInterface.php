@@ -16,7 +16,6 @@ use Magento\DataExporter\Exception\UnableRetrieveData;
  */
 interface PartialReindexPriceProviderInterface extends ProductPriceProviderInterface
 {
-
     /**
      * Retrieve product price event data.
      *

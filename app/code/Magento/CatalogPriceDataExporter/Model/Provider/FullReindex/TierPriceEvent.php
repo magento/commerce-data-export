@@ -75,11 +75,12 @@ class TierPriceEvent implements FullReindexPriceProviderInterface
         try {
             foreach ($this->storeManager->getStores(true) as $store) {
                 $storeId = (int)$store->getId();
+                $websiteId = (string)$this->storeManager->getStore($storeId)->getWebsiteId();
                 $continue = true;
                 $lastKnownId = 0;
                 while ($continue === true) {
                     $result = [];
-                    $select = $this->tierPrice->getQuery([], $storeId, $lastKnownId, self::BATCH_SIZE);
+                    $select = $this->tierPrice->getQuery([], $websiteId, $lastKnownId, self::BATCH_SIZE);
                     $cursor = $this->resourceConnection->getConnection()->query($select);
                     while ($row = $cursor->fetch()) {
                         $result[$row['entity_id']][$row['customer_group_id']][$row['qty']] = $row;
@@ -87,7 +88,7 @@ class TierPriceEvent implements FullReindexPriceProviderInterface
                     if (empty($result)) {
                         $continue = false;
                     } else {
-                        yield $this->getEventsData($result, $storeId);
+                        yield $this->getEventsData($result, $websiteId);
                         $lastKnownId = array_key_last($result);
                     }
                 }
@@ -118,15 +119,14 @@ class TierPriceEvent implements FullReindexPriceProviderInterface
      * Form prices event data.
      *
      * @param array $actualData
-     * @param int $storeId
+     * @param string $websiteId
      * @return array
      *
      * @throws NoSuchEntityException
      */
-    private function getEventsData(array $actualData, int $storeId): array
+    private function getEventsData(array $actualData, string $websiteId): array
     {
         $events = [];
-        $websiteId = (string)$this->storeManager->getStore($storeId)->getWebsiteId();
         foreach ($actualData as $entityId => $entityData) {
             foreach ($entityData as $customerGroup => $groupData) {
                 foreach ($groupData as $qty => $priceData) {
