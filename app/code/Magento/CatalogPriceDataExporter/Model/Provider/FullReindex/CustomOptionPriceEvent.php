@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\CatalogPriceDataExporter\Model\Event;
+namespace Magento\CatalogPriceDataExporter\Model\Provider\FullReindex;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableEnteredOptionValueUid;
 use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
@@ -18,9 +18,9 @@ use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class responsible for providing custom option price events
+ * Class responsible for providing custom option price events for full indexation
  */
-class CustomOptionPriceEvent implements ProductPriceEventInterface
+class CustomOptionPriceEvent implements FullReindexPriceProviderInterface
 {
     /**
      * @var ResourceConnection
@@ -79,60 +79,56 @@ class CustomOptionPriceEvent implements ProductPriceEventInterface
     /**
      * @inheritdoc
      */
-    public function retrieve(array $indexData): array
+    public function retrieve(): \Generator
     {
-        $result = [];
-        $queryArguments = [];
-
         try {
-            foreach ($indexData as $data) {
-                $queryArguments[$data['scope_id']]['optionIds'][] = $data['entity_id'];
-            }
-
-            foreach ($queryArguments as $scopeId => $queryData) {
-                $select = $this->customOptionPrice->getQuery($queryData['optionIds'], $scopeId);
-                $cursor = $this->resourceConnection->getConnection()->query($select);
-
-                while ($row = $cursor->fetch()) {
-                    $result[$scopeId][$row['option_id']] = [
-                        'option_id' => $row['option_id'],
-                        'price' => $row['price'],
-                        'price_type' => $row['price_type'],
-                    ];
+            foreach ($this->storeManager->getStores(true) as $store) {
+                $storeId = (int)$store->getId();
+                $continue = true;
+                $lastKnownId = 0;
+                while ($continue === true) {
+                    $result = [];
+                    $select = $this->customOptionPrice->getQuery([], $storeId, $lastKnownId, self::BATCH_SIZE);
+                    $cursor = $this->resourceConnection->getConnection()->query($select);
+                    while ($row = $cursor->fetch()) {
+                        $result[$row['option_id']] = [
+                            'option_id' => $row['option_id'],
+                            'price' => $row['price'],
+                            'price_type' => $row['price_type'],
+                        ];
+                    }
+                    if (empty($result)) {
+                        $continue = false;
+                    } else {
+                        yield $this->getEventData($result, $storeId);
+                        $lastKnownId = array_key_last($result);
+                    }
                 }
             }
-
-            $output = $this->getEventData($result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product custom options price data.');
         }
-
-        return $output;
     }
 
     /**
      * Retrieve prices event data
      *
      * @param array $resultData
+     * @param int $storeId
      *
      * @return array
      *
      * @throws NoSuchEntityException
-     * @throws \InvalidArgumentException
      */
-    private function getEventData(array $resultData): array
+    private function getEventData(array $resultData, int $storeId): array
     {
         $events = [];
-
-        foreach ($resultData as $scopeId => $pricesData) {
-            foreach ($pricesData as $priceData) {
-                $websiteId = (string)$this->storeManager->getStore($scopeId)->getWebsiteId();
-                $key = $this->eventKeyGenerator->generate(self::EVENT_CUSTOM_OPTION_PRICE_CHANGED, $websiteId, null);
-                $events[$key][] = $this->buildEventData($priceData);
-            }
+        $websiteId = (string)$this->storeManager->getStore($storeId)->getWebsiteId();
+        $key = $this->eventKeyGenerator->generate(self::EVENT_CUSTOM_OPTION_PRICE_CHANGED, $websiteId, null);
+        foreach ($resultData as $priceData) {
+            $events[$key][] = $this->buildEventData($priceData);
         }
-
         return $events;
     }
 

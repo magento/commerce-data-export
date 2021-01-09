@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\CatalogPriceDataExporter\Model\Event;
+namespace Magento\CatalogPriceDataExporter\Model\Provider\PartialReindex;
 
 use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
 use Magento\CatalogPriceDataExporter\Model\Query\ProductPrice;
@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Class responsible for providing product price / special price events
  */
-class ProductPriceEvent implements ProductPriceEventInterface
+class ProductPriceEvent implements PartialReindexPriceProviderInterface
 {
     /**
      * @var ResourceConnection
@@ -70,35 +70,32 @@ class ProductPriceEvent implements ProductPriceEventInterface
     /**
      * @inheritdoc
      */
-    public function retrieve(array $indexData): array
+    public function retrieve(array $indexData): \Generator
     {
-        $result = [];
-        $queryArguments = [];
-
         try {
-            foreach ($indexData as &$data) {
-                $data['attributes'] = \array_unique(\explode(',', $data['attributes']));
-                $queryArguments[$data['scope_id']]['ids'][] = $data['entity_id'];
-                $queryArguments[$data['scope_id']]['attributes'][] = $data['attributes'];
-            }
-
-            foreach ($queryArguments as $scopeId => $queryData) {
-                $attributes = \array_merge($queryData['attributes']);
-                $select = $this->productPrice->getQuery($queryData['ids'], $scopeId, $attributes);
-                $cursor = $this->resourceConnection->getConnection()->query($select);
-
-                while ($row = $cursor->fetch()) {
-                    $result[$scopeId][$row['entity_id']][$row['attribute_code']] = $row['value'];
+            foreach (\array_chunk($indexData, self::BATCH_SIZE) as $indexDataChunk) {
+                $result = [];
+                $queryArguments = [];
+                foreach ($indexDataChunk as &$data) {
+                    $data['attributes'] = \array_unique(\explode(',', $data['attributes']));
+                    $queryArguments[$data['scope_id']]['ids'][] = $data['entity_id'];
+                    $queryArguments[$data['scope_id']]['attributes'][] = $data['attributes'];
                 }
-            }
+                foreach ($queryArguments as $scopeId => $queryData) {
+                    $attributes = \array_merge($queryData['attributes']);
+                    $select = $this->productPrice->getQuery($queryData['ids'], $scopeId, $attributes);
+                    $cursor = $this->resourceConnection->getConnection()->query($select);
 
-            $output = $this->getEventsData($indexData, $result);
+                    while ($row = $cursor->fetch()) {
+                        $result[$scopeId][$row['entity_id']][$row['attribute_code']] = $row['value'];
+                    }
+                }
+                yield $this->getEventsData($indexDataChunk, $result);
+            }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve product price data.');
         }
-
-        return $output;
     }
 
     /**

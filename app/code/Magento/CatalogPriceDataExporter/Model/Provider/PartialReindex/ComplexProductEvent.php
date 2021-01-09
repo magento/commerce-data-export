@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\CatalogPriceDataExporter\Model\Event;
+namespace Magento\CatalogPriceDataExporter\Model\Provider\PartialReindex;
 
 use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
 use Magento\CatalogPriceDataExporter\Model\Query\ComplexProductLink;
@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Class responsible for providing complex product variation change events
  */
-class ComplexProductEvent implements ProductPriceEventInterface
+class ComplexProductEvent implements PartialReindexPriceProviderInterface
 {
     /**
      * @var ResourceConnection
@@ -79,37 +79,37 @@ class ComplexProductEvent implements ProductPriceEventInterface
     /**
      * @inheritdoc
      */
-    public function retrieve(array $indexData): array
+    public function retrieve(array $indexData): \Generator
     {
-        $result = [];
-        $parentIds = [];
-        $variationIds = [];
-
         try {
-            foreach ($indexData as $key => $data) {
-                if (null === $data['parent_id']) {
-                    unset($indexData[$key]);
-                    continue;
+            foreach (\array_chunk($indexData, self::BATCH_SIZE) as $indexDataChunk) {
+                $result = [];
+                $parentIds = [];
+                $variationIds = [];
+
+                foreach ($indexDataChunk as $key => $data) {
+                    if (null === $data['parent_id']) {
+                        unset($indexDataChunk[$key]);
+                        continue;
+                    }
+
+                    $parentIds[] = $data['parent_id'];
+                    $variationIds[] = $data['entity_id'];
                 }
 
-                $parentIds[] = $data['parent_id'];
-                $variationIds[] = $data['entity_id'];
+                $select = $this->complexProductLink->getQuery($parentIds, $variationIds);
+                $cursor = $this->resourceConnection->getConnection()->query($select);
+
+                while ($row = $cursor->fetch()) {
+                    $result[$row['parent_id']][] = $row['variation_id'];
+                }
+
+                yield $this->getEventData($indexDataChunk, $result);
             }
-
-            $select = $this->complexProductLink->getQuery($parentIds, $variationIds);
-            $cursor = $this->resourceConnection->getConnection()->query($select);
-
-            while ($row = $cursor->fetch()) {
-                $result[$row['parent_id']][] = $row['variation_id'];
-            }
-
-            $events = $this->getEventData($indexData, $result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve complex product link data.');
         }
-
-        return $events;
     }
 
     /**

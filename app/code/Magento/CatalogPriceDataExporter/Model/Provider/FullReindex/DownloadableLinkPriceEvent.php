@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\CatalogPriceDataExporter\Model\Event;
+namespace Magento\CatalogPriceDataExporter\Model\Provider\FullReindex;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\DownloadableLinksOptionUid;
 use Magento\CatalogPriceDataExporter\Model\EventKeyGenerator;
@@ -18,9 +18,9 @@ use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class responsible for providing downloadable product link price events
+ * Class responsible for providing downloadable product link price events for full indexation
  */
-class DownloadableLinkPriceEvent implements ProductPriceEventInterface
+class DownloadableLinkPriceEvent implements FullReindexPriceProviderInterface
 {
     /**
      * @var ResourceConnection
@@ -79,58 +79,56 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
     /**
      * @inheritdoc
      */
-    public function retrieve(array $indexData): array
+    public function retrieve(): \Generator
     {
-        $result = [];
-        $queryArguments = [];
-
         try {
-            foreach ($indexData as $data) {
-                $queryArguments[$data['scope_id']][] = $data['entity_id'];
-            }
-
-            foreach ($queryArguments as $scopeId => $ids) {
-                $select = $this->downloadableLinkPrice->getQuery($ids, $scopeId);
-                $cursor = $this->resourceConnection->getConnection()->query($select);
-
-                while ($row = $cursor->fetch()) {
-                    $result[$row['entity_id']][$scopeId] = $row['value'];
+            foreach ($this->storeManager->getStores(true) as $store) {
+                $storeId = (int)$store->getId();
+                $websiteId = (string)$this->storeManager->getStore($storeId)->getWebsiteId();
+                $continue = true;
+                $lastKnownId = 0;
+                while ($continue === true) {
+                    $result = [];
+                    $select = $this->downloadableLinkPrice->getQuery([], $websiteId, (int)$lastKnownId, self::BATCH_SIZE);
+                    $cursor = $this->resourceConnection->getConnection()->query($select);
+                    while ($row = $cursor->fetch()) {
+                        $result[$row['entity_id']] = $row['value'];
+                        $lastKnownId = $row['link_id'];
+                    }
+                    if (empty($result)) {
+                        $continue = false;
+                    } else {
+                        yield $this->getEventsData($result, $websiteId);
+                    }
                 }
             }
-
-            $events = $this->getEventsData($indexData, $result);
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
-            throw new UnableRetrieveData('Unable to retrieve downloadable link price data.');
+            throw new UnableRetrieveData('Unable to retrieve downloadable link price data for full sync.');
         }
-
-        return $events;
     }
 
     /**
      * Retrieve prices event data
      *
-     * @param array $indexData
      * @param array $actualData
+     * @param string $websiteId
      *
      * @return array
      *
-     * @throws LocalizedException
-     * @throws \InvalidArgumentException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    private function getEventsData(array $indexData, array $actualData): array
+    private function getEventsData(array $actualData, string $websiteId): array
     {
         $events = [];
-
-        foreach ($indexData as $data) {
-            $value = $actualData[$data['entity_id']][$data['scope_id']] ?? null;
-            $eventType = null === $value ? self::EVENT_DOWNLOADABLE_LINK_PRICE_DELETED :
-                self::EVENT_DOWNLOADABLE_LINK_PRICE_CHANGED;
-            $websiteId = (string)$this->storeManager->getStore($data['scope_id'])->getWebsiteId();
-            $key = $this->eventKeyGenerator->generate($eventType, $websiteId, null);
-            $events[$key][] = $this->buildEventData($data['entity_id'], $value);
+        $key = $this->eventKeyGenerator->generate(
+            self::EVENT_DOWNLOADABLE_LINK_PRICE_CHANGED,
+            $websiteId,
+            null
+        );
+        foreach ($actualData as $entityId => $value) {
+            $events[$key][] = $this->buildEventData((string)$entityId, $value);
         }
-
         return $events;
     }
 
@@ -138,16 +136,15 @@ class DownloadableLinkPriceEvent implements ProductPriceEventInterface
      * Build event data.
      *
      * @param string $entityId
-     * @param string|null $value
+     * @param string $value
      *
      * @return array
      *
      * @throws \InvalidArgumentException
      */
-    private function buildEventData(string $entityId, ?string $value): array
+    private function buildEventData(string $entityId, string $value): array
     {
         $id = $this->downloadableLinksOptionUid->resolve([DownloadableLinksOptionUid::OPTION_ID => $entityId]);
-
         return [
             'id' => $id,
             'value' => $value,

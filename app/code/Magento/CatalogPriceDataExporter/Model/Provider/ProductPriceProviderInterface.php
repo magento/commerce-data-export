@@ -6,14 +6,12 @@
 
 declare(strict_types=1);
 
-namespace Magento\CatalogPriceDataExporter\Model\Event;
-
-use Magento\DataExporter\Exception\UnableRetrieveData;
+namespace Magento\CatalogPriceDataExporter\Model\Provider;
 
 /**
  * Interface for product price events providers
  */
-interface ProductPriceEventInterface
+interface ProductPriceProviderInterface
 {
     /**
      * Price event type constants
@@ -33,13 +31,7 @@ interface ProductPriceEventInterface
     public const EVENT_VARIATION_DELETED = 'variation_deleted';
 
     /**
-     * Retrieve product price event data.
-     *
-     * @param array $indexData
-     *
-     * @return array
-     *
-     * @throws UnableRetrieveData
+     * Batch size for provided data
      */
-    public function retrieve(array $indexData): array;
+    public const BATCH_SIZE = 20;
 }

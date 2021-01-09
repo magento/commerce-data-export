@@ -36,16 +36,16 @@ class ProductPrice
      * @param array $ids
      * @param int $scopeId
      * @param array $attributes
-     *
+     * @param int|null $lastKnownId
+     * @param int|null $batchSize
      * @return Select
      */
-    public function getQuery(array $ids, int $scopeId, array $attributes): Select
+    public function getQuery(array $ids, int $scopeId, array $attributes, ?int $lastKnownId = 0, ?int $batchSize = null): Select
     {
         $connection = $this->resourceConnection->getConnection();
         $productEntityTable = $this->resourceConnection->getTableName('catalog_product_entity');
         $joinField = $connection->getAutoIncrementField($productEntityTable);
-
-        return $connection->select()
+        $select = $connection->select()
             ->from(['cpe' => $productEntityTable], [])
             ->join(
                 ['cped' => $this->resourceConnection->getTableName(['catalog_product_entity', 'decimal'])],
@@ -66,6 +66,21 @@ class ProductPrice
             )
             ->where('eav.attribute_code IN (?)', $attributes)
             ->where('cped.store_id = ?', $scopeId)
-            ->where('cpe.entity_id IN (?)', $ids);
+            ->order('eav.attribute_code');
+
+        if (null !== $lastKnownId) {
+            $select
+                ->where('cpe.entity_id > ?', $lastKnownId)
+                ->order('cpe.entity_id');
+        }
+
+        if ($batchSize !== null) {
+            $select->limit($batchSize);
+        }
+        if (!empty($ids)) {
+            $select->where('cpe.entity_id IN (?)', $ids);
+        }
+
+        return $select;
     }
 }

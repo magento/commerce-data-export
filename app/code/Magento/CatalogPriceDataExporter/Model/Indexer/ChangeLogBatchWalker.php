@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\CatalogPriceDataExporter\Model\Indexer;
 
+use Magento\CatalogPriceDataExporter\Model\Provider\FullReindex\ProductPriceEvent;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Sql\Expression;
 use Magento\Framework\Mview\View\ChangeLogBatchWalkerInterface;
@@ -25,20 +26,12 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
     private $resourceConnection;
 
     /**
-     * @var string[]
-     */
-    private $priceAttributes;
-
-    /**
      * @param ResourceConnection $resourceConnection
-     * @param string[] $priceAttributes
      */
     public function __construct(
-        ResourceConnection $resourceConnection,
-        array $priceAttributes = ['price', 'special_price']
+        ResourceConnection $resourceConnection
     ) {
         $this->resourceConnection = $resourceConnection;
-        $this->priceAttributes = $priceAttributes;
     }
 
     /**
@@ -70,7 +63,7 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
             ->where('cl.version_id <= ?', $toVersion)
             ->where('cl.entity_id != 0')
             ->where(\implode(' OR ', [
-                $connection->quoteInto('eav.attribute_code IN (?)', $this->priceAttributes),
+                $connection->quoteInto('eav.attribute_code IN (?)', ProductPriceEvent::PRICE_ATTRIBUTES),
                 'eav.attribute_code IS NULL'
             ]))
             ->group(
@@ -81,6 +74,7 @@ class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
                     'cl.qty',
                     'cl.option_id',
                     'customer_group',
+                    'cl.parent_id'
                 ]
             )
             ->columns(
