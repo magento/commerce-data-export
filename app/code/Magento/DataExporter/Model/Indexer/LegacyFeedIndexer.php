@@ -268,12 +268,6 @@ class LegacyFeedIndexer implements IndexerActionInterface, MviewActionInterface
     {
         $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
         foreach ($chunk as &$feedData) {
-
-            if (empty($feedData['storeViewCode'])) {
-                var_dump($this->feedIndexMetadata);
-//                var_dump($feedData);
-                die;
-            }
             $existingData = $existingFeedData[$feedData['storeViewCode']][$feedData[$feedIdentity]] ?? null;
             $attributes = [];
 

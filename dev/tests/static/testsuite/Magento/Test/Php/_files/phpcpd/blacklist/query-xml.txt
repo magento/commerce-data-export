@@ -1,0 +1,8 @@
+app/code/Magento/QueryXml/Model/DB/SelectBuilder
+app/code/Magento/QueryXml/Model/SelectHydrator
+app/code/Magento/QueryXml/Model/DB/Assembler/JoinAssembler
+app/code/Magento/QueryXml/Model/QueryFactory
+app/code/Magento/QueryXml/Model/DB/ConditionResolver
+app/code/Magento/QueryXml/Model/Query
+app/code/Magento/DataExporter/Model/Indexer/LegacyFeedIndexer
+app/code/Magento/QueryXml/Model/DB/Assembler/FromAssembler
