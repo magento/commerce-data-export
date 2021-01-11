@@ -42,7 +42,7 @@ class CategoryTest extends AbstractCategoryTest
                         [$store->getCode()]
                     )['feed'][0];
 
-                    $this->assertBaseCategoryData($category, $extractedCategoryData, $store->getCode());
+                    $this->assertBaseCategoryData($category, $extractedCategoryData, $store);
                 }
             }
 
@@ -54,7 +54,7 @@ class CategoryTest extends AbstractCategoryTest
                     [$storeDefault->getCode()]
                 )['feed'][0];
 
-                $this->assertBaseCategoryData($category, $extractedCategoryData, $storeDefault->getCode());
+                $this->assertBaseCategoryData($category, $extractedCategoryData, $storeDefault);
             }
         } finally {
             $this->storeManager->setCurrentStore($currentStore);

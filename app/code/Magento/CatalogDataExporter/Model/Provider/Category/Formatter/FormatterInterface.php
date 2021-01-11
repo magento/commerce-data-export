@@ -11,14 +11,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\Category\Formatter;
 /**
  * Provider data formatter
  */
-interface FormatterInterface
+interface FormatterInterface extends \Magento\CatalogDataExporter\Model\Provider\Formatter\FormatterInterface
 {
-    /**
-     * Format provider data row
-     *
-     * @param array $row
-     *
-     * @return array
-     */
-    public function format(array $row) : array;
+
 }

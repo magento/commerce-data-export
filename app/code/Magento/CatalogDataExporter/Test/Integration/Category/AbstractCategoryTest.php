@@ -13,6 +13,7 @@ use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\Framework\DB\Adapter\AdapterInterface;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -96,11 +97,15 @@ abstract class AbstractCategoryTest extends TestCase
      *
      * @param CategoryInterface $category
      * @param array $extract
-     * @param string $storeViewCode
+     * @param StoreInterface $store
      */
-    protected function assertBaseCategoryData(CategoryInterface $category, array $extract, string $storeViewCode) : void
+    protected function assertBaseCategoryData(CategoryInterface $category, array $extract, StoreInterface $store) : void
     {
-        $this->assertEquals($storeViewCode, $extract['storeViewCode']);
+        $storeCode = $this->storeManager->getGroup($store->getStoreGroupId())->getCode();
+        $websiteCode = $this->storeManager->getWebsite($store->getWebsiteId())->getCode();
+        $this->assertEquals($store->getCode(), $extract['storeViewCode']);
+        $this->assertEquals($storeCode, $extract['storeCode']);
+        $this->assertEquals($websiteCode, $extract['websiteCode']);
         $this->assertEquals($category->getId(), $extract['categoryId']);
         $this->assertEquals($category->getIsActive(), $extract['isActive']);
         $this->assertEquals($category->getName(), $extract['name']);

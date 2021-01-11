@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\CatalogDataExporter\Model\Provider\Product\Formatter;
+namespace Magento\CatalogDataExporter\Model\Provider\Formatter;
 
 use Magento\Framework\App\ResourceConnection;
 

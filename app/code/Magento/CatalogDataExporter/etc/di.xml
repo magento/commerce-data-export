@@ -18,7 +18,7 @@
                 <item name="images" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\ImageFormatter</item>
                 <item name="systemEnums" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\SystemEnumFormatter</item>
                 <item name="taxClass" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\TaxClassFormatter</item>
-                <item name="scopes" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\ScopeFormatter</item>
+                <item name="scopes" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Formatter\ScopeFormatter</item>
                 <item name="description" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\DescriptionFormatter</item>
             </argument>
         </arguments>
@@ -139,6 +139,7 @@
         <arguments>
             <argument name="formatters" xsi:type="array">
                 <item name="output" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Category\Formatter\Output</item>
+                <item name="scopes" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Formatter\ScopeFormatter</item>
             </argument>
         </arguments>
     </type>
@@ -382,7 +383,7 @@
                  type="Magento\CatalogDataExporter\Model\Provider\Product\Formatter\Formatter">
         <arguments>
             <argument name="formatters" xsi:type="array">
-                <item name="scopes" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\ScopeFormatter</item>
+                <item name="scopes" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Formatter\ScopeFormatter</item>
                 <item name="boolean" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\BooleanMetadataFormatter</item>
                 <item name="numeric" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\NumericMetadataFormatter</item>
             </argument>

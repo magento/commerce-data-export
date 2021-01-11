@@ -165,6 +165,8 @@
     <record name="Category">
         <field name="categoryId" type="ID"/>
         <field name="storeViewCode" type="String"/>
+        <field name="storeCode" type="String"/>
+        <field name="websiteCode" type="String"/>
         <field name="isActive" type="Int"/>
         <field name="isAnchor" type="Int"/>
         <field name="displayMode" type="String"/>
