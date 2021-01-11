@@ -1,5 +1,5 @@
 {
-  "name": "magento/module-product-customer-price-data-exporter",
+  "name": "magento/module-product-override-data-exporter",
   "description": "Product prices exporter",
   "config": {
     "sort-packages": true
@@ -20,6 +20,8 @@
   "require": {
     "php": "~7.2.0||~7.3.0||~7.4.0",
     "magento/module-data-exporter": "*",
+    "magento/module-data-customer": "*",
+    "magento/module-data-store": "*",
     "magento/module-query-xml": "*",
     "magento/framework": "*"
   }
