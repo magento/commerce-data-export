@@ -144,6 +144,31 @@ class AttributeMetadata
                 $output[] = $optionId;
             }
         }
+
+        return $output;
+    }
+
+    /**
+     * Returns attribute real value id
+     *
+     * @param string $attributeCode
+     * @param string $storeViewCode
+     * @param string $value
+     * @return array
+     * @throws \Zend_Db_Statement_Exception
+     */
+    public function getAttributeValueId(string $attributeCode, string $storeViewCode, string $value): array
+    {
+        $attributeMetadata = $this->getAttributeMetadata($attributeCode);
+        $output = [];
+        $optionIds = explode(',', $value);
+        foreach ($optionIds as $optionId) {
+            if (isset($attributeMetadata['options'][$storeViewCode][$optionId]) ||
+                isset($attributeMetadata['options']['admin'][$optionId])) {
+                $output[] = $optionId;
+            }
+        }
+
         return $output;
     }
 

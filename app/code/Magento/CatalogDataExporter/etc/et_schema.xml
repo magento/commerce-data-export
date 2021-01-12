@@ -227,6 +227,7 @@
         <field name="attributeCode" type="String"/>
         <field name="type" type="String" />
         <field name="value" type="String" repeated="true"/>
+        <field name="valueId" type="String" repeated="true"/>
     </record>
     <record name="PriceRange">
         <field name="minimumPrice" type="ProductPrice"/>

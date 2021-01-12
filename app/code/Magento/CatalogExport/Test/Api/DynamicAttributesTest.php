@@ -120,15 +120,26 @@ class DynamicAttributesTest extends WebapiAbstract
             $actual = !is_array($actual) ? json_decode($actual, true) : $actual;
             foreach (array_keys($expected) as $key) {
                 $snakeCaseKey = $this->camelToSnakeCase($key);
-                $this->assertTrue(
-                    \array_key_exists($snakeCaseKey, $actual),
-                    "'$snakeCaseKey' doesn't exist\n"
-                    . "expected: \n"
-                    . json_encode($expected)
-                    . "actual: \n"
-                    . json_encode($actual)
-                );
-                $this->compareComplexValue($expected[$key], $actual[$snakeCaseKey]);
+                if (is_null($expected[$key])) {
+                    $this->assertFalse(
+                        \array_key_exists($snakeCaseKey, $actual),
+                        "'$snakeCaseKey' shouldn'tbe exported since null\n"
+                        . "expected: \n"
+                        . json_encode($expected)
+                        . "actual: \n"
+                        . json_encode($actual)
+                    );
+                } else {
+                    $this->assertTrue(
+                        \array_key_exists($snakeCaseKey, $actual),
+                        "'$snakeCaseKey' doesn't exist\n"
+                        . "expected: \n"
+                        . json_encode($expected)
+                        . "actual: \n"
+                        . json_encode($actual)
+                    );
+                    $this->compareComplexValue($expected[$key], $actual[$snakeCaseKey]);
+                }
             }
         } else {
             $this->assertEquals($expected, $actual);
@@ -158,12 +169,17 @@ class DynamicAttributesTest extends WebapiAbstract
         if ($this->hasAttributeData($result)) {
             $value = $result[0]['attributes'][0]['value'][0];
             unset($result[0]['attributes'][0]['value']); // re adding as array instead of json
+            $valueId = $result[0]['attributes'][0]['value_id'][0];
+            unset($result[0]['attributes'][0]['value_id']); // re adding as array instead of json
             $actualResult = $result[0]['attributes'][0];
             $actualResult['value'] = $value;
+            $actualResult['value_id'] = $valueId;
+
             $expectedResult = [
                 'attribute_code' => 'boolean_attribute',
                 'type'  => 'boolean',
-                'value' => 'yes'
+                'value' => 'yes',
+                'value_id' => '1',
             ];
 
             $this->assertEquals($expectedResult, $actualResult);
@@ -182,6 +198,8 @@ class DynamicAttributesTest extends WebapiAbstract
         if ($this->hasAttributeData($result)) {
             $value = $result[0]['attributes'][0]['value'][0];
             unset($result[0]['attributes'][0]['value']); // re adding as array instead of json
+            $valueId = $result[0]['attributes'][0]['value_id'][0];
+            unset($result[0]['attributes'][0]['value_id']); // re adding as array instead of json
             $actualResult = $result[0]['attributes'][0];
             $actualResult['value'] = $value;
 
@@ -193,6 +211,7 @@ class DynamicAttributesTest extends WebapiAbstract
 
             $this->assertEquals($expectedResult, $actualResult);
             $this->assertEquals('simple_with_multiselect', $result[0]['sku']);
+            $this->assertIsInt(intval($valueId));
         }
     }
 
@@ -256,7 +275,7 @@ class DynamicAttributesTest extends WebapiAbstract
         $result = $this->getProductApiResult('simple_with_text_editor');
         if ($this->hasAttributeData($result)) {
             $value = $result[0]['attributes'][0]['value'][0];
-            unset($result[0]['attributes'][0]['value']); // re adding as array insted of json
+            unset($result[0]['attributes'][0]['value']); // re adding as array instead of json
             $actualResult = $result[0]['attributes'][0];
             $actualResult['value'] = $value;
 
@@ -280,7 +299,7 @@ class DynamicAttributesTest extends WebapiAbstract
         $result = $this->getProductApiResult('simple_with_date');
         if ($this->hasAttributeData($result)) {
             $value = $result[0]['attributes'][0]['value'][0];
-            unset($result[0]['attributes'][0]['value']); // re adding as array insted of json
+            unset($result[0]['attributes'][0]['value']); // re adding as array instead of json
             $actualResult = $result[0]['attributes'][0];
             $actualResult['value'] = $value;
 
