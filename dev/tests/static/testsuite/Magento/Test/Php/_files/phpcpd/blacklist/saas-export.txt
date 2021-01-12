@@ -3,3 +3,4 @@ app/code/Magento/Analytics/ReportXml/Config/Converter
 app/code/Magento/DataExporter/Config
 app/code/Magento/CatalogInventoryDataExporter/Test
 app/code/Magento/CatalogDataExporter/Model/Query
+app/code/Magento/DataExporter/Model/Indexer

@@ -1,2 +1,1 @@
 app/code/Magento/QueryXml/
-app/code/Magento/DataExporter/Model/Indexer/LegacyFeedIndexer.php
