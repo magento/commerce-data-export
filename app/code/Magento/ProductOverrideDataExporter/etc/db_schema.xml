@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="catalog_data_exporter_product_overrides" resource="default" engine="innodb" comment="Product Feed Storage">
+        <column xsi:type="int"
+            name="id"
+            padding="10"
+            unsigned="true"
+            nullable="false"
+            comment="ID"
+        />
+        <column xsi:type="varchar"
+            name="customer_group_code"
+            nullable="false"
+            length="64"
+            comment="customer group code"
+        />
+        <column xsi:type="varchar"
+            name="website_code"
+            nullable="false"
+            length="64"
+            comment="website code"
+        />
+        <column
+            xsi:type="mediumtext"
+            name="feed_data"
+            nullable="false"
+            comment="Feed Data"
+        />
+        <column
+            xsi:type="timestamp"
+            name="modified_at"
+            on_update="true"
+            nullable="false"
+            default="CURRENT_TIMESTAMP"
+            comment="Created At"
+        />
+        <column
+            xsi:type="tinyint"
+            name="is_deleted"
+            nullable="false"
+            default="0"
+            comment="Product Deleted"
+        />
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+            <column name="website_code"/>
+            <column name="customer_group_code"/>
+        </constraint>
+        <index referenceId="catalog_data_exporter_product_overrides_modified_at" indexType="btree">
+            <column name="modified_at"/>
+        </index>
+    </table>
+</schema>

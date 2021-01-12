@@ -202,6 +202,7 @@ class Transformer
      */
     private function convertComplexData(array $field, array $snapshot, ?string $lookup)
     {
+        //Add check if data already present than no need to convert it
         if ($lookup) {
             if (!isset($snapshot[$this->getKey($field)][$lookup])) {
                 return null;

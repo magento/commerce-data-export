@@ -1,0 +1,18 @@
+{
+    "catalog_data_exporter_product_overrides": {
+        "index": {
+            "CATALOG_DATA_EXPORTER_PRODUCT_OVERRIDES_MODIFIED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "column": {
+            "id": true,
+            "customer_group_code": true,
+            "website_code": true,
+            "feed_data": true,
+            "modified_at": true,
+            "is_deleted": true
+        }
+    }
+}

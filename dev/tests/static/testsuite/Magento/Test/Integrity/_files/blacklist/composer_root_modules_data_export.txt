@@ -11,3 +11,5 @@ magento/module-parent-product-data-exporter
 magento/module-product-variant-data-exporter
 magento/module-catalog-price-data-exporter
 magento/module-configuration-data-exporter
+magento/module-product-override-data-exporter
+magento/module-query-xml
