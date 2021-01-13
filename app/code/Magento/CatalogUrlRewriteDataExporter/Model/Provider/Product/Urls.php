@@ -79,7 +79,7 @@ class Urls
             $connection = $this->resourceConnection->getConnection();
             $baseUrls = [];
             foreach ($this->storeConfigManager->getStoreConfigs($queryArguments['storeViewCode']) as $config) {
-                $baseUrls[$config->getCode()] = $config->getBaseUrl();
+                $baseUrls[$config->getCode()] = $config->getBaseLinkUrl();
             }
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {

@@ -1,0 +1,91 @@
+<?php
+
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+declare(strict_types=1);
+
+namespace Magento\CatalogDataExporter\Plugin\Index;
+
+use Magento\CatalogDataExporter\Model\Indexer\IndexInvalidationManager;
+use Magento\Config\Model\Config;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+
+/**
+ * Class InvalidateOnConfigChange
+ *
+ * Invalidates indexes on configuration change
+ */
+class InvalidateOnConfigChange
+{
+    /**
+     * @var IndexInvalidationManager
+     */
+    private $invalidationManager;
+
+    /**
+     * @var ScopeConfigInterface
+     */
+    private $scopeConfig;
+
+    /**
+     * @var string
+     */
+    private $invalidationEvent;
+
+    /**
+     * @var array
+     */
+    private $configValues;
+
+    /**
+     * @param IndexInvalidationManager $invalidationManager
+     * @param ScopeConfigInterface $scopeConfig
+     * @param string $invalidationEvent
+     */
+    public function __construct(
+        IndexInvalidationManager $invalidationManager,
+        ScopeConfigInterface  $scopeConfig,
+        string $invalidationEvent = 'config_changed',
+        array $configValues = []
+    ) {
+        $this->invalidationManager = $invalidationManager;
+        $this->scopeConfig = $scopeConfig;
+        $this->invalidationEvent = $invalidationEvent;
+        $this->configValues = $configValues;
+    }
+
+    /**
+     * Invalidate indexer if relevant config value is changed
+     *
+     * @param Config $subject
+     * @return Config
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function beforeSave(Config $subject)
+    {
+        $savedSection = $subject->getSection();
+        foreach ($this->configValues as $searchValue) {
+            $path = explode('/', $searchValue);
+            $section = $path[0];
+            $group = $path[1];
+            $field = $path[2];
+            if ($savedSection == $section) {
+                if (isset($subject['groups'][$group]['fields'][$field])) {
+                    $savedField = $subject['groups'][$group]['fields'][$field];
+                    $beforeValue = $this->scopeConfig->getValue($searchValue);
+                    $afterValue = $savedField['value'] ?? $savedField['inherit'] ?? null;
+                    if ($beforeValue != $afterValue) {
+                        $this->invalidationManager->invalidate($this->invalidationEvent);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+}
