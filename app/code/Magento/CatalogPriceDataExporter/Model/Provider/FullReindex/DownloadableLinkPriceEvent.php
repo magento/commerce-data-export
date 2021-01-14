@@ -84,7 +84,7 @@ class DownloadableLinkPriceEvent implements FullReindexPriceProviderInterface
         try {
             foreach ($this->storeManager->getStores(true) as $store) {
                 $storeId = (int)$store->getId();
-                $websiteId = (string)$this->storeManager->getStore($storeId)->getWebsiteId();
+                $websiteId = (int)$this->storeManager->getStore($storeId)->getWebsiteId();
                 $continue = true;
                 $lastKnownId = 0;
                 while ($continue === true) {
@@ -112,18 +112,18 @@ class DownloadableLinkPriceEvent implements FullReindexPriceProviderInterface
      * Retrieve prices event data
      *
      * @param array $actualData
-     * @param string $websiteId
+     * @param int $websiteId
      *
      * @return array
      *
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    private function getEventsData(array $actualData, string $websiteId): array
+    private function getEventsData(array $actualData, int $websiteId): array
     {
         $events = [];
         $key = $this->eventKeyGenerator->generate(
             self::EVENT_DOWNLOADABLE_LINK_PRICE_CHANGED,
-            $websiteId,
+            (string)$websiteId,
             null
         );
         foreach ($actualData as $entityId => $value) {

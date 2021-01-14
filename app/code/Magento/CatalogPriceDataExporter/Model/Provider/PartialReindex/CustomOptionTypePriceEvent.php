@@ -86,7 +86,7 @@ class CustomOptionTypePriceEvent implements PartialReindexPriceProviderInterface
                 $result = [];
                 $queryArguments = $this->buildQueryArguments($indexDataChunk);
                 foreach ($queryArguments as $scopeId => $optionTypeIds) {
-                    $select = $this->customOptionTypePrice->getQuery($optionTypeIds, $scopeId);
+                    $select = $this->customOptionTypePrice->getQuery($optionTypeIds, (int)$scopeId);
                     $cursor = $this->resourceConnection->getConnection()->query($select);
                     while ($row = $cursor->fetch()) {
                         $result[$scopeId][$row['option_type_id']] = [

@@ -70,7 +70,7 @@ class TierPriceEvent implements PartialReindexPriceProviderInterface
                     $queryArguments[$data['scope_id']][] = $data['entity_id'];
                 }
                 foreach ($queryArguments as $scopeId => $entityIds) {
-                    $select = $this->tierPrice->getQuery($entityIds, $scopeId);
+                    $select = $this->tierPrice->getQuery($entityIds, (int)$scopeId);
                     $cursor = $this->resourceConnection->getConnection()->query($select);
 
                     while ($row = $cursor->fetch()) {
@@ -101,7 +101,7 @@ class TierPriceEvent implements PartialReindexPriceProviderInterface
             $row = $actualData[$data['scope_id']][$data['customer_group']][$data['entity_id']][$data['qty']] ?? null;
             $eventType = $this->resolveEventType($data['qty'], $row);
 
-            $key = $this->eventKeyGenerator->generate($eventType, $data['scope_id'], $data['customer_group']);
+            $key = $this->eventKeyGenerator->generate($eventType, (string)$data['scope_id'], (string)$data['customer_group']);
             $events[$key][] = $this->buildEventData($data, $row);
         }
 

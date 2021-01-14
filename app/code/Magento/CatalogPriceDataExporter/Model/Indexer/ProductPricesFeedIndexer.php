@@ -84,7 +84,9 @@ class ProductPricesFeedIndexer implements IndexerActionInterface, MviewActionInt
         foreach ($indexData as $priceType => $data) {
             $eventResolver = $this->eventPool->getPartialReindexResolver($priceType);
             foreach ($eventResolver->retrieve($data) as $eventData) {
-                $this->processEvents($eventData);
+                if (!empty($eventData)) {
+                    $this->processEvents($eventData);
+                }
             }
         }
     }

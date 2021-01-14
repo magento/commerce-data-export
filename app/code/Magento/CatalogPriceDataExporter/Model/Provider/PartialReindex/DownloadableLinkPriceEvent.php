@@ -91,7 +91,7 @@ class DownloadableLinkPriceEvent implements PartialReindexPriceProviderInterface
                 }
 
                 foreach ($queryArguments as $scopeId => $ids) {
-                    $select = $this->downloadableLinkPrice->getQuery($ids, $scopeId);
+                    $select = $this->downloadableLinkPrice->getQuery($ids, (int)$scopeId);
                     $cursor = $this->resourceConnection->getConnection()->query($select);
 
                     while ($row = $cursor->fetch()) {
