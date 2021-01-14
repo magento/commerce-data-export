@@ -75,7 +75,7 @@ class TierPriceEvent implements FullReindexPriceProviderInterface
         try {
             foreach ($this->storeManager->getStores(true) as $store) {
                 $storeId = (int)$store->getId();
-                $websiteId = (string)$this->storeManager->getStore($storeId)->getWebsiteId();
+                $websiteId = (int)$this->storeManager->getStore($storeId)->getWebsiteId();
                 $continue = true;
                 $lastKnownId = 0;
                 while ($continue === true) {
@@ -119,12 +119,12 @@ class TierPriceEvent implements FullReindexPriceProviderInterface
      * Form prices event data.
      *
      * @param array $actualData
-     * @param string $websiteId
+     * @param int $websiteId
      * @return array
      *
      * @throws NoSuchEntityException
      */
-    private function getEventsData(array $actualData, string $websiteId): array
+    private function getEventsData(array $actualData, int $websiteId): array
     {
         $events = [];
         foreach ($actualData as $entityId => $entityData) {
@@ -133,7 +133,7 @@ class TierPriceEvent implements FullReindexPriceProviderInterface
                     $eventType = $qty > 1 ? self::EVENT_TIER_PRICE_CHANGED : self::EVENT_PRICE_CHANGED;
                     $key = $this->eventKeyGenerator->generate(
                         $eventType,
-                        $websiteId,
+                        (string)$websiteId,
                         (string)$customerGroup
                     );
                     $events[$key][] = $this->buildEventData(

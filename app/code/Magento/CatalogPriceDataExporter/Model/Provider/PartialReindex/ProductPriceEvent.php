@@ -83,7 +83,7 @@ class ProductPriceEvent implements PartialReindexPriceProviderInterface
                 }
                 foreach ($queryArguments as $scopeId => $queryData) {
                     $attributes = \array_merge($queryData['attributes']);
-                    $select = $this->productPrice->getQuery($queryData['ids'], $scopeId, $attributes);
+                    $select = $this->productPrice->getQuery($queryData['ids'], (int)$scopeId, $attributes);
                     $cursor = $this->resourceConnection->getConnection()->query($select);
 
                     while ($row = $cursor->fetch()) {

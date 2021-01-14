@@ -35,12 +35,12 @@ class DownloadableLinkPrice
      * Retrieve query for custom option price.
      *
      * @param array $linkIds
-     * @param string $scopeId
+     * @param int $scopeId
      * @param int|null $lastKnownId
      * @param int|null $batchSize
      * @return Select
      */
-    public function getQuery(array $linkIds, string $scopeId, ?int $lastKnownId = 0, ?int $batchSize = null): Select
+    public function getQuery(array $linkIds, int $scopeId, ?int $lastKnownId = 0, ?int $batchSize = null): Select
     {
         $connection = $this->resourceConnection->getConnection();
 

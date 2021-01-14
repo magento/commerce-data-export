@@ -88,7 +88,7 @@ class CustomOptionPriceEvent implements PartialReindexPriceProviderInterface
                 foreach ($queryArguments as $scopeId => $optionIds) {
                     $select = $this->customOptionPrice->getQuery(
                         $optionIds,
-                        $scopeId
+                        (int)$scopeId
                     );
                     $cursor = $this->resourceConnection->getConnection()->query($select);
                     while ($row = $cursor->fetch()) {

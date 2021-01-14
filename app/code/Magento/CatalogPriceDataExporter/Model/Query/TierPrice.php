@@ -35,12 +35,12 @@ class TierPrice
      * Retrieve query for tier prices.
      *
      * @param array $ids
-     * @param string|null $scopeId
+     * @param int|null $scopeId
      * @param int|null $lastKnownId
      * @param int|null $batchSize
      * @return Select
      */
-    public function getQuery(array $ids, ?string $scopeId, ?int $lastKnownId = null, ?int $batchSize = null): Select
+    public function getQuery(array $ids, ?int $scopeId, ?int $lastKnownId = null, ?int $batchSize = null): Select
     {
         $connection = $this->resourceConnection->getConnection();
         $productEntityTable = $this->resourceConnection->getTableName('catalog_product_entity');
