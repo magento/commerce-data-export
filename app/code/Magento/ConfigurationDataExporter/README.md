@@ -7,7 +7,7 @@ from Magento to external queue for sharing configuration to external services.
 
 Module performs full configuration export to keep in sync configuration that set in `connfig.xml` and deployment configuration files.
 
-There is 2 ways to perform full export:
+There are two ways to perform full export:
 1. In recurring data upgrade script (to automatically sync configuration on every deployment)
 2. By running `bin/magento commerce-data-export:config:export` with optional argument `--store`
 
