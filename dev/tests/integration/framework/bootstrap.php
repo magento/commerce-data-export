@@ -92,7 +92,7 @@ try {
     if (!$application->isInstalled()) {
         $application->install($settings->getAsBoolean('TESTS_CLEANUP'));
     }
-    $shell->execute('php -f ' . BP . 'setup:di:compile');
+    $shell->execute('php -f ' . BP . '/bin/magento setup:di:compile');
     $application->initialize([]);
 
     \Magento\TestFramework\Helper\Bootstrap::setInstance(new \Magento\TestFramework\Helper\Bootstrap($bootstrap));
