@@ -34,8 +34,6 @@ class ProductUrlsTest extends AbstractProductTestHelper
      */
     public function testProductUrls() : void
     {
-        $this->markTestSkipped('ECP-740');
-
         $skus = ['simple1', 'simple2', 'simple3'];
         $storeViewCodes = ['fixture_second_store'];
 
