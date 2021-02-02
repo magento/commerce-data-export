@@ -12,6 +12,7 @@ use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionQuery;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionValueQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Query\BatchIteratorInterface;
 use Magento\Framework\DB\Query\Generator as QueryGenerator;
 use Magento\Framework\DB\Select;
 use Psr\Log\LoggerInterface;
@@ -100,7 +101,8 @@ class Options implements OptionProviderInterface
             $iterator = $this->queryGenerator->generate(
                 $rangeField,
                 $select,
-                $this->batchSize
+                $this->batchSize,
+                BatchIteratorInterface::NON_UNIQUE_FIELD_ITERATOR
             );
             foreach ($iterator as $batchSelect) {
                 yield $connection->fetchAll($batchSelect);

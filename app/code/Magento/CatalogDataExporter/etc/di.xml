@@ -503,6 +503,11 @@
                     <item name="categories" xsi:type="string">catalog_data_exporter_categories</item>
                     <item name="product_attributes" xsi:type="string">catalog_data_exporter_product_attributes</item>
                 </item>
+                <item name="config_changed" xsi:type="array">
+                    <item name="products" xsi:type="string">catalog_data_exporter_products</item>
+                    <item name="categories" xsi:type="string">catalog_data_exporter_categories</item>
+                    <item name="product_attributes" xsi:type="string">catalog_data_exporter_product_attributes</item>
+                </item>
             </argument>
         </arguments>
     </type>
@@ -514,5 +519,17 @@
     </type>
     <type name="Magento\Store\Model\ResourceModel\Store">
         <plugin name="invalidate_feed_index_on_website_change" type="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnStoreChange" />
+    </type>
+    <type name="Magento\Config\Model\Config">
+        <plugin name="invalidate_feed_index_on_config_change" type="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnConfigChange" />
+    </type>
+    <type name="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnConfigChange">
+        <arguments>
+            <argument name="configValues" xsi:type="array">
+                <item name="web/url/use_store" xsi:type="string">web/url/use_store</item>
+                <item name="cataloginventory/options/show_out_of_stock" xsi:type="string">cataloginventory/options/show_out_of_stock</item>
+                <item name="cataloginventory/options/stock_threshold_qty" xsi:type="string">cataloginventory/options/stock_threshold_qty</item>
+            </argument>
+        </arguments>
     </type>
 </config>
