@@ -29,5 +29,8 @@
     "magento/module-downloadable": "*",
     "magento/module-indexer": "*",
     "magento/module-catalog-export": "*"
-  }
+  },
+  "suggest": {
+      "magento/module-config": "*"
+    }
 }
