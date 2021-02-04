@@ -34,6 +34,7 @@ class ProductUrlsTest extends AbstractProductTestHelper
      */
     public function testProductUrls() : void
     {
+        $this->markTestSkipped('DATA-2807: Magento\CatalogUrlRewriteDataExporter\Test\Integration\ProductUrlsTest');
         $skus = ['simple1', 'simple2', 'simple3'];
         $storeViewCodes = ['fixture_second_store'];
 
