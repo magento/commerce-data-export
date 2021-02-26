@@ -104,6 +104,12 @@
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
+        <field name="categoryData" type="CategoryData" repeated="true"
+               provider="Magento\CatalogDataExporter\Model\Provider\Product\CategoryData"
+        >
+            <using field="productId" />
+            <using field="storeViewCode" />
+        </field>
         <field name="prices" type="PriceRange" provider="Magento\CatalogDataExporter\Model\Provider\Product\Prices">
             <using field="productId" />
             <using field="storeViewCode" />
@@ -228,6 +234,11 @@
         <field name="type" type="String" />
         <field name="value" type="String" repeated="true"/>
         <field name="valueId" type="String" repeated="true"/>
+    </record>
+    <record name="CategoryData">
+        <field name="categoryId" type="String"/>
+        <field name="categoryPath" type="String"/>
+        <field name="productPosition" type="Int"/>
     </record>
     <record name="PriceRange">
         <field name="minimumPrice" type="ProductPrice"/>

@@ -26,6 +26,7 @@ $objectManager = Bootstrap::getObjectManager();
 /** @var Magento\Catalog\Api\CategoryLinkManagementInterface $linkManagement */
 $categoryLinkManagement = $objectManager->create(CategoryLinkManagementInterface::class);
 
+
 /** @var Set $attributeSet */
 $attributeSet = $objectManager->create(Set::class);
 $attributeSet->load('SaaSCatalogAttributeSet', 'attribute_set_name');
@@ -127,3 +128,4 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setCustomAttribute('custom_description', 'description1')
     ->save();
 $categoryLinkManagement->assignProductToCategories($product->getSku(), [100, 200]);
+

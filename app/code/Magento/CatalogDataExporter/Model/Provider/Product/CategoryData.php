@@ -8,14 +8,14 @@ declare(strict_types=1);
 namespace Magento\CatalogDataExporter\Model\Provider\Product;
 
 use Magento\Framework\App\ResourceConnection;
-use Magento\CatalogDataExporter\Model\Query\ProductCategoryQuery;
+use Magento\CatalogDataExporter\Model\Query\ProductCategoryDataQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Psr\Log\LoggerInterface;
 
 /**
  * Product categories data provider
  */
-class Categories
+class CategoryData
 {
     /**
      * @var ResourceConnection
@@ -23,9 +23,9 @@ class Categories
     private $resourceConnection;
 
     /**
-     * @var ProductCategoryQuery
+     * @var ProductCategoryDataQuery
      */
-    private $productCategoryQuery;
+    private $productCategoryDataQuery;
 
     /**
      * @var LoggerInterface
@@ -34,16 +34,16 @@ class Categories
 
     /**
      * @param ResourceConnection $resourceConnection
-     * @param ProductCategoryQuery $productCategoryQuery
+     * @param ProductCategoryDataQuery $productCategoryDataQuery
      * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
-        ProductCategoryQuery $productCategoryQuery,
+        ProductCategoryDataQuery $productCategoryDataQuery,
         LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
-        $this->productCategoryQuery = $productCategoryQuery;
+        $this->productCategoryDataQuery = $productCategoryDataQuery;
         $this->logger = $logger;
     }
 
@@ -58,16 +58,33 @@ class Categories
     {
         $connection = $this->resourceConnection->getConnection();
         $queryArguments = [];
+        $output = [];
         try {
             foreach ($values as $value) {
                 $queryArguments['productId'][$value['productId']] = $value['productId'];
                 $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
             }
-            $result = $connection->fetchAll($this->productCategoryQuery->getQuery($queryArguments));
+            foreach ($queryArguments['storeViewCode'] as $storeViewCode) {
+                $results = $connection->fetchAll(
+                    $this->productCategoryDataQuery->getQuery($queryArguments, $storeViewCode)
+                );
+                foreach ($results as $result) {
+                    $key = implode('-', [$storeViewCode, $result['productId'], $result['categoryId']]);
+                    $output[$key]['productId'] = $result['productId'];
+                    $output[$key]['storeViewCode'] = $storeViewCode;
+                    $output[$key]['categoryData'] = [
+                        'productId' => $result['productId'],
+                        'storeViewCode' => $result['storeViewCode'],
+                        'categoryId' => $result['categoryId'],
+                        'categoryPath' => $result['categoryPath'],
+                        'productPosition' => $result['productPosition']
+                    ];
+                }
+            }
         } catch (\Exception $exception) {
             $this->logger->error($exception->getMessage());
-            throw new UnableRetrieveData('Unable to retrieve categories data');
+            throw new UnableRetrieveData('Unable to retrieve category data for products');
         }
-        return $result;
+        return $output;
     }
 }

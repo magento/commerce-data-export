@@ -33,6 +33,7 @@ class SimpleProductExportTest extends AbstractProductExportTestHelper
         'buyable',
         'attributes',
         'categories',
+        'categoryData',
         'inStock',
         'lowStock',
         'url',
