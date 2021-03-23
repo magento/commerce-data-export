@@ -11,14 +11,14 @@ namespace Magento\CatalogPriceDataExporter\Model\Indexer;
 use Magento\CatalogPriceDataExporter\Model\Provider\FullReindex\ProductPriceEvent;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Sql\Expression;
-use Magento\Framework\Mview\View\ChangeLogBatchWalkerInterface;
 use Magento\Framework\Mview\View\ChangelogInterface;
 use Magento\Framework\Mview\View\ChangelogTableNotExistsException;
 
 /**
  * Changelog table batch walker
+ * @see implements Magento\Framework\Mview\View\ChangeLogBatchWalkerInterface
  */
-class ChangeLogBatchWalker implements ChangeLogBatchWalkerInterface
+class ChangeLogBatchWalker
 {
     /**
      * @var ResourceConnection
