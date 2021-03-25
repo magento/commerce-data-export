@@ -96,16 +96,16 @@ class ProductCategoryIdsQuery
         $rows = $connection->fetchCol(
             $connection->select()
                 ->from(
-                    $this->getTable('store'),
+                    ['store_table' => $this->getTable('store')],
                     []
                 )
                 ->join(
-                    $this->getTable('store_group'),
-                    'store.group_id = store_group.group_id',
+                    ['store_group_table' => $this->getTable('store_group')],
+                    'store_table.group_id = store_group_table.group_id',
                     ['root_category_id']
                 )
-                ->where('store.store_id != 0')
-                ->where('store.code = ?', $storeViewCode)
+                ->where('store_table.store_id != 0')
+                ->where('store_table.code = ?', $storeViewCode)
         );
 
         if ($rows) {
@@ -228,11 +228,8 @@ class ProductCategoryIdsQuery
         $connection = $this->resourceConnection->getConnection();
         $storeId = $connection->fetchOne(
             $connection->select()
-                ->from(
-                    $this->getTable('store'),
-                    ['store_id']
-                )
-                ->where('store.code = ?', $storeViewCode)
+                ->from(['store_table' => $this->getTable('store')],'store_id')
+                ->where('store_table.code = ?', $storeViewCode)
         );
         $catalogCategoryProductDimension = new Dimension(
             \Magento\Store\Model\Store::ENTITY,
