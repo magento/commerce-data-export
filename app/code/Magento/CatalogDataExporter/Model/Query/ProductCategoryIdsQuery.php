@@ -185,35 +185,35 @@ class ProductCategoryIdsQuery
             $defaultValueTableAlias
         );
         $select
-                ->joinLeft(
-                    [
-                        $defaultValueTableAlias => $this->getAttributeTable($this->mainTable, 'varchar')
-                    ],
-                    $defaultValueJoinCondition,
-                    []
-                )
-                ->joinLeft(
-                    [
-                        $storeValueTableAlias => $this->getAttributeTable($this->mainTable, 'varchar')
-                    ],
-                    $storeViewValueJoinCondition,
-                    []
-                )
-                ->group(['product_id', 'category_id', 's.code'])
-                ->where('ccp.product_id IN (?)', $productIds)
-                ->where('s.store_id != 0')
-                ->where('s.code IN (?)', $storeViewCode)
-                ->where('ccp.category_id NOT IN (?)', $this->getRootCategoryIds($storeViewCode))
-                ->columns(
-                    [
-                        'categories' => new ColumnValueExpression(
-                            sprintf(
-                                "group_concat(%s order by cpath.level separator  '/' )",
-                                $attributeValueExpression
-                            )
+            ->joinLeft(
+                [
+                    $defaultValueTableAlias => $this->getAttributeTable($this->mainTable, 'varchar')
+                ],
+                $defaultValueJoinCondition,
+                []
+            )
+            ->joinLeft(
+                [
+                    $storeValueTableAlias => $this->getAttributeTable($this->mainTable, 'varchar')
+                ],
+                $storeViewValueJoinCondition,
+                []
+            )
+            ->group(['product_id', 'category_id', 's.code'])
+            ->where('ccp.product_id IN (?)', $productIds)
+            ->where('s.store_id != 0')
+            ->where('s.code IN (?)', $storeViewCode)
+            ->where('ccp.category_id NOT IN (?)', $this->getRootCategoryIds($storeViewCode))
+            ->columns(
+                [
+                    'categories' => new ColumnValueExpression(
+                        sprintf(
+                            "group_concat(%s order by cpath.level separator  '/' )",
+                            $attributeValueExpression
                         )
-                    ]
-                );
+                    )
+                ]
+            );
         return $select;
     }
 
@@ -228,8 +228,8 @@ class ProductCategoryIdsQuery
         $connection = $this->resourceConnection->getConnection();
         $storeId = $connection->fetchOne(
             $connection->select()
-                ->from(['store_table' => $this->getTable('store')],'store_id')
-                ->where('store_table.code = ?', $storeViewCode)
+                ->from(['store' => $this->getTable('store')],'store_id')
+                ->where('store.code = ?', $storeViewCode)
         );
         $catalogCategoryProductDimension = new Dimension(
             \Magento\Store\Model\Store::ENTITY,
