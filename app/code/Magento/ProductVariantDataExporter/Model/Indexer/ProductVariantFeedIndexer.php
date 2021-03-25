@@ -146,7 +146,6 @@ class ProductVariantFeedIndexer extends FeedIndexer
             );
         }
         $this->markRemoved($deleteIds);
-        $this->feedIndexerCallback->execute($data, $deleteIds);
     }
 
     /**

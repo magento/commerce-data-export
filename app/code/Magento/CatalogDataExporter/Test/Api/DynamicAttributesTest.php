@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\CatalogExport\Test\Api;
+namespace Magento\CatalogDataExporter\Test\Api;
 
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
@@ -78,13 +78,14 @@ class DynamicAttributesTest extends WebapiAbstract
      */
     public function testExport()
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $this->_markTestAsRestOnly('SOAP will be covered in another test');
 
         /** @var \Magento\Catalog\Api\ProductRepositoryInterface $productRepository */
         $productRepository = $this->objectManager->get(\Magento\Catalog\Api\ProductRepositoryInterface::class);
         $product = $productRepository->get('simple');
 
-        /** @see \Magento\CatalogExportApi\Api\EntityRequest and \Magento\CatalogExportApi\Api\EntityRequest\Item */
+        /** @see \Magento\CatalogDataExporterApi\Api\EntityRequest and \Magento\CatalogDataExporterApi\Api\EntityRequest\Item */
         $request = [
             'request' => [
                 'entities' => [
@@ -161,10 +162,11 @@ class DynamicAttributesTest extends WebapiAbstract
     /**
      * Test boolean attribute
      *
-     * @magentoApiDataFixture Magento_CatalogExport::Test/Api/_files/one_product_simple_with_boolean_attribute.php
+     * @magentoApiDataFixture Magento_CatalogDataExporter::Test/Api/_files/one_product_simple_with_boolean_attribute.php
      */
     public function testBooleanAttribute()
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $result = $this->getProductApiResult('simple_with_boolean');
         if ($this->hasAttributeData($result)) {
             $value = $result[0]['attributes'][0]['value'][0];
@@ -190,10 +192,11 @@ class DynamicAttributesTest extends WebapiAbstract
     /**
      * Test Multiselect attribute
      *
-     * @magentoApiDataFixture Magento_CatalogExport::Test/Api/_files/one_product_simple_with_multiselect_attribute.php
+     * @magentoApiDataFixture Magento_CatalogDataExporter::Test/Api/_files/one_product_simple_with_multiselect_attribute.php
      */
     public function testMultiselectAttribute()
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $result = $this->getProductApiResult('simple_with_multiselect');
         if ($this->hasAttributeData($result)) {
             $value = $result[0]['attributes'][0]['value'][0];
@@ -218,10 +221,11 @@ class DynamicAttributesTest extends WebapiAbstract
     /**
      * Test image attribute
      *
-     * @magentoApiDataFixture Magento_CatalogExport::Test/Api/_files/one_product_simple_with_image_attribute.php
+     * @magentoApiDataFixture Magento_CatalogDataExporter::Test/Api/_files/one_product_simple_with_image_attribute.php
      */
     public function testImageAttribute()
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $result = $this->getProductApiResult('simple_with_image');
         if ($this->hasAttributeData($result)) {
             $value = $result[0]['attributes'][0]['value'][0];
@@ -243,10 +247,11 @@ class DynamicAttributesTest extends WebapiAbstract
     /**
      * Test decimal attribute
      *
-     * @magentoApiDataFixture Magento_CatalogExport::Test/Api/_files/one_product_simple_with_decimal_attribute.php
+     * @magentoApiDataFixture Magento_CatalogDataExporter::Test/Api/_files/one_product_simple_with_decimal_attribute.php
      */
     public function testDecimalAttribute()
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $result = $this->getProductApiResult('simple_with_decimal');
         if ($this->hasAttributeData($result)) {
             $value = $result[0]['attributes'][0]['value'][0];
@@ -268,10 +273,11 @@ class DynamicAttributesTest extends WebapiAbstract
     /**
      * Test text editor attribute
      *
-     * @magentoApiDataFixture Magento_CatalogExport::Test/Api/_files/one_product_simple_with_text_editor_attribute.php
+     * @magentoApiDataFixture Magento_CatalogDataExporter::Test/Api/_files/one_product_simple_with_text_editor_attribute.php
      */
     public function testTextEditorAttribute()
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $result = $this->getProductApiResult('simple_with_text_editor');
         if ($this->hasAttributeData($result)) {
             $value = $result[0]['attributes'][0]['value'][0];
@@ -292,10 +298,11 @@ class DynamicAttributesTest extends WebapiAbstract
     /**
      * Test Date time attribute
      *
-     * @magentoApiDataFixture Magento_CatalogExport::Test/Api/_files/one_product_simple_with_date_attribute.php
+     * @magentoApiDataFixture Magento_CatalogDataExporter::Test/Api/_files/one_product_simple_with_date_attribute.php
      */
     public function testDateAttribute()
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $result = $this->getProductApiResult('simple_with_date');
         if ($this->hasAttributeData($result)) {
             $value = $result[0]['attributes'][0]['value'][0];
@@ -328,7 +335,7 @@ class DynamicAttributesTest extends WebapiAbstract
         $productRepository = $this->objectManager->get(\Magento\Catalog\Api\ProductRepositoryInterface::class);
         $product = $productRepository->get($sku);
 
-        /** @see \Magento\CatalogExportApi\Api\EntityRequest and \Magento\CatalogExportApi\Api\EntityRequest\Item */
+        /** @see \Magento\CatalogDataExporterApi\Api\EntityRequest and \Magento\CatalogDataExporterApi\Api\EntityRequest\Item */
         $request = [
             'request' => [
                 'entities' => [

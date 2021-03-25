@@ -5,17 +5,19 @@
  */
 declare(strict_types=1);
 
-namespace Magento\CatalogExport\Test\Api;
+namespace Magento\CatalogDataExporter\Test\Api;
 
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
- * Tests simple product export
+ * Tests configurable product export
  * @magentoAppIsolation enabled
  */
-class SimpleProductExportTest extends AbstractProductExportTestHelper
+class ConfigurableProductExportTest extends AbstractProductExportTestHelper
 {
     /**
+     * Attributes to compare for configurable product
+     *
      * @var string[]
      */
     protected $attributesToCompare = [
@@ -31,37 +33,35 @@ class SimpleProductExportTest extends AbstractProductExportTestHelper
         'currency',
         'displayable',
         'buyable',
-        'attributes',
+        'options',
+        'variants',
         'categories',
-        'categoryData',
         'inStock',
         'lowStock',
         'url',
-        'image',
-        'smallImage',
-        'entered_options'
     ];
 
     /**
      * Test product export REST API
      *
-     * @magentoApiDataFixture Magento/Catalog/_files/product_simple_with_custom_attribute.php
+     * @magentoApiDataFixture Magento/CatalogRule/_files/configurable_product.php
      *
      * @return void
      */
     public function testExport(): void
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $this->_markTestAsRestOnly('SOAP will be covered in another test');
         $this->runIndexer();
 
         try {
-            $product = $this->productRepository->get('simple');
+            $product = $this->productRepository->get('configurable');
         } catch (NoSuchEntityException $e) {
             $this->fail("Couldn`t find product with sku 'simple' " . $e->getMessage());
         }
 
         if (isset($product)) {
-            /** @see \Magento\CatalogExportApi\Api\EntityRequest and \Magento\CatalogExportApi\Api\EntityRequest\Item */
+            /** @see \Magento\CatalogDataExporterApi\Api\EntityRequest and \Magento\CatalogDataExporterApi\Api\EntityRequest\Item */
             $request = [
                 'request' => [
                     'entities' => [
@@ -73,7 +73,10 @@ class SimpleProductExportTest extends AbstractProductExportTestHelper
             ];
             $this->createServiceInfo['rest']['resourcePath'] .= '?' . \http_build_query($request);
             $result = $this->_webApiCall($this->createServiceInfo);
-            $this->assertProductsEquals($this->productsFeed->getFeedByIds([$product->getId()])['feed'], $result);
+
+            $expected = $this->productsFeed->getFeedByIds([$product->getId()])['feed'];
+
+            $this->assertProductsEquals($expected, $result);
         }
     }
 }

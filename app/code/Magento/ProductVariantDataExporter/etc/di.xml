@@ -36,21 +36,10 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="Magento\CatalogExport\Model\Indexer\ProductVariantIndexerCallback"
-                 type="Magento\CatalogExport\Model\Indexer\EntityIndexerCallback">
-        <arguments>
-            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata</argument>
-            <argument name="topicName" xsi:type="string">catalog.export.product.variants.data</argument>
-            <argument name="updatedEventType" xsi:type="string">product_variants_updated</argument>
-            <argument name="deletedEventType" xsi:type="string">product_variants_deleted</argument>
-        </arguments>
-    </virtualType>
-
     <type name="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantDataSerializer</argument>
-            <argument name="feedIndexerCallback" xsi:type="object">Magento\CatalogExport\Model\Indexer\ProductVariantIndexerCallback</argument>
         </arguments>
     </type>
 

@@ -22,7 +22,6 @@
         "magento/framework": ">=102.0.2",
         "magento/module-data-exporter": "*",
         "magento/module-review": ">=100.3.2",
-        "magento/module-store": ">=101.0.2",
-        "magento/module-catalog-export": "*"
+        "magento/module-store": ">=101.0.2"
     }
 }

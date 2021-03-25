@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\CatalogExport\Test\Api;
+namespace Magento\CatalogDataExporter\Test\Api;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\DataExporter\Model\FeedInterface;
@@ -75,6 +75,7 @@ class ProductVariantExportTest extends WebapiAbstract
      */
     public function testGetVariantById(): void
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $this->_markTestAsRestOnly('SOAP will be covered in another test');
         $configurable = $this->productRepository->get('configurable');
         $configurableId = $configurable->getId();
@@ -105,6 +106,7 @@ class ProductVariantExportTest extends WebapiAbstract
      */
     public function testGetVariantByProductId(): void
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $this->_markTestAsRestOnly('SOAP will be covered in another test');
 
         $product = $this->productRepository->get('configurable');

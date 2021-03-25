@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\CatalogExport\Test\Api;
+namespace Magento\CatalogDataExporter\Test\Api;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\DataExporter\Model\FeedInterface;

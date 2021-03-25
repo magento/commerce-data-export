@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\CatalogExport\Test\Api;
+namespace Magento\CatalogDataExporter\Test\Api;
 
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
@@ -61,6 +61,7 @@ class SwatchExportTest extends WebapiAbstract
      */
     public function testSwatchAttribute($expectedAttributes)
     {
+        self::markTestSkipped('Should be migrated to integration test');
         $this->_markTestAsRestOnly('SOAP will be covered in another test');
         $this->reindex();
 
@@ -68,7 +69,7 @@ class SwatchExportTest extends WebapiAbstract
         $productRepository = $this->objectManager->get(\Magento\Catalog\Api\ProductRepositoryInterface::class);
         $configurableProductWithSwatches = $productRepository->get('configurable');
 
-        /** @see \Magento\CatalogExportApi\Api\EntityRequest and \Magento\CatalogExportApi\Api\EntityRequest\Item */
+        /** @see \Magento\CatalogDataExporterApi\Api\EntityRequest and \Magento\CatalogDataExporterApi\Api\EntityRequest\Item */
         $request = [
             'request' => [
                 'entities' => [
