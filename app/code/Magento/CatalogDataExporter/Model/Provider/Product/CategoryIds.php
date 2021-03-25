@@ -56,7 +56,6 @@ class CategoryIds
      */
     public function get(array $values) : array
     {
-
         $connection = $this->resourceConnection->getConnection();
         $queryArguments = [];
         $output = [];
