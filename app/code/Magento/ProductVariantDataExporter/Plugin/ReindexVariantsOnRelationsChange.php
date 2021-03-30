@@ -91,9 +91,11 @@ class ReindexVariantsOnRelationsChange
         Relation $subject,
         Relation $result,
         int $parentLinkId,
-        array $childIds
+        $childIds
     ): Relation {
         if (!empty($childIds)) {
+            // childIds may be a string of 1 element
+            $childIds = (array)$childIds;
             try {
                 $this->addCommitCallback($subject, $childIds);
             } catch (\Exception $e) {

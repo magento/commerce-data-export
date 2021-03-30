@@ -89,16 +89,16 @@ class CustomOptionValues
             ['final_price', 'customer_group_id', 'entity_id']
         );
         $select->joinCross(
-            ['catalog_product_option' => 'catalog_product_option'],
+            ['catalog_product_option' => $this->resourceConnection->getTableName('catalog_product_option')],
             ['option_id']
         );
         $select->joinLeft(
-            ['customer_groups' => 'customer_group'],
+            ['customer_groups' => $this->resourceConnection->getTableName('customer_group')],
             'customer_groups.customer_group_id = main_table.customer_group_id',
             ['customer_group_code']
         );
         $select->joinLeft(
-            ['catalog_product_option_price' => 'catalog_product_option_price'],
+            ['catalog_product_option_price' => $this->resourceConnection->getTableName('catalog_product_option_price')],
             'catalog_product_option_price.option_id = catalog_product_option.option_id',
             ['price', 'price_type']
         );

@@ -96,11 +96,11 @@ class ProductCategoryDataQuery
         $rows = $connection->fetchCol(
             $connection->select()
                 ->from(
-                    $this->getTable('store'),
+                    ['store' => $this->getTable('store')],
                     []
                 )
                 ->join(
-                    $this->getTable('store_group'),
+                    ['store_group' => $this->getTable('store_group')],
                     'store.group_id = store_group.group_id',
                     ['root_category_id']
                 )
@@ -229,10 +229,7 @@ class ProductCategoryDataQuery
         $connection = $this->resourceConnection->getConnection();
         $storeId = $connection->fetchOne(
             $connection->select()
-                ->from(
-                    $this->getTable('store'),
-                    ['store_id']
-                )
+                ->from(['store' => $this->getTable('store')],'store_id')
                 ->where('store.code = ?', $storeViewCode)
         );
         $catalogCategoryProductDimension = new Dimension(

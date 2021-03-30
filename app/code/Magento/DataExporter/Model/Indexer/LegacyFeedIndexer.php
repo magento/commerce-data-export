@@ -40,11 +40,6 @@ class LegacyFeedIndexer implements IndexerActionInterface, MviewActionInterface
     protected $dataSerializer;
 
     /**
-     * @var FeedIndexerCallbackInterface
-     */
-    protected $feedIndexerCallback;
-
-    /**
      * @var array
      */
     protected $callbackSkipAttributes;
@@ -59,7 +54,6 @@ class LegacyFeedIndexer implements IndexerActionInterface, MviewActionInterface
      * @param ResourceConnection $resourceConnection
      * @param DataSerializerInterface $serializer
      * @param FeedIndexMetadata $feedIndexMetadata
-     * @param FeedIndexerCallbackInterface $feedIndexerCallback
      * @param FeedPool $feedPool
      * @param array $callbackSkipAttributes
      */
@@ -68,7 +62,6 @@ class LegacyFeedIndexer implements IndexerActionInterface, MviewActionInterface
         ResourceConnection $resourceConnection,
         DataSerializerInterface $serializer,
         FeedIndexMetadata $feedIndexMetadata,
-        FeedIndexerCallbackInterface $feedIndexerCallback,
         FeedPool $feedPool,
         array $callbackSkipAttributes = []
     ) {
@@ -76,7 +69,6 @@ class LegacyFeedIndexer implements IndexerActionInterface, MviewActionInterface
         $this->resourceConnection = $resourceConnection;
         $this->feedIndexMetadata = $feedIndexMetadata;
         $this->dataSerializer = $serializer;
-        $this->feedIndexerCallback = $feedIndexerCallback;
         $this->feedPool = $feedPool;
         $this->callbackSkipAttributes = $callbackSkipAttributes;
     }
@@ -243,16 +235,6 @@ class LegacyFeedIndexer implements IndexerActionInterface, MviewActionInterface
                 $this->feedIndexMetadata->getFeedTableMutableColumns()
             );
         }
-
-        $deleteIds = [];
-        $callbackIds = \array_column($callbackData, $feedIdentity);
-        foreach ($indexData as $data) {
-            if (!\in_array($data[$feedIdentity], $callbackIds)) {
-                $deleteIds[] = $data[$feedIdentity];
-            }
-        }
-
-        $this->feedIndexerCallback->execute($callbackData, $deleteIds);
     }
 
     /**

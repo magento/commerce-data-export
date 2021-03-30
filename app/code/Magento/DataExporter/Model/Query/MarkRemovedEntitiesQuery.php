@@ -61,7 +61,7 @@ class MarkRemovedEntitiesQuery
                         'sc.%s = s.%s AND sc.%3$s = st.%3$s',
                         $metadata->getScopeTableField(),
                         $metadata->getSourceTableField(),
-                        $metadata->getScopeCode(),
+                        $metadata->getScopeCode()
                     ),
                     []
                 )

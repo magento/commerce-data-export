@@ -1,36 +1,35 @@
 {
-  "name": "magento/module-catalog-data-exporter",
-  "description": "Catalog data exporter",
-  "config": {
-    "sort-packages": true
-  },
-  "type": "magento2-module",
-  "license": [
-    "OSL-3.0",
-    "AFL-3.0"
-  ],
-  "autoload": {
-    "files": [
-      "registration.php"
+    "name": "magento/module-catalog-data-exporter",
+    "description": "Catalog data exporter",
+    "config": {
+        "sort-packages": true
+    },
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
     ],
-    "psr-4": {
-      "Magento\\CatalogDataExporter\\": ""
-    }
-  },
-  "require": {
-    "php": "~7.2.0||~7.3.0||~7.4.0",
-    "magento/framework": "*",
-    "magento/module-catalog": "*",
-    "magento/module-eav": "*",
-    "magento/module-store": "*",
-    "magento/module-directory": "*",
-    "magento/module-data-exporter": "*",
-    "magento/module-customer": "*",
-    "magento/module-downloadable": "*",
-    "magento/module-indexer": "*",
-    "magento/module-catalog-export": "*"
-  },
-  "suggest": {
-      "magento/module-config": "*"
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Magento\\CatalogDataExporter\\": ""
+        }
+    },
+    "require": {
+        "php": "~7.2.0||~7.3.0||~7.4.0",
+        "magento/framework": ">=102.0.2",
+        "magento/module-catalog": ">=103.0.2",
+        "magento/module-eav": ">=102.0.2",
+        "magento/module-store": ">=101.0.2",
+        "magento/module-directory": ">=100.3.2",
+        "magento/module-data-exporter": "*",
+        "magento/module-customer": ">=102.0.2",
+        "magento/module-downloadable": ">=100.3.2",
+        "magento/module-indexer": ">=100.3.2"
+    },
+    "suggest": {
+        "magento/module-config": ">=101.1.2"
     }
 }

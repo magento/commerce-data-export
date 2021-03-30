@@ -35,8 +35,6 @@
     </type>
     <preference for="Magento\DataExporter\Config\ConfigInterface" type="Magento\DataExporter\Config\Config" />
 
-    <preference for="Magento\DataExporter\Model\Indexer\FeedIndexerCallbackInterface"
-                type="Magento\DataExporter\Model\Indexer\EmptyIndexerCallback" />
     <preference for="Magento\DataExporter\Model\Indexer\MarkRemovedEntitiesInterface"
                 type="Magento\DataExporter\Model\Indexer\MarkRemovedEntities" />
 </config>
