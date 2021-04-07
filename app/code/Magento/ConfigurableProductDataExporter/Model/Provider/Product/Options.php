@@ -217,7 +217,6 @@ class Options implements OptionProviderInterface
             }
         } catch (\Exception $exception) {
             $this->logger->error($exception->getMessage());
-            print_r($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve configurable product options data');
         }
         return $options;
