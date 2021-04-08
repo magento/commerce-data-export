@@ -204,12 +204,14 @@ class Options implements OptionProviderInterface
 
                     if (!isset($setOptionValues[$key . $row['value']])) {
                         $setOptionValues[$key . $row['value']] = true;
-                        $options[$key]['productOptions']['values'][] =
-                            $optionValuesData[$row['attribute_id']][$row['storeViewCode']][$row['value']];
+                        if (isset($optionValuesData[$row['attribute_id']][$row['storeViewCode']][$row['value']])) {
+                            $options[$key]['productOptions']['values'][] =
+                                $optionValuesData[$row['attribute_id']][$row['storeViewCode']][$row['value']];
 
-                        //TODO: should be deleted in catalog-storefront/issues/304
-                        $options[$key]['options']['values'][] =
-                            $optionValuesData[$row['attribute_id']][$row['storeViewCode']][$row['value']];
+                            //TODO: should be deleted in catalog-storefront/issues/304
+                            $options[$key]['options']['values'][] =
+                                $optionValuesData[$row['attribute_id']][$row['storeViewCode']][$row['value']];
+                        }
                     }
                 }
             }
