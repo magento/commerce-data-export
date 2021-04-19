@@ -358,6 +358,7 @@
         <field name="websiteCode" type="String"/>
         <field name="storeViewCode" type="String" />
         <field name="attributeCode" type="String" />
+        <field name="attributeType" type="String" />
         <field name="dataType" type="String" />
         <field name="multi" type="Boolean" />
         <field name="label" type="String" />

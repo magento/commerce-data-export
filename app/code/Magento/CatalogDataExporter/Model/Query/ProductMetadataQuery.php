@@ -61,6 +61,7 @@ class ProductMetadataQuery
                 [
                     'id' => 'eav.attribute_id',
                     'attributeCode' => 'eav.attribute_code',
+                    'entityTypeId' => 'eav.entity_type_id',
                     'dataType' => 'eav.backend_type',
                     'validation' => 'eav.frontend_class',
                     'multi' => new Expression(

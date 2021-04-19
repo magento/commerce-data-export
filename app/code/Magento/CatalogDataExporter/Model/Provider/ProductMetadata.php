@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace Magento\CatalogDataExporter\Model\Provider;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\Formatter\FormatterInterface;
-use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\CatalogDataExporter\Model\Query\ProductMetadataQuery;
+use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Psr\Log\LoggerInterface;
 
@@ -18,6 +18,21 @@ use Psr\Log\LoggerInterface;
  */
 class ProductMetadata
 {
+    /**
+     * Category EAV entity type id
+     */
+    private const CATEGORY_EAV_ENTITY_TYPE_ID = 3;
+
+    /**
+     * Category EAV entity type
+     */
+    private const CATEGORY_EAV_ENTITY_TYPE = 'catalog_category';
+
+    /**
+     * Product EAV entity type id
+     */
+    private const PRODUCT_EAV_ENTITY_TYPE = 'catalog_product';
+
     /**
      * @var ResourceConnection
      */
@@ -70,6 +85,10 @@ class ProductMetadata
         if (true === $output['boolean']) {
             $output['numeric'] = false;
         }
+
+        // we only retrieve catalog eav attributes (product and category attributes only) in query
+        $output['attributeType'] = ((int)$output['entityTypeId'] === self::CATEGORY_EAV_ENTITY_TYPE_ID) ?
+                                        self::CATEGORY_EAV_ENTITY_TYPE : self::PRODUCT_EAV_ENTITY_TYPE;
 
         return $output;
     }
