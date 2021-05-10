@@ -16,6 +16,7 @@
         <field name="websiteCode" type="String"/>
         <field name="customerGroupCode" type="String"/>
         <field name="productId" type="Int"/>
+        <field name="sku" type="String"/>
         <field name="prices" type="PriceRange"/>
     </record>
 </config>
