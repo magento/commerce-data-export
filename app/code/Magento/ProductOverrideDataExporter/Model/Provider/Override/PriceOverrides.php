@@ -43,17 +43,13 @@ class PriceOverrides
      */
     private function format(array $row): array
     {
-        return [
-            'productId' => $row['productId'],
-            'websiteCode' => $row['websiteCode'],
-            'customerGroupCode' => $row['customerGroupCode'],
-            'prices' => [
-                'minimumPrice' => [
-                    'finalPrice' => $row['finalPrice'],
-                    'regularPrice' => $row['regularPrice']
-                ]
+        $row['prices'] = [
+            'minimumPrice' => [
+                'finalPrice' => $row['finalPrice'],
+                'regularPrice' => $row['regularPrice']
             ]
         ];
+        return $row;
     }
 
     /**
