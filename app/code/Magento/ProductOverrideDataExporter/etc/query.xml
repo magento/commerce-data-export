@@ -9,9 +9,10 @@
     <query name="productPriceOverrider">
         <source name="catalog_product_index_price">
             <attribute name="entity_id" alias="productId" />
-            <attribute name="customer_group_id" alias="customerGroupCode" sort="asc"/>
+            <attribute name="customer_group_id" sort="asc"/>
+            <attribute name="customer_group_id" alias="customerGroupCode" function="sha1"/>
             <attribute name="website_id" sort="asc"/>
-            <attribute name="tax_class_id"/>
+            <attribute name="tax_class_id" alias="taxClassId"/>
             <attribute name="price" alias="regularPrice"/>
             <attribute name="final_price" alias="finalPrice"/>
             <attribute name="min_price"/>
@@ -22,6 +23,12 @@
                 <attribute name="code" alias="websiteCode"/>
                 <using glue="and">
                     <condition attribute="website_id" operator="eq" type="identifier">website_id</condition>
+                </using>
+            </link-source>
+            <link-source name="catalog_product_entity">
+                <attribute name="sku"/>
+                <using glue="and">
+                    <condition attribute="entity_id" operator="eq" type="identifier">entity_id</condition>
                 </using>
             </link-source>
         </source>
