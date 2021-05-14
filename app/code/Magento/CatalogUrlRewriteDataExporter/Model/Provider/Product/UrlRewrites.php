@@ -74,7 +74,7 @@ class UrlRewrites
         return [
             'productId' => $urlRewrite[UrlRewrite::ENTITY_ID],
             'storeViewCode' => $storeViewCode,
-            'url_rewrites' => [
+            'urlRewrites' => [
                 'url' => $baseUrl . $urlRewrite[UrlRewrite::REQUEST_PATH],
                 'parameters' => $this->getUrlParameters($urlRewrite[UrlRewrite::TARGET_PATH])
             ]
