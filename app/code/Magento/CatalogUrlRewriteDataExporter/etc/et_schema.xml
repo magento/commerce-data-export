@@ -14,7 +14,7 @@
             <using field="storeViewCode" />
 
         </field>
-        <field name="url_rewrites" type="UrlRewrite" repeated="true"
+        <field name="urlRewrites" type="UrlRewrite" repeated="true"
                provider="Magento\CatalogUrlRewriteDataExporter\Model\Provider\Product\UrlRewrites"
         >
             <using field="productId"/>
