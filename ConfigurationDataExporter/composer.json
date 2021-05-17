@@ -23,5 +23,7 @@
         "psr-4": {
             "Magento\\ConfigurationDataExporter\\": ""
         }
-    }
+    },
+    "version": "100.0.2",
+    "prefer-stable": true
 }

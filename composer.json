@@ -1,0 +1,26 @@
+{
+    "name": "magento/commerce-data-export",
+    "description": "Commerce data export tool",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "type": "metapackage",
+    "version": "100.0.2",
+    "prefer-stable": true,
+    "require": {
+        "php": "~7.2.0||~7.3.0||~7.4.0",
+        "magento/module-bundle-product-data-exporter": "self.version",
+        "magento/module-catalog-data-exporter": "self.version",
+        "magento/module-catalog-inventory-data-exporter": "self.version",
+        "magento/module-catalog-url-rewrite-data-exporter": "self.version",
+        "magento/module-configurable-product-data-exporter": "self.version",
+        "magento/module-configuration-data-exporter": "self.version",
+        "magento/module-data-exporter": "self.version",
+        "magento/module-parent-product-data-exporter": "self.version",
+        "magento/module-product-review-data-exporter": "self.version",
+        "magento/module-product-override-data-exporter": "self.version",
+        "magento/module-product-variant-data-exporter": "self.version",
+        "magento/module-query-xml": "self.version"
+    }
+}

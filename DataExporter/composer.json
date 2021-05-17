@@ -1,6 +1,6 @@
 {
-    "name": "magento/module-product-variant-data-exporter",
-    "description": "Product Variant Data Exporter",
+    "name": "magento/module-data-exporter",
+    "description": "Magento 2 Data Exporter module exports necessary data to Magento cloud services that rely on it",
     "config": {
         "sort-packages": true
     },
@@ -14,13 +14,14 @@
             "registration.php"
         ],
         "psr-4": {
-            "Magento\\ProductVariantDataExporter\\": ""
+            "Magento\\DataExporter\\": ""
         }
     },
     "require": {
         "php": "~7.2.0||~7.3.0||~7.4.0",
         "magento/framework": ">=102.0.2",
-        "magento/module-data-exporter": "*",
-        "magento/module-catalog": ">=103.0.2"
-    }
+        "magento/module-store": ">=101.0.2"
+    },
+    "version": "100.0.2",
+    "prefer-stable": true
 }
