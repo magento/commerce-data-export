@@ -24,5 +24,6 @@
         "magento/module-catalog-data-exporter": "self.version",
         "magento/module-product-variant-data-exporter": "self.version"
     },
-    "prefer-stable": true
+    "prefer-stable": true,
+    "version": "0.0.2"
 }

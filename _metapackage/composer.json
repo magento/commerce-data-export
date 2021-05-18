@@ -6,7 +6,7 @@
         "AFL-3.0"
     ],
     "type": "metapackage",
-    "version": "100.0.2",
+    "version": "0.0.2",
     "prefer-stable": true,
     "require": {
         "magento/module-bundle-product-data-exporter": "self.version",

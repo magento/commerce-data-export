@@ -28,5 +28,6 @@
     "suggest": {
         "magento/module-config": ">=101.1.2"
     },
-    "prefer-stable": true
+    "prefer-stable": true,
+    "version": "0.0.2"
 }

@@ -17,5 +17,6 @@
     "require": {
         "magento/framework": ">=102.0.2"
     },
-    "prefer-stable": true
+    "prefer-stable": true,
+    "version": "0.0.2"
 }
