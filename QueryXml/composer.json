@@ -1,9 +1,6 @@
 {
     "name": "magento/module-query-xml",
     "description": "Query Xml",
-    "config": {
-        "sort-packages": true
-    },
     "type": "magento2-module",
     "license": [
         "OSL-3.0",
@@ -18,9 +15,7 @@
         }
     },
     "require": {
-        "php": "~7.2.0||~7.3.0||~7.4.0",
         "magento/framework": ">=102.0.2"
     },
-    "version": "100.0.2",
     "prefer-stable": true
 }

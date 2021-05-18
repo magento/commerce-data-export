@@ -1,9 +1,6 @@
 {
     "name": "magento/module-configurable-product-data-exporter",
     "description": "Configurable product data exporter",
-    "config": {
-        "sort-packages": true
-    },
     "type": "magento2-module",
     "license": [
         "OSL-3.0",
@@ -18,16 +15,14 @@
         }
     },
     "require": {
-        "php": "~7.2.0||~7.3.0||~7.4.0",
         "magento/framework": ">=102.0.2",
         "magento/module-configurable-product": ">=100.3.2",
-        "magento/module-data-exporter": "100.0.2",
-        "magento/module-product-variant-data-exporter": "100.0.2",
-        "magento/module-catalog-data-exporter": "100.0.2",
         "magento/module-catalog": ">=103.0.2",
         "magento/module-eav": ">=102.0.2",
-        "magento/module-store": ">=101.0.2"
+        "magento/module-store": ">=101.0.2",
+        "magento/module-data-exporter": "self.version",
+        "magento/module-catalog-data-exporter": "self.version",
+        "magento/module-product-variant-data-exporter": "self.version"
     },
-    "version": "100.0.2",
     "prefer-stable": true
 }
