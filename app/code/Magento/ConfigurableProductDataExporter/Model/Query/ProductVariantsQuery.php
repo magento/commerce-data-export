@@ -79,11 +79,11 @@ class ProductVariantsQuery
             )
             ->columns(
                 [
-                    'parentId' => 'cpep.entity_id',
-                    'childId' => 'cpec.entity_id',
                     'attributeId' => 'cpei.attribute_id',
                     'attributeCode' => 'ea.attribute_code',
-                    'attributeValue' => 'cpei.value'
+                    'attributeValue' => 'cpei.value',
+                    'productSku' => 'cpec.sku',
+                    'parentSku' => 'cpep.sku',
                 ]
             )
             ->where('cpec.entity_id IN (?)', $parentIds);

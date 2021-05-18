@@ -93,9 +93,9 @@ class ProductVariants implements ProductVariantsProviderInterface
             foreach ($variants as $id => $optionValues) {
                 $output[] = [
                     'id' => $id,
-                    'option_values' => $optionValues['optionValues'],
-                    'parent_id' => $optionValues['parentId'],
-                    'product_id' => $optionValues['childId']
+                    'optionValues' => $optionValues['optionValues'],
+                    'parentSku' => $optionValues['parentSku'],
+                    'productSku' => $optionValues['productSku']
                 ];
             }
         } catch (\Throwable $exception) {

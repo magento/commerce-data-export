@@ -142,9 +142,9 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
             }
             $variants[$id] = [
                 'id' => $id,
-                'option_values' => $optionValues,
-                'parent_id' => $configurable->getId(),
-                'product_id' => $simple->getId(),
+                'optionValues' => $optionValues,
+                'parentSku' => $configurable->getId(),
+                'productSku' => $simple->getId(),
                 'deleted' => false
             ];
         }
