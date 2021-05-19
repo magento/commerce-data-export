@@ -16,7 +16,7 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\Serialize\Serializer\GzcompressDecorator;
 use Magento\Framework\UrlInterface;
 use Magento\Indexer\Model\Indexer;
 use Magento\Store\Model\StoreManagerInterface;
@@ -53,7 +53,7 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     protected $connection;
 
     /**
-     * @var Json
+     * @var GzcompressDecorator
      */
     protected $jsonSerializer;
 
@@ -104,7 +104,7 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $this->storeManager = Bootstrap::getObjectManager()->create(StoreManagerInterface::class);
         $this->taxClassSource = Bootstrap::getObjectManager()->create(TaxClassSource::class);
 
-        $this->jsonSerializer = Bootstrap::getObjectManager()->create(Json::class);
+        $this->jsonSerializer = Bootstrap::getObjectManager()->create(GzcompressDecorator::class);
     }
 
     /**
