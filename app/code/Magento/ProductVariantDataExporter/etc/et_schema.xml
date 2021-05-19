@@ -13,7 +13,7 @@
         </field>
     </record>
     <record name="ProductVariant">
-        <!-- variant identifier following the convention :prefix:/:parentId:/:entityId: -->
+        <!-- variant identifier following the convention :prefix:/:parentSku:/:productSku: -->
         <field name="id" type="ID" />
         <!-- parent_id:option_id/optionValue.uid -->
         <field name="optionValues" type="String" repeated="true" />

@@ -123,17 +123,17 @@ class ProductVariants implements ProductVariantsProviderInterface
         );
         while ($row = $cursor->fetch()) {
             $id = $idResolver->resolve([
-                ConfigurableId::PARENT_ID_KEY => $row['parentId'],
-                ConfigurableId::CHILD_ID_KEY => $row['childId']
+                ConfigurableId::PARENT_SKU_KEY => $row['parentSku'],
+                ConfigurableId::CHILD_SKU_KEY => $row['childId']
             ]);
             if(isset($row['attributeValue']) && isset($row['attributeCode'])) {
                 $optionValueUid = ($this->optionValueUid->resolve(
                     $row['attributeId'],
                     $row['attributeValue']
                 ));
-                $optionValue = $optionValueResolver->resolve($row['parentId'], $row['attributeCode'], $optionValueUid);
-                $variants[$id]['parentId'] = $row['parentId'];
-                $variants[$id]['childId'] = $row['childId'];
+                $optionValue = $optionValueResolver->resolve($row['parentSku'], $row['attributeCode'], $optionValueUid);
+                $variants[$id]['parentSku'] = $row['parentSku'];
+                $variants[$id]['childSku'] = $row['childSku'];
                 $variants[$id]['optionValues'][] = $optionValue;
             }
         }

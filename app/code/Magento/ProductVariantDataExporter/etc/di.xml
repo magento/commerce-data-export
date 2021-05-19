@@ -14,8 +14,8 @@
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
             <argument name="feedTableName" xsi:type="string">catalog_data_exporter_product_variants</argument>
             <argument name="feedTableField" xsi:type="string">id</argument>
-            <argument name="feedTableParentField" xsi:type="string">parent_id</argument>
-            <argument name="feedTableChildField" xsi:type="string">product_id</argument>
+            <argument name="feedTableParentField" xsi:type="string">parent_sku</argument>
+            <argument name="feedTableChildField" xsi:type="string">product_sku</argument>
             <argument name="relationsTableName" xsi:type="string">catalog_product_relation</argument>
             <argument name="relationsTableParentField" xsi:type="string">parent_id</argument>
             <argument name="relationsTableChildField" xsi:type="string">child_id</argument>
@@ -30,8 +30,8 @@
         <arguments>
             <argument name="mapping" xsi:type="array">
                 <item name="id" xsi:type="string">id</item>
-                <item name="parent_id" xsi:type="string">parent_id</item>
-                <item name="product_id" xsi:type="string">product_id</item>
+                <item name="parent_sku" xsi:type="string">parent_sku</item>
+                <item name="product_sku" xsi:type="string">product_sku</item>
             </argument>
         </arguments>
     </virtualType>

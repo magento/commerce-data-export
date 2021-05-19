@@ -10,14 +10,14 @@
     <table name="catalog_data_exporter_product_variants" resource="default" engine="innodb" comment="Product Variant Feed Storage">
         <column
             xsi:type="varchar"
-            name="parent_id"
+            name="parent_sku"
             nullable="false"
             length="64"
             comment="Parent product Id"
         />
         <column
             xsi:type="varchar"
-            name="product_id"
+            name="product_sku"
             nullable="false"
             length="64"
             comment="Variant product Id"

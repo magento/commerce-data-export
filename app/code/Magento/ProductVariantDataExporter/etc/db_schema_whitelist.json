@@ -7,8 +7,8 @@
             "PRIMARY": true
         },
         "column": {
-            "parent_id": true,
-            "product_id": true,
+            "parent_sku": true,
+            "product_sku": true,
             "id": true,
             "feed_data": true,
             "modified_at": true,
