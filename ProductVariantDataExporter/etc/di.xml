@@ -42,13 +42,11 @@
             <argument name="serializer" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantDataSerializer</argument>
         </arguments>
     </type>
-
-    <type name="Magento\ProductVariantDataExporter\Model\ProductVariantFeed">
+    <virtualType name="Magento\ProductVariantDataExporter\Model\ProductVariantFeed" type="Magento\DataExporter\Model\Feed">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata</argument>
         </arguments>
-    </type>
-
+    </virtualType>
     <type name="Magento\DataExporter\Model\FeedPool">
         <arguments>
             <argument name="classMap" xsi:type="array">
