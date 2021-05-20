@@ -22,7 +22,7 @@ class SimpleProductsTest extends AbstractProductTestHelper
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento/CatalogDataExporter/_files/setup_simple_products_with_media_gallery.php
+     * @magentoDataFixture Magento_CatalogDataExporter::Test/Integration/_files/setup_simple_products_with_media_gallery.php
      *
      * @return void
      * @throws NoSuchEntityException

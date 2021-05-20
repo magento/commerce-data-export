@@ -44,7 +44,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     /**
      * Validate configurable product data
      *
-     * @magentoDataFixture Magento/ConfigurableProductDataExporter/_files/setup_configurable_products.php
+     * @magentoDataFixture Magento_ConfigurableProductDataExporter::Test/Integration/_files/setup_configurable_products.php
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
      * @return void
@@ -79,7 +79,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     /**
      * Validate parent product data
      *
-     * @magentoDataFixture Magento/ConfigurableProductDataExporter/_files/setup_configurable_products.php
+     * @magentoDataFixture Magento_ConfigurableProductDataExporter::Test/Integration/_files/setup_configurable_products.php
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
      * @return void

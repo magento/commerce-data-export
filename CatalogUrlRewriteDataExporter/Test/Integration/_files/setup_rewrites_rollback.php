@@ -41,7 +41,7 @@ $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', false);
 
 Resolver::getInstance()->requireDataFixture(
-    'Magento/CatalogDataExporter/_files/setup_simple_products_rollback.php'
+    'Magento_CatalogDataExporter::Test/Integration/_files/setup_simple_products_rollback.php'
 );
-Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_categories_rollback.php');
-Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_stores_rollback.php');
+Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_categories_rollback.php');
+Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_stores_rollback.php');

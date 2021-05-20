@@ -15,10 +15,10 @@ use Magento\Framework\ObjectManagerInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\Workaround\Override\Fixture\Resolver;
 
-Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_stores.php');
-Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_categories.php');
-Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_attributes.php');
-Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_catalog_rule.php');
+Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_stores.php');
+Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_categories.php');
+Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_attributes.php');
+Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_catalog_rule.php');
 
 /** @var ObjectManagerInterface $objectManager */
 $objectManager = Bootstrap::getObjectManager();

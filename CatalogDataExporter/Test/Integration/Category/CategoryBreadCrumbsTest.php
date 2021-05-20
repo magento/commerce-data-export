@@ -21,7 +21,7 @@ class CategoryBreadCrumbsTest extends AbstractCategoryTest
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento/CatalogDataExporter/_files/setup_category_tree.php
+     * @magentoDataFixture Magento_CatalogDataExporter::Test/Integration/_files/setup_category_tree.php
      *
      * @return void
      */
