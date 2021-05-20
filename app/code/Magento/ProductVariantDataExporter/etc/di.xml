@@ -30,6 +30,8 @@
         <arguments>
             <argument name="mapping" xsi:type="array">
                 <item name="id" xsi:type="string">id</item>
+                <item name="parent_id" xsi:type="string">parent_id</item>
+                <item name="product_id" xsi:type="string">product_id</item>
                 <item name="parent_sku" xsi:type="string">parentSku</item>
                 <item name="product_sku" xsi:type="string">productSku</item>
             </argument>
