@@ -77,18 +77,25 @@ class ProductVariantsQuery
                 'ea.attribute_id = cpei.attribute_id',
                 []
             )
+            ->joinLeft(
+                ['option_value' => $this->resourceConnection->getTableName('eav_attribute_option_value')],
+                'option_value.option_id = cpei.value',
+                []
+            )
             ->columns(
                 [
                     'parentId' => 'cpep.entity_id',
                     'childId' => 'cpec.entity_id',
                     'attributeId' => 'cpei.attribute_id',
                     'attributeCode' => 'ea.attribute_code',
-                    'attributeValue' => 'cpei.value',
+                    'optionValueId' => 'cpei.value',
                     'productSku' => 'cpec.sku',
                     'parentSku' => 'cpep.sku',
+                    'optionLabel' => 'option_value.value'
                 ]
             )
             ->where('cpec.entity_id IN (?)', $parentIds);
+
         return $select;
     }
 }

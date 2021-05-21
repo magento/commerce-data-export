@@ -37,11 +37,6 @@ class ProductVariants implements ProductVariantsProviderInterface
     private $logger;
 
     /**
-     * @var ConfigurableOptionValueUid
-     */
-    private $optionValueUid;
-
-    /**
      * @var OptionValueFactory
      */
     private $optionValueFactory;
@@ -54,7 +49,6 @@ class ProductVariants implements ProductVariantsProviderInterface
     /**
      * @param ResourceConnection $resourceConnection
      * @param ProductVariantsQuery $variantsOptionValuesQuery
-     * @param ConfigurableOptionValueUid $optionValueUid
      * @param OptionValueFactory $optionValueFactory
      * @param IdFactory $idFactory
      * @param LoggerInterface $logger
@@ -62,7 +56,6 @@ class ProductVariants implements ProductVariantsProviderInterface
     public function __construct(
         ResourceConnection $resourceConnection,
         ProductVariantsQuery $variantsOptionValuesQuery,
-        ConfigurableOptionValueUid $optionValueUid,
         OptionValueFactory $optionValueFactory,
         IdFactory $idFactory,
         LoggerInterface $logger
@@ -70,7 +63,6 @@ class ProductVariants implements ProductVariantsProviderInterface
         $this->resourceConnection = $resourceConnection;
         $this->variantsOptionValuesQuery = $variantsOptionValuesQuery;
         $this->logger = $logger;
-        $this->optionValueUid = $optionValueUid;
         $this->optionValueFactory = $optionValueFactory;
         $this->idFactory = $idFactory;
     }
@@ -128,12 +120,8 @@ class ProductVariants implements ProductVariantsProviderInterface
                 ConfigurableId::PARENT_SKU_KEY => $row['parentSku'],
                 ConfigurableId::CHILD_SKU_KEY => $row['productSku']
             ]);
-            if(isset($row['attributeValue']) && isset($row['attributeCode'])) {
-                $optionValueUid = ($this->optionValueUid->resolve(
-                    $row['attributeId'],
-                    $row['attributeValue']
-                ));
-                $optionValue = $optionValueResolver->resolve($row['parentSku'], $row['attributeCode'], $optionValueUid);
+            if(isset($row['optionValueId']) && isset($row['attributeCode'])) {
+                $optionValue = $optionValueResolver->resolve($row);
                 $variants[$id]['parentId'] = $row['parentId'];
                 $variants[$id]['childId'] = $row['childId'];
                 $variants[$id]['parentSku'] = $row['parentSku'];
