@@ -94,8 +94,8 @@ class ProductVariants implements ProductVariantsProviderInterface
                 $output[] = [
                     'id' => $id,
                     'optionValues' => $optionValues['optionValues'],
-                    'parent_id' => $optionValues['parentId'],
-                    'product_id' => $optionValues['childId'],
+                    'parentId' => $optionValues['parentId'],
+                    'productId' => $optionValues['childId'],
                     'parentSku' => $optionValues['parentSku'],
                     'productSku' => $optionValues['productSku']
                 ];
