@@ -46,6 +46,6 @@ class ConfigurableId implements IdInterface
             $params[self::CHILD_SKU_KEY]
         ];
 
-        return implode('/', $uid);
+        return \hash('md5', implode('/', $uid));
     }
 }
