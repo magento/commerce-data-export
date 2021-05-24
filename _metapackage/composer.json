@@ -6,20 +6,21 @@
         "AFL-3.0"
     ],
     "type": "metapackage",
-    "version": "0.0.2",
+    "version": "0.0.0",
     "prefer-stable": true,
     "require": {
-        "magento/module-bundle-product-data-exporter": "self.version",
-        "magento/module-catalog-data-exporter": "self.version",
-        "magento/module-catalog-inventory-data-exporter": "self.version",
-        "magento/module-catalog-url-rewrite-data-exporter": "self.version",
-        "magento/module-configurable-product-data-exporter": "self.version",
-        "magento/module-configuration-data-exporter": "self.version",
-        "magento/module-data-exporter": "self.version",
-        "magento/module-parent-product-data-exporter": "self.version",
-        "magento/module-product-review-data-exporter": "self.version",
-        "magento/module-product-override-data-exporter": "self.version",
-        "magento/module-product-variant-data-exporter": "self.version",
-        "magento/module-query-xml": "self.version"
+        "php": "~7.2.0||~7.3.0||~7.4.0",
+        "magento/module-bundle-product-data-exporter": "*",
+        "magento/module-catalog-data-exporter": "*",
+        "magento/module-catalog-inventory-data-exporter": "*",
+        "magento/module-catalog-url-rewrite-data-exporter": "*",
+        "magento/module-configurable-product-data-exporter": "*",
+        "magento/module-configuration-data-exporter": "*",
+        "magento/module-data-exporter": "*",
+        "magento/module-parent-product-data-exporter": "*",
+        "magento/module-product-review-data-exporter": "*",
+        "magento/module-product-override-data-exporter": "*",
+        "magento/module-product-variant-data-exporter": "*",
+        "magento/module-query-xml": "*"
     }
 }
