@@ -21,7 +21,7 @@ class CategoryUrlsTest extends AbstractCategoryTest
      * @magentoConfigFixture custom_store_view_one_store catalog/seo/category_canonical_tag 1
      * @magentoConfigFixture custom_store_view_two_store catalog/seo/category_canonical_tag 1
      * @magentoConfigFixture default_store catalog/seo/category_canonical_tag 1
-     * @magentoDataFixture Magento_CatalogDataExporter::Test/Integration/_files/setup_category_tree.php
+     * @magentoDataFixture Magento/CatalogDataExporter/_files/setup_category_tree.php
      *
      * @return void
      */

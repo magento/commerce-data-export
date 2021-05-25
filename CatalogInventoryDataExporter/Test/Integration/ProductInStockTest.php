@@ -20,7 +20,7 @@ class ProductInStockTest extends AbstractProductTestHelper
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento_CatalogInventoryDataExporter::Test/Integration/_files/setup_is_in_stock.php
+     * @magentoDataFixture Magento/CatalogInventoryDataExporter/_files/setup_is_in_stock.php
      *
      * @return void
      * @throws NoSuchEntityException

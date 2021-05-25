@@ -34,7 +34,7 @@ class ProductRemovalTest extends AbstractProductTestHelper
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento_CatalogDataExporter::Test/Integration/_files/setup_product_removal.php
+     * @magentoDataFixture Magento/CatalogDataExporter/_files/setup_product_removal.php
      *
      * @return void
      * @throws NoSuchEntityException

@@ -16,8 +16,8 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\Workaround\Override\Fixture\Resolver;
 
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_two_stores.php');
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_category_image.php');
+Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_two_stores.php');
+Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_category_image.php');
 
 $objectManager = Bootstrap::getObjectManager();
 

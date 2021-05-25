@@ -17,7 +17,7 @@ use Magento\TestFramework\Helper\Bootstrap;
 /**
  * Product buyable flag test
  *
- * @magentoDataFixture Magento_CatalogInventoryDataExporter::Test/Integration/_files/setup_buyable_product.php
+ * @magentoDataFixture Magento/CatalogInventoryDataExporter/_files/setup_buyable_product.php
  * @magentoDbIsolation disabled
  * @magentoAppIsolation enabled
  */

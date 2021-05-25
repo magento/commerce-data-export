@@ -17,10 +17,10 @@ use Magento\Msrp\Model\Product\Attribute\Source\Type;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\Workaround\Override\Fixture\Resolver;
 
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_stores.php');
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_categories.php');
+Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_stores.php');
+Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_categories.php');
 Resolver::getInstance()->requireDataFixture(
-    'Magento_ConfigurableProductDataExporter::Test/Integration/_files/setup_configurable_attribute.php'
+    'Magento/ConfigurableProductDataExporter/_files/setup_configurable_attribute.php'
 );
 /** @var ObjectManagerInterface $objectManager */
 $objectManager = Bootstrap::getObjectManager();

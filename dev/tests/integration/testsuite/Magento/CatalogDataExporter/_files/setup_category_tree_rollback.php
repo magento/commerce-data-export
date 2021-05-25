@@ -40,5 +40,5 @@ foreach ($categoryCollection as $category) {
 $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', false);
 
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_category_image_rollback.php');
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_two_stores_rollback.php');
+Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_category_image_rollback.php');
+Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_two_stores_rollback.php');

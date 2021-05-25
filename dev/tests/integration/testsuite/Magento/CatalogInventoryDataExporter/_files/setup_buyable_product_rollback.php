@@ -32,4 +32,4 @@ try {
 $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', false);
 
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/Integration/_files/setup_attributes_rollback.php');
+Resolver::getInstance()->requireDataFixture('Magento/CatalogDataExporter/_files/setup_attributes_rollback.php');

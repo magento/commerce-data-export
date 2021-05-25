@@ -24,7 +24,7 @@ class ProductUrlsTest extends AbstractProductTestHelper
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento_CatalogUrlRewriteDataExporter::Test/Integration/_files/setup_rewrites.php
+     * @magentoDataFixture Magento/CatalogUrlRewriteDataExporter/_files/setup_rewrites.php
      *
      * @return void
      * @throws NoSuchEntityException
