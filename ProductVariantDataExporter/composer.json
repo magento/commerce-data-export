@@ -19,6 +19,5 @@
         "magento/framework": ">=102.0.2",
         "magento/module-catalog": ">=103.0.2",
         "magento/module-data-exporter": "self.version"
-    },
-    "prefer-stable": true
+    }
 }

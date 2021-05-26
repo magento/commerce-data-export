@@ -20,6 +20,5 @@
         "magento/framework-message-queue": ">=100.3.2",
         "magento/module-config": ">=101.1.2",
         "magento/module-store": ">=101.0.2"
-    },
-    "prefer-stable": true
+    }
 }

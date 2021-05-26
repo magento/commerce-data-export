@@ -22,6 +22,5 @@
         "magento/module-catalog": ">=103.0.2",
         "magento/module-data-exporter": "self.version",
         "magento/module-catalog-data-exporter": "self.version"
-    },
-    "prefer-stable": true
+    }
 }

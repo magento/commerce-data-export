@@ -28,6 +28,5 @@
     },
     "suggest": {
         "magento/module-config": ">=101.1.2"
-    },
-    "prefer-stable": true
+    }
 }
