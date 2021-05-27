@@ -154,7 +154,7 @@ class Options implements OptionProviderInterface
                 'id' => $row['attribute_code'],
                 'type' => ConfigurableOptionValueUid::OPTION_TYPE,
                 'label' => $row['label'],
-                'sort_order' => $row['position']
+                'sortOrder' => $row['position']
             ],
 
             //TODO: should be deleted in catalog-storefront/issues/304

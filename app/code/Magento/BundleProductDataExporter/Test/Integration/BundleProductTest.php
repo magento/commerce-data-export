@@ -74,17 +74,17 @@ class BundleProductTest extends AbstractProductTestHelper
                         'productOptions' => [
                             [
                                 'type' => 'bundle',
-                                'render_type' => 'select',
+                                'renderType' => 'select',
                                 'required' => true,
                                 'label' => 'Bundle Product Items',
-                                'sort_order' => 0,
+                                'sortOrder' => 0,
                                 'values' => [
                                     [
-                                        'sort_order' => 0,
+                                        'sortOrder' => 0,
                                         'label' => 'Simple Product',
                                         'qty' => 1,
-                                        'default' => false,
-                                        'qty_mutability' => true,
+                                        'isDefault' => false,
+                                        'qtyMutability' => true,
                                     ],
                                 ],
                             ],

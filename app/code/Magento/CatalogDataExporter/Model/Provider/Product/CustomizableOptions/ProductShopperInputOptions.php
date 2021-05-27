@@ -77,16 +77,17 @@ class ProductShopperInputOptions implements ProductShopperInputOptionProviderInt
                         'id' => $this->buildUid($option['option_id']),
                         'label' => $option['title'],
                         'required' => $option['is_require'],
-                        'product_sku' => $option['product_sku'],
-                        'sort_order' => $option['sort_order'],
-                        'render_type' => $option['type'],
+                        'productSku' => $option['product_sku'],
+                        'sortOrder' => $option['sort_order'],
+                        'renderType' => $option['type'],
                         'price' => $option['price'],
-                        'file_extension' => $option['file_extension'],
+                        'sku' => $option['sku'],
+                        'fileExtension' => $option['file_extension'],
                         'range' => [
                             'to' => $option['max_characters']
                         ],
-                        'image_size_x' => $option['image_size_x'],
-                        'image_size_y' => $option['image_size_y']
+                        'imageSizeX' => $option['image_size_x'],
+                        'imageSizeY' => $option['image_size_y']
                     ],
                 ];
             }

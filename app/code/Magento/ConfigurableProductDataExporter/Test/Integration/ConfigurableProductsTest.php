@@ -144,7 +144,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                 'id' => $productOption['product_attribute']['attribute_code'],
                 'type' => 'configurable',
                 'label' => 'Test Configurable',
-                'sort_order' => 0,
+                'sortOrder' => 0,
                 'values' => $this->getOptionValues($productOption->getAttributeId(), $productOption->getOptions()),
             ];
         }
@@ -155,7 +155,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
             $this->assertEquals($expectedOptions[$optionId]['id'], $optionId);
             $this->assertEquals($expectedOptions[$optionId]['type'], $extractedOption['type']);
             $this->assertEquals($expectedOptions[$optionId]['label'], $extractedOption['label']);
-            $this->assertEquals($expectedOptions[$optionId]['sort_order'], $extractedOption['sort_order']);
+            $this->assertEquals($expectedOptions[$optionId]['sortOrder'], $extractedOption['sort_order']);
             $this->assertCount(count($expectedOptions[$optionId]['values']), $extractedOption['values']);
 
             foreach ($extractedOption['values'] as $value) {

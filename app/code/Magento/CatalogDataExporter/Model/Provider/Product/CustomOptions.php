@@ -81,7 +81,7 @@ class CustomOptions
         $productOptions = $connection->fetchAssoc($productOptionsSelect);
         $productOptions = $this->addValues($productOptions, $storeViewCode);
         $productOptionsPercentPrices = $this->getPercentFinalPrice($productIds, $storeViewCode);
-        $this->customerGroupsArray = $this->customerGroups->create()->toOptionArray();
+        // $this->customerGroupsArray = $this->customerGroups->create()->toOptionArray();
 
         foreach ($productOptions as $option) {
             if (in_array($option['type'], $optionTypes)) {
@@ -142,11 +142,7 @@ class CustomOptions
         foreach ($prices as $price) {
             $calculatedPrice = $price['price'] / 100 * $price['final_price'];
             $key = $price['entity_id'] . $storeViewCode . $price['option_id'];
-            $formattedPrices[$key]['price'][] = [
-                'regularPrice' => $calculatedPrice,
-                'finalPrice' => $calculatedPrice,
-                'scope' => $price['customer_group_code']
-            ];
+            $formattedPrices[$key]['price'] = $calculatedPrice;
         }
         return $formattedPrices;
     }
@@ -161,23 +157,24 @@ class CustomOptions
      */
     private function setPricingData(array $option, array $productOptionsPercentPrices, string $storeViewCode): array
     {
-        $prices = [];
-        if ($option['price_type'] == 'percent') {
+        if ($option['price_type'] === 'percent') {
             $key = $option['entity_id'] . $storeViewCode . $option['option_id'];
             if (isset($productOptionsPercentPrices[$key])) {
                 $option['price'] = $productOptionsPercentPrices[$key]['price'];
             }
-        } elseif ($option['price_type'] == 'fixed') {
-            if (isset($option['price'])) {
-                foreach ($this->customerGroupsArray as $customerGroup) {
-                    $prices[] = [
-                        'regularPrice' => $option['price'],
-                        'finalPrice' => $option['price'],
-                        'scope' => $customerGroup['label'],
-                    ];
-                }
-                $option['price'] = $prices;
-            }
+        } elseif ($option['price_type'] === 'fixed') {
+            // TODO: should be handled by ProductOverride feed
+            // $prices = [];
+            // if (isset($option['price'])) {
+            //   foreach ($this->customerGroupsArray as $customerGroup) {
+            //        $prices[] = [
+            //            'regularPrice' => $option['price'],
+            //            'finalPrice' => $option['price'],
+            //            'scope' => $customerGroup['label'],
+            //        ];
+            //    }
+            //    $option['price'] = $prices;
+            //}
         }
 
         return $option;
