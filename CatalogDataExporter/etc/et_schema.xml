@@ -115,18 +115,20 @@
             <using field="storeViewCode" />
         </field>
         <field name="inventory" type="Inventory" />
-        <!-- TODO: delete deprecated "options" field. use "productOptions" instead -->
+        <!-- TODO: delete deprecated "options" field. use "productOptions" instead
         <field name="options" type="Option" repeated="true"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\Options">
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
-        <!-- TODO: delete deprecated "entered_options" field. use "productShopperInputOptions" instead -->
+         -->
+        <!-- TODO: delete deprecated "entered_options" field. use "productShopperInputOptions" instead
         <field name="entered_options" type="EnteredOption" repeated="true"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\CustomizableOptions\EnteredOptions">
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
+        -->
         <!-- TODO: delete deprecated "media_gallery" field. use "images" or "videos" instead -->
         <field name="media_gallery" type="MediaItem" repeated="true"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\MediaGallery"
@@ -270,9 +272,9 @@
     <record name="ProductOption">
         <field name="id" type="ID" />
         <field name="label" type="String" />
-        <field name="sort_order" type="Int" />
+        <field name="sortOrder" type="Int" />
         <field name="required" type="Boolean" />
-        <field name="render_type" type="String" />
+        <field name="renderType" type="String" />
         <field name="type" type="String" />
         <field name="values" type="ProductOptionValue" repeated="true" />
     </record>
@@ -295,25 +297,27 @@
     <record name="ProductOptionValue">
         <field name="id" type="ID" />
         <field name="label" type="String" />
-        <field name="sort_order" type="Int" />
-        <field name="default" type="Boolean" />
-        <field name="image_url" type="String" />
-        <field name="qty_mutability" type="Boolean" />
+        <field name="sortOrder" type="Int" />
+        <field name="isDefault" type="Boolean" />
+        <field name="imageUrl" type="String" />
+        <field name="qtyMutability" type="Boolean" />
         <field name="qty" type="Float" />
-        <field name="info_url" type="String" />
+        <field name="infoUrl" type="String" />
+        <field name="sku" type="String" />
         <field name="price" type="Float" />
     </record>
     <record name="ProductShopperInputOption">
         <field name="id" type="ID" />
         <field name="label" type="ID" />
-        <field name="sort_order" type="Int" />
+        <field name="sortOrder" type="Int" />
         <field name="required" type="Boolean" />
-        <field name="render_type" type="String" />
-        <field name="price" type="Price" repeated="true" />
-        <field name="file_extension" type="String" />
+        <field name="renderType" type="String" />
+        <field name="price" type="Float"/>
+        <field name="fileExtension" type="String" />
+        <field name="sku" type="String" />
         <field name="range" type="ValueRange" />
-        <field name="image_size_x" type="Int" />
-        <field name="image_size_y" type="Int" />
+        <field name="imageSizeX" type="Int" />
+        <field name="imageSizeY" type="Int" />
     </record>
 
     <record name="ValueRange">

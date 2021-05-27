@@ -15,10 +15,8 @@ interface OptionValueInterface
     /**
      * Get product variant option value
      *
-     * @param string $parentId
-     * @param string $optionId
-     * @param string $optionValueUid
-     * @return string
+     * @param array $row
+     * @return array
      */
-    public function resolve(string $parentId, string $optionId, string $optionValueUid) : string;
+    public function resolve(array $row) : array;
 }

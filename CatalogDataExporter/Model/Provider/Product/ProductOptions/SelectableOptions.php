@@ -78,9 +78,9 @@ class SelectableOptions implements ProductOptionProviderInterface
                     'productOptions' => [
                         'id' => $option['option_id'],
                         'label' => $option['title'],
-                        'sort_order' => $option['sort_order'],
+                        'sortOrder' => $option['sort_order'],
                         'required' => $option['is_require'],
-                        'render_type' => $option['type'],
+                        'renderType' => $option['type'],
                         'type' => self::SELECTABLE_OPTION_TYPE
                     ],
                 ];
@@ -114,12 +114,15 @@ class SelectableOptions implements ProductOptionProviderInterface
                     CustomizableSelectedOptionValueUid::OPTION_VALUE_ID => $value['option_type_id']
                 ]),
                 'label' => $value['title'],
-                'sort_order' => $value['sort_order'],
-                'default' => $value['default'] ?? false,
-                'image_url' => null,
-                'qty_mutability' => null,
+                'sortOrder' => $value['sort_order'],
+                'isDefault' => $value['default'] ?? false,
+                'imageUrl' => null,
+                'qtyMutability' => null,
                 'qty' => null,
-                'info_url' => null
+                'infoUrl' => null,
+                'sku' => $value['sku'],
+                //TODO: calculate price depend on price type: fixed/percent
+                'price' => $value['price']
             ];
         }
         return $resultValues;

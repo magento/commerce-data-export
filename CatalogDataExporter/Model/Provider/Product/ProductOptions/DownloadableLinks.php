@@ -152,8 +152,8 @@ class DownloadableLinks
                         ]
                     ),
                     'label' => $option['title'],
-                    'sort_order' => $option['sort_order'],
-                    'info_url' => $this->getLinkSampleUrl($option, $storeViewCode),
+                    'sortOrder' => $option['sort_order'],
+                    'infoUrl' => $this->getLinkSampleUrl($option, $storeViewCode),
                     'price' => (float)$option['price']
                 ];
                 unset($this->linkOptions[$key]);

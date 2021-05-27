@@ -138,10 +138,10 @@ class BundleProductOptions implements OptionProviderInterface
             'productOptions' => [
                 'type' => BundleItemOptionUid::OPTION_TYPE,
                 'id' => $row['option_id'],
-                'render_type' => $row['render_type'],
+                'renderType' => $row['render_type'],
                 'required' => $row['required'],
                 'label' => $row['label'],
-                'sort_order' => $row['sort_order'],
+                'sortOrder' => $row['sort_order'],
                 'values' => $optionValues[$row['parent_id']][$row['option_id']] ?? [],
             ],
         ];
@@ -160,9 +160,9 @@ class BundleProductOptions implements OptionProviderInterface
             'id' => $this->bundleItemOptionUid->resolve($row['option_id'], $row['id'], $row['qty']),
             'label' => $row['label'],
             'qty' => $row['qty'],
-            'sort_order' => $row['sort_order'],
-            'default' => $row['default'],
-            'qty_mutability' => (bool)$row['qty_mutability'],
+            'sortOrder' => $row['sort_order'],
+            'isDefault' => $row['default'],
+            'qtyMutability' => (bool)$row['qty_mutability'],
         ];
     }
 }

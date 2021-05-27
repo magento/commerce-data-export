@@ -18,11 +18,17 @@ class ConfigurableOptionValueUid
     public const OPTION_TYPE = 'configurable';
 
     /**
+     * Separator of uid for encoding
+     */
+    private const UID_SEPARATOR = '/';
+
+    /**
      * Returns uid based on attribute id and option value
      *
      * @param string $attributeId
      * @param string $valueIndex
      * @return string
+     * @see \Magento\ConfigurableProductGraphQl\Model\Options\SelectionUidFormatter::encode
      */
     public function resolve(string $attributeId, string $valueIndex): string
     {
@@ -32,7 +38,7 @@ class ConfigurableOptionValueUid
             $valueIndex
         ];
 
-        $content = implode('/', $optionDetails);
+        $content = implode(self::UID_SEPARATOR, $optionDetails);
 
         // phpcs:ignore Magento2.Functions.DiscouragedFunction
         return \base64_encode($content);

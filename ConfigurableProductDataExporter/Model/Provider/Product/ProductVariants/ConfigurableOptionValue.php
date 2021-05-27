@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants;
 
+use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ConfigurableOptionValueUid;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\OptionValueInterface;
 
 /**
@@ -15,22 +16,32 @@ use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\OptionValu
 class ConfigurableOptionValue implements OptionValueInterface
 {
     /**
+     * @var ConfigurableOptionValueUid
+     */
+    private $optionValueUid;
+
+    public function __construct(ConfigurableOptionValueUid $optionValueUid)
+    {
+        $this->optionValueUid = $optionValueUid;
+    }
+
+    /**
      * Returns uid based on parent id, option id and optionValue uid
      *
-     * @param string $parentId
-     * @param string $optionId
-     * @param string $optionValueUid
-     * @return string
+     * @param array $row
+     * @return array
      */
-    public function resolve(string $parentId, string $optionId, string $optionValueUid): string
+    public function resolve(array $row): array
     {
-        $uid = \sprintf(
-            '%1$s:%2$s/%3$s',
-            $parentId,
-            $optionId,
-            $optionValueUid
+        $optionValueUid = $this->optionValueUid->resolve(
+            $row['attributeId'],
+            $row['optionValueId']
         );
-
-        return $uid;
+        return [
+            "attributeCode" => $row['attributeCode'],
+            "uid" => $optionValueUid,
+            "label" => $row['optionLabel'],
+            "valueIndex" => $row['optionValueId'],
+        ];
     }
 }
