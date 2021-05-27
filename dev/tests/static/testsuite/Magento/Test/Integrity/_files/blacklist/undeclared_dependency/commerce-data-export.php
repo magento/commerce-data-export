@@ -12,15 +12,12 @@ return [
     'app/code/Magento/ConfigurationDataExporter/Plugin/ConfigUpdateExport.php' => ['Magento\Config'],
     'app/code/Magento/CatalogExport/Console/Command/GenerateDTOFiles.php' => ['Magento\DataExporter'],
     'app/code/Magento/CatalogExport/Model/CategoryRepository.php' => [
-        'Magento\CatalogExportApi',
         'Magento\DataExporter'
     ],
     'app/code/Magento/CatalogExport/Model/ProductRepository.php' => [
-        'Magento\CatalogExportApi',
         'Magento\DataExporter'
     ],
     'app/code/Magento/CatalogExport/Model/ProductVariantRepository.php' => [
-        'Magento\CatalogExportApi',
         'Magento\DataExporter'
     ],
     'app/code/Magento/CatalogExport/Model/Indexer/EntityIndexerCallback.php' => [
@@ -28,16 +25,7 @@ return [
         'Magento\Framework\MessageQueue'
     ],
     'app/code/Magento/ConfigurationDataExporter/etc/di.xml' => ['Magento\Config'],
-    'app/code/Magento/CatalogExport/etc/di.xml' => ['Magento\CatalogExportApi'],
     'app/code/Magento/CatalogExport/Model/GenerateDTOs.php' => [
-        'Magento\DataExporter',
-    ],
-    'app/code/Magento/CatalogExport/Model/RatingMetadataRepository.php' => [
-        'Magento\CatalogExportApi',
-        'Magento\DataExporter',
-    ],
-    'app/code/Magento/CatalogExport/Model/ReviewRepository.php' => [
-        'Magento\CatalogExportApi',
         'Magento\DataExporter',
     ],
 ];

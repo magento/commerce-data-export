@@ -1,0 +1,26 @@
+{
+    "name": "magento/module-catalog-inventory-data-exporter",
+    "description": "Catalog inventory data exporter",
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Magento\\CatalogInventoryDataExporter\\": ""
+        }
+    },
+    "require": {
+        "php": "~7.1.3||~7.2.0||~7.3.0||~7.4.0",
+        "magento/framework": ">=102.0.2",
+        "magento/module-catalog-inventory": ">=100.3.2",
+        "magento/module-store": ">=101.0.2",
+        "magento/module-catalog": ">=103.0.2",
+        "magento/module-data-exporter": "self.version",
+        "magento/module-catalog-data-exporter": "self.version"
+    }
+}
