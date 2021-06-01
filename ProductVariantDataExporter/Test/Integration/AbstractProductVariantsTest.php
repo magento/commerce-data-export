@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Magento\ProductVariantDataExporter\Test\Integration;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants\ConfigurableId;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\Eav\Model\AttributeRepository;
@@ -21,6 +22,8 @@ use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 use Magento\Framework\Stdlib\ArrayUtils;
 use Magento\Framework\Registry;
+use RuntimeException;
+use Throwable;
 
 /**
  * Abstract class for product variant feed tests
@@ -84,6 +87,11 @@ abstract class AbstractProductVariantsTest extends TestCase
     protected $registry;
 
     /**
+     * @var ConfigurableId|mixed
+     */
+    protected $idResolver;
+
+    /**
      * @inheritDoc
      */
     protected function setUp() : void
@@ -99,6 +107,7 @@ abstract class AbstractProductVariantsTest extends TestCase
         $this->attributeRepository = Bootstrap::getObjectManager()->create(AttributeRepository::class);
         $this->arrayUtils = $objectManager->create(ArrayUtils::class);
         $this->registry = Bootstrap::getObjectManager()->get(Registry::class);
+        $this->idResolver = Bootstrap::getObjectManager()->get(ConfigurableId::class);
     }
 
     /**
@@ -107,15 +116,15 @@ abstract class AbstractProductVariantsTest extends TestCase
      * @param array $parentIds
      * @return void
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function runIndexer(array $parentIds) : void
     {
         try {
             $this->indexer->load(self::PRODUCT_VARIANT_FEED_INDEXER);
             $this->indexer->reindexList($parentIds);
-        } catch (\Throwable $e) {
-            throw new \RuntimeException('Could not reindex product variant data');
+        } catch (Throwable $e) {
+            throw new RuntimeException('Could not reindex product variant data');
         }
     }
 }
