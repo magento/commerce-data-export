@@ -14,6 +14,9 @@ use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ConfigurableO
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\TestFramework\Helper\Bootstrap;
+use Throwable;
+use Zend_Db_Statement_Exception;
+use function usort;
 
 /**
  * Test for configurable product export
@@ -50,8 +53,8 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
      * @return void
      * @throws NoSuchEntityException
      * @throws LocalizedException
-     * @throws \Zend_Db_Statement_Exception
-     * @throws \Throwable
+     * @throws Zend_Db_Statement_Exception
+     * @throws Throwable
      */
     public function testConfigurableProducts() : void
     {
@@ -85,8 +88,8 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
      * @return void
      * @throws NoSuchEntityException
      * @throws LocalizedException
-     * @throws \Zend_Db_Statement_Exception
-     * @throws \Throwable
+     * @throws Zend_Db_Statement_Exception
+     * @throws Throwable
      */
     public function testParentProducts() : void
     {
@@ -155,7 +158,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
             $this->assertEquals($expectedOptions[$optionId]['id'], $optionId);
             $this->assertEquals($expectedOptions[$optionId]['type'], $extractedOption['type']);
             $this->assertEquals($expectedOptions[$optionId]['label'], $extractedOption['label']);
-            $this->assertEquals($expectedOptions[$optionId]['sortOrder'], $extractedOption['sort_order']);
+            $this->assertEquals($expectedOptions[$optionId]['sortOrder'], $extractedOption['sortOrder']);
             $this->assertCount(count($expectedOptions[$optionId]['values']), $extractedOption['values']);
 
             foreach ($extractedOption['values'] as $value) {
@@ -178,7 +181,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
      * @return void
      * @throws LocalizedException
      * @throws NoSuchEntityException
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      */
     private function validateVariantsData(ProductInterface $product, array $extract, array $attributeCodes) : void
     {
@@ -197,13 +200,13 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
             ];
         }
         $actualVariants = $extract['feedData']['variants'];
-        \usort(
+        usort(
             $actualVariants,
             function ($a, $b) {
                 return $a['sku'] <=> $b['sku'];
             }
         );
-        \usort(
+        usort(
             $variants,
             function ($a, $b) {
                 return $a['sku'] <=> $b['sku'];
