@@ -13,7 +13,7 @@ use Magento\Framework\DB\Select;
 /**
  * Provide entity to index
  */
-class IndexEntityProvider implements IndexEntityProviderInterface
+class EntityIdsProvider implements EntityIdsProviderInterface
 {
     /**
      * @var ResourceConnection

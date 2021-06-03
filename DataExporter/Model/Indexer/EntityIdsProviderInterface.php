@@ -10,7 +10,7 @@ namespace Magento\DataExporter\Model\Indexer;
 /**
  * Select Provider interface
  */
-interface IndexEntityProviderInterface
+interface EntityIdsProviderInterface
 {
     /**
      * Get all IDs

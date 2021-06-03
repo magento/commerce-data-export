@@ -54,9 +54,9 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     private $markRemovedEntities;
 
     /**
-     * @var IndexEntityProviderInterface
+     * @var EntityIdsProviderInterface
      */
-    private $indexEntityProvider;
+    private $entityIdsProvider;
 
     /**
      * @var bool
@@ -70,7 +70,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      * @param FeedIndexMetadata $feedIndexMetadata
      * @param FeedPool $feedPool
      * @param MarkRemovedEntitiesInterface $markRemovedEntities
-     * @param IndexEntityProviderInterface $indexEntityProvider
+     * @param EntityIdsProviderInterface $entityIdsProvider
      * @param array $callbackSkipAttributes
      * @param bool $hasRemovableEntities
      */
@@ -81,7 +81,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         FeedIndexMetadata $feedIndexMetadata,
         FeedPool $feedPool,
         MarkRemovedEntitiesInterface $markRemovedEntities,
-        IndexEntityProviderInterface $indexEntityProvider,
+        EntityIdsProviderInterface $entityIdsProvider,
         array $callbackSkipAttributes = [],
         bool $hasRemovableEntities = true
     ) {
@@ -91,7 +91,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         $this->dataSerializer = $serializer;
         $this->feedPool = $feedPool;
         $this->markRemovedEntities = $markRemovedEntities;
-        $this->indexEntityProvider = $indexEntityProvider;
+        $this->entityIdsProvider = $entityIdsProvider;
         $this->callbackSkipAttributes = $callbackSkipAttributes;
         $this->hasRemovableEntities = $hasRemovableEntities;
     }
@@ -105,7 +105,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     public function executeFull()
     {
         $this->truncateFeedTable();
-        foreach ($this->indexEntityProvider->getAllIds($this->feedIndexMetadata) as $ids) {
+        foreach ($this->entityIdsProvider->getAllIds($this->feedIndexMetadata) as $ids) {
             if ($this->hasRemovableEntities) {
                 $this->markRemovedEntities->execute(
                     \array_column($ids, $this->feedIndexMetadata->getFeedIdentity()),
