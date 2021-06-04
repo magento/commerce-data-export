@@ -140,7 +140,7 @@
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
-        <field name="ShopperInputOption" type="ProductShopperInputOption" repeated="true"
+        <field name="shopperInputOptions" type="ProductShopperInputOption" repeated="true"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\ProductShopperInputOptions"
         >
             <using field="productId" />
