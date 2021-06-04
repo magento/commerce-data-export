@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 
+use Exception;
+use Generator;
 use Magento\CatalogDataExporter\Model\Provider\Product\OptionProviderInterface;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionQuery;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionValueQuery;
@@ -16,6 +18,7 @@ use Magento\Framework\DB\Query\BatchIteratorInterface;
 use Magento\Framework\DB\Query\Generator as QueryGenerator;
 use Magento\Framework\DB\Select;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 /**
  * Configurable product options data provider
@@ -91,10 +94,10 @@ class Options implements OptionProviderInterface
      *
      * @param Select $select
      * @param string $rangeField
-     * @return \Generator
+     * @return Generator
      * @throws UnableRetrieveData
      */
-    private function getBatchedQueryData(Select $select, string $rangeField): \Generator
+    private function getBatchedQueryData(Select $select, string $rangeField): Generator
     {
         try {
             $connection = $this->resourceConnection->getConnection();
@@ -107,7 +110,7 @@ class Options implements OptionProviderInterface
             foreach ($iterator as $batchSelect) {
                 yield $connection->fetchAll($batchSelect);
             }
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve configurable option data');
         }
@@ -150,7 +153,7 @@ class Options implements OptionProviderInterface
         return [
             'productId' => $row['productId'],
             'storeViewCode' => $row['storeViewCode'],
-            'productOptions' => [
+            'optionsV2' => [
                 'id' => $row['attribute_code'],
                 'type' => ConfigurableOptionValueUid::OPTION_TYPE,
                 'label' => $row['label'],
@@ -205,7 +208,7 @@ class Options implements OptionProviderInterface
                     if (!isset($setOptionValues[$key . $row['value']])) {
                         $setOptionValues[$key . $row['value']] = true;
                         if (isset($optionValuesData[$row['attribute_id']][$row['storeViewCode']][$row['value']])) {
-                            $options[$key]['productOptions']['values'][] =
+                            $options[$key]['optionsV2']['values'][] =
                                 $optionValuesData[$row['attribute_id']][$row['storeViewCode']][$row['value']];
 
                             //TODO: should be deleted in catalog-storefront/issues/304
@@ -215,7 +218,7 @@ class Options implements OptionProviderInterface
                     }
                 }
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve configurable product options data');
         }

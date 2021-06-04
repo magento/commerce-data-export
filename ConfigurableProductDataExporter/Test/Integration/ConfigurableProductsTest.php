@@ -152,8 +152,8 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
             ];
         }
 
-        $this->assertCount(count($expectedOptions), $extractedProduct['feedData']['productOptions']);
-        foreach ($extractedProduct['feedData']['productOptions'] as $extractedOption) {
+        $this->assertCount(count($expectedOptions), $extractedProduct['feedData']['optionsV2']);
+        foreach ($extractedProduct['feedData']['optionsV2'] as $extractedOption) {
             $optionId = $extractedOption['id'];
             $this->assertEquals($expectedOptions[$optionId]['id'], $optionId);
             $this->assertEquals($expectedOptions[$optionId]['type'], $extractedOption['type']);

@@ -71,7 +71,7 @@ class BundleProductTest extends AbstractProductTestHelper
                         'storeViewCode' => 'default',
                         'name' => 'Bundle Product',
                         'type' => 'bundle',
-                        'productOptions' => [
+                        'optionsV2' => [
                             [
                                 'type' => 'bundle',
                                 'renderType' => 'select',
