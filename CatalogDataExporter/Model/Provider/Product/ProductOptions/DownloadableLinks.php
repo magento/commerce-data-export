@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions;
 
+use Exception;
+use InvalidArgumentException;
 use Magento\CatalogDataExporter\Model\Provider\Product\Downloadable\SampleUrlProvider;
 use Magento\CatalogDataExporter\Model\Query\ProductDownloadableLinksQuery;
 use Magento\Framework\App\ResourceConnection;
@@ -74,7 +76,7 @@ class DownloadableLinks
      *
      * @param array $values
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function get(array $values): array
     {
@@ -107,7 +109,7 @@ class DownloadableLinks
      * @return array
      *
      * @throws NoSuchEntityException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function format(array $attributes, string $storeViewCode): array
     {
@@ -118,7 +120,7 @@ class DownloadableLinks
             $output[$key] = [
                 'productId' => (string)$productId,
                 'storeViewCode' => $storeViewCode,
-                'productOptions' => [
+                'optionsV2' => [
                     'id' => 'link:' . (string)$productId,
                     'label' => $attributes[(string)$productId]['links_title'],
                     'type' => DownloadableLinksOptionUid::OPTION_TYPE,
@@ -138,7 +140,7 @@ class DownloadableLinks
      * @return array
      *
      * @throws NoSuchEntityException
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private function processOptionValues(string $productId, string $storeViewCode): array
     {

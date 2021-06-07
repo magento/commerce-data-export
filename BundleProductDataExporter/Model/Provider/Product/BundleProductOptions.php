@@ -14,6 +14,7 @@ use Magento\CatalogDataExporter\Model\Provider\Product\OptionProviderInterface;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 /**
  * Class which provides bundle product options and option values
@@ -91,7 +92,7 @@ class BundleProductOptions implements OptionProviderInterface
                     $output[] = $this->formatBundleOptionsRow($row, $optionValues);
                 }
             }
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $this->logger->error($exception->getMessage());
             throw new UnableRetrieveData('Unable to retrieve bundle product options data');
         }
@@ -135,7 +136,7 @@ class BundleProductOptions implements OptionProviderInterface
         return [
             'productId' => $row['product_id'],
             'storeViewCode' => $row['store_view_code'],
-            'productOptions' => [
+            'optionsV2' => [
                 'type' => BundleItemOptionUid::OPTION_TYPE,
                 'id' => $row['option_id'],
                 'renderType' => $row['render_type'],
