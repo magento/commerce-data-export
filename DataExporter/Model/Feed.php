@@ -39,18 +39,26 @@ class Feed implements FeedInterface
     protected $feedIndexMetadata;
 
     /**
+     * @var bool
+     */
+    private $hasRemovableEntities;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param SerializerInterface $serializer
      * @param FeedIndexMetadata $feedIndexMetadata
+     * @param bool $hasRemovableEntities
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         SerializerInterface $serializer,
-        FeedIndexMetadata $feedIndexMetadata
+        FeedIndexMetadata $feedIndexMetadata,
+        $hasRemovableEntities = true
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->serializer = $serializer;
         $this->feedIndexMetadata = $feedIndexMetadata;
+        $this->hasRemovableEntities = $hasRemovableEntities;
     }
 
     /**
@@ -71,14 +79,14 @@ class Feed implements FeedInterface
                 ->order('modified_at')
                 ->limit(1, self::OFFSET)
         );
+        $columns = ['feed_data', 'modified_at'];
+        if ($this->hasRemovableEntities) {
+           $columns[] = 'is_deleted';
+        }
         $select = $connection->select()
             ->from(
                 ['t' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName())],
-                [
-                    'feed_data',
-                    'modified_at',
-                    'is_deleted'
-                ]
+                $columns
             )
             ->where('t.modified_at > ?', $modifiedAt);
         if ($limit) {
@@ -98,19 +106,20 @@ class Feed implements FeedInterface
     public function getFeedByIds(array $ids, ?array $storeViewCodes = [], array $attributes = []): array
     {
         $connection = $this->resourceConnection->getConnection();
-
+        $columns = ['feed_data', 'modified_at'];
+        if ($this->hasRemovableEntities) {
+            $columns[] = 'is_deleted';
+        }
         $select = $connection->select()
             ->from(
                 ['t' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName())],
-                [
-                    'feed_data',
-                    'modified_at',
-                    'is_deleted'
-                ]
+                $columns
             )
-            ->where('t.is_deleted = ?', 0)
             ->where(sprintf('t.%s IN (?)', $this->feedIndexMetadata->getFeedTableField()), $ids);
 
+        if ($this->hasRemovableEntities) {
+            $select->where('t.is_deleted = ?', 0);
+        }
         if (!empty($storeViewCodes)) {
             $select->where('t.store_view_code IN (?)', $storeViewCodes);
         }
@@ -124,6 +133,9 @@ class Feed implements FeedInterface
      */
     public function getDeletedByIds(array $ids, ?array $storeViewCodes = []): array
     {
+        if (!$this->hasRemovableEntities) {
+           return [];
+        }
         $connection = $this->resourceConnection->getConnection();
 
         $select = $connection->select()
@@ -176,7 +188,9 @@ class Feed implements FeedInterface
             }
 
             $dataRow['modifiedAt'] = $row['modified_at'];
-            $dataRow['deleted'] = (bool) $row['is_deleted'];
+            if ($this->hasRemovableEntities) {
+                $dataRow['deleted'] = (bool) $row['is_deleted'];
+            }
             $output[] = $dataRow;
             if ($recentTimestamp === null || $recentTimestamp < $row['modified_at']) {
                 $recentTimestamp = $row['modified_at'];
