@@ -136,11 +136,11 @@
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
-        <field name="productOptions" type="ProductOption" repeated="true" provider="Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions">
+        <field name="optionsV2" type="ProductOption" repeated="true" provider="Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions">
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
-        <field name="productShopperInputOptions" type="ProductShopperInputOption" repeated="true"
+        <field name="shopperInputOptions" type="ProductShopperInputOption" repeated="true"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\ProductShopperInputOptions"
         >
             <using field="productId" />

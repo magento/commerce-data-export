@@ -73,7 +73,7 @@ class ProductShopperInputOptions implements ProductShopperInputOptionProviderInt
                 $output[$key] = [
                     'productId' => (string)$productId,
                     'storeViewCode' => $storeViewCode,
-                    'productShopperInputOptions' => [
+                    'shopperInputOptions' => [
                         'id' => $this->buildUid($option['option_id']),
                         'label' => $option['title'],
                         'required' => $option['is_require'],

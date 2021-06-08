@@ -75,7 +75,7 @@ class SelectableOptions implements ProductOptionProviderInterface
                 $output[$key] = [
                     'productId' => (string)$productId,
                     'storeViewCode' => $storeViewCode,
-                    'productOptions' => [
+                    'optionsV2' => [
                         'id' => $option['option_id'],
                         'label' => $option['title'],
                         'sortOrder' => $option['sort_order'],
@@ -85,7 +85,7 @@ class SelectableOptions implements ProductOptionProviderInterface
                     ],
                 ];
 
-                $output[$key]['productOptions']['values'] = $this->processOptionValues($option);
+                $output[$key]['optionsV2']['values'] = $this->processOptionValues($option);
             }
         }
 
