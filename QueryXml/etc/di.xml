@@ -29,33 +29,33 @@
             <argument name="schemaLocator" xsi:type="object">Magento\QueryXml\Model\Config\SchemaLocator</argument>
             <argument name="fileName" xsi:type="string">query.xml</argument>
             <argument name="idAttributes" xsi:type="array">
-                <item name="/config/report" xsi:type="string">name</item>
-                <item name="/config/report/source/link-source" xsi:type="array">
+                <item name="/config/query" xsi:type="string">name</item>
+                <item name="/config/query/source/link-source" xsi:type="array">
                     <item name="name" xsi:type="string">name</item>
                     <item name="alias" xsi:type="string">alias</item>
                 </item>
-                <item name="/config/report/source/attribute" xsi:type="string">name</item>
-                <item name="/config/report/source/link-source/attribute" xsi:type="string">name</item>
+                <item name="/config/query/source/attribute" xsi:type="string">name</item>
+                <item name="/config/query/source/link-source/attribute" xsi:type="string">name</item>
                 <!-- filter conditions for main source-->
-                <item name="/config/report/source(/filter)+" xsi:type="string">glue</item>
-                <item name="/config/report/source(/filter)+/condition" xsi:type="array">
+                <item name="/config/query/source(/filter)+" xsi:type="string">glue</item>
+                <item name="/config/query/source(/filter)+/condition" xsi:type="array">
                     <item name="attribute" xsi:type="string">attribute</item>
                     <item name="operator" xsi:type="string">operator</item>
                 </item>
                 <!-- filter conditions for joined source-->
-                <item name="/config/report/source/link-source(/filter)+" xsi:type="string">glue</item>
-                <item name="/config/report/source/link-source(/filter)+/condition" xsi:type="array">
+                <item name="/config/query/source/link-source(/filter)+" xsi:type="string">glue</item>
+                <item name="/config/query/source/link-source(/filter)+/condition" xsi:type="array">
                     <item name="attribute" xsi:type="string">attribute</item>
                     <item name="operator" xsi:type="string">operator</item>
                 </item>
                 <!-- join conditions for joined source-->
-                <item name="/config/report/source/link-source/using" xsi:type="string">glue</item>
-                <item name="/config/report/source/link-source/using/condition" xsi:type="array">
+                <item name="/config/query/source/link-source/using" xsi:type="string">glue</item>
+                <item name="/config/query/source/link-source/using/condition" xsi:type="array">
                     <item name="attribute" xsi:type="string">attribute</item>
                     <item name="operator" xsi:type="string">operator</item>
                 </item>
-                <item name="/config/report/source/link-source/using(/filter)+" xsi:type="string">glue</item>
-                <item name="/config/report/source/link-source/using(/filter)+/condition" xsi:type="array">
+                <item name="/config/query/source/link-source/using(/filter)+" xsi:type="string">glue</item>
+                <item name="/config/query/source/link-source/using(/filter)+/condition" xsi:type="array">
                     <item name="attribute" xsi:type="string">attribute</item>
                     <item name="operator" xsi:type="string">operator</item>
                 </item>

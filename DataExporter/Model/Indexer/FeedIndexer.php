@@ -10,7 +10,6 @@ namespace Magento\DataExporter\Model\Indexer;
 use Magento\DataExporter\Export\Processor;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Select;
 use Magento\Framework\Indexer\ActionInterface as IndexerActionInterface;
 use Magento\Framework\Mview\ActionInterface as MviewActionInterface;
 
@@ -55,13 +54,25 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     private $markRemovedEntities;
 
     /**
+     * @var EntityIdsProviderInterface
+     */
+    private $entityIdsProvider;
+
+    /**
+     * @var bool
+     */
+    private $hasRemovableEntities;
+
+    /**
      * @param Processor $processor
      * @param ResourceConnection $resourceConnection
      * @param DataSerializerInterface $serializer
      * @param FeedIndexMetadata $feedIndexMetadata
      * @param FeedPool $feedPool
      * @param MarkRemovedEntitiesInterface $markRemovedEntities
+     * @param EntityIdsProviderInterface $entityIdsProvider
      * @param array $callbackSkipAttributes
+     * @param bool $hasRemovableEntities
      */
     public function __construct(
         Processor $processor,
@@ -70,7 +81,9 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         FeedIndexMetadata $feedIndexMetadata,
         FeedPool $feedPool,
         MarkRemovedEntitiesInterface $markRemovedEntities,
-        array $callbackSkipAttributes = []
+        EntityIdsProviderInterface $entityIdsProvider,
+        array $callbackSkipAttributes = [],
+        bool $hasRemovableEntities = true
     ) {
         $this->processor = $processor;
         $this->resourceConnection = $resourceConnection;
@@ -78,53 +91,9 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         $this->dataSerializer = $serializer;
         $this->feedPool = $feedPool;
         $this->markRemovedEntities = $markRemovedEntities;
+        $this->entityIdsProvider = $entityIdsProvider;
         $this->callbackSkipAttributes = $callbackSkipAttributes;
-    }
-
-    /**
-     * Get Ids select
-     *
-     * @param int $lastKnownId
-     * @return Select
-     */
-    private function getIdsSelect(int $lastKnownId) : Select
-    {
-        $columnExpression = sprintf('s.%s', $this->feedIndexMetadata->getSourceTableField());
-        $whereClause = sprintf('s.%s > ?', $this->feedIndexMetadata->getSourceTableField());
-        $connection = $this->resourceConnection->getConnection();
-        return $connection->select()
-            ->from(
-                ['s' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getSourceTableName())],
-                [
-                    $this->feedIndexMetadata->getFeedIdentity() =>
-                        's.' . $this->feedIndexMetadata->getSourceTableField()
-                ]
-            )
-            ->where($whereClause, $lastKnownId)
-            ->order($columnExpression)
-            ->limit($this->feedIndexMetadata->getBatchSize());
-    }
-
-    /**
-     * Get all product IDs
-     *
-     * @return \Generator
-     * @throws \Zend_Db_Statement_Exception
-     */
-    private function getAllIds() : ?\Generator
-    {
-        $connection = $this->resourceConnection->getConnection();
-        $lastKnownId = 0;
-        $continueReindex = true;
-        while ($continueReindex) {
-            $ids = $connection->fetchAll($this->getIdsSelect((int)$lastKnownId));
-            if (empty($ids)) {
-                $continueReindex = false;
-            } else {
-                yield $ids;
-                $lastKnownId = end($ids)[$this->feedIndexMetadata->getFeedIdentity()];
-            }
-        }
+        $this->hasRemovableEntities = $hasRemovableEntities;
     }
 
     /**
@@ -136,11 +105,13 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     public function executeFull()
     {
         $this->truncateFeedTable();
-        foreach ($this->getAllIds() as $ids) {
-            $this->markRemovedEntities->execute(
-                \array_column($ids, $this->feedIndexMetadata->getFeedIdentity()),
-                $this->feedIndexMetadata
-            );
+        foreach ($this->entityIdsProvider->getAllIds($this->feedIndexMetadata) as $ids) {
+            if ($this->hasRemovableEntities) {
+                $this->markRemovedEntities->execute(
+                    \array_column($ids, $this->feedIndexMetadata->getFeedIdentity()),
+                    $this->feedIndexMetadata
+                );
+            }
             $this->process($ids);
         }
     }
@@ -157,7 +128,9 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
         foreach ($ids as $id) {
             $arguments[] = [$this->feedIndexMetadata->getFeedIdentity() => $id];
         }
-        $this->markRemovedEntities->execute($ids, $this->feedIndexMetadata);
+        if ($this->hasRemovableEntities) {
+            $this->markRemovedEntities->execute($ids, $this->feedIndexMetadata);
+        }
         $this->process($arguments);
     }
 
@@ -169,7 +142,9 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      */
     public function executeRow($id)
     {
-        $this->markRemovedEntities->execute([$id], $this->feedIndexMetadata);
+        if ($this->hasRemovableEntities) {
+            $this->markRemovedEntities->execute([$id], $this->feedIndexMetadata);
+        }
         $this->process([[$this->feedIndexMetadata->getFeedIdentity() => $id]]);
     }
 
@@ -191,7 +166,9 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
             ];
         }
 
-        $this->markRemovedEntities->execute(\array_column($arguments, $feedIdentity), $this->feedIndexMetadata);
+        if ($this->hasRemovableEntities) {
+            $this->markRemovedEntities->execute(\array_column($arguments, $feedIdentity), $this->feedIndexMetadata);
+        }
         $this->process($arguments);
     }
 
