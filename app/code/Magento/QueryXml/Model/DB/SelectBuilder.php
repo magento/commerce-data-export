@@ -8,6 +8,7 @@ namespace Magento\QueryXml\Model\DB;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
+use Magento\Framework\DB\Sql\Expression;
 
 /**
  * Responsible for Select object creation, works as a builder. Returns Select as result;
@@ -16,6 +17,11 @@ use Magento\Framework\DB\Select;
  */
 class SelectBuilder
 {
+    /**
+     * @var array
+     */
+    private $queryConfig;
+
     /**
      * @var ResourceConnection
      */
@@ -72,9 +78,11 @@ class SelectBuilder
      * @param ResourceConnection $resourceConnection
      */
     public function __construct(
-        ResourceConnection $resourceConnection
+        ResourceConnection $resourceConnection,
+        array $queryConfig = []
     ) {
         $this->resourceConnection = $resourceConnection;
+        $this->queryConfig = $queryConfig;
     }
 
     /**
@@ -233,7 +241,7 @@ class SelectBuilder
             $select = $this->processJoin($select, $joinConfig);
         }
         if (!empty($this->getGroup())) {
-            $select->group(implode(', ', $this->getGroup()));
+            $select->group(new Expression(implode(', ', $this->getGroup())));
         }
         if (!empty($this->getSort())) {
             $sort = [];
@@ -335,5 +343,10 @@ class SelectBuilder
         $this->having = $having;
 
         return $this;
+    }
+
+    public function getQueryConfig() : array
+    {
+        return $this->queryConfig;
     }
 }

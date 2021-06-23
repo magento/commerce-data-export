@@ -62,6 +62,7 @@ class QueryProcessor
         $query = $this->queryFactory->create($queryName);
         $connection = $this->resourceConnection->getConnection($query->getConnectionName());
         $sql = $this->processPlaceholders($connection, $query->getSelect()->assemble(), $arguments);
+        echo $sql;
         return $connection->query($sql);
     }
 }

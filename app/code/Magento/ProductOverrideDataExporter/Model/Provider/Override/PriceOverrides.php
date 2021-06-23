@@ -45,8 +45,12 @@ class PriceOverrides
     {
         $row['prices'] = [
             'minimumPrice' => [
-                'finalPrice' => $row['finalPrice'],
-                'regularPrice' => $row['regularPrice']
+                'finalPrice' => $row['minimumFinalPrice'],
+                'regularPrice' => $row['minimumRegularPrice']
+            ],
+            'maximumPrice' => [
+                'finalPrice' => $row['maximumRegularPrice'],
+                'regularPrice' => $row['maximumRegularPrice']
             ]
         ];
         return $row;
@@ -63,17 +67,19 @@ class PriceOverrides
             $queryArguments['entityIds'][] = $value['productId'];
         }
         $output = [];
-        $cursor = $this->queryProcessor->execute('productPriceOverrider', $queryArguments);
-        while ($row = $cursor->fetch()) {
-            $defaultPriceKey = $row['productId'] . WebsiteInterface::ADMIN_CODE . Group::NOT_LOGGED_IN_ID;
-            $actualPriceKey = $row['productId'] . $row['websiteCode'] . $row['customerGroupCode'];
-            $output[$actualPriceKey] = $row;
-            if (!isset($output[$defaultPriceKey]) || $this->priceDiffersFromDefault(
-                    $output[$defaultPriceKey],
-                    $row
-                )
-            ) {
-                $output[$actualPriceKey] = $this->format($row);
+        foreach (['productPriceOverrider', 'configurableProductPriceOverrider'] as $queryName) {
+            $cursor = $this->queryProcessor->execute($queryName, $queryArguments);
+            while ($row = $cursor->fetch()) {
+                $defaultPriceKey = $row['productId'] . WebsiteInterface::ADMIN_CODE . Group::NOT_LOGGED_IN_ID;
+                $actualPriceKey = $row['productId'] . $row['websiteCode'] . $row['customerGroupCode'];
+                $output[$actualPriceKey] = $row;
+                if (!isset($output[$defaultPriceKey]) || $this->priceDiffersFromDefault(
+                        $output[$defaultPriceKey],
+                        $row
+                    )
+                ) {
+                    $output[$actualPriceKey] = $this->format($row);
+                }
             }
         }
         return $output;

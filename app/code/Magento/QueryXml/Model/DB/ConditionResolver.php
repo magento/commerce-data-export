@@ -45,6 +45,7 @@ class ConditionResolver
 
     /**
      * ConditionResolver constructor.
+     *
      * @param ResourceConnection $resourceConnection
      */
     public function __construct(
@@ -69,11 +70,12 @@ class ConditionResolver
     /**
      * Returns value for condition
      *
+     * @param SelectBuilder $selectBuilder
      * @param string $condition
      * @param string $referencedEntity
      * @return mixed|null|string|\Zend_Db_Expr
      */
-    private function getValue($condition, $referencedEntity)
+    private function getValue(SelectBuilder $selectBuilder, $condition, $referencedEntity)
     {
         $value = null;
         $argument = isset($condition['_value']) ? $condition['_value'] : null;
@@ -92,12 +94,42 @@ class ConditionResolver
                 $value = '::'. $argument . '::';
                 break;
             case "identifier":
-                $value = $this->getConnection()->quoteIdentifier(
-                    $referencedEntity ? $referencedEntity . '.' . $argument : $argument
-                );
+                $identifier = explode('.', $argument);
+                if (count($identifier) > 1) {
+                    $value = $this->getConnection()->quoteIdentifier(
+                        $identifier[0] . '.' . $this->resolveIdentifier(
+                            $selectBuilder,
+                            $identifier[1],
+                            $identifier[0]
+                        )
+                    );
+                } else {
+                    $value = $this->getConnection()->quoteIdentifier(
+                        $referencedEntity ? $referencedEntity . '.' . $argument : $argument
+                    );
+                }
                 break;
         }
         return $value;
+    }
+
+
+    /**
+     * @param SelectBuilder $selectBuilder
+     * @param string $identifier
+     * @param string $tableName
+     * @return string
+     */
+    private function resolveIdentifier(
+        SelectBuilder $selectBuilder,
+        string $identifier,
+        string $tableName
+    ) {
+        $queryConfig = $selectBuilder->getQueryConfig();
+
+        return ($identifier != 'Primary Key') ? $identifier : $this->getConnection()->getAutoIncrementField(
+            $queryConfig['map'][$tableName]
+        );
     }
 
     /**
@@ -109,20 +141,25 @@ class ConditionResolver
      * @param null|string $referencedEntity
      * @return string
      */
-    private function getCondition(SelectBuilder $selectBuilder, $tableName, $condition, $referencedEntity = null)
-    {
+    private function getCondition(
+        SelectBuilder $selectBuilder,
+        string $tableAlias,
+        $condition,
+        $referencedEntity = null
+    ) {
         $columns = $selectBuilder->getColumns();
         if (isset($columns[$condition['attribute']])
             && $columns[$condition['attribute']] instanceof Expression
         ) {
             $expression = $columns[$condition['attribute']];
         } else {
-            $expression = $this->getConnection()->quoteIdentifier($tableName . '.' . $condition['attribute']);
+            $field = $this->resolveIdentifier($selectBuilder, $condition['attribute'], $tableAlias);
+            $expression = $this->getConnection()->quoteIdentifier($tableAlias . '.' . $field);
         }
         return sprintf(
             $this->conditionMap[$condition['operator']],
             $expression,
-            $this->getValue($condition, $referencedEntity)
+            $this->getValue($selectBuilder, $condition, $referencedEntity)
         );
     }
 
@@ -135,8 +172,12 @@ class ConditionResolver
      * @param null|string $referencedAlias
      * @return array
      */
-    public function getFilter(SelectBuilder $selectBuilder, $filterConfig, $aliasName, $referencedAlias = null)
-    {
+    public function getFilter(
+        SelectBuilder $selectBuilder,
+        array $filterConfig,
+        string $tableAlias,
+        $referencedAlias = null
+    ) {
         $filtersParts = [];
         foreach ($filterConfig as $filter) {
             $glue = $filter['glue'];
@@ -147,7 +188,7 @@ class ConditionResolver
                 }
                 $parts[] = $this->getCondition(
                     $selectBuilder,
-                    $aliasName,
+                    $tableAlias,
                     $condition,
                     $referencedAlias
                 );
@@ -156,7 +197,7 @@ class ConditionResolver
                 $parts[] = '(' . $this->getFilter(
                     $selectBuilder,
                     $filter['filter'],
-                    $aliasName,
+                    $tableAlias,
                     $referencedAlias
                 ) . ')';
             }

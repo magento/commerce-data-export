@@ -13,9 +13,10 @@
             <attribute name="customer_group_id" alias="customerGroupCode" function="sha1"/>
             <attribute name="website_id" sort="asc"/>
             <attribute name="tax_class_id" alias="taxClassId"/>
-            <attribute name="price" alias="regularPrice"/>
-            <attribute name="final_price" alias="finalPrice"/>
-            <attribute name="min_price"/>
+            <attribute name="price" alias="minimumRegularPrice"/>
+            <attribute name="final_price" alias="minimumFinalPrice"/>
+            <attribute name="price" alias="maximumRegularPrice"/>
+            <attribute name="final_price" alias="maximumFinalPrice"/>
             <filter glue="and">
                 <condition attribute="entity_id" operator="in" type="placeholder">entityIds</condition>
             </filter>
@@ -25,10 +26,38 @@
                     <condition attribute="website_id" operator="eq" type="identifier">website_id</condition>
                 </using>
             </link-source>
-            <link-source name="catalog_product_entity">
+        </source>
+    </query>
+    <query name="configurableProductPriceOverrider">
+        <source name="catalog_product_index_price">
+            <attribute group="true" name="customer_group_id" sort="asc"/>
+            <attribute group="true" name="website_id" sort="asc"/>
+            <attribute name="customer_group_id" alias="customerGroupCode" function="sha1"/>
+            <attribute function="max" name="tax_class_id" alias="taxClassId"/>
+            <attribute function="min" name="price" alias="minimumRegularPrice"/>
+            <attribute function="min" name="final_price" alias="minimumFinalPrice"/>
+            <attribute function="max" name="price" alias="maximumRegularPrice"/>
+            <attribute function="max" name="final_price" alias="maximumFinalPrice"/>
+            <link-source name="catalog_product_super_link" link-type="inner">
+                <using glue="and">
+                    <condition attribute="product_id" operator="eq" type="identifier">entity_id</condition>
+                </using>
+            </link-source>
+            <link-source name="catalog_product_entity" alias="parent" link-type="inner">
+                <attribute group="true" name="entity_id" alias="productId" />
                 <attribute name="sku"/>
                 <using glue="and">
-                    <condition attribute="entity_id" operator="eq" type="identifier">entity_id</condition>
+                    <condition attribute="Primary Key" operator="eq" type="identifier">catalog_product_super_link.parent_id</condition>
+                    <filter glue="and">
+                        <condition attribute="type_id" operator="eq" type="value">configurable</condition>
+                        <condition attribute="entity_id" operator="in" type="placeholder">entityIds</condition>
+                    </filter>
+                </using>
+            </link-source>
+            <link-source name="store_website">
+                <attribute name="code" alias="websiteCode"/>
+                <using glue="and">
+                    <condition attribute="website_id" operator="eq" type="identifier">website_id</condition>
                 </using>
             </link-source>
         </source>
