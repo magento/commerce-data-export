@@ -67,7 +67,7 @@ class PriceOverrides
             $queryArguments['entityIds'][] = $value['productId'];
         }
         $output = [];
-        foreach (['productPriceOverrider', 'configurableProductPriceOverrider'] as $queryName) {
+        foreach (['productPriceOverrides', 'configurableProductPriceOverrides'] as $queryName) {
             $cursor = $this->queryProcessor->execute($queryName, $queryArguments);
             while ($row = $cursor->fetch()) {
                 $defaultPriceKey = $row['productId'] . WebsiteInterface::ADMIN_CODE . Group::NOT_LOGGED_IN_ID;

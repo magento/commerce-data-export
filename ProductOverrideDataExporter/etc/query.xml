@@ -6,7 +6,7 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
-    <query name="productPriceOverrider">
+    <query name="productPriceOverrides">
         <source name="catalog_product_index_price">
             <attribute name="entity_id" alias="productId" />
             <attribute name="customer_group_id" sort="asc"/>
@@ -35,7 +35,7 @@
             </link-source>
         </source>
     </query>
-    <query name="configurableProductPriceOverrider">
+    <query name="configurableProductPriceOverrides">
         <source name="catalog_product_index_price">
             <attribute group="true" name="customer_group_id" sort="asc"/>
             <attribute group="true" name="website_id" sort="asc"/>
