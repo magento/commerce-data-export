@@ -241,7 +241,7 @@ class SelectBuilder
             $select = $this->processJoin($select, $joinConfig);
         }
         if (!empty($this->getGroup())) {
-            $select->group(new Expression(implode(', ', $this->getGroup())));
+            $select->group($this->getGroup());
         }
         if (!empty($this->getSort())) {
             $sort = [];
