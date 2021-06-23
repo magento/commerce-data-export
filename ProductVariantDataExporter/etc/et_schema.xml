@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_DataExporter:etc/et_schema.xsd">
+    <record name="Export">
+        <field name="variants" type="ProductVariant" repeated="true"
+               provider="Magento\ProductVariantDataExporter\Model\Provider\ProductVariants">
+            <using field="product_id" />
+        </field>
+    </record>
+    <record name="ProductVariant">
+        <!-- variant identifier following the convention :prefix:/:parentSku:/:productSku: -->
+        <field name="id" type="ID" />
+        <!-- parent_id:option_id/optionValue.uid -->
+        <field name="optionValues" type="VariantOption" repeated="true" />
+        <!-- link to parent product id that represents variant-->
+        <field name="parentId" type="String"/>
+        <!-- link to product id that represents variant, for custom option must be null-->
+        <field name="productId" type="String"/>
+        <!-- link to parent product sku that represents variant-->
+        <field name="parentSku" type="String"/>
+        <!-- link to product sku that represents variant, for custom option must be null-->
+        <field name="productSku" type="String"/>
+    </record>
+
+    <record name="VariantOption">
+        <field name="attributeCode" type="String"/>
+        <!-- option value UID -->
+        <field name="uid" type="String"/>
+        <!-- option label -->
+        <field name="label" type="String"/>
+        <!-- @deprecated A unique index number assigned to the configurable product option -->
+        <field name="valueIndex" type="String"/>
+    </record>
+</config>
