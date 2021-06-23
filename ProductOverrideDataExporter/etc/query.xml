@@ -20,6 +20,13 @@
             <filter glue="and">
                 <condition attribute="entity_id" operator="in" type="placeholder">entityIds</condition>
             </filter>
+            <link-source name="catalog_product_entity" link-type="inner">
+                <attribute name="sku"/>
+                <using glue="and">
+                    <condition attribute="entity_id" operator="eq" type="identifier">entity_id</condition>
+                    <condition attribute="type_id" operator="neq" type="value">configurable</condition>
+                </using>
+            </link-source>
             <link-source name="store_website">
                 <attribute name="code" alias="websiteCode"/>
                 <using glue="and">
