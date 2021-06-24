@@ -49,6 +49,19 @@ class Converter implements ConverterInterface
         return $result;
     }
 
+    private function buildSourcesMap(array $queryData) : array
+    {
+        $output = [];
+        $alias = isset($queryData['alias']) ? $queryData['alias'] : $queryData['name'];
+        $output[$alias] = $queryData['name'];
+        if (isset($queryData['link-source'])) {
+            foreach ($queryData['link-source'] as $linkedSource) {
+                $alias = isset($linkedSource['alias']) ? $linkedSource['alias'] : $linkedSource['name'];
+                $output[$alias] = $linkedSource['name'];
+            }
+        }
+        return $output;
+    }
     /**
      * Converts XML document into corresponding array.
      *
@@ -66,6 +79,7 @@ class Converter implements ConverterInterface
             $entityData = array_shift($queryData['source']);
             $queries[$queryData['name']] = $queryData;
             $queries[$queryData['name']]['source'] = $entityData;
+            $queries[$queryData['name']]['map'] = $this->buildSourcesMap($entityData);
         }
         return $queries;
     }

@@ -108,7 +108,7 @@ class QueryFactory
     private function constructQuery($queryName)
     {
         $queryConfig = $this->config->get($queryName);
-        $selectBuilder = $this->selectBuilderFactory->create();
+        $selectBuilder = $this->selectBuilderFactory->create(['queryConfig' => $queryConfig]);
         $selectBuilder->setConnectionName($this->getQueryConnectionName($queryConfig));
         foreach ($this->assemblers as $assembler) {
             $selectBuilder = $assembler->assemble($selectBuilder, $queryConfig);
