@@ -5,6 +5,8 @@
  */
 declare(strict_types=1);
 
+namespace Magento\ProductOverrideDataExporter\Test\Integration;
+
 use Magento\TestFramework\Helper\Bootstrap;
 
 class ProductOverrideQueryTest extends \PHPUnit\Framework\TestCase
