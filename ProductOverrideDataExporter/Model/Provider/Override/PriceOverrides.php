@@ -49,7 +49,7 @@ class PriceOverrides
                 'regularPrice' => $row['minimumRegularPrice']
             ],
             'maximumPrice' => [
-                'finalPrice' => $row['maximumRegularPrice'],
+                'finalPrice' => $row['maximumFinalPrice'],
                 'regularPrice' => $row['maximumRegularPrice']
             ]
         ];
