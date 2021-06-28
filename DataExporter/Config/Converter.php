@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Config;
 
+use DOMDocument;
 use Magento\Framework\Config\ConverterInterface;
 
 /**
@@ -17,50 +18,29 @@ use Magento\Framework\Config\ConverterInterface;
 class Converter implements ConverterInterface
 {
     /**
-     * Converts XML node into corresponding array.
-     *
-     * @param \DOMNode $source
-     * @return array|string
+     * @var ConverterInterface
      */
-    private function convertNode(\DOMNode $source)
+    private $baseConverter;
+
+    /**
+     * @param ConverterInterface $converter
+     */
+    public function __construct(ConverterInterface $converter)
     {
-        $result = [];
-        if ($source->hasAttributes()) {
-            $attrs = $source->attributes;
-            foreach ($attrs as $attr) {
-                $result[$attr->name] = $attr->value;
-            }
-        }
-        if ($source->hasChildNodes()) {
-            $children = $source->childNodes;
-            if ($children->length == 1) {
-                $child = $children->item(0);
-                if ($child->nodeType == XML_TEXT_NODE) {
-                    $result['_value'] = $child->nodeValue;
-                    return count($result) == 1 ? $result['_value'] : $result;
-                }
-            }
-            foreach ($children as $child) {
-                if ($child instanceof \DOMCharacterData) {
-                    continue;
-                }
-                $result[$child->nodeName][] = $this->convertNode($child);
-            }
-        }
-        return $result;
+        $this->baseConverter = $converter;
     }
 
     /**
      * Converts XML document into corresponding array.
      *
-     * @param \DOMDocument $source
+     * @param DOMDocument $source
      * @return array
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function convert($source)
     {
-        $configData = $this->convertNode($source);
+        $configData = $this->baseConverter->convert($source);
         if (!isset($configData['config'][0]['record'])) {
             return [];
         }
