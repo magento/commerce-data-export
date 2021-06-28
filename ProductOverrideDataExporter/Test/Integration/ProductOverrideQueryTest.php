@@ -51,8 +51,13 @@ class ProductOverrideQueryTest extends \PHPUnit\Framework\TestCase
      */
     public function testProductOverrideQueries($queryName, $expectedSql)
     {
-        $sql = $this->queryFactory->create($queryName)->getSelect()->assemble();
-        $actualSql = trim(str_replace(PHP_EOL, "", preg_replace("!\s+!", " ", $sql)));
-        self::assertEquals($expectedSql, $actualSql);
+        /** @var \Magento\Framework\App\ResourceConnection $resource */
+        $resource = Bootstrap::getObjectManager()->create(\Magento\Framework\App\ResourceConnection::class);
+        $connection = $resource->getConnection();
+        if ($connection->isTableExists('staging_update')) {
+            $sql = $this->queryFactory->create($queryName)->getSelect()->assemble();
+            $actualSql = trim(str_replace(PHP_EOL, "", preg_replace("!\s+!", " ", $sql)));
+            self::assertEquals($expectedSql, $actualSql);
+        }
     }
 }
