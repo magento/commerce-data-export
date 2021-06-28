@@ -18,6 +18,7 @@
             <table name="catalog_product_entity_datetime" entity_column="entity_id" />
             <table name="catalog_product_entity_decimal" entity_column="entity_id" />
             <table name="catalog_product_entity_tier_price" entity_column="entity_id" />
+            <table name="catalogrule_product_price" entity_column="product_id" />
         </subscriptions>
     </view>
     <view id="catalog_data_exporter_product_attributes" class="Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndex" group="indexer">
