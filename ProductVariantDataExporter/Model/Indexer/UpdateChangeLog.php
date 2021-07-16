@@ -49,7 +49,7 @@ class UpdateChangeLog
         $connection->beginTransaction();
         try {
             foreach ($ids as $id) {
-                $connection->insert($viewId . '_cl', ['entity_id' => $id]);
+                $connection->insert($this->resourceConnection->getTableName($viewId) . '_cl', ['entity_id' => $id]);
             }
             $connection->commit();
         } catch (\Exception $e) {

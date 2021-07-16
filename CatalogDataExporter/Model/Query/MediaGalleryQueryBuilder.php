@@ -8,8 +8,11 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Query;
 
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
+use Magento\Framework\EntityManager\MetadataPool;
+use Magento\Store\Model\Store;
 
 /**
  * Product media gallery query for catalog data exporter
@@ -27,28 +30,36 @@ class MediaGalleryQueryBuilder
     private $mediaGalleryAttributeId;
 
     /**
+     * @var MetadataPool
+     */
+    private $metadataPool;
+
+    /**
      * @param ResourceConnection $resourceConnection
+     * @param MetadataPool $metadataPool
      */
     public function __construct(
-        ResourceConnection $resourceConnection
+        ResourceConnection $resourceConnection,
+        MetadataPool $metadataPool
     ) {
         $this->resourceConnection = $resourceConnection;
+        $this->metadataPool = $metadataPool;
     }
 
     /**
      * Get query for provider
-     *
      * @param int[] $productIds
      * @param string $storeViewCode
      * @param string|null $mediaType
-     *
      * @return Select
+     * @throws \Exception
      */
     public function getQuery(array $productIds, string $storeViewCode, ?string $mediaType = null) : Select
     {
         $connection = $this->resourceConnection->getConnection();
         $catalogProductTable = $this->resourceConnection->getTableName('catalog_product_entity');
         $productEntityJoinField = $connection->getAutoIncrementField($catalogProductTable);
+        $linkField = $this->metadataPool->getMetadata(ProductInterface::class)->getLinkField();
 
         $select = $connection->select()->from(
             [
@@ -74,7 +85,14 @@ class MediaGalleryQueryBuilder
                     'catalog_product_entity_media_gallery_value'
                 ),
             ],
-            'main.value_id = value.value_id AND value.store_id = s.store_id',
+            implode(
+                ' AND ',
+                [
+                    'main.value_id = value.value_id',
+                    'value.store_id = s.store_id',
+                    'value.' . $linkField . ' = entity.' . $linkField
+                ]
+            ),
             []
         )->joinLeft(
             [
@@ -82,7 +100,14 @@ class MediaGalleryQueryBuilder
                     'catalog_product_entity_media_gallery_value'
                 ),
             ],
-            'main.value_id = default_value.value_id AND default_value.store_id = 0',
+            implode(
+                ' AND ',
+                [
+                    'main.value_id = default_value.value_id',
+                    'default_value.store_id = ' . Store::DEFAULT_STORE_ID,
+                    'default_value.' . $linkField . ' = entity.' . $linkField
+                ]
+            ),
             []
         )->joinInner(
             [

@@ -126,9 +126,12 @@ class ConditionResolver
         string $tableName
     ) {
         $queryConfig = $selectBuilder->getQueryConfig();
+        $tableName = isset($queryConfig['map'][$tableName])
+            ? $this->resourceConnection->getTableName($queryConfig['map'][$tableName])
+            : $tableName;
 
         return ($identifier != 'Primary Key') ? $identifier : $this->getConnection()->getAutoIncrementField(
-            $queryConfig['map'][$tableName]
+            $tableName
         );
     }
 
