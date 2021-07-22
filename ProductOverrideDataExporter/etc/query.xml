@@ -69,4 +69,88 @@
             </link-source>
         </source>
     </query>
+    <query name="productCategoryPermissionsCanBrowse">
+        <source name="catalog_category_product">
+            <attribute name="product_id" alias="productId" sort="asc"/>
+            <filter glue="and">
+                <condition attribute="entity_id" operator="in" type="placeholder">entityIds</condition>
+            </filter>
+            <link-source name="catalog_category_entity" link-type="inner">
+                <attribute name="path" alias="category" sort="asc"/>
+                <using glue="and">
+                    <condition attribute="entity_id" operator="eq" type="identifier">category_id</condition>
+                </using>
+            </link-source>
+            <link-source name="magento_catalogpermissions_index" link-type="inner">
+                <attribute name="customer_group_id" sort="asc"/>
+                <attribute name="customer_group_id" alias="customerGroupCode" function="sha1"/>
+                <using glue="and">
+                    <condition attribute="category_id" operator="eq" type="identifier">category_id</condition>
+                    <condition attribute="grant_catalog_category_view" operator="eq" type="value">-1</condition>
+                </using>
+            </link-source>
+            <link-source name="store_website" link-type="inner">
+                <attribute name="code" alias="websiteCode"/>
+                <using glue="and">
+                    <condition attribute="website_id" operator="eq" type="identifier">magento_catalogpermissions_index.website_id</condition>
+                </using>
+            </link-source>
+        </source>
+    </query>
+    <query name="productCategoryPermissionsCanDisplayPrice">
+        <source name="catalog_category_product">
+            <attribute name="product_id" alias="productId" sort="asc"/>
+            <filter glue="and">
+                <condition attribute="entity_id" operator="in" type="placeholder">entityIds</condition>
+            </filter>
+            <link-source name="catalog_category_entity" link-type="inner">
+                <attribute name="path" alias="category" sort="asc"/>
+                <using glue="and">
+                    <condition attribute="entity_id" operator="eq" type="identifier">category_id</condition>
+                </using>
+            </link-source>
+            <link-source name="magento_catalogpermissions_index" link-type="inner">
+                <attribute name="customer_group_id" sort="asc"/>
+                <attribute name="customer_group_id" alias="customerGroupCode" function="sha1"/>
+                <using glue="and">
+                    <condition attribute="category_id" operator="eq" type="identifier">category_id</condition>
+                    <condition attribute="grant_catalog_product_price" operator="eq" type="value">-1</condition>
+                </using>
+            </link-source>
+            <link-source name="store_website" link-type="inner">
+                <attribute name="code" alias="websiteCode"/>
+                <using glue="and">
+                    <condition attribute="website_id" operator="eq" type="identifier">magento_catalogpermissions_index.website_id</condition>
+                </using>
+            </link-source>
+        </source>
+    </query>
+    <query name="productCategoryPermissionsCanAddToCart">
+        <source name="catalog_category_product">
+            <attribute name="product_id" alias="productId" sort="asc"/>
+            <filter glue="and">
+                <condition attribute="entity_id" operator="in" type="placeholder">entityIds</condition>
+            </filter>
+            <link-source name="catalog_category_entity" link-type="inner">
+                <attribute name="path" alias="category" sort="asc"/>
+                <using glue="and">
+                    <condition attribute="entity_id" operator="eq" type="identifier">category_id</condition>
+                </using>
+            </link-source>
+            <link-source name="magento_catalogpermissions_index" link-type="inner">
+                <attribute name="customer_group_id" sort="asc"/>
+                <attribute name="customer_group_id" alias="customerGroupCode" function="sha1"/>
+                <using glue="and">
+                    <condition attribute="category_id" operator="eq" type="identifier">category_id</condition>
+                    <condition attribute="grant_checkout_items" operator="eq" type="value">-1</condition>
+                </using>
+            </link-source>
+            <link-source name="store_website" link-type="inner">
+                <attribute name="code" alias="websiteCode"/>
+                <using glue="and">
+                    <condition attribute="website_id" operator="eq" type="identifier">magento_catalogpermissions_index.website_id</condition>
+                </using>
+            </link-source>
+        </source>
+    </query>
 </config>

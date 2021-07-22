@@ -9,7 +9,7 @@
     <record name="Export">
         <field name="productOverrides" type="ProductOverride" repeated="true"
                provider="Magento\ProductOverrideDataExporter\Model\Provider\ProductOverrides">
-            <using field="product_id" />
+            <using field="product_id"/>
         </field>
     </record>
     <record name="ProductOverride">
@@ -18,5 +18,11 @@
         <field name="productId" type="Int"/>
         <field name="sku" type="String"/>
         <field name="prices" type="PriceRange"/>
+        <field name="categoryPermissions" type="CategoryPermissions"/>
+    </record>
+    <record name="CategoryPermissions">
+        <field name="canBrowse" type="String" repeated="true"/>
+        <field name="canDisplayPrice" type="String" repeated="true"/>
+        <field name="canAddToCart" type="String" repeated="true"/>
     </record>
 </config>
