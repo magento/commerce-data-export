@@ -18,11 +18,8 @@
         <field name="productId" type="Int"/>
         <field name="sku" type="String"/>
         <field name="prices" type="PriceRange"/>
-        <field name="categoryPermissions" type="CategoryPermissions"/>
-    </record>
-    <record name="CategoryPermissions">
-        <field name="canBrowse" type="String" repeated="true"/>
-        <field name="canDisplayPrice" type="String" repeated="true"/>
-        <field name="canAddToCart" type="String" repeated="true"/>
+        <field name="displayable" type="Boolean"/>
+        <field name="buyable" type="Boolean"/>
+        <field name="canDisplayPrice" type="Boolean"/>
     </record>
 </config>

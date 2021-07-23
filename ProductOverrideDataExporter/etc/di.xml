@@ -53,9 +53,7 @@
         <arguments>
             <argument name="overrideProviders" xsi:type="array">
                 <item name="productPriceOverrides" xsi:type="string">Magento\ProductOverrideDataExporter\Model\Provider\Override\PriceOverrides</item>
-                <item name="productCategoryPermissionsCanBrowse" xsi:type="string">Magento\ProductOverrideDataExporter\Model\Provider\Override\CategoryPermissions\CanBrowse</item>
-                <item name="productCategoryPermissionsCanDisplayPrice" xsi:type="string">Magento\ProductOverrideDataExporter\Model\Provider\Override\CategoryPermissions\CanDisplayPrice</item>
-                <item name="productCategoryPermissionsCanAddToCart" xsi:type="string">Magento\ProductOverrideDataExporter\Model\Provider\Override\CategoryPermissions\CanAddToCart</item>
+                <item name="productCategoryPermissions" xsi:type="string">Magento\ProductOverrideDataExporter\Model\Provider\Override\CategoryPermissions</item>
             </argument>
         </arguments>
     </type>

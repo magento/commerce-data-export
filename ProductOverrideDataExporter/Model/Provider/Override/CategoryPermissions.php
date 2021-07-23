@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Magento\ProductOverrideDataExporter\Model\Provider\Override\CategoryPermissions;
+namespace Magento\ProductOverrideDataExporter\Model\Provider\Override;
 
 use Magento\QueryXml\Model\QueryProcessor;
 
-class CanAddToCart
+class CategoryPermissions
 {
     /**
      * @var QueryProcessor
@@ -39,13 +39,15 @@ class CanAddToCart
             $queryArguments['entityIds'][] = $value['productId'];
         }
         $output = [];
-        $cursor = $this->queryProcessor->execute('productCategoryPermissionsCanAddToCart', $queryArguments);
+        $cursor = $this->queryProcessor->execute('productCategoryPermissions', $queryArguments);
         while ($row = $cursor->fetch()) {
             $key = $row['productId'] . $row['websiteCode'] . $row['customerGroupCode'];
             $output[$key]['productId'] = $row['productId'];
             $output[$key]['websiteCode'] = $row['websiteCode'];
             $output[$key]['customerGroupCode'] = $row['customerGroupCode'];
-            $output[$key]['categoryPermissions']['canAddToCart'][] = $row['category'];
+            $output[$key]['displayable'] = isset($row['displayable']) && $row['displayable'] == -1;
+            $output[$key]['buyable'] = isset($row['buyable']) && $row['buyable'] == -1;
+            $output[$key]['canDisplayPrice'] = isset($row['canDisplayPrice']) && $row['canDisplayPrice'] == -1;
         }
         return $output;
     }
