@@ -19,7 +19,7 @@
         <field name="sku" type="String"/>
         <field name="prices" type="PriceRange"/>
         <field name="displayable" type="Boolean"/>
+        <field name="priceDisplayable" type="Boolean"/>
         <field name="buyable" type="Boolean"/>
-        <field name="canDisplayPrice" type="Boolean"/>
     </record>
 </config>

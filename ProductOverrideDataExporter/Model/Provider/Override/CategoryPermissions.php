@@ -46,8 +46,8 @@ class CategoryPermissions
             $output[$key]['websiteCode'] = $row['websiteCode'];
             $output[$key]['customerGroupCode'] = $row['customerGroupCode'];
             $output[$key]['displayable'] = isset($row['displayable']) && $row['displayable'] == -1;
+            $output[$key]['priceDisplayable'] = isset($row['priceDisplayable']) && $row['priceDisplayable'] == -1;
             $output[$key]['buyable'] = isset($row['buyable']) && $row['buyable'] == -1;
-            $output[$key]['canDisplayPrice'] = isset($row['canDisplayPrice']) && $row['canDisplayPrice'] == -1;
         }
         return $output;
     }

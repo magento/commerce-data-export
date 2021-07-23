@@ -79,8 +79,8 @@
                 <attribute name="customer_group_id" sort="asc"/>
                 <attribute name="customer_group_id" alias="customerGroupCode" function="sha1"/>
                 <attribute name="grant_catalog_category_view" alias="displayable"/>
+                <attribute name="grant_catalog_product_price" alias="priceDisplayable"/>
                 <attribute name="grant_checkout_items" alias="buyable"/>
-                <attribute name="grant_catalog_product_price" alias="canDisplayPrice"/>
                 <using glue="and">
                     <condition attribute="product_id" operator="eq" type="identifier">product_id</condition>
                 </using>
