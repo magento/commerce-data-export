@@ -73,7 +73,7 @@
         <source name="catalog_category_product">
             <attribute name="product_id" alias="productId" sort="asc"/>
             <filter glue="and">
-                <condition attribute="entity_id" operator="in" type="placeholder">entityIds</condition>
+                <condition attribute="product_id" operator="in" type="placeholder">entityIds</condition>
             </filter>
             <link-source name="magento_catalogpermissions_index_product" link-type="inner">
                 <attribute name="customer_group_id" sort="asc"/>
