@@ -69,4 +69,33 @@
             </link-source>
         </source>
     </query>
+    <query name="productCategoryPermissions">
+        <source name="catalog_category_product">
+            <attribute name="product_id" alias="productId" sort="asc"/>
+            <filter glue="and">
+                <condition attribute="product_id" operator="in" type="placeholder">entityIds</condition>
+            </filter>
+            <link-source name="magento_catalogpermissions_index_product" link-type="inner">
+                <attribute name="customer_group_id" sort="asc"/>
+                <attribute name="customer_group_id" alias="customerGroupCode" function="sha1"/>
+                <attribute name="grant_catalog_category_view" alias="displayable"/>
+                <attribute name="grant_catalog_product_price" alias="priceDisplayable"/>
+                <attribute name="grant_checkout_items" alias="buyable"/>
+                <using glue="and">
+                    <condition attribute="product_id" operator="eq" type="identifier">product_id</condition>
+                </using>
+            </link-source>
+            <link-source name="store" link-type="inner">
+                <using glue="and">
+                    <condition attribute="store_id" operator="eq" type="identifier">magento_catalogpermissions_index_product.store_id</condition>
+                </using>
+            </link-source>
+            <link-source name="store_website" link-type="inner">
+                <attribute name="code" alias="websiteCode"/>
+                <using glue="and">
+                    <condition attribute="website_id" operator="eq" type="identifier">store.website_id</condition>
+                </using>
+            </link-source>
+        </source>
+    </query>
 </config>

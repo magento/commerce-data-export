@@ -20,6 +20,9 @@ class PriceOverrides
      */
     private $queryProcessor;
 
+    /**
+     * @param QueryProcessor $queryProcessor
+     */
     public function __construct(
         QueryProcessor $queryProcessor
     )
