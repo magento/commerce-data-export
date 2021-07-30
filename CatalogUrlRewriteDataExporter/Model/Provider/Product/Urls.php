@@ -72,6 +72,10 @@ class Urls
         try {
             $output = [];
             foreach ($values as $value) {
+                $output[$value['productId']]['productId'] = $value['productId'];
+                $output[$value['productId']]['url'] = 'catalog/product/view/id/' . $value['productId'];
+                $output[$value['productId']]['storeViewCode'] = $value['storeViewCode'];
+
                 $queryArguments['productId'][$value['productId']] = $value['productId'];
                 $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
             }
@@ -83,8 +87,11 @@ class Urls
             }
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {
-                $row['url'] = $baseUrls[$row['storeViewCode']] . $row['url'];
-                $output[] = $row;
+                $output[$row['productId']]['url'] = $row['url'];
+                $output[$row['productId']]['storeViewCode'] = $row['storeViewCode'];
+            }
+            foreach ($output as &$product) {
+                $product['url'] = $baseUrls[$product['storeViewCode']] . $product['url'];
             }
         } catch (\Exception $exception) {
             $this->logger->error($exception->getMessage());
