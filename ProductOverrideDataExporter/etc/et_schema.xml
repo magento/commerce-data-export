@@ -9,7 +9,7 @@
     <record name="Export">
         <field name="productOverrides" type="ProductOverride" repeated="true"
                provider="Magento\ProductOverrideDataExporter\Model\Provider\ProductOverrides">
-            <using field="product_id"/>
+            <using field="product_id" />
         </field>
     </record>
     <record name="ProductOverride">
@@ -18,8 +18,5 @@
         <field name="productId" type="Int"/>
         <field name="sku" type="String"/>
         <field name="prices" type="PriceRange"/>
-        <field name="displayable" type="Boolean"/>
-        <field name="priceDisplayable" type="Boolean"/>
-        <field name="buyable" type="Boolean"/>
     </record>
 </config>

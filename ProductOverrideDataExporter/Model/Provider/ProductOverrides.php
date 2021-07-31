@@ -64,8 +64,9 @@ class ProductOverrides
             }
         } catch (\Exception $exception) {
             $this->logger->critical($exception);
-            throw new UnableRetrieveData('Unable to retrieve product override data');
+            throw $exception;
+            throw new UnableRetrieveData('Unable retrieve product data');
         }
-        return !empty($output) ? \array_replace_recursive(...$output) : [];
+        return !empty($output) ? \array_merge(...$output) : [];
     }
 }

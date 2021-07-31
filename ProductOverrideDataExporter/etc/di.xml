@@ -53,7 +53,6 @@
         <arguments>
             <argument name="overrideProviders" xsi:type="array">
                 <item name="productPriceOverrides" xsi:type="string">Magento\ProductOverrideDataExporter\Model\Provider\Override\PriceOverrides</item>
-                <item name="productCategoryPermissions" xsi:type="string">Magento\ProductOverrideDataExporter\Model\Provider\Override\CategoryPermissions</item>
             </argument>
         </arguments>
     </type>
