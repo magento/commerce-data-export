@@ -96,10 +96,10 @@ class ProductUrlsTest extends AbstractProductTestHelper
     {
         $sku = 'simple1';
         $storeViewCodes = ['fixture_second_store'];
+        $product = $this->productRepository->get($sku);
+        $UrlRewrite = Bootstrap::getObjectManager()->get(\Magento\UrlRewrite\Model\Storage\DbStorage::class);
+        $UrlRewrite->deleteByData(['entity_id'=>10]);
 
-        $product = $this->productRepository->get($sku, true, 1);
-        $this->productRepository->delete($product);
-        $product = $this->productRepository->get($sku, false, 2);
         $product->setTypeInstance(Bootstrap::getObjectManager()->create(Simple::class));
 
         foreach ($storeViewCodes as $storeViewCode) {
@@ -117,9 +117,9 @@ class ProductUrlsTest extends AbstractProductTestHelper
      */
     private function validateUrlData(ProductInterface $product, array $extractedProduct) : void
     {
-        $canonicalUrl = strtok($product->getUrlInStore(), '?');
+        $canonicalUrl = $product->getUrlInStore();
         if ($product->getVisibility() > 1) {
-            $this->assertEquals($canonicalUrl, $extractedProduct['feedData']['url']);
+            $this->assertStringContainsString($extractedProduct['feedData']['url'], $canonicalUrl);
         }
     }
 }
