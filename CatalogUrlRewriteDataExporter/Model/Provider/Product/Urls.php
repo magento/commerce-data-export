@@ -72,9 +72,10 @@ class Urls
         try {
             $output = [];
             foreach ($values as $value) {
-                $output[$value['productId']]['productId'] = $value['productId'];
-                $output[$value['productId']]['url'] = 'catalog/product/view/id/' . $value['productId'];
-                $output[$value['productId']]['storeViewCode'] = $value['storeViewCode'];
+                $tempKey = $value['storeViewCode'] . '#' . $value['productId'];
+                $output[$tempKey]['productId'] = $value['productId'];
+                $output[$tempKey]['url'] = 'catalog/product/view/id/' . $value['productId'];
+                $output[$tempKey]['storeViewCode'] = $value['storeViewCode'];
 
                 $queryArguments['productId'][$value['productId']] = $value['productId'];
                 $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
@@ -87,8 +88,9 @@ class Urls
             }
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {
-                $output[$row['productId']]['url'] = $row['url'];
-                $output[$row['productId']]['storeViewCode'] = $row['storeViewCode'];
+                $tempKey = $row['storeViewCode'] . '#' . $row['productId'];
+                $output[$tempKey]['url'] = $row['url'];
+                $output[$tempKey]['storeViewCode'] = $row['storeViewCode'];
             }
             foreach ($output as &$product) {
                 $product['url'] = $baseUrls[$product['storeViewCode']] . $product['url'];
