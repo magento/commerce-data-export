@@ -17,7 +17,6 @@
         "magento/module-data-exporter": "self.version",
         "magento/module-parent-product-data-exporter": "self.version",
         "magento/module-product-review-data-exporter": "self.version",
-        "magento/module-product-override-data-exporter": "self.version",
         "magento/module-product-variant-data-exporter": "self.version",
         "magento/module-query-xml": "self.version"
     }
