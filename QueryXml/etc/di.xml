@@ -76,4 +76,12 @@
             </argument>
         </arguments>
     </type>
+    <preference for="Magento\QueryXml\Model\DB\Assembler\FunctionRenderer\FunctionRendererInterface" type="Magento\QueryXml\Model\DB\Assembler\FunctionRenderer\FunctionRenderer" />
+    <type name="Magento\QueryXml\Model\DB\Assembler\FunctionRenderer\FunctionRenderer">
+        <arguments>
+            <argument name="renderers" xsi:type="array">
+                <item xsi:type="string" name="replace_slash_with_comma">Magento\QueryXml\Model\DB\Assembler\FunctionRenderer\ReplaceSlashWithCommaRenderer</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

@@ -79,6 +79,7 @@
             <xs:enumeration value="avg" />
             <xs:enumeration value="min" />
             <xs:enumeration value="sha1" />
+            <xs:enumeration value="replace_slash_with_comma" />
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="sortDeclaration">

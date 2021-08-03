@@ -6,8 +6,7 @@
 
 namespace Magento\QueryXml\Model\DB;
 
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Sql\ColumnValueExpression;
+use Magento\QueryXml\Model\DB\Assembler\FunctionRenderer\FunctionRendererInterface;
 
 /**
  * Resolves columns names
@@ -20,40 +19,20 @@ class ColumnsResolver
     private $nameResolver;
 
     /**
-     * @var ResourceConnection
+     * @var FunctionRendererInterface
      */
-    private $resourceConnection;
+    private $functionRenderer;
 
     /**
-     * @var \Magento\Framework\DB\Adapter\AdapterInterface
-     */
-    private $connection;
-
-    /**
-     * ColumnsResolver constructor.
-     *
      * @param NameResolver $nameResolver
-     * @param ResourceConnection $resourceConnection
+     * @param FunctionRendererInterface $functionRenderer
      */
     public function __construct(
         NameResolver $nameResolver,
-        ResourceConnection $resourceConnection
+        FunctionRendererInterface $functionRenderer
     ) {
         $this->nameResolver = $nameResolver;
-        $this->resourceConnection = $resourceConnection;
-    }
-
-    /**
-     * Returns connection
-     *
-     * @return \Magento\Framework\DB\Adapter\AdapterInterface
-     */
-    private function getConnection()
-    {
-        if (!$this->connection) {
-            $this->connection = $this->resourceConnection->getConnection();
-        }
-        return $this->connection;
+        $this->functionRenderer = $functionRenderer;
     }
 
     /**
@@ -76,15 +55,7 @@ class ColumnsResolver
             $tableAlias = $this->nameResolver->getAlias($entityConfig);
             $columnName = $this->nameResolver->getName($attributeData);
             if (isset($attributeData['function'])) {
-                $prefix = '';
-                if (!empty($attributeData['distinct'])) {
-                    $prefix = ' DISTINCT ';
-                }
-                $expression = new ColumnValueExpression(
-                    strtoupper($attributeData['function']) . '(' . $prefix
-                    . $this->getConnection()->quoteIdentifier($tableAlias . '.' . $columnName)
-                    . ')'
-                );
+                $expression = $this->functionRenderer->renderFunction($attributeData, $entityConfig, $selectBuilder);
             } else {
                 $expression = $tableAlias . '.' . $columnName;
             }
