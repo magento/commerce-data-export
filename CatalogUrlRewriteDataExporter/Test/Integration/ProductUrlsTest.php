@@ -13,6 +13,7 @@ use Magento\CatalogDataExporter\Test\Integration\AbstractProductTestHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\TestFramework\Helper\Bootstrap;
+use Magento\UrlRewrite\Model\Storage\DbStorage;
 
 /**
  * Test for product urls export
@@ -45,7 +46,7 @@ class ProductUrlsTest extends AbstractProductTestHelper
 
             foreach ($storeViewCodes as $storeViewCode) {
                 $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
-                $this->validateUrlData($product, $extractedProduct);
+                $this->assertEquals(strtok($product->getUrlInStore(), '?'), $extractedProduct['feedData']['url']);
             }
         }
     }
@@ -70,11 +71,9 @@ class ProductUrlsTest extends AbstractProductTestHelper
 
         foreach ($skus as $sku) {
             $product = $this->productRepository->get($sku);
-            $product->setTypeInstance(Bootstrap::getObjectManager()->create(Simple::class));
-
             foreach ($storeViewCodes as $storeViewCode) {
                 $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
-                $this->validateUrlData($product, $extractedProduct);
+                $this->assertEquals(strtok($product->getUrlInStore(), '?'), $extractedProduct['feedData']['url']);
             }
         }
     }
@@ -95,31 +94,12 @@ class ProductUrlsTest extends AbstractProductTestHelper
     public function testGetTechUrlIfUrlRewriteEmpty() : void
     {
         $sku = 'simple1';
-        $storeViewCodes = ['fixture_second_store'];
-        $product = $this->productRepository->get($sku);
-        $UrlRewrite = Bootstrap::getObjectManager()->get(\Magento\UrlRewrite\Model\Storage\DbStorage::class);
+        $storeViewCode = 'default';
+        $UrlRewrite = Bootstrap::getObjectManager()->get(DbStorage::class);
         $UrlRewrite->deleteByData(['entity_id'=>10]);
-
-        $product->setTypeInstance(Bootstrap::getObjectManager()->create(Simple::class));
-
-        foreach ($storeViewCodes as $storeViewCode) {
-            $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
-            $this->validateUrlData($product, $extractedProduct);
-        }
-    }
-
-    /**
-     * Validate URL data in extracted product product data
-     *
-     * @param ProductInterface $product
-     * @param array $extractedProduct
-     * @return void
-     */
-    private function validateUrlData(ProductInterface $product, array $extractedProduct) : void
-    {
-        $canonicalUrl = $product->getUrlInStore();
-        if ($product->getVisibility() > 1) {
-            $this->assertStringContainsString($extractedProduct['feedData']['url'], $canonicalUrl);
-        }
+        $this->runIndexer([10]);
+        $product = $this->productRepository->get($sku);
+        $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
+        $this->assertEquals(strtok($product->getUrlInStore(), '?'), $extractedProduct['feedData']['url']);
     }
 }

@@ -74,7 +74,11 @@ class Urls
             foreach ($values as $value) {
                 $tempKey = $value['storeViewCode'] . '#' . $value['productId'];
                 $output[$tempKey]['productId'] = $value['productId'];
-                $output[$tempKey]['url'] = 'catalog/product/view/id/' . $value['productId'];
+                $output[$tempKey]['url'] = sprintf(
+                    'catalog/product/view/id/%s/s/%s/',
+                    $value['productId'],
+                    $value['urlKey']
+                );
                 $output[$tempKey]['storeViewCode'] = $value['storeViewCode'];
 
                 $queryArguments['productId'][$value['productId']] = $value['productId'];
