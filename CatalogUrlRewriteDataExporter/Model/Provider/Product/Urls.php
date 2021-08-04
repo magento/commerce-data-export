@@ -93,8 +93,10 @@ class Urls
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {
                 $tempKey = $row['storeViewCode'] . '#' . $row['productId'];
-                $output[$tempKey]['url'] = $row['url'];
-                $output[$tempKey]['storeViewCode'] = $row['storeViewCode'];
+                if (isset($output[$tempKey])) {
+                    $output[$tempKey]['url'] = $row['url'];
+                    $output[$tempKey]['storeViewCode'] = $row['storeViewCode'];
+                }
             }
             foreach ($output as &$product) {
                 $product['url'] = $baseUrls[$product['storeViewCode']] . $product['url'];
