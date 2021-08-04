@@ -13,12 +13,44 @@ use Magento\CatalogDataExporter\Test\Integration\AbstractProductTestHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\TestFramework\Helper\Bootstrap;
+use Magento\UrlRewrite\Model\Storage\DbStorage;
 
 /**
  * Test for product urls export
  */
 class ProductUrlsTest extends AbstractProductTestHelper
 {
+    /**
+     * A case where we have 2 store views but only one url rewrite in the default store view.
+     * If there is no url in the current store view, then it should return the url from the default store view.
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture Magento/CatalogUrlRewriteDataExporter/_files/setup_rewrites.php
+     *
+     * @return void
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
+     * @throws \Zend_Db_Statement_Exception
+     * @throws \Throwable
+     */
+    public function testGetProductUrlsFromDefaultStoreIfCurrentEmpty() : void
+    {
+        $this->markTestSkipped('DATA-2807: Magento\CatalogUrlRewriteDataExporter\Test\Integration\ProductUrlsTest');
+        $skus = ['simple1', 'simple2', 'simple3'];
+        $storeViewCodes = ['fixture_second_store'];
+
+        foreach ($skus as $sku) {
+            $product = $this->productRepository->get($sku);
+            $product->setTypeInstance(Bootstrap::getObjectManager()->create(Simple::class));
+
+            foreach ($storeViewCodes as $storeViewCode) {
+                $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
+                $this->assertEquals(strtok($product->getUrlInStore(), '?'), $extractedProduct['feedData']['url']);
+            }
+        }
+    }
+
     /**
      * Validate product URL data
      *
@@ -34,34 +66,40 @@ class ProductUrlsTest extends AbstractProductTestHelper
      */
     public function testProductUrls() : void
     {
-        $this->markTestSkipped('DATA-2807: Magento\CatalogUrlRewriteDataExporter\Test\Integration\ProductUrlsTest');
         $skus = ['simple1', 'simple2', 'simple3'];
-        $storeViewCodes = ['fixture_second_store'];
+        $storeViewCodes = ['default'];
 
         foreach ($skus as $sku) {
             $product = $this->productRepository->get($sku);
-            $product->setTypeInstance(Bootstrap::getObjectManager()->create(Simple::class));
-
             foreach ($storeViewCodes as $storeViewCode) {
                 $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
-                $this->validateUrlData($product, $extractedProduct);
+                $this->assertEquals(strtok($product->getUrlInStore(), '?'), $extractedProduct['feedData']['url']);
             }
         }
     }
 
     /**
-     * Validate URL data in extracted product product data
+     * Return tech url if url rewrite empty
      *
-     * @param ProductInterface $product
-     * @param array $extractedProduct
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture Magento/CatalogUrlRewriteDataExporter/_files/setup_rewrites.php
+     *
      * @return void
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
+     * @throws \Zend_Db_Statement_Exception
+     * @throws \Throwable
      */
-    private function validateUrlData(ProductInterface $product, array $extractedProduct) : void
+    public function testGetTechUrlIfUrlRewriteEmpty() : void
     {
-        $canonicalUrl = str_replace('index.php/', '', $product->getUrlInStore());
-        $canonicalUrl = strtok($canonicalUrl, '?');
-        if ($product->getVisibility() > 1) {
-            $this->assertEquals($canonicalUrl, $extractedProduct['feedData']['url']);
-        }
+        $sku = 'simple1';
+        $storeViewCode = 'default';
+        $UrlRewrite = Bootstrap::getObjectManager()->get(DbStorage::class);
+        $UrlRewrite->deleteByData(['entity_id'=>10]);
+        $this->runIndexer([10]);
+        $product = $this->productRepository->get($sku);
+        $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
+        $this->assertEquals(strtok($product->getUrlInStore(), '?'), $extractedProduct['feedData']['url']);
     }
 }

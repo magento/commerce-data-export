@@ -72,6 +72,15 @@ class Urls
         try {
             $output = [];
             foreach ($values as $value) {
+                $tempKey = $value['storeViewCode'] . '#' . $value['productId'];
+                $output[$tempKey]['productId'] = $value['productId'];
+                $output[$tempKey]['url'] = sprintf(
+                    'catalog/product/view/id/%s/s/%s/',
+                    $value['productId'],
+                    $value['urlKey']
+                );
+                $output[$tempKey]['storeViewCode'] = $value['storeViewCode'];
+
                 $queryArguments['productId'][$value['productId']] = $value['productId'];
                 $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
             }
@@ -83,8 +92,14 @@ class Urls
             }
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {
-                $row['url'] = $baseUrls[$row['storeViewCode']] . $row['url'];
-                $output[] = $row;
+                $tempKey = $row['storeViewCode'] . '#' . $row['productId'];
+                if (isset($output[$tempKey])) {
+                    $output[$tempKey]['url'] = $row['url'];
+                    $output[$tempKey]['storeViewCode'] = $row['storeViewCode'];
+                }
+            }
+            foreach ($output as &$product) {
+                $product['url'] = $baseUrls[$product['storeViewCode']] . $product['url'];
             }
         } catch (\Exception $exception) {
             $this->logger->error($exception->getMessage());
