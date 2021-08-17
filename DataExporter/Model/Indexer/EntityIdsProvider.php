@@ -7,68 +7,57 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Select;
-
 /**
- * Provide entity to index
+ * Returns IDs needed by indexer for a given feed.
  */
 class EntityIdsProvider implements EntityIdsProviderInterface
 {
     /**
-     * @var ResourceConnection
+     * @var AllIdsResolver
      */
-    private $resourceConnection;
+    private $allIdsResolver;
 
     /**
-     * @param FeedIndexMetadata $feedIndexMetadata
+     * @var AffectedIdsResolverPool
+     */
+    private $affectedIdsResolverPool;
+
+    /**
+     * @param AllIdsResolver $allIdsResolver
+     * @param AffectedIdsResolverPool $affectedIdsResolverPool
      */
     public function __construct(
-        ResourceConnection $resourceConnection
+        AllIdsResolver $allIdsResolver,
+        AffectedIdsResolverPool $affectedIdsResolverPool
     ) {
-        $this->resourceConnection = $resourceConnection;
+        $this->allIdsResolver = $allIdsResolver;
+        $this->affectedIdsResolverPool = $affectedIdsResolverPool;
     }
 
     /**
-     * @inheritdoc 
-     */
-    public function getAllIds(FeedIndexMetadata $metadata) : ?\Generator
-    {
-        $connection = $this->resourceConnection->getConnection();
-        $lastKnownId = 0;
-        $continueReindex = true;
-        while ($continueReindex) {
-            $ids = $connection->fetchAll($this->getIdsSelect((int)$lastKnownId, $metadata));
-            if (empty($ids)) {
-                $continueReindex = false;
-            } else {
-                yield $ids;
-                $lastKnownId = end($ids)[$metadata->getFeedIdentity()];
-            }
-        }
-    }
-
-    /**
-     * Get Ids select
+     * @inheritdoc
      *
-     * @param int $lastKnownId
-     * @return Select
+     * @param FeedIndexMetadata $metadata
+     * @return \Generator|null
      */
-    private function getIdsSelect(int $lastKnownId, FeedIndexMetadata $metadata) : Select
+    public function getAllIds(FeedIndexMetadata $metadata): ?\Generator
     {
-        $columnExpression = sprintf('s.%s', $metadata->getSourceTableField());
-        $whereClause = sprintf('s.%s > ?', $metadata->getSourceTableField());
-        $connection = $this->resourceConnection->getConnection();
-        return $connection->select()
-            ->from(
-                ['s' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
-                [
-                    $metadata->getFeedIdentity() =>
-                        's.' . $metadata->getSourceTableField()
-                ]
-            )
-            ->where($whereClause, $lastKnownId)
-            ->order($columnExpression)
-            ->limit($metadata->getBatchSize());
+        return $this->allIdsResolver->getAllIds($metadata);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @param FeedIndexMetadata $metadata
+     * @param array $ids
+     * @return array
+     */
+    public function getAffectedIds(FeedIndexMetadata $metadata, array $ids): array
+    {
+        $resolvers = $this->affectedIdsResolverPool->getIdsResolversForFeed($metadata->getFeedName());
+        foreach ($resolvers as $resolver) {
+            $ids = array_merge($ids, $resolver->getAllAffectedIds($ids));
+        }
+        return $ids;
     }
 }
