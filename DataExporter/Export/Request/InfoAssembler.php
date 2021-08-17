@@ -77,7 +77,8 @@ class InfoAssembler
             return $this->nodeFactory->create(
                 [
                     'field' => $field,
-                    'children' => $children
+                    'children' => $children,
+                    'id' => $type['ID'] ?? null
                 ]
             );
         }

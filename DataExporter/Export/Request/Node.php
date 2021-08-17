@@ -25,15 +25,23 @@ class Node
     private $children;
 
     /**
+     * @var ?string
+     */
+    private $id;
+
+    /**
      * @param array $field
      * @param array $children
+     * @param string|null $id
      */
     public function __construct(
         array $field,
-        array $children
+        array $children,
+        ?string $id = null
     ) {
         $this->field = $field;
         $this->children = $children;
+        $this->id = $id;
     }
 
     /**
@@ -54,5 +62,15 @@ class Node
     public function getField() : array
     {
         return $this->field;
+    }
+
+    /**
+     * Get ID name
+     *
+     * @return ?string
+     */
+    public function getId(): ?string
+    {
+        return $this->id;
     }
 }

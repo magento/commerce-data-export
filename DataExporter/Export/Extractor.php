@@ -86,7 +86,11 @@ class Extractor
             $data = [];
             if (!empty($value) || $isRoot) {
                 $t = microtime(true);
-                $data = $this->indexDataByArguments($node->getField(), array_values($provider->get($value)), $isRoot);
+                $data = $this->indexDataByArguments(
+                    $node->getField(),
+                    array_values($provider->get($value, $node, $info)),
+                    $isRoot
+                );
 //                echo PHP_EOL;
 //                echo $providerClass . " " . (microtime(true) - $t);
                 foreach ($node->getChildren() as $child) {
