@@ -7,9 +7,15 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Model\Indexer;
 
+use Magento\DataExporter\Model\Indexer\DataSerializerInterface;
+use Magento\DataExporter\Model\Indexer\EntityIdsProviderInterface;
 use Magento\DataExporter\Model\Indexer\FeedIndexer;
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\DataExporter\Model\Indexer\FeedIndexProcessorInterface;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Select;
+use Magento\DataExporter\Export\Processor as ExportProcessor;
+use Magento\Framework\App\ResourceConnection;
 
 /**
  * Product variant export feed indexer class
@@ -20,6 +26,37 @@ class ProductVariantFeedIndexer extends FeedIndexer
      * Product variant feed indexer id
      */
     public const INDEXER_ID = 'catalog_data_exporter_product_variants';
+
+    /**
+     * @var ExportProcessor
+     */
+    private $processor;
+
+    /**
+     * @var ResourceConnection
+     */
+    private $resourceConnection;
+
+    /**
+     * @param FeedIndexProcessorInterface $processor
+     * @param DataSerializerInterface $serializer
+     * @param FeedIndexMetadata $feedIndexMetadata
+     * @param EntityIdsProviderInterface $entityIdsProvider
+     * @param ExportProcessor $exportProcessor
+     * @param ResourceConnection $resourceConnection
+     */
+    public function __construct(
+        FeedIndexProcessorInterface $processor,
+        DataSerializerInterface $serializer,
+        FeedIndexMetadata $feedIndexMetadata,
+        EntityIdsProviderInterface $entityIdsProvider,
+        ExportProcessor $exportProcessor,
+        ResourceConnection $resourceConnection
+    ) {
+        parent::__construct($processor, $serializer, $feedIndexMetadata, $entityIdsProvider);
+        $this->processor = $exportProcessor;
+        $this->resourceConnection = $resourceConnection;
+    }
 
     /**
      * Get Ids select

@@ -7,26 +7,19 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
-use Magento\DataExporter\Export\Processor;
-use Magento\DataExporter\Model\FeedPool;
-use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Indexer\ActionInterface as IndexerActionInterface;
 use Magento\Framework\Mview\ActionInterface as MviewActionInterface;
 
 /**
  * Product export feed indexer class
+ * Facade for IndexerProcessor, implements Magento native indexers interfaces
  */
 class FeedIndexer implements IndexerActionInterface, MviewActionInterface
 {
     /**
-     * @var Processor
+     * @var FeedIndexProcessorCreateUpdate
      */
-    protected $processor;
-
-    /**
-     * @var ResourceConnection
-     */
-    protected $resourceConnection;
+    private $processor;
 
     /**
      * @var FeedIndexMetadata
@@ -39,44 +32,25 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
     protected $dataSerializer;
 
     /**
-     * @var FeedPool
-     */
-    protected $feedPool;
-
-    /**
-     * @var MarkRemovedEntitiesInterface
-     */
-    private $markRemovedEntities;
-
-    /**
      * @var EntityIdsProviderInterface
      */
     private $entityIdsProvider;
 
     /**
-     * @param Processor $processor
-     * @param ResourceConnection $resourceConnection
+     * @param FeedIndexProcessorInterface $processor
      * @param DataSerializerInterface $serializer
      * @param FeedIndexMetadata $feedIndexMetadata
-     * @param FeedPool $feedPool
-     * @param MarkRemovedEntitiesInterface $markRemovedEntities
      * @param EntityIdsProviderInterface $entityIdsProvider
      */
     public function __construct(
-        Processor $processor,
-        ResourceConnection $resourceConnection,
+        FeedIndexProcessorInterface $processor,
         DataSerializerInterface $serializer,
         FeedIndexMetadata $feedIndexMetadata,
-        FeedPool $feedPool,
-        MarkRemovedEntitiesInterface $markRemovedEntities,
         EntityIdsProviderInterface $entityIdsProvider
     ) {
         $this->processor = $processor;
-        $this->resourceConnection = $resourceConnection;
         $this->feedIndexMetadata = $feedIndexMetadata;
         $this->dataSerializer = $serializer;
-        $this->feedPool = $feedPool;
-        $this->markRemovedEntities = $markRemovedEntities;
         $this->entityIdsProvider = $entityIdsProvider;
     }
 
@@ -88,15 +62,11 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      */
     public function executeFull()
     {
-        $this->truncateFeedTable();
-        foreach ($this->entityIdsProvider->getAllIds($this->feedIndexMetadata) as $batch) {
-            $ids = \array_column($batch, $this->feedIndexMetadata->getFeedIdentity());
-            $this->markRemovedEntities->execute(
-                \array_column($ids, $this->feedIndexMetadata->getFeedIdentity()),
-                $this->feedIndexMetadata
-            );
-            $this->process($ids);
-        }
+        $this->processor->fullReindex(
+            $this->feedIndexMetadata,
+            $this->dataSerializer,
+            $this->entityIdsProvider
+        );
     }
 
     /**
@@ -107,8 +77,12 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      */
     public function executeList(array $ids)
     {
-        $this->markRemovedEntities->execute($ids, $this->feedIndexMetadata);
-        $this->process($ids);
+        $this->processor->partialReindex(
+            $this->feedIndexMetadata,
+            $this->dataSerializer,
+            $this->entityIdsProvider,
+            $ids
+        );
     }
 
     /**
@@ -119,8 +93,12 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      */
     public function executeRow($id)
     {
-        $this->markRemovedEntities->execute([$id], $this->feedIndexMetadata);
-        $this->process([$id]);
+        $this->processor->partialReindex(
+            $this->feedIndexMetadata,
+            $this->dataSerializer,
+            $this->entityIdsProvider,
+            [$id]
+        );
     }
 
     /**
@@ -132,45 +110,11 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
      */
     public function execute($ids)
     {
-        $this->markRemovedEntities->execute($ids, $this->feedIndexMetadata);
-        $this->process($ids);
-    }
-
-    /**
-     * Indexer feed data processor
-     *
-     * @param array $ids
-     *
-     * @return void
-     */
-    private function process(array $ids = []): void
-    {
-        $feedIdentity = $this->feedIndexMetadata->getFeedIdentity();
-        $arguments = [];
-        foreach ($this->entityIdsProvider->getAffectedIds($this->feedIndexMetadata, $ids) as $id) {
-            $arguments[] = [$feedIdentity => $id];
-        }
-        $data = $this->processor->process($this->feedIndexMetadata->getFeedName(), $arguments);
-        $chunks = array_chunk($data, $this->feedIndexMetadata->getBatchSize());
-        $connection = $this->resourceConnection->getConnection();
-        foreach ($chunks as $chunk) {
-            $connection->insertOnDuplicate(
-                $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName()),
-                $this->dataSerializer->serialize($chunk),
-                $this->feedIndexMetadata->getFeedTableMutableColumns()
-            );
-        }
-    }
-
-    /**
-     * Truncate feed table
-     *
-     * @return void
-     */
-    protected function truncateFeedTable(): void
-    {
-        $connection = $this->resourceConnection->getConnection();
-        $feedTable = $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName());
-        $connection->truncateTable($feedTable);
+        $this->processor->partialReindex(
+            $this->feedIndexMetadata,
+            $this->dataSerializer,
+            $this->entityIdsProvider,
+            $ids
+        );
     }
 }
