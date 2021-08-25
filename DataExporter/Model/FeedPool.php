@@ -51,7 +51,9 @@ class FeedPool
     public function getFeed(string $feedName) : FeedInterface
     {
         if (!isset($this->classMap[$feedName])) {
-            throw new \InvalidArgumentException('Not registered Feed');
+            throw new \InvalidArgumentException(
+                \sprintf('Not registered Feed "%s"', $feedName)
+            );
         }
         if (!isset($this->registry[$feedName])) {
             $this->registry[$feedName] = $this->objectManager->get($this->classMap[$feedName]);
