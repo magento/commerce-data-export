@@ -121,4 +121,20 @@ abstract class AbstractCategoryTest extends TestCase
         $this->assertEquals($category->getDefaultSortBy(), $extract['defaultSortBy']);
         $this->assertEquals($category->getImageUrl(), $extract['image']);
     }
+
+    /**
+     * @param int $categoryId
+     * @param string $storeViewCode
+     * @return array
+     * @throws \Zend_Db_Statement_Exception
+     */
+    public function getCategoryById(int $categoryId, string $storeViewCode) : array
+    {
+        foreach ($this->categoryFeed->getFeedSince('1')['feed'] as $item) {
+            if ($item['categoryId'] == $categoryId && $item['storeViewCode'] === $storeViewCode) {
+                return $item;
+            }
+        }
+        return [];
+    }
 }

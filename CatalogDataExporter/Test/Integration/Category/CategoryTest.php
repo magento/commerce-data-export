@@ -37,11 +37,7 @@ class CategoryTest extends AbstractCategoryTest
                 foreach ([$storeCustomOne, $storeCustomTwo] as $store) {
                     $this->storeManager->setCurrentStore($store);
                     $category = $this->categoryRepository->get($categoryId, $store->getId());
-                    $extractedCategoryData = $this->categoryFeed->getFeedByIds(
-                        [$categoryId],
-                        [$store->getCode()]
-                    )['feed'][0];
-
+                    $extractedCategoryData = $this->getCategoryById($categoryId, $store->getCode());
                     $this->assertBaseCategoryData($category, $extractedCategoryData, $store);
                 }
             }
@@ -49,11 +45,7 @@ class CategoryTest extends AbstractCategoryTest
             foreach ([500, 501, 502] as $categoryId) {
                 $this->storeManager->setCurrentStore($storeDefault);
                 $category = $this->categoryRepository->get($categoryId, $storeDefault->getId());
-                $extractedCategoryData = $this->categoryFeed->getFeedByIds(
-                    [$categoryId],
-                    [$storeDefault->getCode()]
-                )['feed'][0];
-
+                $extractedCategoryData = $this->getCategoryById($categoryId, $storeDefault->getCode());
                 $this->assertBaseCategoryData($category, $extractedCategoryData, $storeDefault);
             }
         } finally {

@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\CatalogUrlRewriteDataExporter\Test\Integration;
 
-use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product\Type\Simple;
 use Magento\CatalogDataExporter\Test\Integration\AbstractProductTestHelper;
 use Magento\Framework\Exception\LocalizedException;

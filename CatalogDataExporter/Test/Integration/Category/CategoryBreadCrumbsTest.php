@@ -16,6 +16,7 @@ use SebastianBergmann\RecursionContext\InvalidArgumentException;
  */
 class CategoryBreadCrumbsTest extends AbstractCategoryTest
 {
+
     /**
      * Validate breadcrumbs content
      *
@@ -27,8 +28,7 @@ class CategoryBreadCrumbsTest extends AbstractCategoryTest
      */
     public function testBreadCrumbsData(): void
     {
-        //store 1, default store-view
-        $data = $this->categoryFeed->getFeedByIds([501], ['default'])['feed'][0];
+        $data = $this->getCategoryById(501, 'default');
         $this->assertContainsBreadCrumbs($data);
         $breadCrumbs = $data['breadcrumbs'];
         $expected = [
@@ -43,7 +43,7 @@ class CategoryBreadCrumbsTest extends AbstractCategoryTest
         $this->assertContainsSpecifiedData($breadCrumbs, $expected);
 
         //store 2, first store-view
-        $data = $this->categoryFeed->getFeedByIds([402], ['custom_store_view_one'])['feed'][0];
+        $data = $this->getCategoryById(402, 'custom_store_view_one');
         $this->assertContainsBreadCrumbs($data);
 
         $breadCrumbs = $data['breadcrumbs'];
@@ -66,7 +66,8 @@ class CategoryBreadCrumbsTest extends AbstractCategoryTest
         $this->assertContainsSpecifiedData($breadCrumbs, $expected);
 
         //store 2, second store-view
-        $data = $this->categoryFeed->getFeedByIds([402], ['custom_store_view_two'])['feed'][0];
+        $data = $this->getCategoryById(402, 'custom_store_view_two');
+
 
         $this->assertContainsBreadCrumbs($data);
         $breadCrumbs = $data['breadcrumbs'];
@@ -115,7 +116,6 @@ class CategoryBreadCrumbsTest extends AbstractCategoryTest
      */
     private function assertContainsBreadCrumbs(array $data): void
     {
-        $this->assertIsArray($data);
         $this->assertIsArray($data);
         $this->assertArrayHasKey('breadcrumbs', $data);
         $this->assertIsArray($data['breadcrumbs']);

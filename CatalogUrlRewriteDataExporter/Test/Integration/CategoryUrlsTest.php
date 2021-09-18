@@ -16,6 +16,7 @@ use Magento\CatalogDataExporter\Test\Integration\Category\AbstractCategoryTest;
  */
 class CategoryUrlsTest extends AbstractCategoryTest
 {
+
     /**
      * Validate category URL data
      * @magentoConfigFixture custom_store_view_one_store catalog/seo/category_canonical_tag 1
@@ -37,7 +38,7 @@ class CategoryUrlsTest extends AbstractCategoryTest
             foreach ([$storeCustomOne, $storeCustomTwo] as $store) {
                 $this->validateUrlData(
                     $this->categoryRepository->get($categoryId, $store->getId()),
-                    $this->categoryFeed->getFeedByIds([$categoryId], [$store->getCode()])['feed'][0]
+                    $this->getCategoryById($categoryId, $store->getCode())
                 );
             }
         }
@@ -45,7 +46,7 @@ class CategoryUrlsTest extends AbstractCategoryTest
         foreach ([500, 501, 502] as $categoryId) {
             $this->validateUrlData(
                 $this->categoryRepository->get($categoryId, $storeDefault->getId()),
-                $this->categoryFeed->getFeedByIds([$categoryId], [$storeDefault->getCode()])['feed'][0]
+                $this->getCategoryById($categoryId, $storeDefault->getCode())
             );
         }
     }

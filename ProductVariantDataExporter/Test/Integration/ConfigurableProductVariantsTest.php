@@ -7,8 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Test\Integration;
 
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Model\Product;
 use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants\ConfigurableId;
 use RuntimeException;
 use Throwable;
@@ -18,6 +16,26 @@ use Throwable;
  */
 class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
 {
+
+    /**
+     * Returns variants by IDs
+     *
+     * @param array $ids
+     * @param bool $excludeDeleted
+     * @return array
+     * @throws \Zend_Db_Statement_Exception
+     */
+    private function getVariantByIds(array $ids, bool $excludeDeleted = false): array
+    {
+        $output = [];
+        foreach ($this->productVariantsFeed->getFeedSince('1')['feed'] as $item) {
+            if (in_array($item['id'], $ids) && (!$excludeDeleted || !$item['deleted'])) {
+                $output[] = $item;
+            }
+        }
+        return $output;
+    }
+
     /**
      * Test configurable product variants.
      *
@@ -29,7 +47,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
     public function testConfigurableVariants(): void
     {
         try {
-            $expected = $this->getExpectedProductVariants(['simple_10','simple_20']);
+            $expected = $this->getExpectedProductVariants(['simple_10', 'simple_20']);
 
             $variantSimple10 = $this->idResolver->resolve([
                 ConfigurableId::PARENT_SKU_KEY => 'configurable',
@@ -39,13 +57,9 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
                 ConfigurableId::PARENT_SKU_KEY => 'configurable',
                 ConfigurableId::CHILD_SKU_KEY => 'simple_20'
             ]);
-            $actual = $this->productVariantsFeed->getFeedByIds(
-                [$variantSimple10, $variantSimple20]
-            )['feed'];
-
+            $actual = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
             $diff = $this->arrayUtils->recursiveDiff($expected, $actual);
             self::assertEquals([], $diff, "Product variants response doesn't equal expected response");
-
         } catch (Throwable $e) {
             $this->fail($e->getMessage());
         }
@@ -73,21 +87,21 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
                 ConfigurableId::PARENT_SKU_KEY => 'configurable',
                 ConfigurableId::CHILD_SKU_KEY => 'simple_20'
             ]);
-            $realVariantsData = $this->productVariantsFeed->getFeedByIds(
+            $realVariantsData = $this->getVariantByIds(
                 [$variantSimple10, $variantSimple20]
-            )['feed'];
+            );
             $this->assertCount(2, $realVariantsData);
 
             $simple = $this->productRepository->get('simple_10'); //id10 and id20
             $this->deleteProduct($simple->getSku());
             $this->runIndexer([$configurableId]);
 
-            $emptyVariantsData = $this->productVariantsFeed->getFeedByIds(
-                [$variantSimple10, $variantSimple20]
-            )['feed'];
+            $emptyVariantsData = $this->getVariantByIds(
+                [$variantSimple10, $variantSimple20], true
+            );
             $this->assertCount(1, $emptyVariantsData); //id20
-            $deletedVariantsData = $this->productVariantsFeed->getDeletedByIds(
-                [$variantSimple10, $variantSimple20]
+            $deletedVariantsData = $this->getVariantByIds(
+                [$variantSimple10, $variantSimple20], true
             );
             $this->assertCount(1, $deletedVariantsData); //id10
         } catch (Throwable $e) {
@@ -125,48 +139,44 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
     private function getExpectedProductVariants(array $simples): array
     {
         $variants = [
-            'simple_10' =>
-                [
-                    'id' => '8a880c29baa2ec8a5068350ec04f5b7d',
-                    'optionValues' =>
-                        [
-                            [
-                                'attributeCode' => 'test_configurable_first',
-                                'label' => 'First Option 1',
+            'simple_10' => [
+                'id' => '8a880c29baa2ec8a5068350ec04f5b7d',
+                'optionValues' => [
+                    [
+                        'attributeCode' => 'test_configurable_first',
+                        'label' => 'First Option 1',
 //                                'valueIndex' => '107', //Skipped because they are unique
 //                                'uid' => 'Y29uZmlndXJhYmxlLzIwOS8xMDc=', //Skipped because they are unique
-                            ],
-                            [
-                                'attributeCode' => 'test_configurable_second',
-                                'label' => 'Second Option 1',
-                            ],
-                        ],
-                    'parentId' => '1',
-                    'productId' => '10',
-                    'parentSku' => 'configurable',
-                    'productSku' => 'simple_10',
-                    'deleted' => false,
+                    ],
+                    [
+                        'attributeCode' => 'test_configurable_second',
+                        'label' => 'Second Option 1',
+                    ],
                 ],
-            'simple_20' =>
-                [
-                    'id' => 'b91c35230afd24649f2ff60c79e7e7ba',
-                    'optionValues' =>
-                        [
-                            [
-                                'attributeCode' => 'test_configurable_first',
-                                'label' => 'First Option 2',
-                            ],
-                            [
-                                'attributeCode' => 'test_configurable_second',
-                                'label' => 'Second Option 2',
-                            ],
-                        ],
-                    'parentId' => '1',
-                    'productId' => '20',
-                    'parentSku' => 'configurable',
-                    'productSku' => 'simple_20',
-                    'deleted' => false,
+                'parentId' => '1',
+                'productId' => '10',
+                'parentSku' => 'configurable',
+                'productSku' => 'simple_10',
+                'deleted' => false,
+            ],
+            'simple_20' => [
+                'id' => 'b91c35230afd24649f2ff60c79e7e7ba',
+                'optionValues' => [
+                    [
+                        'attributeCode' => 'test_configurable_first',
+                        'label' => 'First Option 2',
+                    ],
+                    [
+                        'attributeCode' => 'test_configurable_second',
+                        'label' => 'Second Option 2',
+                    ],
                 ],
+                'parentId' => '1',
+                'productId' => '20',
+                'parentSku' => 'configurable',
+                'productSku' => 'simple_20',
+                'deleted' => false,
+            ],
         ];
         return array_values(array_intersect_key($variants, array_flip($simples)));
     }

@@ -28,13 +28,11 @@ class CategoryRemovalTest extends AbstractCategoryTest
     public function testCategoryRemoval() : void
     {
         $categoryId = 600;
-        $extractedCategory = $this->categoryFeed->getFeedByIds([$categoryId], ['default'])['feed'][0];
+        $extractedCategory = $this->getCategoryById(600, 'default');
         $this->assertEquals(false, $extractedCategory['deleted']);
-
         $this->deleteCategory($categoryId);
-
-        $extractedCategory = $this->categoryFeed->getFeedByIds([$categoryId], ['default'])['feed'];
-        $this->assertEmpty($extractedCategory);
+        $extractedCategory = $this->getCategoryById(600, 'default');
+        $this->assertTrue($extractedCategory['deleted']);
     }
 
     /**
