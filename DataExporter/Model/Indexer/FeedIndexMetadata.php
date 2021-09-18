@@ -53,21 +53,6 @@ class FeedIndexMetadata
     protected $batchSize;
 
     /**
-     * @var string
-     */
-    private $scopeTableName;
-
-    /**
-     * @var string
-     */
-    private $scopeTableField;
-
-    /**
-     * @var string
-     */
-    private $scopeCode;
-
-    /**
      * @param string $feedName
      * @param string $sourceTableName
      * @param string $sourceTableField
@@ -75,12 +60,7 @@ class FeedIndexMetadata
      * @param string $feedTableName
      * @param string $feedTableField
      * @param array $feedTableMutableColumns
-     * @param string $scopeTableName
-     * @param string $scopeTableField
-     * @param string $scopeCode
      * @param int $batchSize
-     *
-     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         string $feedName,
@@ -90,9 +70,6 @@ class FeedIndexMetadata
         string $feedTableName,
         string $feedTableField,
         array $feedTableMutableColumns,
-        string $scopeTableName = '',
-        string $scopeTableField = '',
-        string $scopeCode = '',
         int $batchSize = 100
     ) {
         $this->feedName = $feedName;
@@ -102,9 +79,6 @@ class FeedIndexMetadata
         $this->feedTableName = $feedTableName;
         $this->feedTableField = $feedTableField;
         $this->feedTableMutableColumns = $feedTableMutableColumns;
-        $this->scopeTableName = $scopeTableName;
-        $this->scopeTableField = $scopeTableField;
-        $this->scopeCode = $scopeCode;
         $this->batchSize = $batchSize;
     }
 
@@ -186,35 +160,5 @@ class FeedIndexMetadata
     public function getFeedTableMutableColumns(): array
     {
         return $this->feedTableMutableColumns;
-    }
-
-    /**
-     * Get scope table name
-     *
-     * @return string
-     */
-    public function getScopeTableName(): string
-    {
-        return $this->scopeTableName;
-    }
-
-    /**
-     * Get scope table field
-     *
-     * @return string
-     */
-    public function getScopeTableField(): string
-    {
-        return $this->scopeTableField;
-    }
-
-    /**
-     * Get scope table scope code
-     *
-     * @return string
-     */
-    public function getScopeCode(): string
-    {
-        return $this->scopeCode;
     }
 }

@@ -46,6 +46,8 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
      */
     public function testConfigurableVariants(): void
     {
+        $configurable = $this->productRepository->get('configurable');
+        $this->runIndexer([$configurable->getId()]);
         try {
             $expected = $this->getExpectedProductVariants(['simple_10', 'simple_20']);
 
@@ -79,6 +81,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
         try {
             $configurable = $this->productRepository->get('configurable');
             $configurableId = $configurable->getId();
+            $this->runIndexer([$configurableId]);
             $variantSimple10 = $this->idResolver->resolve([
                 ConfigurableId::PARENT_SKU_KEY => 'configurable',
                 ConfigurableId::CHILD_SKU_KEY => 'simple_10'
@@ -93,8 +96,9 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
             $this->assertCount(2, $realVariantsData);
 
             $simple = $this->productRepository->get('simple_10'); //id10 and id20
+            $simpleId  = $simple->getId();
             $this->deleteProduct($simple->getSku());
-            $this->runIndexer([$configurableId]);
+            $this->runIndexer([$configurableId, $simpleId]);
 
             $emptyVariantsData = $this->getVariantByIds(
                 [$variantSimple10, $variantSimple20], true

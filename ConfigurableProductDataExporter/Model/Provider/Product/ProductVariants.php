@@ -77,7 +77,7 @@ class ProductVariants implements ProductVariantsProviderInterface
         $output = [];
         $childIds = [];
         foreach ($values as $value) {
-            $childIds[$value['product_id']] = $value['product_id'];
+            $childIds[$value['id']] = $value['id'];
         }
 
         try {

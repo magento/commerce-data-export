@@ -5,16 +5,18 @@
  */
 declare(strict_types=1);
 
-namespace Magento\DataExporter\Model\Query;
+namespace Magento\ProductVariantDataExporter\Model\Query;
 
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
+use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery as DefaultMarkRemovedEntitiesQuery;
+
 
 /**
  * Mark removed entities select query provider
  */
-class MarkRemovedEntitiesQuery
+class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
 {
     /**
      * @var ResourceConnection
@@ -27,6 +29,7 @@ class MarkRemovedEntitiesQuery
     public function __construct(ResourceConnection $resourceConnection)
     {
         $this->resourceConnection = $resourceConnection;
+        parent::__construct($resourceConnection);
     }
 
     /**
@@ -43,10 +46,10 @@ class MarkRemovedEntitiesQuery
         $select = $connection->select()
             ->joinLeft(
                 ['s' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
-                \sprintf('f.%s = s.%s', $metadata->getFeedTableField(), $metadata->getSourceTableField()),
+                \sprintf('f.product_id = s.%s', $metadata->getSourceTableField()),
                 ['is_deleted' => new \Zend_Db_Expr('1')]
             )
-            ->where(\sprintf('f.%s IN (?)', $metadata->getFeedTableField()), $ids)
+            ->where('f.product_id IN (?)', $ids)
             ->where(\sprintf('s.%s IS NULL', $metadata->getSourceTableField()));
 
         return $select;

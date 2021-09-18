@@ -51,4 +51,24 @@
         <plugin name="reindex_configurable_variants_after_save"
                 type="Magento\ConfigurableProductDataExporter\Plugin\ReindexVariantsAfterSave"/>
     </type>
+    <virtualType name="Magento\ConfigurableProductDataExporter\Model\Indexer\AffectedIdsResolver" type="Magento\DataExporter\Model\Indexer\AffectedIdsResolver">
+        <arguments>
+            <argument name="idPlaceholder" xsi:type="string">entityIds</argument>
+            <argument name="queryNames" xsi:type="array">
+                <item name="configurableProductsByChildren" xsi:type="string">configurableProductsByChildren</item>
+                <item name="simpleProductsByConfigurableParents" xsi:type="string">simpleProductsByConfigurableParents</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\DataExporter\Model\Indexer\AffectedIdsResolverPool">
+        <arguments>
+            <argument name="resolvers" xsi:type="array">
+                <item name="variants" xsi:type="array">
+                    <item name="configurable" xsi:type="string">
+                        Magento\ConfigurableProductDataExporter\Model\Indexer\AffectedIdsResolver
+                    </item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
 </config>

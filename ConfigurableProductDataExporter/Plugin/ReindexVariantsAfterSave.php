@@ -14,7 +14,6 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Framework\Model\AbstractModel;
 use Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer;
-use Magento\ProductVariantDataExporter\Model\Indexer\UpdateChangeLog;
 
 /**
  * Plugin to trigger reindex on parent products, when a super attribute value is changed on a child product
@@ -37,26 +36,18 @@ class ReindexVariantsAfterSave
     private $indexerRegistry;
 
     /**
-     * @var UpdateChangeLog
-     */
-    private $updateChangeLog;
-
-    /**
      * @param ResourceConnection $resourceConnection
      * @param LinkedAttributesQuery $linkedAttributesQuery
      * @param IndexerRegistry $indexerRegistry
-     * @param UpdateChangeLog $updateChangeLog
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         LinkedAttributesQuery $linkedAttributesQuery,
-        IndexerRegistry $indexerRegistry,
-        UpdateChangeLog $updateChangeLog
+        IndexerRegistry $indexerRegistry
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->linkedAttributesQuery = $linkedAttributesQuery;
         $this->indexerRegistry = $indexerRegistry;
-        $this->updateChangeLog = $updateChangeLog;
     }
 
     /**
@@ -95,10 +86,8 @@ class ReindexVariantsAfterSave
      */
     private function reindexVariant(int $id): void
     {
-        $indexer = $this->indexerRegistry->get(ProductVariantFeedIndexer::INDEXER_ID);
-        if ($indexer->isScheduled()) {
-            $this->updateChangeLog->execute($indexer->getViewId(), [$id]);
-        } else {
+        $indexer = $this->indexerRegistry->get('catalog_data_exporter_product_variants');
+        if (!$indexer->isScheduled()) {
             $indexer->reindexRow($id);
         }
     }

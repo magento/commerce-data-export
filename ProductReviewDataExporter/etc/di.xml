@@ -61,9 +61,6 @@
             <argument name="feedIdentity" xsi:type="string">ratingId</argument>
             <argument name="sourceTableName" xsi:type="string">rating</argument>
             <argument name="sourceTableField" xsi:type="string">rating_id</argument>
-            <argument name="scopeTableName" xsi:type="string">rating_store</argument>
-            <argument name="scopeTableField" xsi:type="string">rating_id</argument>
-            <argument name="scopeCode" xsi:type="string">store_id</argument>
             <argument name="feedTableName" xsi:type="string">catalog_data_exporter_rating_metadata</argument>
             <argument name="feedTableField" xsi:type="string">id</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">

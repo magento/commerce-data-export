@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\QueryXmlDataProvider\Model;
+namespace Magento\DataExporter\Model\Provider;
 
 use Magento\DataExporter\Export\Request\Node;
 use Magento\DataExporter\Export\Request\Info;
@@ -14,7 +14,7 @@ use Magento\QueryXml\Model\QueryProcessor;
 /**
  * Common data provider that can read data for et_schema.xml directly from query.xml
  */
-class DataProvider
+class QueryDataProvider
 {
 
     /**
