@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\ConfigurableProductDataExporter\Plugin;
+namespace Magento\ConfigurableProductVariantDataExporter\Plugin;
 
 use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\ResourceModel\Product as ResourceProduct;

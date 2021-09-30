@@ -5,13 +5,13 @@
  */
 declare(strict_types=1);
 
-namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
+namespace Magento\ConfigurableProductVariantDataExporter\Model\Provider\Product;
 
-use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants\ConfigurableId;
+use Magento\ConfigurableProductVariantDataExporter\Model\Provider\Product\ProductVariants\ConfigurableId;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\IdFactory;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\OptionValueFactory;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariantsProviderInterface;
-use Magento\ConfigurableProductDataExporter\Model\Query\ProductVariantsQuery;
+use Magento\ConfigurableProductVariantDataExporter\Model\Query\ProductVariantsQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Psr\Log\LoggerInterface;

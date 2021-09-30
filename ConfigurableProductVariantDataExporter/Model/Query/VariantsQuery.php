@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\ConfigurableProductDataExporter\Model\Query;
+namespace Magento\ConfigurableProductVariantDataExporter\Model\Query;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;

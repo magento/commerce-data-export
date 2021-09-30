@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants;
+namespace Magento\ConfigurableProductVariantDataExporter\Model\Provider\Product\ProductVariants;
 
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\IdInterface;
 use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ConfigurableOptionValueUid;

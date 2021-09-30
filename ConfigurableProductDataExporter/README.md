@@ -1,3 +1,3 @@
 ## Release notes
 
-*Magento_ConfigurableProductDataExporter* module
+*Magento_ConfigurableProductVariantDataExporter* module
