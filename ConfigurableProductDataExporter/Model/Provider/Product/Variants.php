@@ -5,9 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace Magento\ConfigurableProductVariantDataExporter\Model\Provider\Product;
+namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 
-use Magento\ConfigurableProductVariantDataExporter\Model\Query\VariantsQuery;
+use Magento\ConfigurableProductDataExporter\Model\Query\VariantsQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Psr\Log\LoggerInterface;

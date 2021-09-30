@@ -74,6 +74,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                 $this->validateImageUrls($product, $extractedProduct);
                 $this->validateAttributeData($product, $extractedProduct);
                 $this->validateOptionsData($product, $extractedProduct);
+                $this->validateVariantsData($product, $extractedProduct, $attributeCodes);
             }
         }
     }
@@ -172,6 +173,49 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     }
 
     /**
+     * Validate product variants in extracted product data
+     *
+     * @param ProductInterface $product
+     * @param array $extract
+     * @param array $attributeCodes
+     * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     * @throws Zend_Db_Statement_Exception
+     */
+    private function validateVariantsData(ProductInterface $product, array $extract, array $attributeCodes) : void
+    {
+        $childIds = $product->getExtensionAttributes()->getConfigurableProductLinks();
+        $variants = [];
+        foreach ($childIds as $childId) {
+            $childProduct = $this->productRepository->getById($childId);
+            $childProductPricing = $this->getPricingData($childProduct);
+            $variants[] = [
+                'sku' => $childProduct->getSku(),
+                'minimumPrice' => [
+                    'regularPrice' => $childProductPricing['price'],
+                    'finalPrice' => $childProductPricing['final_price']
+                ],
+                'selections' => $this->getVariantSelections($childProduct, $attributeCodes)
+            ];
+        }
+        $actualVariants = $extract['feedData']['variants'];
+        usort(
+            $actualVariants,
+            function ($a, $b) {
+                return $a['sku'] <=> $b['sku'];
+            }
+        );
+        usort(
+            $variants,
+            function ($a, $b) {
+                return $a['sku'] <=> $b['sku'];
+            }
+        );
+        $this->assertEquals($variants, $actualVariants);
+    }
+
+    /**
      * Get partially hardcoded option values to compare to extracted product data
      *
      * @param array $optionValues
@@ -190,5 +234,24 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
             $i++;
         }
         return $values;
+    }
+
+    /**
+     * Get variant selections data
+     *
+     * @param ProductInterface $childProduct
+     * @param array $attributeCodes
+     * @return array
+     */
+    private function getVariantSelections(ProductInterface $childProduct, array $attributeCodes) : array
+    {
+        $selections = [];
+        foreach ($attributeCodes as $attributeCode) {
+            $selections[] = [
+                'name' => $childProduct->getAttributes()[$attributeCode]->getStoreLabel(),
+                'value' => $childProduct->getAttributeText($attributeCode)
+            ];
+        }
+        return $selections;
     }
 }

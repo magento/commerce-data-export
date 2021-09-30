@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\ConfigurableProductDataExporter\Test\Integration;
+namespace Magento\ConfigurableProductVariantDataExporter\Test\Integration;
 
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\CatalogDataExporter\Test\Integration\AbstractProductTestHelper;
