@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace Magento\ProductVariantDataExporter\Test\Integration;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants\ConfigurableId;
+use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\Eav\Model\AttributeRepository;

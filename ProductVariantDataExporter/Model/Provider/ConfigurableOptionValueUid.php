@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\ConfigurableProductVariantDataExporter\Model\Provider\Product;
+namespace Magento\ProductVariantDataExporter\Model\Provider;
 
 /**
  * Create configurable product option value uid in base64 encode

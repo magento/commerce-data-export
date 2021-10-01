@@ -9,7 +9,7 @@
     <type name="Magento\ProductVariantDataExporter\Model\Provider\ProductVariants">
         <arguments>
             <argument name="variantsProviders" xsi:type="array">
-                <item name="configurable" xsi:type="object">\Magento\ConfigurableProductVariantDataExporter\Model\Provider\Product\ProductVariants</item>
+                <item name="configurable" xsi:type="object">\Magento\ConfigurableProductVariantDataExporter\Model\Provider\Product\ConfigurableVariants</item>
             </argument>
         </arguments>
     </type>

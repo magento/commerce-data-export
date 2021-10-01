@@ -60,4 +60,28 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\ProductVariantDataExporter\Model\Provider\ProductVariants">
+        <arguments>
+            <argument name="variantsProviders" xsi:type="array">
+                <item name="configurable" xsi:type="object">Magento\ProductVariantDataExporter\Model\Provider\ConfigurableVariants</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\OptionValueFactory">
+        <arguments>
+            <argument name="variantTypes" xsi:type="array">
+                <item name="configurable" xsi:type="string">Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableOptionValue</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\IdFactory">
+        <arguments>
+            <argument name="variantTypes" xsi:type="array">
+                <item name="configurable" xsi:type="string">Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Catalog\Model\ResourceModel\Product">
+        <plugin name="reindex_configurable_variants_after_save" type="Magento\ProductVariantDataExporter\Plugin\ReindexVariantsAfterSave"/>
+    </type>
 </config>
