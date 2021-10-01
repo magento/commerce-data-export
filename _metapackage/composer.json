@@ -1,6 +1,7 @@
 {
     "name": "magento/commerce-data-export",
     "description": "Commerce data export tool",
+    "_comment": "Minimum Magento version is 2.3.2",
     "license": [
         "OSL-3.0",
         "AFL-3.0"
