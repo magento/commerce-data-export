@@ -13,7 +13,6 @@
         "magento/module-catalog-inventory-data-exporter": "self.version",
         "magento/module-catalog-url-rewrite-data-exporter": "self.version",
         "magento/module-configurable-product-data-exporter": "self.version",
-        "magento/module-configurable-product-variant-data-exporter": "self.version",
         "magento/module-configuration-data-exporter": "self.version",
         "magento/module-data-exporter": "self.version",
         "magento/module-parent-product-data-exporter": "self.version",
