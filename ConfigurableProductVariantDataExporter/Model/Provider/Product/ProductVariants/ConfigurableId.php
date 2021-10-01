@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace Magento\ConfigurableProductVariantDataExporter\Model\Provider\Product\ProductVariants;
 
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\IdInterface;
-use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ConfigurableOptionValueUid;
+use Magento\ConfigurableProductVariantDataExporter\Model\Provider\Product\ConfigurableOptionValueUid;
 
 /**
  * Create configurable product variant id
