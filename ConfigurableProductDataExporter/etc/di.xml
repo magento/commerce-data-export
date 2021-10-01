@@ -13,27 +13,6 @@
             </argument>
         </arguments>
     </type>
-    <type name="Magento\ProductVariantDataExporter\Model\Provider\ProductVariants">
-        <arguments>
-            <argument name="variantsProviders" xsi:type="array">
-                <item name="configurable" xsi:type="object">\Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants</item>
-            </argument>
-        </arguments>
-    </type>
-    <type name="Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\OptionValueFactory">
-        <arguments>
-            <argument name="variantTypes" xsi:type="array">
-                <item name="configurable" xsi:type="string">Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants\ConfigurableOptionValue</item>
-            </argument>
-        </arguments>
-    </type>
-    <type name="Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\IdFactory">
-        <arguments>
-            <argument name="variantTypes" xsi:type="array">
-                <item name="configurable" xsi:type="string">Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants\ConfigurableId</item>
-            </argument>
-        </arguments>
-    </type>
 <!--//TODO: should be deleted in catalog-storefront/issues/304-->
     <type name="Magento\CatalogDataExporter\Model\Provider\Product\Options">
         <arguments>
@@ -46,10 +25,6 @@
         <arguments>
             <argument name="batchSize" xsi:type="number">1000</argument>
         </arguments>
-    </type>
-    <type name="Magento\Catalog\Model\ResourceModel\Product">
-        <plugin name="reindex_configurable_variants_after_save"
-                type="Magento\ConfigurableProductDataExporter\Plugin\ReindexVariantsAfterSave"/>
     </type>
     <virtualType name="Magento\ConfigurableProductDataExporter\Model\Indexer\AffectedIdsResolver" type="Magento\DataExporter\Model\Indexer\AffectedIdsResolver">
         <arguments>

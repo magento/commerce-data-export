@@ -5,11 +5,11 @@
  */
 declare(strict_types=1);
 
-namespace Magento\ConfigurableProductDataExporter\Plugin;
+namespace Magento\ProductVariantDataExporter\Plugin;
 
 use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\ResourceModel\Product as ResourceProduct;
-use Magento\ConfigurableProductDataExporter\Model\Query\LinkedAttributesQuery;
+use Magento\ProductVariantDataExporter\Model\Query\LinkedAttributesQuery;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Framework\Model\AbstractModel;

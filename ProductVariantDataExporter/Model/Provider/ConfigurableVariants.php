@@ -5,13 +5,12 @@
  */
 declare(strict_types=1);
 
-namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
+namespace Magento\ProductVariantDataExporter\Model\Provider;
 
-use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants\ConfigurableId;
+use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\IdFactory;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\OptionValueFactory;
-use Magento\ProductVariantDataExporter\Model\Provider\ProductVariantsProviderInterface;
-use Magento\ConfigurableProductDataExporter\Model\Query\ProductVariantsQuery;
+use Magento\ProductVariantDataExporter\Model\Query\ProductVariantsQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Psr\Log\LoggerInterface;
@@ -19,7 +18,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Configurable product variants provider
  */
-class ProductVariants implements ProductVariantsProviderInterface
+class ConfigurableVariants implements ProductVariantsProviderInterface
 {
     /**
      * @var ResourceConnection

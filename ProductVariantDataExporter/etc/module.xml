@@ -9,6 +9,9 @@
     <module name="Magento_ProductVariantDataExporter" setup_version="42.0.1">
         <sequence>
             <module name="Magento_DataExporter"/>
+            <module name="Magento_CatalogDataExporter"/>
+            <module name="Magento_Catalog"/>
+            <module name="Magento_ConfigurableProduct"/>
         </sequence>
     </module>
 </config>

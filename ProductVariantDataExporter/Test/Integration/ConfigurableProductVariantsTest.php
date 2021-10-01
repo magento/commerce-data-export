@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Test\Integration;
 
-use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ProductVariants\ConfigurableId;
+use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId;
 use RuntimeException;
 use Throwable;
 
