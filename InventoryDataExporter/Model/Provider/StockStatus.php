@@ -56,18 +56,18 @@ class StockStatus
     {
         $queryArguments = $this->data;
         foreach ($values as $value) {
-            $queryArguments['itemIds'][] = $value['id'];
+            $queryArguments['sourceItemIds'][] = $value['id'];
         }
         $output = [];
         $cursor = $this->queryProcessor->execute($this->queryName, $queryArguments);
         while ($row = $cursor->fetch()) {
             //TODO: extend query and remove this hardcode
-            $row['sku'] = "TestSku";
-            $row['qty'] = "10";
-            $row['qtyForSale'] = "4.5";
-            $row['infiniteStock'] = false;
-            $row['lowStock'] = true;
-            $row['updatedAt'] = "2021-07-22 17:38:36";
+//            $row['sku'] = "TestSku";
+//            $row['qty'] = "10";
+//            $row['qtyForSale'] = "4.5";
+//            $row['infiniteStock'] = false;
+//            $row['lowStock'] = true;
+//            $row['updatedAt'] = "2021-07-22 17:38:36";
             $output[] = $row;
         }
         return $output;
