@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
+    <query name="stockStatus">
+        <source name="cataloginventory_stock_item">
+            <attribute name="item_id" alias="id"/>
+            <attribute name="stock_id" alias="stockId"/>
+            <attribute name="qty" alias="qty"/>
+            <attribute name="is_in_stock" alias="isSalable"/>
+            <filter glue="and">
+                <condition attribute="item_id" operator="in" type="placeholder">itemIds</condition>
+            </filter>
+        </source>
+    </query>
+</config>

@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\InventoryDataExporter\Model\Query\MainProductQuery">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">catalog_product_entity</argument>
+        </arguments>
+    </type>
+    <type name="Magento\InventoryDataExporter\Model\Provider\StockStatus">
+        <arguments>
+            <argument name="queryName" xsi:type="string">stockStatus</argument>
+        </arguments>
+    </type>
+    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="feedName" xsi:type="string">stock_statuses</argument>
+            <argument name="feedIdentity" xsi:type="string">id</argument>
+            <argument name="sourceTableName" xsi:type="string">cataloginventory_stock_item</argument>
+            <argument name="sourceTableField" xsi:type="string">item_id</argument>
+            <argument name="feedTableName" xsi:type="string">inventory_data_exporter_stock_status</argument>
+            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableMutableColumns" xsi:type="array">
+                <item name="feed_data" xsi:type="string">feed_data</item>
+                <item name="is_deleted" xsi:type="string">is_deleted</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
+        <arguments>
+            <argument name="mapping" xsi:type="array">
+                <item name="id" xsi:type="string">id</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexProcessorCreateUpdateDelete" type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
+        <arguments>
+            <argument name="markRemovedEntities" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusMarkRemovedEntities</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusMarkRemovedEntities" type="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
+        <arguments>
+            <argument name="markRemovedEntitiesQuery" xsi:type="object">Magento\InventoryDataExporter\Model\Query\MarkRemovedEntitiesQuery</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexer"  type="Magento\DataExporter\Model\Indexer\FeedIndexer">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
+            <argument name="serializer" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusDataSerializer</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\InventoryDataExporter\Model\StockStatusFeed" type="Magento\DataExporter\Model\Feed">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
+        </arguments>
+    </virtualType>
+</config>
