@@ -38,7 +38,7 @@ class AllIdsResolver
     public function getAllIds(FeedIndexMetadata $metadata): ?\Generator
     {
         $connection = $this->resourceConnection->getConnection();
-        $lastKnownId = 0;
+        $lastKnownId = -1;
         $continueReindex = true;
         while ($continueReindex) {
             $ids = $connection->fetchAll($this->getIdsSelect((int)$lastKnownId, $metadata));
