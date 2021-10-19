@@ -14,10 +14,7 @@
         <title translate="true">Inventory Stock Status Feed</title>
         <description translate="true">Collects data for a Inventory Stock Status Feed</description>
         <dependencies>
-            <indexer id="catalog_product_price" />
-            <indexer id="catalog_category_product" />
-            <indexer id="catalog_product_category" />
-            <indexer id="cataloginventory_stock" />
+            <indexer id="inventory" />
         </dependencies>
     </indexer>
 </config>

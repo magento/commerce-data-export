@@ -9,6 +9,7 @@ namespace Magento\InventoryDataExporter\Model\Query;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
+use Magento\InventoryCatalogApi\Api\DefaultStockProviderInterface;
 
 /**
  * Inventory Stock data query builder
@@ -19,14 +20,20 @@ class InventoryStockQuery
      * @var ResourceConnection
      */
     private $resourceConnection;
+    /**
+     * @var DefaultStockProviderInterface
+     */
+    private $defaultStockProvider;
 
     /**
      * @param ResourceConnection $resourceConnection
      */
     public function __construct(
-        ResourceConnection $resourceConnection
+        ResourceConnection $resourceConnection,
+        DefaultStockProviderInterface $defaultStockProvider
     ) {
         $this->resourceConnection = $resourceConnection;
+        $this->defaultStockProvider = $defaultStockProvider;
     }
 
     /**
@@ -44,21 +51,18 @@ class InventoryStockQuery
      * Get query for provider
      *
      * @param array $skus
-     * @param string $stockId
-     * @param string $sourceField
-     * @param string|null $feedField
+     * @param int $stockId
      * @return Select
      */
-    public function getQuery(array $skus, string $stockId, string $sourceField, string $feedField = null) : Select
+    public function getQuery(array $skus, int $stockId) : Select
     {
-        $feedField = $feedField ?? $sourceField;
         $connection = $this->resourceConnection->getConnection();
-
         return $connection->select()
             ->from(['isi' => $this->getTable(sprintf('inventory_stock_%s', $stockId))], [])
             ->columns(
                 [
-                    $feedField => "isi.$sourceField",
+                    'qty' => "isi.quantity",
+                    'isSalable' => "isi.is_salable",
                     'sku' => "isi.sku"
                 ]
             )

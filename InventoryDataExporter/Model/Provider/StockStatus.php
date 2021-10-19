@@ -8,41 +8,46 @@ declare(strict_types=1);
 
 namespace Magento\InventoryDataExporter\Model\Provider;
 
-use Magento\QueryXml\Model\QueryProcessor;
+use Magento\Framework\App\ResourceConnection;
+use Magento\InventoryDataExporter\Model\Query\InventoryStockQuery;
+use Magento\InventoryIndexer\Indexer\SourceItem\GetSkuListInStock;
 
 /**
- * Class for getting inventory stock statuses.
+ * Get inventory stock statuses
+ * Fulfill fields for StockItemStatus record:
+ *  [
+ *    stockId,
+ *    qty,
+ *    isSalable,
+ *    sku
+ * ]
+]
  */
 class StockStatus
 {
     /**
-     * @var QueryProcessor
+     * @var GetSkuListInStock
      */
-    private $queryProcessor;
+    private $getSkuListInStock;
 
     /**
-     * @var string
+     * @var ResourceConnection
      */
-    private $queryName;
+    private $resourceConnection;
 
     /**
-     * @var string[]
+     * @var InventoryStockQuery
      */
-    private $data;
+    private $query;
 
-    /**
-     * @param QueryProcessor $queryProcessor
-     * @param string $queryName
-     * @param string[] $data
-     */
     public function __construct(
-        QueryProcessor $queryProcessor,
-        string $queryName,
-        array $data = []
+        GetSkuListInStock $getSkuListInStock,
+        ResourceConnection $resourceConnection,
+        InventoryStockQuery $query
     ) {
-        $this->data = $data;
-        $this->queryName = $queryName;
-        $this->queryProcessor = $queryProcessor;
+        $this->getSkuListInStock = $getSkuListInStock;
+        $this->resourceConnection = $resourceConnection;
+        $this->query = $query;
     }
 
     /**
@@ -54,22 +59,51 @@ class StockStatus
      */
     public function get(array $values): array
     {
-        $queryArguments = $this->data;
-        foreach ($values as $value) {
-            $queryArguments['sourceItemIds'][] = $value['id'];
-        }
+        $sourceItemIds = \array_column($values, 'sourceItemId');
+        $skuListInStock = $this->getSkuListInStock->execute($sourceItemIds);
+
+        $connection = $this->resourceConnection->getConnection();
         $output = [];
-        $cursor = $this->queryProcessor->execute($this->queryName, $queryArguments);
-        while ($row = $cursor->fetch()) {
-            //TODO: extend query and remove this hardcode
-//            $row['sku'] = "TestSku";
-//            $row['qty'] = "10";
-//            $row['qtyForSale'] = "4.5";
-//            $row['infiniteStock'] = false;
-//            $row['lowStock'] = true;
-//            $row['updatedAt'] = "2021-07-22 17:38:36";
-            $output[] = $row;
+        foreach ($skuListInStock as $skuInStock) {
+            $select = $this->query->getQuery($skuInStock->getSkuList(), $skuInStock->getStockId());
+            try {
+                $cursor = $connection->query($select);
+                while ($row = $cursor->fetch()) {
+                    $row['stockId'] = $skuInStock->getStockId();
+                    $row['id'] = $this->buildStockStatusId($row);
+                    $output[] = $row;
+                }
+            } catch (\Throwable $e) {
+                // handle case when view "inventory_stock_1" for default Stock does not exists
+                $output += \array_map(function ($sku) use ($skuInStock){
+                    $row = [
+                        'qty' => 0,
+                        'isSalable' => false,
+                        'sku' => $sku,
+                        'stockId' => $skuInStock->getStockId(),
+                    ];
+                    $row['id'] = $this->buildStockStatusId($row);
+                    return $row;
+                }, $skuInStock->getSkuList());
+            }
         }
         return $output;
+    }
+
+    /**
+     * @param array $row
+     * @return string
+     */
+    private function buildStockStatusId(array $row): string
+    {
+        if (!isset($row['stockId'], $row['sku'])) {
+            throw new \RuntimeException(
+                sprintf(
+                    "inventory_data_exporter_stock_status indexer error: cannot build unique id from %s",
+                    \implode(", ", $row)
+                )
+            );
+        }
+        return \hash('md5', $row['stockId'] . "\0" . $row['sku']);
     }
 }

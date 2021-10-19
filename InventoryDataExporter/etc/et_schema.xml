@@ -13,17 +13,11 @@
         <field name="id" type="ID"/>
         <field name="stockId" type="ID"/>
         <field name="sku" type="String"/>
-        <field name="qty" type="Float" provider="Magento\InventoryDataExporter\Model\Provider\Qty">
-            <using field="sku" />
-            <using field="stockId" />
-        </field>
+        <field name="qty" type="Float" />
         <field name="qtyForSale" type="Float"/>
         <field name="infiniteStock" type="Boolean"/>
         <field name="lowStock" type="Boolean"/>
-        <field name="isSalable" type="Boolean" provider="Magento\InventoryDataExporter\Model\Provider\IsSalable">
-            <using field="sku" />
-            <using field="stockId" />
-        </field>
+        <field name="isSalable" type="Boolean" />
         <field name="updatedAt" type="String"/>
     </record>
 </config>
