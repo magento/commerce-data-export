@@ -65,21 +65,41 @@ class InfiniteStock
     {
         $queryArguments = $this->data;
         $configManageStock = $this->stockConfiguration->getManageStock();
+        $configBackorders = $this->stockConfiguration->getBackorders();
         foreach ($values as $value) {
             $queryArguments['skus'][] = $value['sku'];
         }
         $output = [];
         $cursor = $this->queryProcessor->execute($this->queryName, $queryArguments);
         while ($row = $cursor->fetch()) {
-            $itemInfiniteStock = [
-                'sku' => $row['sku'],
-                'infiniteStock' => !$configManageStock
-            ];
-            if ((bool)$row['useConfigManageStock'] === false && isset($row['manageStock'])) {
-                $itemInfiniteStock['infiniteStock'] = !(bool)$row['manageStock'];
-            }
+            $itemInfiniteStock['sku'] = $row['sku'];
+            $itemInfiniteStock['infiniteStock'] = $this->getIsInfiniteStock(
+                $row,
+                (bool)$configManageStock,
+                (bool)$configBackorders
+            );
             $output[] = $itemInfiniteStock;
         }
         return $output;
+    }
+
+    /**
+     * Check is item stock is infinite
+     *
+     * @param array $row
+     * @param bool $configManageStock
+     * @param bool $configBackorders
+     * @return bool
+     */
+    private function getIsInfiniteStock(array $row, bool $configManageStock, bool $configBackorders): bool
+    {
+        $isInfinite = false === $configManageStock || true === $configBackorders;
+        if (false === (bool)$row['useConfigManageStock'] && isset($row['manageStock'])) {
+            $isInfinite = !(bool)$row['manageStock'];
+        }
+        if (false === $isInfinite && false === (bool)$row['useConfigBackorders'] && isset($row['backorders'])) {
+            $isInfinite = (bool)$row['backorders'];
+        }
+        return $isInfinite;
     }
 }

@@ -62,6 +62,8 @@
             <link-source name="cataloginventory_stock_item" link-type="inner">
                 <attribute name="manage_stock" alias="manageStock"/>
                 <attribute name="use_config_manage_stock" alias="useConfigManageStock"/>
+                <attribute name="backorders" alias="backorders"/>
+                <attribute name="use_config_backorders" alias="useConfigBackorders"/>
                 <using glue="and">
                     <condition attribute="product_id" operator="eq" type="identifier">catalog_product_entity.entity_id</condition>
                 </using>
