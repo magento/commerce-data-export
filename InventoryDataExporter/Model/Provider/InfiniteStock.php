@@ -8,8 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\InventoryDataExporter\Model\Provider;
 
-use Magento\CatalogInventory\Api\StockConfigurationInterface as StockConfigurationInterface;
-use Magento\InventoryDataExporter\Model\Helper\StockConfigurationProvider;
+use Magento\CatalogInventory\Api\StockConfigurationInterface;
 use Magento\QueryXml\Model\QueryProcessor;
 
 /**
@@ -33,19 +32,19 @@ class InfiniteStock
     private $data;
 
     /**
-     * @var StockConfigurationProvider
+     * @var StockConfigurationInterface
      */
     private $stockConfiguration;
 
     /**
      * @param QueryProcessor $queryProcessor
-     * @param StockConfigurationProvider $stockConfiguration
+     * @param StockConfigurationInterface $stockConfiguration
      * @param string $queryName
      * @param string[] $data
      */
     public function __construct(
         QueryProcessor $queryProcessor,
-        StockConfigurationProvider $stockConfiguration,
+        StockConfigurationInterface $stockConfiguration,
         string $queryName,
         array $data = []
     ) {
