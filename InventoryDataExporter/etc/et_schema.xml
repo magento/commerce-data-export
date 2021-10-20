@@ -15,7 +15,9 @@
         <field name="sku" type="String"/>
         <field name="qty" type="Float" />
         <field name="qtyForSale" type="Float"/>
-        <field name="infiniteStock" type="Boolean"/>
+        <field name="infiniteStock" type="Boolean" provider="Magento\InventoryDataExporter\Model\Provider\InfiniteStock">
+            <using field="sku" />
+        </field>
         <field name="lowStock" type="Boolean"/>
         <field name="isSalable" type="Boolean" />
         <field name="updatedAt" type="String"/>

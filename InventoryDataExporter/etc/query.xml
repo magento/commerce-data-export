@@ -53,4 +53,21 @@
             </link-source>
         </source>
     </query>
+    <query name="infiniteStock">
+        <source name="catalog_product_entity">
+            <attribute name="sku" alias="sku"/>
+            <filter glue="and">
+                <condition attribute="sku" operator="in" type="placeholder">skus</condition>
+            </filter>
+            <link-source name="cataloginventory_stock_item" link-type="inner">
+                <attribute name="manage_stock" alias="manageStock"/>
+                <attribute name="use_config_manage_stock" alias="useConfigManageStock"/>
+                <attribute name="backorders" alias="backorders"/>
+                <attribute name="use_config_backorders" alias="useConfigBackorders"/>
+                <using glue="and">
+                    <condition attribute="product_id" operator="eq" type="identifier">catalog_product_entity.entity_id</condition>
+                </using>
+            </link-source>
+        </source>
+    </query>
 </config>
