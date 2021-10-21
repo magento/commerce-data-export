@@ -14,7 +14,10 @@
         <field name="stockId" type="ID"/>
         <field name="sku" type="String"/>
         <field name="qty" type="Float" />
-        <field name="qtyForSale" type="Float"/>
+        <field name="qtyForSale" type="Float" provider="Magento\InventoryDataExporter\Model\Provider\QtyForSale">
+            <using field="sku" />
+            <using field="stockId" />
+        </field>
         <field name="infiniteStock" type="Boolean" provider="Magento\InventoryDataExporter\Model\Provider\InfiniteStock">
             <using field="sku" />
         </field>

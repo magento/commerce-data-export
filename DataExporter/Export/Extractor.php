@@ -48,19 +48,11 @@ class Extractor
         }
         if ($field['repeated'] && !$isRoot) {
             foreach ($data as $item) {
-                $index = [];
-                foreach ($field['using'] as $key) {
-                    $index[] = [$key['field'] => $item[$key['field']]];
-                }
-                $output[base64_encode(json_encode($index))][] = $item[$field['name']];
+                $output[LookupBuilder::build($field, $item)][] = $item[$field['name']];
             }
         } else {
             foreach ($data as $item) {
-                $index = [];
-                foreach ($field['using'] as $key) {
-                    $index[] = [$key['field'] => $item[$key['field']]];
-                }
-                $output[base64_encode(json_encode($index))] = $item[$field['name']];
+                $output[LookupBuilder::build($field, $item)] = $item[$field['name']];
             }
         }
         return $output;
