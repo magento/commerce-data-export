@@ -10,6 +10,7 @@ namespace Magento\InventoryDataExporter\Model\Provider;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\InventoryDataExporter\Model\Query\InventoryStockQuery;
+use Psr\Log\LoggerInterface;
 
 /**
  * Get inventory stock statuses
@@ -20,7 +21,7 @@ use Magento\InventoryDataExporter\Model\Query\InventoryStockQuery;
  *    isSalable,
  *    sku
  * ]
-]
+ * ]
  */
 class StockStatus
 {
@@ -34,12 +35,24 @@ class StockStatus
      */
     private $query;
 
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * @param ResourceConnection $resourceConnection
+     * @param InventoryStockQuery $query
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         ResourceConnection $resourceConnection,
-        InventoryStockQuery $query
+        InventoryStockQuery $query,
+        LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->query = $query;
+        $this->logger = $logger;
     }
 
     /**
@@ -48,40 +61,52 @@ class StockStatus
      * @param array $values
      * @return array
      * @throws \Zend_Db_Statement_Exception
+     * @throws \Throwable
      */
     public function get(array $values): array
     {
         $skus = \array_column($values, 'sku');
         $connection = $this->resourceConnection->getConnection();
         $output = [];
-        //TODO: limit stock-source ids
 
-        $select = $this->query->getQuery($skus);
         try {
+            $select = $this->query->getQuery($skus);
+            $cursor = $connection->query($select);
+            $processedSkus = [];
+            while ($row = $cursor->fetch()) {
+                $processedSkus[] = $row['sku'];
+                $output[] = $this->fillWithDefaultValues($row);
+            }
+
+            $select = $this->query->getQueryForDefaultStock(\array_diff($skus, $processedSkus));
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {
-                $row['id'] = StockStatusIdBuilder::build($row);
-                // set default values
-                $row['infiniteStock'] = false;
-                $row['qtyForSale'] = $row['qty'];
-                $output[] = $row;
+                $output[] = $this->fillWithDefaultValues($row);
             }
+
         } catch (\Throwable $e) {
-            // handle case when view "inventory_stock_1" for default Stock does not exists
-            $output += \array_map(static function ($sku) {
-                $row = [
-                    'qty' => 0,
-                    'isSalable' => false,
-                    'sku' => $sku,
-                    'stockId' => 1,
-                    'infiniteStock' => false,
-                    'qtyForSale' => 0
-                ];
-                $row['id'] = StockStatusIdBuilder::build($row);
-                return $row;
-            }, $skus);
+            $this->logger->error("StockStatus export error: " . $e->getMessage(), ['exception' => $e]);
+            throw $e;
         }
 
         return $output;
+    }
+
+    /**
+     * @param array $row
+     * @return array
+     */
+    private function fillWithDefaultValues(array $row): array
+    {
+        if (!isset($row['qty'], $row['isSalable'], $row['sku'], $row['stockId'], $row['manageStock'],
+            $row['useConfigManageStock'], $row['backorders'], $row['useConfigBackorders'])) {
+            throw new \RuntimeException("missed required field: " . \var_export($row, true));
+        }
+        $row['id'] = StockStatusIdBuilder::build($row);
+        // set default values
+        $row['infiniteStock'] = false;
+        $row['qtyForSale'] = $row['qty'];
+
+        return $row;
     }
 }

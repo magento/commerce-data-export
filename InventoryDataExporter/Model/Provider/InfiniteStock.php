@@ -9,7 +9,6 @@ declare(strict_types=1);
 namespace Magento\InventoryDataExporter\Model\Provider;
 
 use Magento\CatalogInventory\Api\StockConfigurationInterface;
-use Magento\QueryXml\Model\QueryProcessor;
 
 /**
  * Class for getting infinite stock value for stock item.
@@ -17,40 +16,16 @@ use Magento\QueryXml\Model\QueryProcessor;
 class InfiniteStock
 {
     /**
-     * @var QueryProcessor
-     */
-    private $queryProcessor;
-
-    /**
-     * @var string
-     */
-    private $queryName;
-
-    /**
-     * @var string[]
-     */
-    private $data;
-
-    /**
      * @var StockConfigurationInterface
      */
     private $stockConfiguration;
 
     /**
-     * @param QueryProcessor $queryProcessor
      * @param StockConfigurationInterface $stockConfiguration
-     * @param string $queryName
-     * @param string[] $data
      */
     public function __construct(
-        QueryProcessor $queryProcessor,
-        StockConfigurationInterface $stockConfiguration,
-        string $queryName,
-        array $data = []
+        StockConfigurationInterface $stockConfiguration
     ) {
-        $this->data = $data;
-        $this->queryName = $queryName;
-        $this->queryProcessor = $queryProcessor;
         $this->stockConfiguration = $stockConfiguration;
     }
 
@@ -63,15 +38,10 @@ class InfiniteStock
      */
     public function get(array $values): array
     {
-        $queryArguments = $this->data;
         $configManageStock = $this->stockConfiguration->getManageStock();
         $configBackorders = $this->stockConfiguration->getBackorders();
-        foreach ($values as $value) {
-            $queryArguments['skus'][] = $value['sku'];
-        }
         $output = [];
-        $cursor = $this->queryProcessor->execute($this->queryName, $queryArguments);
-        while ($row = $cursor->fetch()) {
+        foreach ($values as $row) {
             $itemInfiniteStock['sku'] = $row['sku'];
             $itemInfiniteStock['infiniteStock'] = $this->getIsInfiniteStock(
                 $row,
