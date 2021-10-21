@@ -64,46 +64,38 @@ class StockStatus
 
         $connection = $this->resourceConnection->getConnection();
         $output = [];
+        //TODO: limit stock-source ids
+
         foreach ($skuListInStock as $skuInStock) {
             $select = $this->query->getQuery($skuInStock->getSkuList(), $skuInStock->getStockId());
             try {
                 $cursor = $connection->query($select);
                 while ($row = $cursor->fetch()) {
                     $row['stockId'] = $skuInStock->getStockId();
-                    $row['id'] = $this->buildStockStatusId($row);
+                    $row['id'] = StockStatusIdBuilder::build($row);
+
+                    // set default values
+                    $row['infiniteStock'] = false;
+                    $row['qtyForSale'] = $row['qty'];
                     $output[] = $row;
                 }
             } catch (\Throwable $e) {
                 // handle case when view "inventory_stock_1" for default Stock does not exists
-                $output += \array_map(function ($sku) use ($skuInStock){
+                $output += \array_map(static function ($sku) use ($skuInStock){
                     $row = [
                         'qty' => 0,
                         'isSalable' => false,
                         'sku' => $sku,
                         'stockId' => $skuInStock->getStockId(),
+                        'infiniteStock' => false,
+                        'qtyForSale' => 0
                     ];
-                    $row['id'] = $this->buildStockStatusId($row);
+                    $row['id'] = StockStatusIdBuilder::build($row);
                     return $row;
                 }, $skuInStock->getSkuList());
             }
         }
-        return $output;
-    }
 
-    /**
-     * @param array $row
-     * @return string
-     */
-    private function buildStockStatusId(array $row): string
-    {
-        if (!isset($row['stockId'], $row['sku'])) {
-            throw new \RuntimeException(
-                sprintf(
-                    "inventory_data_exporter_stock_status indexer error: cannot build unique id from %s",
-                    \implode(", ", $row)
-                )
-            );
-        }
-        return \hash('md5', $row['stockId'] . "\0" . $row['sku']);
+        return $output;
     }
 }

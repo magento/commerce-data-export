@@ -70,4 +70,22 @@
             </link-source>
         </source>
     </query>
+
+    <!-- Calculate reserved qty. Used to calculate real quantity
+
+    SELECT SUM(quantity) AS `quantity`, sku FROM `inventory_reservation`
+    WHERE stock_id in (<stock_ids>) AND sku in (<skus>)
+    GROUP by stock_id, sku
+     -->
+    <query name="inventoryExporterGetReservations">
+        <source name="inventory_reservation">
+            <attribute name="quantity" alias="quantity" function="sum"/>
+            <filter glue="and">
+                <condition attribute="sku" operator="in" type="placeholder">skus</condition>
+                <condition attribute="stock_id" operator="in" type="placeholder">stock_ids</condition>
+            </filter>
+            <attribute name="stock_id" group="true" alias="stockId" />
+            <attribute name="sku" group="true" />
+        </source>
+    </query>
 </config>
