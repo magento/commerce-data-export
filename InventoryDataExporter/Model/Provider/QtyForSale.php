@@ -50,6 +50,7 @@ class QtyForSale
      *
      * @param array $values
      * @return array
+     * @throws \Zend_Db_Statement_Exception
      */
     public function get(array $values): array
     {
