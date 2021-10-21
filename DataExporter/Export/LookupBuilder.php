@@ -10,7 +10,8 @@ namespace Magento\DataExporter\Export;
 /**
  * Build lookup value based in "using" field
  */
-class LookupBuilder {
+class LookupBuilder
+{
 
     /**
      * @param array $field
