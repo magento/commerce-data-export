@@ -10,7 +10,6 @@ namespace Magento\InventoryDataExporter\Model\Provider;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\InventoryDataExporter\Model\Query\InventoryStockQuery;
-use Magento\InventoryIndexer\Indexer\SourceItem\GetSkuListInStock;
 
 /**
  * Get inventory stock statuses
@@ -26,11 +25,6 @@ use Magento\InventoryIndexer\Indexer\SourceItem\GetSkuListInStock;
 class StockStatus
 {
     /**
-     * @var GetSkuListInStock
-     */
-    private $getSkuListInStock;
-
-    /**
      * @var ResourceConnection
      */
     private $resourceConnection;
@@ -41,11 +35,9 @@ class StockStatus
     private $query;
 
     public function __construct(
-        GetSkuListInStock $getSkuListInStock,
         ResourceConnection $resourceConnection,
         InventoryStockQuery $query
     ) {
-        $this->getSkuListInStock = $getSkuListInStock;
         $this->resourceConnection = $resourceConnection;
         $this->query = $query;
     }
@@ -59,41 +51,35 @@ class StockStatus
      */
     public function get(array $values): array
     {
-        $sourceItemIds = \array_column($values, 'sourceItemId');
-        $skuListInStock = $this->getSkuListInStock->execute($sourceItemIds);
-
+        $skus = \array_column($values, 'sku');
         $connection = $this->resourceConnection->getConnection();
         $output = [];
         //TODO: limit stock-source ids
 
-        foreach ($skuListInStock as $skuInStock) {
-            $select = $this->query->getQuery($skuInStock->getSkuList(), $skuInStock->getStockId());
-            try {
-                $cursor = $connection->query($select);
-                while ($row = $cursor->fetch()) {
-                    $row['stockId'] = $skuInStock->getStockId();
-                    $row['id'] = StockStatusIdBuilder::build($row);
-
-                    // set default values
-                    $row['infiniteStock'] = false;
-                    $row['qtyForSale'] = $row['qty'];
-                    $output[] = $row;
-                }
-            } catch (\Throwable $e) {
-                // handle case when view "inventory_stock_1" for default Stock does not exists
-                $output += \array_map(static function ($sku) use ($skuInStock){
-                    $row = [
-                        'qty' => 0,
-                        'isSalable' => false,
-                        'sku' => $sku,
-                        'stockId' => $skuInStock->getStockId(),
-                        'infiniteStock' => false,
-                        'qtyForSale' => 0
-                    ];
-                    $row['id'] = StockStatusIdBuilder::build($row);
-                    return $row;
-                }, $skuInStock->getSkuList());
+        $select = $this->query->getQuery($skus);
+        try {
+            $cursor = $connection->query($select);
+            while ($row = $cursor->fetch()) {
+                $row['id'] = StockStatusIdBuilder::build($row);
+                // set default values
+                $row['infiniteStock'] = false;
+                $row['qtyForSale'] = $row['qty'];
+                $output[] = $row;
             }
+        } catch (\Throwable $e) {
+            // handle case when view "inventory_stock_1" for default Stock does not exists
+            $output += \array_map(static function ($sku) {
+                $row = [
+                    'qty' => 0,
+                    'isSalable' => false,
+                    'sku' => $sku,
+                    'stockId' => 1,
+                    'infiniteStock' => false,
+                    'qtyForSale' => 0
+                ];
+                $row['id'] = StockStatusIdBuilder::build($row);
+                return $row;
+            }, $skus);
         }
 
         return $output;

@@ -46,7 +46,7 @@ class AllIdsResolver
                 $continueReindex = false;
             } else {
                 yield $ids;
-                $lastKnownId = end($ids)[$metadata->getFeedIdentity()];
+                $lastKnownId = end($ids)['primary_key'];
             }
         }
     }
@@ -60,15 +60,20 @@ class AllIdsResolver
      */
     private function getIdsSelect(int $lastKnownId, FeedIndexMetadata $metadata): Select
     {
-        $columnExpression = sprintf('s.%s', $metadata->getSourceTableField());
-        $whereClause = sprintf('s.%s > ?', $metadata->getSourceTableField());
         $connection = $this->resourceConnection->getConnection();
+        $tableName = $this->resourceConnection->getTableName($metadata->getSourceTableName());
+
+        $indexesList = $connection->getIndexList($tableName);
+        $primaryKey = $indexesList[$connection->getPrimaryKeyName($tableName)]['COLUMNS_LIST'][0];
+        $whereClause = sprintf('s.%s > ?', $primaryKey);
+        $columnExpression = sprintf('s.%s', $primaryKey);
+
         return $connection->select()
             ->from(
-                ['s' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
+                ['s' => $tableName],
                 [
-                    $metadata->getFeedIdentity() =>
-                        's.' . $metadata->getSourceTableField()
+                    $metadata->getFeedIdentity() => 's.' . $metadata->getSourceTableField(),
+                    'primary_key' => 's.' . $primaryKey
                 ]
             )
             ->where($whereClause, $lastKnownId)
