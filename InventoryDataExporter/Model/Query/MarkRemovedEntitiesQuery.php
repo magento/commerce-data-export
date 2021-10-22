@@ -45,11 +45,11 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
         $connection = $this->resourceConnection->getConnection();
         return $connection->select()
             ->joinLeft(
-                ['s' => $this->resourceConnection->getTableName($metadata->getSourceTableField())],
+                ['s' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
                 \sprintf('f.%s = s.%s', 'product_id', $metadata->getSourceTableField()),
                 ['is_deleted' => new \Zend_Db_Expr('1')]
             )
-            ->where(\sprintf('s.%s', $metadata->getSourceTableField()) . ' IN (?)', $ids)
+            ->where(\sprintf('f.%s', 'product_id') . ' IN (?)', $ids)
             ->where(\sprintf('s.%s IS NULL', $metadata->getSourceTableField()));
     }
 }
