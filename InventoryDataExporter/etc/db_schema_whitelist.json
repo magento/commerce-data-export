@@ -8,9 +8,8 @@
         },
         "column": {
             "id": true,
-            "sku": true,
             "item_id": true,
-            "stock_id": true,
+            "product_id": true,
             "feed_data": true,
             "modified_at": true,
             "is_deleted": true
