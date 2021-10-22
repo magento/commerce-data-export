@@ -24,10 +24,10 @@
     <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">stock_statuses</argument>
-            <argument name="feedIdentity" xsi:type="string">productId</argument>
+            <argument name="feedIdentity" xsi:type="string">sku</argument>
             <!--  source table used only during full reindex -->
             <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
-            <argument name="sourceTableField" xsi:type="string">entity_id</argument>
+            <argument name="sourceTableField" xsi:type="string">sku</argument>
             <argument name="feedTableName" xsi:type="string">inventory_data_exporter_stock_status</argument>
             <argument name="feedTableField" xsi:type="string">id</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">

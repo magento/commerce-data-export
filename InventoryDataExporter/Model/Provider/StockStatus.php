@@ -65,20 +65,20 @@ class StockStatus
      */
     public function get(array $values): array
     {
-        $productIds = \array_column($values, 'productId');
+        $skus = \array_column($values, 'sku');
         $connection = $this->resourceConnection->getConnection();
         $output = [];
 
         try {
-            $select = $this->query->getQuery($productIds);
+            $select = $this->query->getQuery($skus);
             $cursor = $connection->query($select);
-            $processedIds = [];
+            $processedSkus = [];
             while ($row = $cursor->fetch()) {
-                $processedIds[] = $row['productId'];
+                $processedSkus[] = $row['sku'];
                 $output[] = $this->fillWithDefaultValues($row);
             }
 
-            $select = $this->query->getQueryForDefaultStock(\array_diff($productIds, $processedIds));
+            $select = $this->query->getQueryForDefaultStock(\array_diff($skus, $processedSkus));
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {
                 $output[] = $this->fillWithDefaultValues($row);

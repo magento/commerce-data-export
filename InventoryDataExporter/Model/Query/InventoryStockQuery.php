@@ -51,10 +51,11 @@ class InventoryStockQuery
     /**
      * Get query for provider
      *
-     * @param array $productIds
+     * @param array $skus
+     * @param bool $defaultStock
      * @return Select
      */
-    public function getQuery(array $productIds): Select
+    public function getQuery(array $skus): Select
     {
         $connection = $this->resourceConnection->getConnection();
         foreach ($this->getStocks() as $stockId) {
@@ -64,19 +65,12 @@ class InventoryStockQuery
             }
             $select = $connection->select()
                 ->from(['isi' => $this->getTable(sprintf('inventory_stock_%s', $stockId))], [])
-                ->joinInner(
-                    [
-                        'product' => $this->resourceConnection->getTableName('catalog_product_entity'),
-                    ],
-                    'product.sku = isi.sku',
-                    []
-                )->where('product.entity_id IN (?)', $productIds)
+                ->where('isi.sku IN (?)', $skus)
                 ->columns(
                     [
-                        'sku' => "isi.sku",
-                        'productId' => "product.entity_id",
                         'qty' => "isi.quantity",
                         'isSalable' => "isi.is_salable",
+                        'sku' => "isi.sku",
                         'stockId' => new Expression($stockId),
                         'manageStock' => new Expression(1),
                         'useConfigManageStock' => new Expression(1),
@@ -93,17 +87,17 @@ class InventoryStockQuery
     /**
      * Get data for default stock: "inventory_stock_1" is a view used as a fallback
      *
-     * @param array $productIds
+     * @param array $skus
      * @return Select
      * @see \Magento\InventoryCatalog\Setup\Patch\Schema\CreateLegacyStockStatusView
      */
-    public function getQueryForDefaultStock(array $productIds): Select
+    public function getQueryForDefaultStock(array $skus): Select
     {
         $connection = $this->resourceConnection->getConnection();
         $stockId = $this->defaultStockProvider->getId();
         $select = $connection->select()
             ->from(['isi' => $this->getTable(sprintf('inventory_stock_%s', $stockId))], [])
-            ->where('stock_item.product_id IN (?)', $productIds)
+            ->where('isi.sku IN (?)', $skus)
             ->joinInner(
                 [
                     'stock_item' => $this->resourceConnection->getTableName('cataloginventory_stock_item'),
@@ -112,10 +106,9 @@ class InventoryStockQuery
                 []
             )->columns(
                 [
-                    'sku' => "isi.sku",
-                    'productId' => "stock_item.product_id",
                     'qty' => "isi.quantity",
                     'isSalable' => "isi.is_salable",
+                    'sku' => "isi.sku",
                     'stockId' => new Expression($stockId),
                     'manageStock' => 'stock_item.manage_stock',
                     'useConfigManageStock' => 'stock_item.use_config_manage_stock',
