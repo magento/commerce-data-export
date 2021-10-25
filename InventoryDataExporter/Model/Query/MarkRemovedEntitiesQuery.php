@@ -19,6 +19,11 @@ use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery as DefaultMarkRemo
 class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
 {
     /**
+     * Field that can be used for mapping between source table and feed table
+     */
+    private const FEED_TABLE_FIELD = 'sku';
+
+    /**
      * @var ResourceConnection
      */
     private $resourceConnection;
@@ -43,13 +48,15 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
     public function getQuery(array $ids, FeedIndexMetadata $metadata): Select
     {
         $connection = $this->resourceConnection->getConnection();
+        $sourceTableField = $metadata->getSourceTableField();
+        $feedTableField = self::FEED_TABLE_FIELD;
         return $connection->select()
             ->joinLeft(
                 ['s' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
-                \sprintf('f.%s = s.%s', 'product_id', $metadata->getSourceTableField()),
+                \sprintf('f.%s = s.%s', $feedTableField, $sourceTableField),
                 ['is_deleted' => new \Zend_Db_Expr('1')]
             )
-            ->where(\sprintf('f.%s', 'product_id') . ' IN (?)', $ids)
-            ->where(\sprintf('s.%s IS NULL', $metadata->getSourceTableField()));
+            ->where(\sprintf('f.%s', $feedTableField) . ' IN (?)', $ids)
+            ->where(\sprintf('s.%s IS NULL', $sourceTableField));
     }
 }

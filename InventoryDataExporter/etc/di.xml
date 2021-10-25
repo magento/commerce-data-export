@@ -40,7 +40,7 @@
         <arguments>
             <argument name="mapping" xsi:type="array">
                 <item name="id" xsi:type="string">id</item>
-                <item name="product_id" xsi:type="string">productId</item>
+                <item name="sku" xsi:type="string">sku</item>
             </argument>
         </arguments>
     </virtualType>

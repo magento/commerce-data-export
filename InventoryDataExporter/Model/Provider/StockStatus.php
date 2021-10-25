@@ -98,7 +98,7 @@ class StockStatus
      */
     private function fillWithDefaultValues(array $row): array
     {
-        if (!isset($row['qty'], $row['isSalable'], $row['sku'], $row['productId'], $row['stockId'], $row['manageStock'],
+        if (!isset($row['qty'], $row['isSalable'], $row['sku'], $row['stockId'], $row['manageStock'],
             $row['useConfigManageStock'], $row['backorders'], $row['useConfigBackorders'])) {
             throw new \RuntimeException("missed required field: " . \var_export($row, true));
         }

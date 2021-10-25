@@ -16,10 +16,11 @@
             comment="ID"
             onCreate="migrateDataFromJSON(JSON_EXTRACT(feed_data, '$.id'))"
         />
-        <column xsi:type="int"
-                name="product_id"
+        <column xsi:type="varchar"
+                name="sku"
                 nullable="false"
-                comment="Product Id"
+                length="64"
+                comment="Product SKU"
         />
         <column
             xsi:type="mediumtext"
