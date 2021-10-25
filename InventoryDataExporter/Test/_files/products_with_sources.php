@@ -1,0 +1,326 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * Create Inventory entities:
+ * - Stocks
+ * - Sources assigned to Stocks
+ * - products assigned to Stocks & default stocks
+ */
+declare(strict_types=1);
+
+use Magento\Framework\Api\DataObjectHelper;
+use Magento\InventoryApi\Api\Data\StockInterface;
+use Magento\InventoryApi\Api\Data\StockInterfaceFactory;
+use Magento\InventoryApi\Api\StockRepositoryInterface;
+use Magento\TestFramework\Helper\Bootstrap;
+
+use Magento\InventoryApi\Api\Data\SourceInterface;
+use Magento\InventoryApi\Api\Data\SourceInterfaceFactory;
+use Magento\InventoryApi\Api\SourceRepositoryInterface;
+use Magento\InventoryApi\Api\Data\StockSourceLinkInterface;
+use Magento\InventoryApi\Api\Data\StockSourceLinkInterfaceFactory;
+use Magento\InventoryApi\Api\StockSourceLinksSaveInterface;
+
+use Magento\Catalog\Api\Data\ProductInterfaceFactory;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Type;
+
+use Magento\InventoryApi\Api\Data\SourceItemInterface;
+use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
+use Magento\InventoryApi\Api\SourceItemsSaveInterface;
+
+
+const TEST_EU_STOCK_ID = 10;
+const TEST_US_STOCK_ID = 20;
+const TEST_GLOBAL_STOCK_ID = 30;
+
+/**
+ * Generate the following structure:
+ *
+ * :::Stocks:::
+ * EU_stock (id: 10)
+ *  - eu-1
+ *  - eu-2
+ *
+ * US_stock (id: 20)
+ *  - us-1
+ *
+ * Global_stock (id: 30)
+ *  - eu-1
+ *  - us-1
+ *
+ * :::Products:::
+ *
+ * product_with_default_stock_only
+ *  Default Stock qty: 8.5
+ *
+ * product_with_disabled_manage_stock
+ *  manage_stock = false
+ *
+ * product_with_enabled_backorders
+ *
+ * product_in_EU_stock_with_2_sources
+ * - eu-1 - 5.5qty
+ * - eu-2 - 3qty
+ *
+ * product_in_Global_stock_with_3_sources
+ * - eu-1 - 1qty
+ * - eu-2 - 2qty
+ * - us-1 - 3qty
+
+ */
+
+createStocks();
+createSources();
+assignSourceToStock();
+createProducts();
+assignProductsToSources();
+
+/**
+ * Create stocks
+ */
+function createStocks(): void
+{
+    /** @var StockInterfaceFactory $stockFactory */
+    $stockFactory = Bootstrap::getObjectManager()->get(StockInterfaceFactory::class);
+    /** @var DataObjectHelper $dataObjectHelper */
+    $dataObjectHelper = Bootstrap::getObjectManager()->get(DataObjectHelper::class);
+    /** @var StockRepositoryInterface $stockRepository */
+    $stockRepository = Bootstrap::getObjectManager()->get(StockRepositoryInterface::class);
+
+    $stocksData = [
+        [
+            // define only required and needed for tests fields
+            StockInterface::STOCK_ID => TEST_EU_STOCK_ID,
+            StockInterface::NAME => 'EU_stock',
+        ],
+        [
+            StockInterface::STOCK_ID => TEST_US_STOCK_ID,
+            StockInterface::NAME => 'US_stock',
+        ],
+        [
+            StockInterface::STOCK_ID => TEST_GLOBAL_STOCK_ID,
+            StockInterface::NAME => 'Global_stock',
+        ]
+    ];
+    foreach ($stocksData as $stockData) {
+        /** @var StockInterface $stock */
+        $stock = $stockFactory->create();
+        $dataObjectHelper->populateWithArray($stock, $stockData, StockInterface::class);
+        $stockRepository->save($stock);
+    }
+}
+
+/**
+ * Create Sources
+ */
+function createSources(): void
+{
+    /** @var SourceInterfaceFactory $sourceFactory */
+    $sourceFactory = Bootstrap::getObjectManager()->get(SourceInterfaceFactory::class);
+    /** @var DataObjectHelper $dataObjectHelper */
+    $dataObjectHelper = Bootstrap::getObjectManager()->get(DataObjectHelper::class);
+    /** @var SourceRepositoryInterface $sourceRepository */
+    $sourceRepository = Bootstrap::getObjectManager()->get(SourceRepositoryInterface::class);
+
+    $sourcesData = [
+        [
+            // define only required and needed for tests fields
+            SourceInterface::SOURCE_CODE => 'eu-1',
+            SourceInterface::NAME => 'EU-source-1',
+            SourceInterface::ENABLED => true,
+            SourceInterface::POSTCODE => 'postcode',
+            SourceInterface::COUNTRY_ID => 'FR',
+        ],
+        [
+            SourceInterface::SOURCE_CODE => 'eu-2',
+            SourceInterface::NAME => 'EU-source-2',
+            SourceInterface::ENABLED => true,
+            SourceInterface::POSTCODE => 'postcode',
+            SourceInterface::COUNTRY_ID => 'FR',
+        ],
+        [
+            SourceInterface::SOURCE_CODE => 'us-1',
+            SourceInterface::NAME => 'US-source-1',
+            SourceInterface::ENABLED => true,
+            SourceInterface::POSTCODE => 'postcode',
+            SourceInterface::COUNTRY_ID => 'US',
+        ],
+    ];
+    foreach ($sourcesData as $sourceData) {
+        /** @var SourceInterface $source */
+        $source = $sourceFactory->create();
+        $dataObjectHelper->populateWithArray($source, $sourceData, SourceInterface::class);
+        $sourceRepository->save($source);
+    }
+}
+
+/**
+ * Link Source to Stocks
+ */
+function assignSourceToStock(): void
+{
+    /** @var DataObjectHelper $dataObjectHelper */
+    $dataObjectHelper = Bootstrap::getObjectManager()->get(DataObjectHelper::class);
+    /** @var StockSourceLinksSaveInterface $stockSourceLinksSave */
+    $stockSourceLinksSave = Bootstrap::getObjectManager()->get(StockSourceLinksSaveInterface::class);
+    /** @var StockSourceLinkInterfaceFactory $stockSourceLinkFactory */
+    $stockSourceLinkFactory = Bootstrap::getObjectManager()->get(StockSourceLinkInterfaceFactory::class);
+
+    $linksData = [
+        [
+            StockSourceLinkInterface::STOCK_ID => TEST_EU_STOCK_ID,
+            StockSourceLinkInterface::SOURCE_CODE => 'eu-1',
+            StockSourceLinkInterface::PRIORITY => 1,
+        ],
+        [
+            StockSourceLinkInterface::STOCK_ID => TEST_EU_STOCK_ID,
+            StockSourceLinkInterface::SOURCE_CODE => 'eu-2',
+            StockSourceLinkInterface::PRIORITY => 2,
+        ],
+        [
+            StockSourceLinkInterface::STOCK_ID => TEST_US_STOCK_ID,
+            StockSourceLinkInterface::SOURCE_CODE => 'us-1',
+            StockSourceLinkInterface::PRIORITY => 1,
+        ],
+        [
+            StockSourceLinkInterface::STOCK_ID => TEST_GLOBAL_STOCK_ID,
+            StockSourceLinkInterface::SOURCE_CODE => 'eu-1',
+            StockSourceLinkInterface::PRIORITY => 1,
+        ],
+        [
+            StockSourceLinkInterface::STOCK_ID => TEST_GLOBAL_STOCK_ID,
+            StockSourceLinkInterface::SOURCE_CODE => 'eu-2',
+            StockSourceLinkInterface::PRIORITY => 1,
+        ],
+        [
+            StockSourceLinkInterface::STOCK_ID => TEST_GLOBAL_STOCK_ID,
+            StockSourceLinkInterface::SOURCE_CODE => 'us-1',
+            StockSourceLinkInterface::PRIORITY => 2,
+        ],
+    ];
+
+    $links = [];
+    foreach ($linksData as $linkData) {
+        /** @var StockSourceLinkInterface $link */
+        $link = $stockSourceLinkFactory->create();
+        $dataObjectHelper->populateWithArray($link, $linkData, StockSourceLinkInterface::class);
+        $links[] = $link;
+    }
+    $stockSourceLinksSave->execute($links);
+}
+
+function createProducts()
+{
+    $objectManager = Bootstrap::getObjectManager();
+    /** @var ProductInterfaceFactory $productFactory */
+    $productFactory = $objectManager->get(ProductInterfaceFactory::class);
+    /** @var ProductRepositoryInterface $productRepository */
+    $productRepository = $objectManager->get(ProductRepositoryInterface::class);
+    $productRepository->cleanCache();
+
+    $stockData = [
+        'product_with_default_stock_only' => [
+            'qty' => 8.5,
+            'is_in_stock' => true,
+            'manage_stock' => true,
+            'is_qty_decimal' => true
+        ],
+        'product_with_disabled_manage_stock' => [
+            'use_config_manage_stock' => false,
+            'manage_stock' => false,
+        ],
+        'product_with_enabled_backorders' => [
+            'qty' => 5,
+            'is_in_stock' => true,
+            'manage_stock' => true,
+            'min_qty' => -3,
+            'backorders' => true
+        ],
+        'product_in_EU_stock_with_2_sources' => [
+            'qty' => 0,
+            'is_in_stock' => true,
+            'is_qty_decimal' => true,
+            'manage_stock' => true
+        ],
+        'product_in_Global_stock_with_3_sources' => [
+            'qty' => 0,
+            'is_in_stock' => true,
+            'manage_stock' => true
+        ],
+    ];
+
+    foreach ($stockData as $sku => $productStockData) {
+        $product = $productFactory->create();
+        $product->setTypeId(Type::TYPE_SIMPLE)
+            ->setAttributeSetId(4)
+            ->setName('Simple Product ' . $sku)
+            ->setSku($sku)
+            ->setPrice(10)
+            ->setStockData($productStockData)
+            ->setStatus(Status::STATUS_ENABLED);
+        $productRepository->save($product);
+    }
+}
+
+function assignProductsToSources(): void
+{
+    /** @var DataObjectHelper $dataObjectHelper */
+    $dataObjectHelper = Bootstrap::getObjectManager()->get(DataObjectHelper::class);
+    /** @var SourceItemInterfaceFactory $sourceItemFactory */
+    $sourceItemFactory = Bootstrap::getObjectManager()->get(SourceItemInterfaceFactory::class);
+    /** @var  SourceItemsSaveInterface $sourceItemsSave */
+    $sourceItemsSave = Bootstrap::getObjectManager()->get(SourceItemsSaveInterface::class);
+
+    $sourcesItemsData = [
+        [
+            SourceItemInterface::SOURCE_CODE => 'eu-1',
+            SourceItemInterface::SKU => 'product_in_EU_stock_with_2_sources',
+            SourceItemInterface::QUANTITY => 5.5,
+            SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+        ],
+        [
+            SourceItemInterface::SOURCE_CODE => 'eu-2',
+            SourceItemInterface::SKU => 'product_in_EU_stock_with_2_sources',
+            SourceItemInterface::QUANTITY => 4,
+            SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+        ],
+        [
+            SourceItemInterface::SOURCE_CODE => 'eu-1',
+            SourceItemInterface::SKU => 'product_in_Global_stock_with_3_sources',
+            SourceItemInterface::QUANTITY => 1,
+            SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+        ],
+        [
+            SourceItemInterface::SOURCE_CODE => 'eu-2',
+            SourceItemInterface::SKU => 'product_in_Global_stock_with_3_sources',
+            SourceItemInterface::QUANTITY => 2,
+            SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+        ],
+        [
+            SourceItemInterface::SOURCE_CODE => 'us-1',
+            SourceItemInterface::SKU => 'product_in_Global_stock_with_3_sources',
+            SourceItemInterface::QUANTITY => 4,
+            SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+        ],
+        // TODO
+//        [
+//            SourceItemInterface::SOURCE_CODE => 'eu-2',
+//            SourceItemInterface::SKU => 'SKU-3',
+//            SourceItemInterface::QUANTITY => 6,
+//            SourceItemInterface::STATUS => SourceItemInterface::STATUS_OUT_OF_STOCK,
+//        ],
+    ];
+
+    $sourceItems = [];
+    foreach ($sourcesItemsData as $sourceItemData) {
+        /** @var SourceItemInterface $source */
+        $sourceItem = $sourceItemFactory->create();
+        $dataObjectHelper->populateWithArray($sourceItem, $sourceItemData, SourceItemInterface::class);
+        $sourceItems[] = $sourceItem;
+    }
+    $sourceItemsSave->execute($sourceItems);
+}

@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Magento\InventoryDataExporter\Model\Provider;
 
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Adapter\TableNotFoundException;
 use Magento\InventoryDataExporter\Model\Query\InventoryStockQuery;
 use Psr\Log\LoggerInterface;
 
@@ -83,9 +84,12 @@ class StockStatus
             while ($row = $cursor->fetch()) {
                 $output[] = $this->fillWithDefaultValues($row);
             }
-
+        } catch (TableNotFoundException $e) {
+            $this->logger->warning(
+                'StockStatus export warning. Inventory index should be run first. Error: ' . $e->getMessage(). ' '
+            );
         } catch (\Throwable $e) {
-            $this->logger->error("StockStatus export error: " . $e->getMessage(), ['exception' => $e]);
+            $this->logger->error('StockStatus export error: ' . $e->getMessage(), ['exception' => $e]);
             throw $e;
         }
 
