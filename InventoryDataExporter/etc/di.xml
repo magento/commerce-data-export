@@ -65,4 +65,9 @@
             <argument name="feedIndexMetadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
         </arguments>
     </virtualType>
+
+    <type name="\Magento\Framework\Mview\View\Changelog">
+        <plugin name="create_stock_item_changelog_table" type="\Magento\InventoryDataExporter\Plugin\Mview\StockStatusChangelog"/>
+    </type>
+
 </config>
