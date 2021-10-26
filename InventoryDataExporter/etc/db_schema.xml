@@ -8,13 +8,19 @@
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
     <table name="inventory_data_exporter_stock_status" resource="default" engine="innodb" comment="Inventory Stock Status Feed Storage">
+        <column xsi:type="varchar"
+                name="id"
+                padding="10"
+                nullable="false"
+                length="64"
+                comment="ID"
+        />
         <column xsi:type="int"
-            name="id"
-            padding="10"
-            unsigned="true"
-            nullable="false"
-            comment="ID"
-            onCreate="migrateDataFromJSON(JSON_EXTRACT(feed_data, '$.id'))"
+                name="stock_id"
+                padding="10"
+                unsigned="true"
+                nullable="false"
+                comment="Stock ID"
         />
         <column xsi:type="varchar"
                 name="sku"

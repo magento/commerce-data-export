@@ -58,6 +58,7 @@ class InventoryStockQuery
     public function getQuery(array $skus): Select
     {
         $connection = $this->resourceConnection->getConnection();
+        $selects = [];
         foreach ($this->getStocks() as $stockId) {
             $stockId = (int)$stockId;
             if ($this->defaultStockProvider->getId() === $stockId) {

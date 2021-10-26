@@ -8,7 +8,7 @@
         },
         "column": {
             "id": true,
-            "item_id": true,
+            "stock_id": true,
             "sku": true,
             "feed_data": true,
             "modified_at": true,

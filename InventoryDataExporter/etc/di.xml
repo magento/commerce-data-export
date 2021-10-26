@@ -6,11 +6,6 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <type name="Magento\InventoryDataExporter\Model\Query\MainProductQuery">
-        <arguments>
-            <argument name="mainTable" xsi:type="string">catalog_product_entity</argument>
-        </arguments>
-    </type>
     <type name="Magento\InventoryDataExporter\Model\Provider\StockStatus">
         <arguments>
             <argument name="queryName" xsi:type="string">stockStatus</argument>
@@ -26,10 +21,10 @@
             <argument name="feedName" xsi:type="string">stock_statuses</argument>
             <argument name="feedIdentity" xsi:type="string">sku</argument>
             <!--  source table used only during full reindex -->
-            <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
+            <argument name="sourceTableName" xsi:type="string">inventory_source_item</argument>
             <argument name="sourceTableField" xsi:type="string">sku</argument>
             <argument name="feedTableName" xsi:type="string">inventory_data_exporter_stock_status</argument>
-            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableField" xsi:type="string">sku</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
@@ -40,43 +35,15 @@
         <arguments>
             <argument name="mapping" xsi:type="array">
                 <item name="id" xsi:type="string">id</item>
+                <item name="stock_id" xsi:type="string">stockId</item>
                 <item name="sku" xsi:type="string">sku</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexProcessorCreateUpdateDelete" type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
-        <arguments>
-            <argument name="markRemovedEntities" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusMarkRemovedEntities</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusMarkRemovedEntities" type="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
-        <arguments>
-            <argument name="markRemovedEntitiesQuery" xsi:type="object">Magento\InventoryDataExporter\Model\Query\MarkRemovedEntitiesQuery</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\InventoryFeedIndexProcessorCreateUpdateDelete" type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
-        <arguments>
-            <argument name="markRemovedEntities" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\InventoryMarkRemovedEntities</argument>
-        </arguments>
-    </virtualType>
-    <!-- :begin: The following configuration substitutes delete logic for stock items status-->
-    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\InventoryMarkRemovedEntities" type="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
-        <arguments>
-            <argument name="markRemovedEntitiesQuery" xsi:type="object">Magento\InventoryDataExporter\Model\Query\MarkRemovedEntitiesQuery</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\InventoryFeedIndexProcessorCreateUpdateDelete" type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
-        <arguments>
-            <argument name="markRemovedEntities" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\InventoryMarkRemovedEntities</argument>
-        </arguments>
-    </virtualType>
-    <!-- :end: The following configuration substitutes delete logic for stock items status-->
     <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexer"  type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusDataSerializer</argument>
-            <argument name="processor" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\InventoryFeedIndexProcessorCreateUpdateDelete</argument>
-            <!--            <argument name="entityIdsProvider" xsi:type="object">\Magento\InventoryDataExporter\Indexer\StockStatusIdsProvider</argument>-->
         </arguments>
     </virtualType>
     <virtualType name="Magento\InventoryDataExporter\Model\StockStatusFeed" type="Magento\DataExporter\Model\Feed">
@@ -89,4 +56,15 @@
         <plugin name="create_stock_item_changelog_table" type="\Magento\InventoryDataExporter\Plugin\Mview\StockStatusChangelog"/>
     </type>
 
+    <type name="Magento\Inventory\Model\ResourceModel\SourceItem\DeleteMultiple">
+        <plugin name="Mark sock status items as deleted"
+                type="Magento\InventoryDataExporter\Plugin\MarkItemsAsDeleted" sortOrder="10"/>
+    </type>
+    <type name="Magento\InventoryDataExporter\Plugin\MarkItemsAsDeleted">
+        <arguments>
+            <argument name="metadata" xsi:type="object">
+                Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata
+            </argument>
+        </arguments>
+    </type>
 </config>
