@@ -9,7 +9,6 @@ namespace Magento\InventoryDataExporter\Model\Query;
 
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Framework\App\ResourceConnection;
-use Magento\InventoryDataExporter\Model\Provider\StockStatusIdBuilder;
 
 /**
  * Stock Status mark as deleted query builder
