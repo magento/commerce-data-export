@@ -73,16 +73,10 @@ use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 
  */
 
-createStocks();
-createSources();
-assignSourceToStock();
-createProducts();
-assignProductsToSources();
-
 /**
  * Create stocks
  */
-function createStocks(): void
+$createStocks = static function (): void
 {
     /** @var StockInterfaceFactory $stockFactory */
     $stockFactory = Bootstrap::getObjectManager()->get(StockInterfaceFactory::class);
@@ -112,12 +106,12 @@ function createStocks(): void
         $dataObjectHelper->populateWithArray($stock, $stockData, StockInterface::class);
         $stockRepository->save($stock);
     }
-}
+};
 
 /**
  * Create Sources
  */
-function createSources(): void
+$createSources = static function (): void
 {
     /** @var SourceInterfaceFactory $sourceFactory */
     $sourceFactory = Bootstrap::getObjectManager()->get(SourceInterfaceFactory::class);
@@ -163,12 +157,12 @@ function createSources(): void
         $dataObjectHelper->populateWithArray($source, $sourceData, SourceInterface::class);
         $sourceRepository->save($source);
     }
-}
+};
 
 /**
  * Link Source to Stocks
  */
-function assignSourceToStock(): void
+$assignSourceToStock = static function (): void
 {
     /** @var DataObjectHelper $dataObjectHelper */
     $dataObjectHelper = Bootstrap::getObjectManager()->get(DataObjectHelper::class);
@@ -218,9 +212,9 @@ function assignSourceToStock(): void
         $links[] = $link;
     }
     $stockSourceLinksSave->execute($links);
-}
+};
 
-function createProducts()
+$createProducts = static function ()
 {
     $objectManager = Bootstrap::getObjectManager();
     /** @var ProductInterfaceFactory $productFactory */
@@ -276,9 +270,9 @@ function createProducts()
             ->setStatus(Status::STATUS_ENABLED);
         $productRepository->save($product);
     }
-}
+};
 
-function assignProductsToSources(): void
+$assignProductsToSources = static function (): void
 {
     /** @var DataObjectHelper $dataObjectHelper */
     $dataObjectHelper = Bootstrap::getObjectManager()->get(DataObjectHelper::class);
@@ -334,4 +328,10 @@ function assignProductsToSources(): void
         $sourceItems[] = $sourceItem;
     }
     $sourceItemsSave->execute($sourceItems);
-}
+};
+
+$createStocks();
+$createSources();
+$assignSourceToStock();
+$createProducts();
+$assignProductsToSources();
