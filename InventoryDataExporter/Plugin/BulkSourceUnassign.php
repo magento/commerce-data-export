@@ -5,15 +5,18 @@
  */
 namespace Magento\InventoryDataExporter\Plugin;
 
-use Magento\Inventory\Model\ResourceModel\SourceItem\DeleteMultiple;
-use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
 
 /**
- * Plugin for setting stock item statuses as deleted
+ * Mark stock statuses as deleted on bulk unassign
  */
-class MarkItemsAsDeleted
+class BulkSourceUnassign
 {
+    /**
+     * @var StockStatusDeleteQuery
+     */
+    private $stockStatusDeleteQuery;
+
     /**
      * @param StockStatusDeleteQuery $stockStatusDeleteQuery
      */
@@ -24,45 +27,45 @@ class MarkItemsAsDeleted
     }
 
     /**
-     * Set is_deleted value to 1 for deleted stock statuses
+     * Check which stocks will be unassigned from products and mark them as deleted in feed table
      *
-     * @param DeleteMultiple $subject
+     * @param \Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign $subject
      * @param callable $proceed
-     * @param SourceItemInterface[] $sourceItems
-     * @return void
+     * @param array $skus
+     * @param array $sourceCodes
+     * @return int
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function aroundExecute(
-        DeleteMultiple $subject,
+        \Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign $subject,
         callable $proceed,
-        array $sourceItems
-    ): void {
-        $deletedSourceItems = [];
-        foreach ($sourceItems as $sourceItem) {
-            $deletedSourceItems[$sourceItem->getSku()][] = $sourceItem->getSourceCode();
-        }
+        array $skus,
+        array $sourceCodes
+    ): int {
+        $fetchedSourceItems = $this->stockStatusDeleteQuery->getStocksAssignedToSkus($skus);
+        $stocksToDelete = $this->getStocksToDelete($skus, $sourceCodes, $fetchedSourceItems);
 
-        $fetchedSourceItems = $this->stockStatusDeleteQuery->getStocksAssignedToSkus(array_keys($deletedSourceItems));
+        $result = $proceed($skus, $sourceCodes);
 
-        $stocksToDelete = $this->getStocksToDelete($deletedSourceItems, $fetchedSourceItems);
-        $proceed($sourceItems);
         if (!empty($stocksToDelete)) {
             $this->stockStatusDeleteQuery->markStockStatusesAsDeleted($stocksToDelete);
         }
+
+        return $result;
     }
 
     /**
-     * @param array $deletedSourceItems
-     * @param $fetchedSourceItems
+     * @param array $affectedSkus
+     * @param array $deletedSources
      * @return array
      */
-    private function getStocksToDelete(array $deletedSourceItems, $fetchedSourceItems): array
+    private function getStocksToDelete(array $affectedSkus, array $deletedSources, $fetchedSourceItems): array
     {
         $stocksToDelete = [];
-        foreach ($deletedSourceItems as $deletedItemSku => $deletedItemSources) {
+        foreach ($affectedSkus as $deletedItemSku) {
             foreach ($fetchedSourceItems[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
-                if ($this->getContainsAllKeys($fetchedItemSources, $deletedItemSources)) {
+                if ($this->getContainsAllKeys($fetchedItemSources, $deletedSources)) {
                     $stocksToDelete[(string)$fetchedItemStockId][] = $deletedItemSku;
                 }
             }

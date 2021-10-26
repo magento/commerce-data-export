@@ -57,10 +57,14 @@
     </type>
 
     <type name="Magento\Inventory\Model\ResourceModel\SourceItem\DeleteMultiple">
-        <plugin name="Mark sock status items as deleted"
-                type="Magento\InventoryDataExporter\Plugin\MarkItemsAsDeleted" sortOrder="10"/>
+        <plugin name="mark-stock-status-items-as-deleted"
+                type="Magento\InventoryDataExporter\Plugin\MarkItemsAsDeleted"/>
     </type>
-    <type name="Magento\InventoryDataExporter\Plugin\MarkItemsAsDeleted">
+    <type name="Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign">
+        <plugin name="mark-stock-status-items-unassigned-on-bulk-unassign"
+                type="Magento\InventoryDataExporter\Plugin\BulkSourceUnassign"/>
+    </type>
+    <type name="Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery">
         <arguments>
             <argument name="metadata" xsi:type="object">
                 Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata
