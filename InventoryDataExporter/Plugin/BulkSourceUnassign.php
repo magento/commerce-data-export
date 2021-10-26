@@ -30,29 +30,23 @@ class BulkSourceUnassign
      * Check which stocks will be unassigned from products and mark them as deleted in feed table
      *
      * @param \Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign $subject
-     * @param callable $proceed
      * @param array $skus
      * @param array $sourceCodes
-     * @return int
+     * @return void
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function aroundExecute(
+    public function beforeExecute(
         \Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign $subject,
-        callable $proceed,
         array $skus,
         array $sourceCodes
-    ): int {
+    ): void {
         $fetchedSourceItems = $this->stockStatusDeleteQuery->getStocksAssignedToSkus($skus);
         $stocksToDelete = $this->getStocksToDelete($skus, $sourceCodes, $fetchedSourceItems);
-
-        $result = $proceed($skus, $sourceCodes);
 
         if (!empty($stocksToDelete)) {
             $this->stockStatusDeleteQuery->markStockStatusesAsDeleted($stocksToDelete);
         }
-
-        return $result;
     }
 
     /**

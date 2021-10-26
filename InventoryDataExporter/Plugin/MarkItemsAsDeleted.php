@@ -15,6 +15,11 @@ use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
 class MarkItemsAsDeleted
 {
     /**
+     * @var StockStatusDeleteQuery
+     */
+    private $stockStatusDeleteQuery;
+
+    /**
      * @param StockStatusDeleteQuery $stockStatusDeleteQuery
      */
     public function __construct(
@@ -27,15 +32,13 @@ class MarkItemsAsDeleted
      * Set is_deleted value to 1 for deleted stock statuses
      *
      * @param DeleteMultiple $subject
-     * @param callable $proceed
      * @param SourceItemInterface[] $sourceItems
      * @return void
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function aroundExecute(
+    public function beforeExecute(
         DeleteMultiple $subject,
-        callable $proceed,
         array $sourceItems
     ): void {
         $deletedSourceItems = [];
@@ -46,7 +49,6 @@ class MarkItemsAsDeleted
         $fetchedSourceItems = $this->stockStatusDeleteQuery->getStocksAssignedToSkus(array_keys($deletedSourceItems));
 
         $stocksToDelete = $this->getStocksToDelete($deletedSourceItems, $fetchedSourceItems);
-        $proceed($sourceItems);
         if (!empty($stocksToDelete)) {
             $this->stockStatusDeleteQuery->markStockStatusesAsDeleted($stocksToDelete);
         }
