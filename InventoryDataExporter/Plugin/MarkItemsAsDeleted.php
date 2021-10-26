@@ -44,12 +44,14 @@ class MarkItemsAsDeleted
      * @param callable $proceed
      * @param SourceItemInterface[] $sourceItems
      * @return void
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function aroundExecute(
         DeleteMultiple $subject,
         callable $proceed,
         array $sourceItems
-    ) {
+    ): void {
         $deletedSourceItems = [];
         foreach ($sourceItems as $sourceItem) {
             $deletedSourceItems[$sourceItem->getSku()][] = $sourceItem->getSourceCode();
@@ -59,19 +61,12 @@ class MarkItemsAsDeleted
 
         $select = $connection->select()
             ->from(
-                ['idess' => $this->resourceConnection->getTableName($this->metadata->getFeedTableName())],
-                ['idess.sku', 'idess.stock_id', 'issl.source_code']
-            )
-            ->joinLeft(
-                ['issl' => $this->resourceConnection->getTableName('inventory_source_stock_link')],
-                'issl.stock_id = idess.stock_id'
-            )
-            ->joinInner(
-                ['isi' => $this->resourceConnection->getTableName($this->metadata->getSourceTableName())],
-                'isi.source_code = issl.source_code AND isi.sku = idess.sku',
-                []
-            )
-            ->where('idess.sku IN (?)', array_keys($deletedSourceItems));
+                ['source_item' => $this->resourceConnection->getTableName('inventory_source_item')],
+                ['source_item.sku', 'source_stock_link.stock_id']
+            )->joinLeft(
+                ['source_stock_link' => $this->resourceConnection->getTableName('inventory_source_stock_link')],
+                'source_item.source_code = source_stock_link.source_code'
+            )->where('source_item.sku IN (?)', array_keys($deletedSourceItems));
 
         $fetchedSourceItems = [];
         foreach ($connection->fetchAll($select) as $sourceItem) {
@@ -95,8 +90,7 @@ class MarkItemsAsDeleted
         foreach ($deletedSourceItems as $deletedItemSku => $deletedItemSources) {
             foreach ($fetchedSourceItems[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
                 if ($this->getContainsAllKeys($fetchedItemSources, $deletedItemSources)) {
-                    $stocksToDelete['skus'][] = $deletedItemSku;
-                    $stocksToDelete['stock_ids'][] = (string)$fetchedItemStockId;
+                    $stocksToDelete[(string)$fetchedItemStockId][] = $deletedItemSku;
                 }
             }
         }
@@ -121,16 +115,15 @@ class MarkItemsAsDeleted
     {
         $connection = $this->resourceConnection->getConnection();
         $feedTableName = $this->resourceConnection->getTableName($this->metadata->getFeedTableName());
-
-        $update = $connection->update(
-            $feedTableName,
-            ['is_deleted' => new \Zend_Db_Expr('1')],
-            [
-                'sku IN (?)' => $stocksToDelete['skus'],
-                'stock_id IN (?)' => $stocksToDelete['stock_ids']
-            ]
-        );
-
-        $connection->query($update);
+        foreach ($stocksToDelete as $stockId => $skus) {
+            $connection->update(
+                $feedTableName,
+                ['is_deleted' => new \Zend_Db_Expr('1')],
+                [
+                    'sku IN (?)' => $skus,
+                    'stock_id = ?' => $stockId
+                ]
+            );
+        }
     }
 }

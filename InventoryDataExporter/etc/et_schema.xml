@@ -23,9 +23,6 @@
         </field>
         <field name="lowStock" type="Boolean"/>
         <field name="isSalable" type="Boolean" />
-        <field name="updatedAt" type="String" provider="Magento\InventoryDataExporter\Model\Provider\UpdatedAt">
-            <using field="sku" />
-            <using field="stockId" />
-        </field>
+        <field name="updatedAt" type="String"/>
     </record>
 </config>
