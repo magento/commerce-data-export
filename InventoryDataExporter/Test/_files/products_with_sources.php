@@ -32,11 +32,6 @@ use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 
-
-const TEST_EU_STOCK_ID = 10;
-const TEST_US_STOCK_ID = 20;
-const TEST_GLOBAL_STOCK_ID = 30;
-
 /**
  * Generate the following structure:
  *
@@ -47,6 +42,7 @@ const TEST_GLOBAL_STOCK_ID = 30;
  *
  * US_stock (id: 20)
  *  - us-1
+ *  - us-2 (OUT OF STOCK)
  *
  * Global_stock (id: 30)
  *  - eu-1
@@ -61,15 +57,19 @@ const TEST_GLOBAL_STOCK_ID = 30;
  *  manage_stock = false
  *
  * product_with_enabled_backorders
+ *  min_stock = 0 (with enabled backorders and out-of-Stock Threshold = 0 we assume infinitive stock 
  *
  * product_in_EU_stock_with_2_sources
  * - eu-1 - 5.5qty
- * - eu-2 - 3qty
+ * - eu-2 - 4qty
  *
  * product_in_Global_stock_with_3_sources
  * - eu-1 - 1qty
  * - eu-2 - 2qty
- * - us-1 - 3qty
+ * - us-1 - 4qty
+ *
+ * product_in_US_stock_with_disabled_source
+ * - us-2 - 5qty
 
  */
 
@@ -94,15 +94,15 @@ function createStocks(): void
     $stocksData = [
         [
             // define only required and needed for tests fields
-            StockInterface::STOCK_ID => TEST_EU_STOCK_ID,
+            StockInterface::STOCK_ID => 10,
             StockInterface::NAME => 'EU_stock',
         ],
         [
-            StockInterface::STOCK_ID => TEST_US_STOCK_ID,
+            StockInterface::STOCK_ID => 20,
             StockInterface::NAME => 'US_stock',
         ],
         [
-            StockInterface::STOCK_ID => TEST_GLOBAL_STOCK_ID,
+            StockInterface::STOCK_ID => 30,
             StockInterface::NAME => 'Global_stock',
         ]
     ];
@@ -149,6 +149,13 @@ function createSources(): void
             SourceInterface::POSTCODE => 'postcode',
             SourceInterface::COUNTRY_ID => 'US',
         ],
+        [
+            SourceInterface::SOURCE_CODE => 'us-2',
+            SourceInterface::NAME => 'US-source-2',
+            SourceInterface::ENABLED => true,
+            SourceInterface::POSTCODE => 'postcode',
+            SourceInterface::COUNTRY_ID => 'US',
+        ],
     ];
     foreach ($sourcesData as $sourceData) {
         /** @var SourceInterface $source */
@@ -172,32 +179,32 @@ function assignSourceToStock(): void
 
     $linksData = [
         [
-            StockSourceLinkInterface::STOCK_ID => TEST_EU_STOCK_ID,
+            StockSourceLinkInterface::STOCK_ID => 10,
             StockSourceLinkInterface::SOURCE_CODE => 'eu-1',
             StockSourceLinkInterface::PRIORITY => 1,
         ],
         [
-            StockSourceLinkInterface::STOCK_ID => TEST_EU_STOCK_ID,
+            StockSourceLinkInterface::STOCK_ID => 10,
             StockSourceLinkInterface::SOURCE_CODE => 'eu-2',
             StockSourceLinkInterface::PRIORITY => 2,
         ],
         [
-            StockSourceLinkInterface::STOCK_ID => TEST_US_STOCK_ID,
+            StockSourceLinkInterface::STOCK_ID => 20,
             StockSourceLinkInterface::SOURCE_CODE => 'us-1',
             StockSourceLinkInterface::PRIORITY => 1,
         ],
         [
-            StockSourceLinkInterface::STOCK_ID => TEST_GLOBAL_STOCK_ID,
+            StockSourceLinkInterface::STOCK_ID => 20,
+            StockSourceLinkInterface::SOURCE_CODE => 'us-2',
+            StockSourceLinkInterface::PRIORITY => 1,
+        ],
+        [
+            StockSourceLinkInterface::STOCK_ID => 30,
             StockSourceLinkInterface::SOURCE_CODE => 'eu-1',
             StockSourceLinkInterface::PRIORITY => 1,
         ],
         [
-            StockSourceLinkInterface::STOCK_ID => TEST_GLOBAL_STOCK_ID,
-            StockSourceLinkInterface::SOURCE_CODE => 'eu-2',
-            StockSourceLinkInterface::PRIORITY => 1,
-        ],
-        [
-            StockSourceLinkInterface::STOCK_ID => TEST_GLOBAL_STOCK_ID,
+            StockSourceLinkInterface::STOCK_ID => 30,
             StockSourceLinkInterface::SOURCE_CODE => 'us-1',
             StockSourceLinkInterface::PRIORITY => 2,
         ],
@@ -237,7 +244,7 @@ function createProducts()
             'qty' => 5,
             'is_in_stock' => true,
             'manage_stock' => true,
-            'min_qty' => -3,
+            'min_qty' => 0,
             'backorders' => true
         ],
         'product_in_EU_stock_with_2_sources' => [
@@ -248,6 +255,11 @@ function createProducts()
         ],
         'product_in_Global_stock_with_3_sources' => [
             'qty' => 0,
+            'is_in_stock' => true,
+            'manage_stock' => true
+        ],
+        'product_in_US_stock_with_disabled_source' => [
+            'qty' => 5,
             'is_in_stock' => true,
             'manage_stock' => true
         ],
@@ -306,13 +318,12 @@ function assignProductsToSources(): void
             SourceItemInterface::QUANTITY => 4,
             SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
         ],
-        // TODO
-//        [
-//            SourceItemInterface::SOURCE_CODE => 'eu-2',
-//            SourceItemInterface::SKU => 'SKU-3',
-//            SourceItemInterface::QUANTITY => 6,
-//            SourceItemInterface::STATUS => SourceItemInterface::STATUS_OUT_OF_STOCK,
-//        ],
+        [
+            SourceItemInterface::SOURCE_CODE => 'us-2',
+            SourceItemInterface::SKU => 'product_in_US_stock_with_disabled_source',
+            SourceItemInterface::QUANTITY => 5,
+            SourceItemInterface::STATUS => SourceItemInterface::STATUS_OUT_OF_STOCK,
+        ],
     ];
 
     $sourceItems = [];

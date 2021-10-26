@@ -10,9 +10,8 @@
     <table name="inventory_data_exporter_stock_status" resource="default" engine="innodb" comment="Inventory Stock Status Feed Storage">
         <column xsi:type="varchar"
                 name="id"
-                padding="10"
                 nullable="false"
-                length="64"
+                length="128"
                 comment="ID"
         />
         <column xsi:type="int"

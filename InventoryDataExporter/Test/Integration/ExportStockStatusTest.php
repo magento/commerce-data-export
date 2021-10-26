@@ -43,6 +43,7 @@ class ExportStockStatusTest extends \PHPUnit\Framework\TestCase
                 ['sku' => 'product_with_default_stock_only'],
                 ['sku' => 'product_with_disabled_manage_stock'],
                 ['sku' => 'product_with_enabled_backorders'],
+                ['sku' => 'product_in_US_stock_with_disabled_source'],
             ]
         );
 
@@ -105,7 +106,7 @@ class ExportStockStatusTest extends \PHPUnit\Framework\TestCase
                 'product_in_EU_stock_with_2_sources' => [
                     'stockId' => '10',
                     'sku' => 'product_in_EU_stock_with_2_sources',
-                    'qty' => 9.5,
+                    'qty' => 9.5, // 5.5 (eu-1) + 4 (eu-2)
                     'qtyForSale' => 9.5,
                     'infiniteStock' => false,
                     'isSalable' => true,
@@ -129,22 +130,30 @@ class ExportStockStatusTest extends \PHPUnit\Framework\TestCase
                     'infiniteStock' => false,
                     'isSalable' => true,
                 ],
+                'product_in_US_stock_with_disabled_source' => [
+                    'stockId' => '20',
+                    'sku' => 'product_in_US_stock_with_disabled_source',
+                    'qty' => 0,
+                    'qtyForSale' => 0,
+                    'infiniteStock' => false,
+                    'isSalable' => false,
+                ],
             ],
             // Global Stock
             '30' => [
                 'product_in_Global_stock_with_3_sources' => [
                     'stockId' => '30',
                     'sku' => 'product_in_Global_stock_with_3_sources',
-                    'qty' => 7,
-                    'qtyForSale' => 7,
+                    'qty' => 5, // 1 (eu-1) + 4 (us-1)
+                    'qtyForSale' => 5,
                     'infiniteStock' => false,
                     'isSalable' => true,
                 ],
                 'product_in_EU_stock_with_2_sources' => [
                     'stockId' => '30',
                     'sku' => 'product_in_EU_stock_with_2_sources',
-                    'qty' => 9.5, // eu1 + eu2
-                    'qtyForSale' => 9.5,
+                    'qty' => 5.5, // eu-1 only
+                    'qtyForSale' => 5.5,
                     'infiniteStock' => false,
                     'isSalable' => true,
                 ],

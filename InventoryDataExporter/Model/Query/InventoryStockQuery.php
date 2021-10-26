@@ -66,17 +66,43 @@ class InventoryStockQuery
             }
             $select = $connection->select()
                 ->from(['isi' => $this->getTable(sprintf('inventory_stock_%s', $stockId))], [])
-                ->where('isi.sku IN (?)', $skus)
+                ->joinLeft(
+                    [
+                        'product' => $this->resourceConnection->getTableName('catalog_product_entity'),
+                    ],
+                    'product.sku = isi.sku',
+                    []
+                )->joinLeft(
+                    [
+                        'stock_item' => $this->resourceConnection->getTableName('cataloginventory_stock_item'),
+                    ],
+                    'stock_item.product_id = product.entity_id',
+                    []
+                )->where('isi.sku IN (?)', $skus)
                 ->columns(
                     [
                         'qty' => "isi.quantity",
                         'isSalable' => "isi.is_salable",
                         'sku' => "isi.sku",
                         'stockId' => new Expression($stockId),
-                        'manageStock' => new Expression(1),
-                        'useConfigManageStock' => new Expression(1),
-                        'backorders' => new Expression(0),
-                        'useConfigBackorders' => new Expression(1),
+                        'manageStock' => $connection->getCheckSql(
+                            'stock_item.manage_stock IS NULL', 1, 'stock_item.manage_stock'
+                        ),
+                        'useConfigManageStock' => $connection->getCheckSql(
+                            'stock_item.use_config_manage_stock IS NULL', 1, 'stock_item.use_config_manage_stock'
+                        ),
+                        'backorders' => $connection->getCheckSql(
+                            'stock_item.backorders IS NULL', 0, 'stock_item.backorders'
+                        ),
+                        'useConfigBackorders' => $connection->getCheckSql(
+                            'stock_item.use_config_backorders IS NULL', 1, 'stock_item.use_config_backorders'
+                        ),
+                        'useConfigMinQty' => $connection->getCheckSql(
+                            'stock_item.use_config_min_qty IS NULL', 1, 'stock_item.use_config_min_qty'
+                        ),
+                        'minQty' => $connection->getCheckSql(
+                            'stock_item.min_qty IS NULL', 0, 'stock_item.min_qty'
+                        ),
                     ]
                 );
 
@@ -115,6 +141,8 @@ class InventoryStockQuery
                     'useConfigManageStock' => 'stock_item.use_config_manage_stock',
                     'backorders' => 'stock_item.backorders',
                     'useConfigBackorders' => 'stock_item.use_config_backorders',
+                    'useConfigMinQty' => 'stock_item.use_config_min_qty',
+                    'minQty' => 'stock_item.min_qty',
                 ]);
         return $select;
     }
