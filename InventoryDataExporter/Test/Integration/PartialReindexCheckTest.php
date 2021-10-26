@@ -11,18 +11,10 @@ namespace Magento\ProductVariantDataExporter\Test\Integration;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
-use Magento\Eav\Model\AttributeRepository;
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Adapter\AdapterInterface;
-use Magento\Framework\Registry;
-use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Framework\Stdlib\ArrayUtils;
 use Magento\Indexer\Model\Indexer;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
-use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -40,59 +32,14 @@ class PartialReindexCheckTest extends TestCase
     private const STOCK_STATUS_FEED_INDEXER = 'inventory_data_exporter_stock_status';
 
     /**
-     * @var ResourceConnection
-     */
-    protected $resource;
-
-    /**
-     * @var AdapterInterface
-     */
-    protected $connection;
-
-    /**
      * @var Indexer
      */
-    protected $indexer;
-
-    /**
-     * @var Json
-     */
-    protected $jsonSerializer;
-
-    /**
-     * @var ProductRepositoryInterface
-     */
-    protected $productRepository;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    protected $storeManager;
+    private $indexer;
 
     /**
      * @var FeedInterface
      */
-    protected $stockStatusFeed;
-
-    /**
-     * @var AttributeRepository
-     */
-    protected $attributeRepository;
-
-    /**
-     * @var ArrayUtils
-     */
-    protected $arrayUtils;
-
-    /**
-     * @var Registry
-     */
-    protected $registry;
-
-    /**
-     * @var ConfigurableId|mixed
-     */
-    protected $idResolver;
+    private $stockStatusFeed;
 
     /**
      * @var SourceItemsSaveInterface
@@ -109,17 +56,9 @@ class PartialReindexCheckTest extends TestCase
      */
     protected function setUp(): void
     {
-        $objectManager = Bootstrap::getObjectManager();
-        $this->resource = Bootstrap::getObjectManager()->create(ResourceConnection::class);
-        $this->connection = $this->resource->getConnection();
         $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
-        $this->jsonSerializer = Bootstrap::getObjectManager()->create(Json::class);
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
-        $this->storeManager = Bootstrap::getObjectManager()->create(StoreManagerInterface::class);
         $this->stockStatusFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('stock_statuses');
-        $this->attributeRepository = Bootstrap::getObjectManager()->create(AttributeRepository::class);
-        $this->arrayUtils = $objectManager->create(ArrayUtils::class);
-        $this->registry = Bootstrap::getObjectManager()->get(Registry::class);
         $this->sourceItemsFactory = Bootstrap::getObjectManager()->get(SourceItemInterfaceFactory::class);
         $this->sourceItemsSave = Bootstrap::getObjectManager()->get(SourceItemsSaveInterface::class);
     }
