@@ -51,7 +51,6 @@
         />
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
-            <column name="stock_id"/>
         </constraint>
         <index referenceId="inventory_data_exporter_stock_status_modified_at" indexType="btree">
             <column name="modified_at"/>

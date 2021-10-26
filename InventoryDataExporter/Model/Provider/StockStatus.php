@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Magento\InventoryDataExporter\Model\Provider;
 
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\DB\Adapter\TableNotFoundException;
 use Magento\InventoryDataExporter\Model\Query\InventoryStockQuery;
 use Psr\Log\LoggerInterface;
@@ -37,6 +38,11 @@ class StockStatus
     private $query;
 
     /**
+     * @var DateTime
+     */
+    private $dateTime;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -44,16 +50,19 @@ class StockStatus
     /**
      * @param ResourceConnection $resourceConnection
      * @param InventoryStockQuery $query
+     * @param DateTime $dateTime
      * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         InventoryStockQuery $query,
+        DateTime $dateTime,
         LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->query = $query;
         $this->logger = $logger;
+        $this->dateTime = $dateTime;
     }
 
     /**
@@ -107,6 +116,9 @@ class StockStatus
             throw new \RuntimeException("missed required field: " . \var_export($row, true));
         }
         $row['id'] = StockStatusIdBuilder::build($row);
+
+        // set updated at
+        $row['updatedAt'] = $this->dateTime->formatDate(time());
         // set default values
         $row['infiniteStock'] = false;
         $row['qtyForSale'] = $row['qty'];
