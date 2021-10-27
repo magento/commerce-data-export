@@ -53,9 +53,9 @@ class InventoryStockQuery
      *
      * @param array $skus
      * @param bool $defaultStock
-     * @return Select
+     * @return Select|null
      */
-    public function getQuery(array $skus): Select
+    public function getQuery(array $skus): ?Select
     {
         $connection = $this->resourceConnection->getConnection();
         $selects = [];
@@ -108,7 +108,7 @@ class InventoryStockQuery
 
             $selects[] = $select;
         }
-        return $connection->select()->union($selects, Select::SQL_UNION_ALL);
+        return $selects ? $connection->select()->union($selects, Select::SQL_UNION_ALL) : null;
     }
 
     /**
@@ -122,7 +122,7 @@ class InventoryStockQuery
     {
         $connection = $this->resourceConnection->getConnection();
         $stockId = $this->defaultStockProvider->getId();
-        $select = $connection->select()
+        return $connection->select()
             ->from(['isi' => $this->getTable(sprintf('inventory_stock_%s', $stockId))], [])
             ->where('isi.sku IN (?)', $skus)
             ->joinInner(
@@ -144,7 +144,6 @@ class InventoryStockQuery
                     'useConfigMinQty' => 'stock_item.use_config_min_qty',
                     'minQty' => 'stock_item.min_qty',
                 ]);
-        return $select;
     }
 
     /**
@@ -154,7 +153,6 @@ class InventoryStockQuery
      */
     private function getStocks(): array
     {
-        // TODO: add batching
         $connection = $this->resourceConnection->getConnection();
         return $connection->fetchCol($connection->select()
             ->from(['stock' => $this->getTable('inventory_stock')], ['stock_id']));
