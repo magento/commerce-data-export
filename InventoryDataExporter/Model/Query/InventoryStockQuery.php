@@ -53,9 +53,9 @@ class InventoryStockQuery
      *
      * @param array $skus
      * @param bool $defaultStock
-     * @return Select
+     * @return Select|null
      */
-    public function getQuery(array $skus): Select
+    public function getQuery(array $skus): ?Select
     {
         $connection = $this->resourceConnection->getConnection();
         $selects = [];
@@ -66,23 +66,49 @@ class InventoryStockQuery
             }
             $select = $connection->select()
                 ->from(['isi' => $this->getTable(sprintf('inventory_stock_%s', $stockId))], [])
-                ->where('isi.sku IN (?)', $skus)
+                ->joinLeft(
+                    [
+                        'product' => $this->resourceConnection->getTableName('catalog_product_entity'),
+                    ],
+                    'product.sku = isi.sku',
+                    []
+                )->joinLeft(
+                    [
+                        'stock_item' => $this->resourceConnection->getTableName('cataloginventory_stock_item'),
+                    ],
+                    'stock_item.product_id = product.entity_id',
+                    []
+                )->where('isi.sku IN (?)', $skus)
                 ->columns(
                     [
                         'qty' => "isi.quantity",
                         'isSalable' => "isi.is_salable",
                         'sku' => "isi.sku",
                         'stockId' => new Expression($stockId),
-                        'manageStock' => new Expression(1),
-                        'useConfigManageStock' => new Expression(1),
-                        'backorders' => new Expression(0),
-                        'useConfigBackorders' => new Expression(1),
+                        'manageStock' => $connection->getCheckSql(
+                            'stock_item.manage_stock IS NULL', 1, 'stock_item.manage_stock'
+                        ),
+                        'useConfigManageStock' => $connection->getCheckSql(
+                            'stock_item.use_config_manage_stock IS NULL', 1, 'stock_item.use_config_manage_stock'
+                        ),
+                        'backorders' => $connection->getCheckSql(
+                            'stock_item.backorders IS NULL', 0, 'stock_item.backorders'
+                        ),
+                        'useConfigBackorders' => $connection->getCheckSql(
+                            'stock_item.use_config_backorders IS NULL', 1, 'stock_item.use_config_backorders'
+                        ),
+                        'useConfigMinQty' => $connection->getCheckSql(
+                            'stock_item.use_config_min_qty IS NULL', 1, 'stock_item.use_config_min_qty'
+                        ),
+                        'minQty' => $connection->getCheckSql(
+                            'stock_item.min_qty IS NULL', 0, 'stock_item.min_qty'
+                        ),
                     ]
                 );
 
             $selects[] = $select;
         }
-        return $connection->select()->union($selects, Select::SQL_UNION_ALL);
+        return $selects ? $connection->select()->union($selects, Select::SQL_UNION_ALL) : null;
     }
 
     /**
@@ -96,7 +122,7 @@ class InventoryStockQuery
     {
         $connection = $this->resourceConnection->getConnection();
         $stockId = $this->defaultStockProvider->getId();
-        $select = $connection->select()
+        return $connection->select()
             ->from(['isi' => $this->getTable(sprintf('inventory_stock_%s', $stockId))], [])
             ->where('isi.sku IN (?)', $skus)
             ->joinInner(
@@ -115,8 +141,9 @@ class InventoryStockQuery
                     'useConfigManageStock' => 'stock_item.use_config_manage_stock',
                     'backorders' => 'stock_item.backorders',
                     'useConfigBackorders' => 'stock_item.use_config_backorders',
+                    'useConfigMinQty' => 'stock_item.use_config_min_qty',
+                    'minQty' => 'stock_item.min_qty',
                 ]);
-        return $select;
     }
 
     /**
@@ -126,7 +153,6 @@ class InventoryStockQuery
      */
     private function getStocks(): array
     {
-        // TODO: add batching
         $connection = $this->resourceConnection->getConnection();
         return $connection->fetchCol($connection->select()
             ->from(['stock' => $this->getTable('inventory_stock')], ['stock_id']));

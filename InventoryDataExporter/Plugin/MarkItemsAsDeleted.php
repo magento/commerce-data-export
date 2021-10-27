@@ -7,6 +7,7 @@ namespace Magento\InventoryDataExporter\Plugin;
 
 use Magento\Inventory\Model\ResourceModel\SourceItem\DeleteMultiple;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
+use Magento\InventoryDataExporter\Model\Provider\StockStatusIdBuilder;
 use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
 
 /**
@@ -65,7 +66,9 @@ class MarkItemsAsDeleted
         foreach ($deletedSourceItems as $deletedItemSku => $deletedItemSources) {
             foreach ($fetchedSourceItems[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
                 if ($this->getContainsAllKeys($fetchedItemSources, $deletedItemSources)) {
-                    $stocksToDelete[(string)$fetchedItemStockId][] = $deletedItemSku;
+                    $stocksToDelete[] = StockStatusIdBuilder::build(
+                        ['stockId' => (string)$fetchedItemStockId, 'sku' => $deletedItemSku]
+                    );
                 }
             }
         }

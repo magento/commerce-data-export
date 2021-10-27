@@ -66,21 +66,18 @@ class StockStatusDeleteQuery
     /**
      * Mark stock statuses as deleted
      *
-     * @param array $stocksToDelete
+     * @param array $idsToDelete
      */
-    public function markStockStatusesAsDeleted(array $stocksToDelete): void
+    public function markStockStatusesAsDeleted(array $idsToDelete): void
     {
         $connection = $this->resourceConnection->getConnection();
         $feedTableName = $this->resourceConnection->getTableName($this->metadata->getFeedTableName());
-        foreach ($stocksToDelete as $stockId => $skus) {
-            $connection->update(
-                $feedTableName,
-                ['is_deleted' => new \Zend_Db_Expr('1')],
-                [
-                    'sku IN (?)' => $skus,
-                    'stock_id = ?' => $stockId
-                ]
-            );
-        }
+        $connection->update(
+            $feedTableName,
+            ['is_deleted' => new \Zend_Db_Expr('1')],
+            [
+                'id IN (?)' => $idsToDelete
+            ]
+        );
     }
 }

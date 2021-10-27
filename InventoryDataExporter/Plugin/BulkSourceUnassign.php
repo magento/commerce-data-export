@@ -5,6 +5,7 @@
  */
 namespace Magento\InventoryDataExporter\Plugin;
 
+use Magento\InventoryDataExporter\Model\Provider\StockStatusIdBuilder;
 use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
 
 /**
@@ -60,7 +61,9 @@ class BulkSourceUnassign
         foreach ($affectedSkus as $deletedItemSku) {
             foreach ($fetchedSourceItems[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
                 if ($this->getContainsAllKeys($fetchedItemSources, $deletedSources)) {
-                    $stocksToDelete[(string)$fetchedItemStockId][] = $deletedItemSku;
+                    $stocksToDelete[] = StockStatusIdBuilder::build(
+                        ['stockId' => (string)$fetchedItemStockId, 'sku' => $deletedItemSku]
+                    );
                 }
             }
         }

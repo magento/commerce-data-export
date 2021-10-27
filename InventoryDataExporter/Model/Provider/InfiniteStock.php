@@ -67,8 +67,10 @@ class InfiniteStock
         if (false === (bool)$row['useConfigManageStock'] && isset($row['manageStock'])) {
             $isInfinite = !(bool)$row['manageStock'];
         }
-        if (false === $isInfinite && false === (bool)$row['useConfigBackorders'] && isset($row['backorders'])) {
-            $isInfinite = (bool)$row['backorders'];
+        // With Backorders enabled, and Out-of-Stock Threshold = 0 allows for infinite backorders
+        if (false === $isInfinite && false === (bool)$row['useConfigBackorders']
+            && false === (bool)$row['useConfigMinQty'] && isset($row['backorders'], $row['minQty'])) {
+            $isInfinite = (bool)$row['backorders'] && (float)$row['minQty'] === 0.0;
         }
         return $isInfinite;
     }
