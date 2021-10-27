@@ -105,7 +105,6 @@ class PartialReindexCheckTest extends TestCase
                 'qty' => $feedData[30][$sku]['qty'],
             ]
         );
-
     }
 
     /**
