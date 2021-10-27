@@ -30,7 +30,7 @@ class BulkSourceUnassign
     /**
      * Check which stocks will be unassigned from products and mark them as deleted in feed table
      *
-     * @param \Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign $subject
+     * @param \Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface $subject
      * @param array $skus
      * @param array $sourceCodes
      * @return void
