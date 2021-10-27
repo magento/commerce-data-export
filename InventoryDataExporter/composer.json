@@ -23,6 +23,6 @@
         "magento/module-inventory-catalog-api": ">=1.1.0",
         "magento/module-inventory-catalog": ">=1.1.0",
         "magento/module-data-exporter": "self.version",
-        "magento/module-query-xml": "self.version",
+        "magento/module-query-xml": "self.version"
     }
 }
