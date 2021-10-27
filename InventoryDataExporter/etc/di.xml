@@ -74,4 +74,12 @@
             </argument>
         </arguments>
     </type>
+
+    <!-- Plugins to cover un-save indexer mode  -->
+    <type name="\Magento\InventoryApi\Api\SourceItemsSaveInterface">
+        <plugin name="reindex-stock-status-exporter-indexer-on-source-item-update" type="\Magento\InventoryDataExporter\Plugin\SourceItem\SourceItemUpdate"/>
+    </type>
+    <type name="\Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface">
+        <plugin name="reindex-stock-status-exporter-indexer-on-bulk-source-unassign" type="\Magento\InventoryDataExporter\Plugin\SourceItem\BulkSourceUnassign"/>
+    </type>
 </config>

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\WebsiteDataExporter\Test\Integration;
+namespace Magento\InventoryDataExporter\Test\Integration;
 
 use Magento\DataExporter\Export\Processor;
 use Magento\TestFramework\Helper\Bootstrap;

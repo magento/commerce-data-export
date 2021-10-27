@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\ProductVariantDataExporter\Test\Integration;
+namespace Magento\InventoryDataExporter\Test\Integration;
 
 use Magento\Framework\Indexer\IndexerInterface;
 use Magento\Indexer\Model\Indexer;

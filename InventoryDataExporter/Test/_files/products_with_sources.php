@@ -60,13 +60,13 @@ use Magento\InventoryApi\Api\SourceItemsSaveInterface;
  *  min_stock = 0 (with enabled backorders and out-of-Stock Threshold = 0 we assume infinitive stock 
  *
  * product_in_EU_stock_with_2_sources
- * - eu-1 - 5.5qty
- * - eu-2 - 4qty
+ * - eu-1 - 5.5qty (stock: 10, 30)
+ * - eu-2 - 4qty   (stock: 10)
  *
  * product_in_Global_stock_with_3_sources
- * - eu-1 - 1qty
- * - eu-2 - 2qty
- * - us-1 - 4qty
+ * - eu-1 - 1qty (stock: 10, 30)
+ * - eu-2 - 2qty (stock: 10)
+ * - us-1 - 4qty (stock: 20, 30)
  *
  * product_in_US_stock_with_disabled_source
  * - us-2 - 5qty

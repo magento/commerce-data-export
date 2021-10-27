@@ -178,8 +178,8 @@ class Transformer
                     $valueFromProvider = $this->convertComplexData($field, $snapshot, $lookupReference);
                     $result[$field['name']] = $valueFromProvider ?? $this->getDefaultValueFromParent($field, $row);
                 }
-            } else {
-                $result[$field['name']] = $this->getDefaultValueFromParent($field, $row);
+            } elseif (isset($row[$field['name']])) {
+                $result[$field['name']] = $this->castToFieldType($field, $row[$field['name']]);
             }
         }
         return $result;
