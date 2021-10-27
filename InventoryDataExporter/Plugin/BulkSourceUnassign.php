@@ -9,7 +9,7 @@ use Magento\InventoryDataExporter\Model\Provider\StockStatusIdBuilder;
 use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
 
 /**
- * Mark stock statuses as deleted on bulk unassign
+ * Mark stock statuses as deleted on bulk unassign only when all sources was unassigned from the same stock
  */
 class BulkSourceUnassign
 {
@@ -53,12 +53,16 @@ class BulkSourceUnassign
     /**
      * @param array $affectedSkus
      * @param array $deletedSources
+     * @param $fetchedSourceItems
      * @return array
      */
-    private function getStocksToDelete(array $affectedSkus, array $deletedSources, $fetchedSourceItems): array
+    private function getStocksToDelete(array $affectedSkus, array $deletedSources, array $fetchedSourceItems): array
     {
         $stocksToDelete = [];
         foreach ($affectedSkus as $deletedItemSku) {
+            if (!isset($fetchedSourceItems[$deletedItemSku])) {
+                continue ;
+            }
             foreach ($fetchedSourceItems[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
                 if ($this->getContainsAllKeys($fetchedItemSources, $deletedSources)) {
                     $stocksToDelete[] = StockStatusIdBuilder::build(
