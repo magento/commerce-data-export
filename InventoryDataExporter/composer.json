@@ -1,6 +1,6 @@
 {
     "name": "magento/module-inventory-data-exporter",
-    "description": "Catalog inventory data exporter",
+    "description": "Inventory data exporter",
     "type": "magento2-module",
     "license": [
         "OSL-3.0",
@@ -11,7 +11,7 @@
             "registration.php"
         ],
         "psr-4": {
-            "Magento\\CatalogInventoryDataExporter\\": ""
+            "Magento\\InventoryDataExporter\\": ""
         }
     },
     "require": {
