@@ -9,7 +9,7 @@
     <type name="Magento\DataExporter\Model\FeedPool">
         <arguments>
             <argument name="classMap" xsi:type="array">
-                <item name="stock_statuses" xsi:type="string">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeed</item>
+                <item name="inventoryStockStatus" xsi:type="string">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeed</item>
             </argument>
         </arguments>
     </type>
@@ -21,7 +21,7 @@
 
     <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
-            <argument name="feedName" xsi:type="string">stock_statuses</argument>
+            <argument name="feedName" xsi:type="string">inventoryStockStatus</argument>
             <argument name="feedIdentity" xsi:type="string">sku</argument>
             <!--  source table used only during full reindex -->
             <argument name="sourceTableName" xsi:type="string">inventory_source_item</argument>

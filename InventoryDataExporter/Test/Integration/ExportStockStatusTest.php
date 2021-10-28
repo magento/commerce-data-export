@@ -36,7 +36,7 @@ class ExportStockStatusTest extends \PHPUnit\Framework\TestCase
     public function testExportStockStatuses()
     {
         $actualStockStatus = $this->processor->process(
-            'stock_statuses',
+            'inventoryStockStatus',
             [
                 ['sku' => 'product_in_EU_stock_with_2_sources'],
                 ['sku' => 'product_in_Global_stock_with_3_sources'],
