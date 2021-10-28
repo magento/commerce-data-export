@@ -252,10 +252,10 @@ class ExportStockStatusTest extends \PHPUnit\Framework\TestCase
                 'product_with_enabled_backorders' => [
                     'stockId' => '1',
                     'sku' => 'product_with_enabled_backorders',
-                    'qty' => 5,
+                    'qty' => 5.0,
+                    // Uncomment it after qtyForSale will be fixed
                     //'qtyForSale' => 0,
-                    // Remove it after qtyForSale will be fixed
-                    'qtyForSale' => -2.2,
+                    'qtyForSale' => -2.2, // JUST TEMPORARILY FIX. We should not allow negative values
                     'infiniteStock' => true,
                     'isSalable' => true,
                 ],
