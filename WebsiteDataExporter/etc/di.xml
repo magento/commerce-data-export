@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <virtualType name="Magento\WebsiteDataExporter\Model\Indexer\WebsiteFeedIndexMetadata"
+                 type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="feedName" xsi:type="string">websites</argument>
+            <argument name="feedIdentity" xsi:type="string">websiteId</argument>
+            <argument name="sourceTableName" xsi:type="string">store_website</argument>
+            <argument name="sourceTableField" xsi:type="string">website_id</argument>
+            <argument name="feedTableName" xsi:type="string">website_data_exporter</argument>
+            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableMutableColumns" xsi:type="array">
+                <item name="feed_data" xsi:type="string">feed_data</item>
+                <item name="is_deleted" xsi:type="string">is_deleted</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\WebsiteDataExporter\Model\Indexer\WebsiteDataSerializer"
+                 type="Magento\DataExporter\Model\Indexer\DataSerializer">
+        <arguments>
+            <argument name="mapping" xsi:type="array">
+                <item name="id" xsi:type="string">websiteId</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\WebsiteDataExporter\Model\Indexer\WebsiteFeedIndexer"
+                 type="Magento\DataExporter\Model\Indexer\FeedIndexer">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\WebsiteDataExporter\Model\Indexer\WebsiteFeedIndexMetadata
+            </argument>
+            <argument name="serializer" xsi:type="object">
+                Magento\WebsiteDataExporter\Model\Indexer\WebsiteDataSerializer
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\WebsiteDataExporter\Model\WebsiteFeed"
+                 type="Magento\DataExporter\Model\Feed">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\WebsiteDataExporter\Model\Indexer\WebsiteFeedIndexMetadata
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\DataExporter\Model\FeedPool">
+        <arguments>
+            <argument name="classMap" xsi:type="array">
+                <item name="websites" xsi:type="string">Magento\WebsiteDataExporter\Model\WebsiteFeed</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

@@ -94,12 +94,12 @@ class QueryDataProvider
             foreach ($argumentList as $argument) {
                 if ($this->isRoot($node, $info) || $this->isRoot($parent, $info) || !$this->isRepeated($parent)) {
                     if (isset($value[$argument['field']])) {
-                        $arguments[$argument['field']] = $value[$argument['field']];
+                        $arguments[$argument['field']][] = $value[$argument['field']];
                     }
                 } else {
                     foreach ($value as $item) {
                         if (isset($item[$argument['field']])) {
-                            $arguments[$argument['field']] = $item[$argument['field']];
+                            $arguments[$argument['field']][] = $item[$argument['field']];
                         }
                     }
                 }
@@ -155,7 +155,7 @@ class QueryDataProvider
         $arguments = $this->getQueryArguments($values, $node, $info);
         $queryName = $this->queryName ?? $field['name'];
         if (!$isRoot) {
-            $result = null;
+            $result = [];
             $cursor = $this->queryProcessor->execute($queryName, $arguments);
             while ($row = $cursor->fetch()) {
                 $index = [];

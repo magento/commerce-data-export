@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
+    <query name="customerGroups">
+        <source name="customer_group">
+            <attribute name="customer_group_id" alias="customerGroupId"/>
+            <attribute name="customer_group_id" alias="customerGroupCode" function="sha1"/>
+            <attribute name="customer_group_code" alias="name" />
+            <filter glue="and">
+                <condition attribute="customer_group_id" operator="in" type="placeholder">customerGroupId</condition>
+            </filter>
+        </source>
+    </query>
+</config>
