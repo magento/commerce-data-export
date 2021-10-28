@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
+    <query name="websites">
+        <source name="store_website">
+            <attribute name="website_id" alias="websiteId" />
+            <attribute name="code" alias="websiteCode" />
+            <attribute name="name" alias="name" />
+            <filter glue="and">
+                <condition attribute="website_id" operator="in" type="placeholder">websiteId</condition>
+            </filter>
+        </source>
+    </query>
+    <query name="storeGroups">
+        <source name="store_group">
+            <attribute name="group_id" alias="storeGroupId" />
+            <attribute name="website_id" alias="websiteId" />
+            <attribute name="code" alias="storeGroupCode" />
+            <attribute name="name" alias="name" />
+            <filter glue="and">
+                <condition attribute="website_id" operator="in" type="placeholder">websiteId</condition>
+            </filter>
+        </source>
+    </query>
+    <query name="storeViews">
+        <source name="store">
+            <attribute name="group_id" alias="storeGroupId" />
+            <attribute name="store_id" alias="storeViewId" />
+            <attribute name="website_id" alias="websiteId" />
+            <attribute name="code" alias="storeViewCode" />
+            <attribute name="name" alias="name" />
+            <filter glue="and">
+                <condition attribute="group_id" operator="in" type="placeholder">storeGroupId</condition>
+            </filter>
+        </source>
+    </query>
+</config>

@@ -19,6 +19,8 @@
         "magento/module-parent-product-data-exporter": "self.version",
         "magento/module-product-review-data-exporter": "self.version",
         "magento/module-product-variant-data-exporter": "self.version",
+        "magento/module-website-data-exporter": "self.version",
+        "magento/module-customer-group-data-exporter": "self.version",
         "magento/module-query-xml": "self.version"
     }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
+    <view id="website_data_exporter" class="Magento\WebsiteDataExporter\Model\Indexer\WebsiteFeedIndexer" group="indexer">
+        <subscriptions>
+            <table name="store" entity_column="website_id" />
+            <table name="store_group" entity_column="website_id" />
+            <table name="store_website" entity_column="website_id" />
+        </subscriptions>
+    </view>
+</config>
