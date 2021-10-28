@@ -7,11 +7,7 @@
  */
 declare(strict_types=1);
 
-use Magento\Catalog\Api\Data\ProductInterfaceFactory;
 use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\InventoryApi\Api\Data\SourceInterfaceFactory;
-use Magento\InventoryApi\Api\Data\StockInterfaceFactory;
-use Magento\InventoryApi\Api\Data\StockSourceLinkInterfaceFactory;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\Framework\App\ResourceConnection;
 use Magento\InventoryApi\Api\Data\SourceInterface;
@@ -21,7 +17,8 @@ use \Magento\Framework\Registry;
 // Delete products
 $skusToDelete = [
     'product_with_default_stock_only', 'product_with_disabled_manage_stock', 'product_with_enabled_backorders',
-    'product_in_EU_stock_with_2_sources', 'product_in_Global_stock_with_3_sources'
+    'product_in_EU_stock_with_2_sources', 'product_in_Global_stock_with_3_sources',
+    'product_in_default_and_2_EU_sources'
 ];
 
 $objectManager = Bootstrap::getObjectManager();

@@ -86,12 +86,11 @@ class StockStatus
             if ($select) {
                 $cursor = $connection->query($select);
                 while ($row = $cursor->fetch()) {
-                    $processedSkus[] = $row['sku'];
                     $output[] = $this->fillWithDefaultValues($row);
                 }
             }
 
-            $select = $this->query->getQueryForDefaultStock(\array_diff($skus, $processedSkus));
+            $select = $this->query->getQueryForDefaultStock($skus);
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {
                 $output[] = $this->fillWithDefaultValues($row);

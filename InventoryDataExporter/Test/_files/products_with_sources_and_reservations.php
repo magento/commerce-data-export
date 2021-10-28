@@ -10,7 +10,6 @@
  */
 declare(strict_types=1);
 
-use Magento\Indexer\Model\Indexer;
 use Magento\InventoryReservationsApi\Model\AppendReservationsInterface;
 use Magento\InventoryReservationsApi\Model\ReservationBuilderInterface;
 use Magento\InventoryConfigurationApi\Model\IsSourceItemManagementAllowedForProductTypeInterface;
@@ -52,6 +51,13 @@ $createReservations = static function (): void
             'sku' => 'product_in_EU_stock_with_2_sources',
             'qty_by_stocks' => [
                 ['stock_id' => 10, 'qty' => -9.5]  //eu-1, eu-2 - 4.5 left
+            ]
+        ],
+        [
+            'sku' => 'product_in_default_and_2_EU_sources',
+            'qty_by_stocks' => [
+                ['stock_id' => 10, 'qty' => -4],  //eu-1, eu-2 - 5.5 left
+                ['stock_id' => 1, 'qty' => -1],  //default - 1 left
             ]
         ],
         [

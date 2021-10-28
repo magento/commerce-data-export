@@ -64,6 +64,31 @@ class StockStatusDeleteQuery
     }
 
     /**
+     * Get stocks which are assigned to the list of provided SKUs
+     *
+     * @param array $sourceCodes
+     * @return array
+     */
+    public function getStocksWithSources(array $sourceCodes): array
+    {
+        $connection = $this->resourceConnection->getConnection();
+        $sourceLinkTableName = $this->resourceConnection->getTableName('inventory_source_stock_link');
+        $select = $connection->select()
+            ->from(
+                ['source_stock_link' => $sourceLinkTableName],
+                ['source_stock_link.stock_id', 'source_stock_link_all_sources.source_code']
+            )->joinLeft(
+                ['source_stock_link_all_sources' => $sourceLinkTableName],
+                'source_stock_link_all_sources.source_code = source_stock_link.source_code'
+            )->group('source_stock_link_all_sources.link_id');
+        $stocks = [];
+        foreach ($connection->fetchAll($select) as $stockData) {
+            $stocks[$stockData['stock_id']][] = $stockData['source_code'];
+        }
+        return $stocks;
+    }
+
+    /**
      * Mark stock statuses as deleted
      *
      * @param array $idsToDelete

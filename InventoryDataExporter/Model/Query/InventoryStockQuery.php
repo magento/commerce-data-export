@@ -131,7 +131,17 @@ class InventoryStockQuery
                 ],
                 'stock_item.product_id = isi.product_id',
                 []
-            )->columns(
+            )->joinLeft(
+                [
+                    'stock_link' => $this->resourceConnection->getTableName('inventory_source_stock_link')
+                ],
+                'stock_link.stock_id = 1'
+            )->joinLeft(
+                [
+                    'source_item' => 'inventory_source_item'
+                ],
+                'source_item.source_code = stock_link.stock_id and source_item.sku = isi.sku')
+            ->columns(
                 [
                     'qty' => "isi.quantity",
                     'isSalable' => "isi.is_salable",

@@ -65,7 +65,8 @@
     </type>
     <type name="Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign">
         <plugin name="mark-stock-status-items-unassigned-on-bulk-unassign"
-                type="Magento\InventoryDataExporter\Plugin\BulkSourceUnassign"/>
+                type="Magento\InventoryDataExporter\Plugin\BulkSourceUnassign"
+                sortOrder="10"/>
     </type>
     <type name="Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery">
         <arguments>
@@ -80,6 +81,6 @@
         <plugin name="reindex-stock-status-exporter-indexer-on-source-item-update" type="\Magento\InventoryDataExporter\Plugin\SourceItem\SourceItemUpdate"/>
     </type>
     <type name="\Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface">
-        <plugin name="reindex-stock-status-exporter-indexer-on-bulk-source-unassign" type="\Magento\InventoryDataExporter\Plugin\SourceItem\BulkSourceUnassign"/>
+        <plugin name="reindex-stock-status-exporter-indexer-on-bulk-source-unassign" type="\Magento\InventoryDataExporter\Plugin\SourceItem\BulkSourceUnassign" sortOrder="20"/>
     </type>
 </config>
