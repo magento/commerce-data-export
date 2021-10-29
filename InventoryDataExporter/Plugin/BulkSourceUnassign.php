@@ -5,6 +5,7 @@
  */
 namespace Magento\InventoryDataExporter\Plugin;
 
+use Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface;
 use Magento\InventoryDataExporter\Model\Provider\StockStatusIdBuilder;
 use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
 
@@ -30,7 +31,7 @@ class BulkSourceUnassign
     /**
      * Check which stocks will be unassigned from products and mark them as deleted in feed table
      *
-     * @param \Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign $subject
+     * * @param BulkSourceUnassignInterface $subject
      * @param int $result
      * @param array $skus
      * @param array $sourceCodes
@@ -39,7 +40,7 @@ class BulkSourceUnassign
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterExecute(
-        \Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign $subject,
+        BulkSourceUnassignInterface $subject,
         int $result,
         array $skus,
         array $sourceCodes

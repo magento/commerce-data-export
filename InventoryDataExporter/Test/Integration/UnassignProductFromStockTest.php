@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\ProductVariantDataExporter\Test\Integration;
+namespace Magento\InventoryDataExporter\Test\Integration;
 
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
@@ -323,7 +323,7 @@ class UnassignProductFromStockTest extends TestCase
                         ],
                         '10' => [
                             'sku' => 'product_in_default_and_2_EU_sources',
-                            'stock_id' => 1,
+                            'stock_id' => 10,
                             'deleted' => true
                         ],
                     ],
@@ -372,7 +372,7 @@ class UnassignProductFromStockTest extends TestCase
                         ],
                         '10' => [
                             'sku' => 'product_in_default_and_2_EU_sources',
-                            'stock_id' => 1,
+                            'stock_id' => 10,
                             'deleted' => false
                         ],
                     ],

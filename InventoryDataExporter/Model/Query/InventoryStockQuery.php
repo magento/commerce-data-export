@@ -131,12 +131,12 @@ class InventoryStockQuery
                 ],
                 'stock_item.product_id = isi.product_id',
                 []
-            )->joinInner(
+            )->joinLeft(
                 [
                     'stock_link' => $this->resourceConnection->getTableName('inventory_source_stock_link')
                 ],
                 'stock_link.stock_id = 1'
-            )->joinInner(
+            )->joinLeft(
                 [
                     'source_item' => 'inventory_source_item'
                 ],
