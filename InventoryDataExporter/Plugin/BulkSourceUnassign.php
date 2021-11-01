@@ -79,7 +79,8 @@ class BulkSourceUnassign
             }
 
             foreach ($sourcesAssignedToProducts[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
-                if ($this->getContainsAllKeys($fetchedItemSources, $sourcesByStocks[$fetchedItemStockId])) {
+                if (isset($sourcesByStocks[$fetchedItemStockId])
+                    && $this->getContainsAllKeys($fetchedItemSources, $sourcesByStocks[$fetchedItemStockId])) {
                     $stockStatusId = StockStatusIdBuilder::build(
                         ['stockId' => (string)$fetchedItemStockId, 'sku' => $deletedItemSku]
                     );

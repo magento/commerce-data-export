@@ -49,10 +49,11 @@ class StockStatusDeleteQuery
         $select = $connection->select()
             ->from(
                 ['source_item' => $this->resourceConnection->getTableName('inventory_source_item')],
-                ['source_item.sku', 'source_stock_link.stock_id']
+                ['source_item.sku', 'source_stock_link.stock_id', 'source_stock_link.source_code']
             )->joinLeft(
                 ['source_stock_link' => $this->resourceConnection->getTableName('inventory_source_stock_link')],
-                'source_item.source_code = source_stock_link.source_code'
+                'source_item.source_code = source_stock_link.source_code',
+                []
             )->where('source_item.sku IN (?)', $skus);
 
         $fetchedSourceItems = [];
@@ -77,10 +78,18 @@ class StockStatusDeleteQuery
             ->from(
                 ['source_stock_link' => $sourceLinkTableName],
                 ['source_stock_link.stock_id', 'source_stock_link_all_sources.source_code']
-            )->joinLeft(
+            )->joinInner(
                 ['source_stock_link_all_sources' => $sourceLinkTableName],
-                'source_stock_link_all_sources.source_code = source_stock_link.source_code'
-            )->group('source_stock_link_all_sources.link_id');
+                'source_stock_link_all_sources.stock_id = source_stock_link.stock_id',
+                []
+            )->where(
+                'source_stock_link.source_code IN (?)',
+                $sourceCodes
+            )->group(
+                ['source_stock_link.stock_id',
+                    'source_stock_link_all_sources.source_code'
+                ]
+            );
         $stocks = [];
         foreach ($connection->fetchAll($select) as $stockData) {
             $stocks[$stockData['stock_id']][] = $stockData['source_code'];
