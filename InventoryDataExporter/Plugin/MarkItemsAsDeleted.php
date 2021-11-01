@@ -66,9 +66,13 @@ class MarkItemsAsDeleted
         foreach ($deletedSourceItems as $deletedItemSku => $deletedItemSources) {
             foreach ($fetchedSourceItems[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
                 if ($this->getContainsAllKeys($fetchedItemSources, $deletedItemSources)) {
-                    $stocksToDelete[] = StockStatusIdBuilder::build(
+                    $stockStatusId = StockStatusIdBuilder::build(
                         ['stockId' => (string)$fetchedItemStockId, 'sku' => $deletedItemSku]
                     );
+                    $stocksToDelete[$stockStatusId] = [
+                        'stock_id' => (string)$fetchedItemStockId,
+                        'sku' => $deletedItemSku
+                    ];
                 }
             }
         }

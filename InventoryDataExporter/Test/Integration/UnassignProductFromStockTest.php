@@ -54,9 +54,10 @@ class UnassignProductFromStockTest extends TestCase
      * @param array $sourcesToLeave
      * @param array $expectedData
      * @throws InputException
+     * @throws \Zend_Db_Statement_Exception
      * @magentoDataFixture Magento_InventoryDataExporter::Test/_files/products_with_sources.php
      */
-    public function te1stSourceItemStockUnassigned(string $sku, array $sourcesToLeave, array $expectedData)
+    public function testSourceItemStockUnassigned(string $sku, array $sourcesToLeave, array $expectedData)
     {
         $sourceItems = $this->getSourcesData($sku, $sourcesToLeave);
         $this->sourceItemProcessor->execute($sku, $sourceItems);
@@ -118,12 +119,20 @@ class UnassignProductFromStockTest extends TestCase
                 'expected_data' => [
                     '10' => [
                         'sku' => 'product_in_EU_stock_with_2_sources',
-                        'stock_id' => 10,
+                        'stock_id' => '10',
+                        'qty' => 0,
+                        'qty_for_sale' => 0,
+                        'infinite_stock' => false,
+                        'is_salable' => false,
                         'deleted' => false
                     ],
                     '30' => [
                         'sku' => 'product_in_EU_stock_with_2_sources',
-                        'stock_id' => 30,
+                        'stock_id' => '30',
+                        'qty' => 0,
+                        'qty_for_sale' => 0,
+                        'infinite_stock' => false,
+                        'is_salable' => false,
                         'deleted' => true
                     ]
                 ]
@@ -134,17 +143,29 @@ class UnassignProductFromStockTest extends TestCase
                 'expected_data' => [
                     '10' => [
                         'sku' => 'product_in_Global_stock_with_3_sources',
-                        'stock_id' => 10,
+                        'stock_id' => '10',
+                        'qty' => 0,
+                        'qty_for_sale' => 0,
+                        'infinite_stock' => false,
+                        'is_salable' => false,
                         'deleted' => false
                     ],
                     '20' => [
                         'sku' => 'product_in_Global_stock_with_3_sources',
-                        'stock_id' => 20,
+                        'stock_id' => '20',
+                        'qty' => 0,
+                        'qty_for_sale' => 0,
+                        'infinite_stock' => false,
+                        'is_salable' => false,
                         'deleted' => true
                     ],
                     '30' => [
                         'sku' => 'product_in_Global_stock_with_3_sources',
-                        'stock_id' => 30,
+                        'stock_id' => '30',
+                        'qty' => 0,
+                        'qty_for_sale' => 0,
+                        'infinite_stock' => false,
+                        'is_salable' => false,
                         'deleted' => true
                     ]
                 ]
@@ -155,23 +176,35 @@ class UnassignProductFromStockTest extends TestCase
                 'expected_data' => [
                     '1' => [
                         'sku' => 'product_with_default_stock_only',
-                        'stock_id' => 1,
+                        'stock_id' => '1',
+                        'qty' => 0,
+                        'qty_for_sale' => 0,
+                        'infinite_stock' => false,
+                        'is_salable' => false,
                         'deleted' => true
                     ]
                 ]
             ],
             'default_stock_unassign_from_default_and_custom_stocks_product' => [
                 'sku' => 'product_in_default_and_2_EU_sources',
-                'sources_to_leave' => ['eu1', 'eu2'],
+                'sources_to_leave' => ['eu-1', 'eu-2'],
                 'expected_data' => [
                     '1' => [
                         'sku' => 'product_in_default_and_2_EU_sources',
-                        'stock_id' => 1,
+                        'stock_id' => '1',
+                        'qty' => 0,
+                        'qty_for_sale' => 0,
+                        'infinite_stock' => false,
+                        'is_salable' => false,
                         'deleted' => true
                     ],
                     '10' => [
                         'sku' => 'product_in_default_and_2_EU_sources',
-                        'stock_id' => 10,
+                        'stock_id' => '10',
+                        'qty' => 0,
+                        'qty_for_sale' => 0,
+                        'infinite_stock' => false,
+                        'is_salable' => false,
                         'deleted' => false
                     ]
                 ]
@@ -182,12 +215,20 @@ class UnassignProductFromStockTest extends TestCase
                 'expected_data' => [
                     '1' => [
                         'sku' => 'product_in_default_and_2_EU_sources',
-                        'stock_id' => 1,
+                        'stock_id' => '1',
+                        'qty' => 0,
+                        'qty_for_sale' => 0,
+                        'infinite_stock' => false,
+                        'is_salable' => false,
                         'deleted' => false
                     ],
                     '10' => [
                         'sku' => 'product_in_default_and_2_EU_sources',
-                        'stock_id' => 10,
+                        'stock_id' => '10',
+                        'qty' => 0,
+                        'qty_for_sale' => 0,
+                        'infinite_stock' => false,
+                        'is_salable' => false,
                         'deleted' => true
                     ]
                 ]
@@ -213,38 +254,62 @@ class UnassignProductFromStockTest extends TestCase
                     'product_with_default_stock_only' => [
                         '1' => [
                             'sku' => 'product_with_default_stock_only',
-                            'stock_id' => 1,
+                            'stock_id' => '1',
+                            'qty' => 8.5,
+                            'qty_for_sale' => 8.5,
+                            'infinite_stock' => false,
+                            'is_salable' => true,
                             'deleted' => false
                         ],
                     ],
                     'product_in_default_and_2_EU_sources' => [
                         '1' => [
                             'sku' => 'product_in_default_and_2_EU_sources',
-                            'stock_id' => 1,
+                            'stock_id' => '1',
+                            'qty' => 2,
+                            'qty_for_sale' => 2,
+                            'infinite_stock' => false,
+                            'is_salable' => true,
                             'deleted' => false
                         ],
                         '10' => [
                             'sku' => 'product_in_default_and_2_EU_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                     ],
                     'product_in_EU_stock_with_2_sources' => [
                         '10' => [
                             'sku' => 'product_in_EU_stock_with_2_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                     ],
                     'product_in_Global_stock_with_3_sources' => [
                         '10' => [
                             'sku' => 'product_in_Global_stock_with_3_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                         '30' => [
                             'sku' => 'product_in_Global_stock_with_3_sources',
-                            'stock_id' => 30,
+                            'stock_id' => '30',
+                            'qty' => 4,
+                            'qty_for_sale' => 4,
+                            'infinite_stock' => false,
+                            'is_salable' => true,
                             'deleted' => false
                         ],
                     ]
@@ -262,38 +327,62 @@ class UnassignProductFromStockTest extends TestCase
                     'product_with_default_stock_only' => [
                         '1' => [
                             'sku' => 'product_with_default_stock_only',
-                            'stock_id' => 1,
+                            'stock_id' => '1',
+                            'qty' => 8.5,
+                            'qty_for_sale' => 8.5,
+                            'infinite_stock' => false,
+                            'is_salable' => true,
                             'deleted' => false
                         ],
                     ],
                     'product_in_default_and_2_EU_sources' => [
                         '1' => [
                             'sku' => 'product_in_default_and_2_EU_sources',
-                            'stock_id' => 1,
+                            'stock_id' => '1',
+                            'qty' => 2,
+                            'qty_for_sale' => 2,
+                            'infinite_stock' => false,
+                            'is_salable' => true,
                             'deleted' => false
                         ],
                         '10' => [
                             'sku' => 'product_in_default_and_2_EU_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                     ],
                     'product_in_EU_stock_with_2_sources' => [
                         '10' => [
                             'sku' => 'product_in_EU_stock_with_2_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                     ],
                     'product_in_Global_stock_with_3_sources' => [
                         '10' => [
                             'sku' => 'product_in_Global_stock_with_3_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                         '30' => [
                             'sku' => 'product_in_Global_stock_with_3_sources',
-                            'stock_id' => 30,
+                            'stock_id' => '30',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                     ]
@@ -311,38 +400,62 @@ class UnassignProductFromStockTest extends TestCase
                     'product_with_default_stock_only' => [
                         '1' => [
                             'sku' => 'product_with_default_stock_only',
-                            'stock_id' => 1,
+                            'stock_id' => '1',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                     ],
                     'product_in_default_and_2_EU_sources' => [
                         '1' => [
                             'sku' => 'product_in_default_and_2_EU_sources',
-                            'stock_id' => 1,
+                            'stock_id' => '1',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                         '10' => [
                             'sku' => 'product_in_default_and_2_EU_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                     ],
                     'product_in_EU_stock_with_2_sources' => [
                         '10' => [
                             'sku' => 'product_in_EU_stock_with_2_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                     ],
                     'product_in_Global_stock_with_3_sources' => [
                         '10' => [
                             'sku' => 'product_in_Global_stock_with_3_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                         '30' => [
                             'sku' => 'product_in_Global_stock_with_3_sources',
-                            'stock_id' => 30,
+                            'stock_id' => '30',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                     ]
@@ -360,38 +473,62 @@ class UnassignProductFromStockTest extends TestCase
                     'product_with_default_stock_only' => [
                         '1' => [
                             'sku' => 'product_with_default_stock_only',
-                            'stock_id' => 1,
+                            'stock_id' => '1',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                     ],
                     'product_in_default_and_2_EU_sources' => [
                         '1' => [
                             'sku' => 'product_in_default_and_2_EU_sources',
-                            'stock_id' => 1,
+                            'stock_id' => '1',
+                            'qty' => 0,
+                            'qty_for_sale' => 0,
+                            'infinite_stock' => false,
+                            'is_salable' => false,
                             'deleted' => true
                         ],
                         '10' => [
                             'sku' => 'product_in_default_and_2_EU_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 9.5,
+                            'qty_for_sale' => 9.5,
+                            'infinite_stock' => false,
+                            'is_salable' => true,
                             'deleted' => false
                         ],
                     ],
                     'product_in_EU_stock_with_2_sources' => [
                         '10' => [
                             'sku' => 'product_in_EU_stock_with_2_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 9.5,
+                            'qty_for_sale' => 9.5,
+                            'infinite_stock' => false,
+                            'is_salable' => true,
                             'deleted' => false
                         ],
                     ],
                     'product_in_Global_stock_with_3_sources' => [
                         '10' => [
                             'sku' => 'product_in_Global_stock_with_3_sources',
-                            'stock_id' => 10,
+                            'stock_id' => '10',
+                            'qty' => 3,
+                            'qty_for_sale' => 3,
+                            'infinite_stock' => false,
+                            'is_salable' => true,
                             'deleted' => false
                         ],
                         '30' => [
                             'sku' => 'product_in_Global_stock_with_3_sources',
-                            'stock_id' => 30,
+                            'stock_id' => '30',
+                            'qty' => 5,
+                            'qty_for_sale' => 5,
+                            'infinite_stock' => false,
+                            'is_salable' => true,
                             'deleted' => false
                         ],
                     ]
@@ -431,6 +568,10 @@ class UnassignProductFromStockTest extends TestCase
                 [
                     'sku' => $feedData[$expectedStockId][$sku]['sku'],
                     'stock_id' => $feedData[$expectedStockId][$sku]['stockId'],
+                    'qty' => $feedData[$expectedStockId][$sku]['qty'],
+                    'qty_for_sale' => $feedData[$expectedStockId][$sku]['qtyForSale'],
+                    'infinite_stock' => $feedData[$expectedStockId][$sku]['infiniteStock'],
+                    'is_salable' => $feedData[$expectedStockId][$sku]['isSalable'],
                     'deleted' => $feedData[$expectedStockId][$sku]['deleted'],
                 ]
             );

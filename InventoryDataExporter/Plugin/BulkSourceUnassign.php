@@ -70,9 +70,13 @@ class BulkSourceUnassign
         $stocksToDelete = [];
         foreach ($affectedSkus as $deletedItemSku) {
             foreach (array_keys($sourcesByStocks) as $stockId) {
-                $stocksToDelete[] = StockStatusIdBuilder::build(
+                $stockStatusId = StockStatusIdBuilder::build(
                     ['stockId' => (string)$stockId, 'sku' => $deletedItemSku]
                 );
+                $stocksToDelete[$stockStatusId] = [
+                    'stock_id' => (string)$stockId,
+                    'sku' => $deletedItemSku
+                ];
             }
             if (!isset($sourcesAssignedToProducts[$deletedItemSku])) {
                 continue ;
@@ -84,9 +88,7 @@ class BulkSourceUnassign
                     $stockStatusId = StockStatusIdBuilder::build(
                         ['stockId' => (string)$fetchedItemStockId, 'sku' => $deletedItemSku]
                     );
-                    if ($key = \array_search($stockStatusId, $stocksToDelete, false)) {
-                        unset($stocksToDelete[(int)$key]);
-                    }
+                    unset($stocksToDelete[$stockStatusId]);
                 }
             }
         }
