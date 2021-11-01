@@ -80,7 +80,6 @@ class StockStatus
         $output = [];
 
         try {
-            $processedSkus = [];
             $select = $this->query->getQuery($skus);
             // $select can be null if no stocks exists except default
             if ($select) {

@@ -20,7 +20,7 @@ use Magento\TestFramework\Workaround\Override\Fixture\Resolver;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 
 Resolver::getInstance()->requireDataFixture(
-    'Magento/InventoryDataExporter/Test/_files/products_with_sources.php'
+    'Magento_InventoryDataExporter::Test/_files/products_with_sources.php'
 );
 
 /**

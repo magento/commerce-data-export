@@ -32,5 +32,5 @@ $condition = [ReservationInterface::RESERVATION_ID . ' IN (?)' => explode(',', $
 $connection->delete($reservationTable, $condition);
 
 Resolver::getInstance()->requireDataFixture(
-    'Magento/InventoryDataExporter/Test/_files/products_with_sources_rollback.php'
+    'Magento_InventoryDataExporter::Test/_files/products_with_sources_rollback.php'
 );
