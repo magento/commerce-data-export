@@ -43,8 +43,7 @@ class SourceItemUpdate
         SourceItemsSaveInterface $subject,
         $result,
         array $sourceItems
-    ): void
-    {
+    ): void {
         $stockStatusIndexer = $this->indexer->load(self::STOCK_STATUS_FEED_INDEXER);
         if (!$stockStatusIndexer->isScheduled()) {
             $skus = \array_map(

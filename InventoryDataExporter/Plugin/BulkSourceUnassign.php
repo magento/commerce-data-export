@@ -5,6 +5,7 @@
  */
 namespace Magento\InventoryDataExporter\Plugin;
 
+use Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface;
 use Magento\InventoryDataExporter\Model\Provider\StockStatusIdBuilder;
 use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
 
@@ -30,49 +31,69 @@ class BulkSourceUnassign
     /**
      * Check which stocks will be unassigned from products and mark them as deleted in feed table
      *
-     * @param \Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign $subject
+     * * @param BulkSourceUnassignInterface $subject
+     * @param int $result
      * @param array $skus
      * @param array $sourceCodes
-     * @return void
+     * @return int
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function beforeExecute(
-        \Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign $subject,
+    public function afterExecute(
+        BulkSourceUnassignInterface $subject,
+        int $result,
         array $skus,
         array $sourceCodes
-    ): void {
-        $fetchedSourceItems = $this->stockStatusDeleteQuery->getStocksAssignedToSkus($skus);
-        $stocksToDelete = $this->getStocksToDelete($skus, $sourceCodes, $fetchedSourceItems);
+    ): int {
+        $sourcesAssignedToProducts = $this->stockStatusDeleteQuery->getStocksAssignedToSkus($skus);
+        $sourcesByStocks = $this->stockStatusDeleteQuery->getStocksWithSources($sourceCodes);
+        $stocksToDelete = $this->getStocksToDelete($skus, $sourcesByStocks, $sourcesAssignedToProducts);
 
         if (!empty($stocksToDelete)) {
             $this->stockStatusDeleteQuery->markStockStatusesAsDeleted($stocksToDelete);
         }
+
+        return $result;
     }
 
     /**
      * @param array $affectedSkus
-     * @param array $deletedSources
-     * @param $fetchedSourceItems
+     * @param array $sourcesByStocks
+     * @param array $sourcesAssignedToProducts
      * @return array
      */
-    private function getStocksToDelete(array $affectedSkus, array $deletedSources, array $fetchedSourceItems): array
-    {
+    private function getStocksToDelete(
+        array $affectedSkus,
+        array $sourcesByStocks,
+        array $sourcesAssignedToProducts
+    ): array {
         $stocksToDelete = [];
         foreach ($affectedSkus as $deletedItemSku) {
-            if (!isset($fetchedSourceItems[$deletedItemSku])) {
+            foreach (array_keys($sourcesByStocks) as $stockId) {
+                $stockStatusId = StockStatusIdBuilder::build(
+                    ['stockId' => (string)$stockId, 'sku' => $deletedItemSku]
+                );
+                $stocksToDelete[$stockStatusId] = [
+                    'stock_id' => (string)$stockId,
+                    'sku' => $deletedItemSku
+                ];
+            }
+            if (!isset($sourcesAssignedToProducts[$deletedItemSku])) {
                 continue ;
             }
-            foreach ($fetchedSourceItems[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
-                if ($this->getContainsAllKeys($fetchedItemSources, $deletedSources)) {
-                    $stocksToDelete[] = StockStatusIdBuilder::build(
+
+            foreach ($sourcesAssignedToProducts[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
+                if (isset($sourcesByStocks[$fetchedItemStockId])
+                    && $this->getContainsAllKeys($fetchedItemSources, $sourcesByStocks[$fetchedItemStockId])) {
+                    $stockStatusId = StockStatusIdBuilder::build(
                         ['stockId' => (string)$fetchedItemStockId, 'sku' => $deletedItemSku]
                     );
+                    unset($stocksToDelete[$stockStatusId]);
                 }
             }
         }
 
-        return $stocksToDelete;
+        return array_filter($stocksToDelete);
     }
 
     /**

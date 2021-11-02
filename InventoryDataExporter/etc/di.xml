@@ -63,9 +63,10 @@
         <plugin name="mark-stock-status-items-as-deleted"
                 type="Magento\InventoryDataExporter\Plugin\MarkItemsAsDeleted"/>
     </type>
-    <type name="Magento\InventoryCatalog\Model\ResourceModel\BulkSourceUnassign">
+    <type name="Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface">
         <plugin name="mark-stock-status-items-unassigned-on-bulk-unassign"
-                type="Magento\InventoryDataExporter\Plugin\BulkSourceUnassign"/>
+                type="Magento\InventoryDataExporter\Plugin\BulkSourceUnassign"
+                sortOrder="200"/>
     </type>
     <type name="Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery">
         <arguments>
@@ -75,11 +76,12 @@
         </arguments>
     </type>
 
-    <!-- Plugins to cover un-save indexer mode  -->
-    <type name="\Magento\InventoryApi\Api\SourceItemsSaveInterface">
-        <plugin name="reindex-stock-status-exporter-indexer-on-source-item-update" type="\Magento\InventoryDataExporter\Plugin\SourceItem\SourceItemUpdate"/>
+    <!-- Plugins to cover on-save indexer mode  -->
+    <type name="Magento\InventoryApi\Api\SourceItemsSaveInterface">
+        <!-- sort order guarantee it will be executed after Inventory Index plugin -->
+        <plugin name="reindex-stock-status-exporter-indexer-on-source-item-update" type="\Magento\InventoryDataExporter\Plugin\SourceItem\SourceItemUpdate" sortOrder="10"/>
     </type>
-    <type name="\Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface">
-        <plugin name="reindex-stock-status-exporter-indexer-on-bulk-source-unassign" type="\Magento\InventoryDataExporter\Plugin\SourceItem\BulkSourceUnassign"/>
+    <type name="Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface">
+        <plugin name="reindex-stock-status-exporter-indexer-on-bulk-source-unassign" type="\Magento\InventoryDataExporter\Plugin\SourceItem\BulkSourceUnassign" sortOrder="100"/>
     </type>
 </config>

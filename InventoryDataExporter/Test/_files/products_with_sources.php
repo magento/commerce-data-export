@@ -230,6 +230,12 @@ $createProducts = static function ()
             'manage_stock' => true,
             'is_qty_decimal' => true
         ],
+        'product_in_default_and_2_EU_sources' => [
+            'qty' => 11.5,
+            'is_in_stock' => true,
+            'manage_stock' => true,
+            'is_qty_decimal' => true
+        ],
         'product_with_disabled_manage_stock' => [
             'use_config_manage_stock' => false,
             'manage_stock' => false,
@@ -282,6 +288,24 @@ $assignProductsToSources = static function (): void
     $sourceItemsSave = Bootstrap::getObjectManager()->get(SourceItemsSaveInterface::class);
 
     $sourcesItemsData = [
+        [
+            SourceItemInterface::SOURCE_CODE => 'default',
+            SourceItemInterface::SKU => 'product_in_default_and_2_EU_sources',
+            SourceItemInterface::QUANTITY => 2,
+            SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+        ],
+        [
+            SourceItemInterface::SOURCE_CODE => 'eu-1',
+            SourceItemInterface::SKU => 'product_in_default_and_2_EU_sources',
+            SourceItemInterface::QUANTITY => 5.5,
+            SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+        ],
+        [
+            SourceItemInterface::SOURCE_CODE => 'eu-2',
+            SourceItemInterface::SKU => 'product_in_default_and_2_EU_sources',
+            SourceItemInterface::QUANTITY => 4,
+            SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
+        ],
         [
             SourceItemInterface::SOURCE_CODE => 'eu-1',
             SourceItemInterface::SKU => 'product_in_EU_stock_with_2_sources',

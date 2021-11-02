@@ -102,7 +102,11 @@ class PartialReindexCheckTest extends TestCase
      */
     public function testSourceBulkUnassign()
     {
-        $skus = ['product_in_EU_stock_with_2_sources', 'product_in_Global_stock_with_3_sources', 'product_with_default_stock_only'];
+        $skus = [
+            'product_in_EU_stock_with_2_sources',
+            'product_in_Global_stock_with_3_sources',
+            'product_with_default_stock_only'
+        ];
 
         $this->bulkSourceUnassign->execute(
             $skus,

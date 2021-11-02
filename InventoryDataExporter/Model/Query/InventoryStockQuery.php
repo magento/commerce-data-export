@@ -21,13 +21,17 @@ class InventoryStockQuery
      * @var ResourceConnection
      */
     private $resourceConnection;
+
     /**
      * @var DefaultStockProviderInterface
      */
     private $defaultStockProvider;
 
+    private const DEFAULT_STOCK_SOURCE = 'default';
+
     /**
      * @param ResourceConnection $resourceConnection
+     * @param DefaultStockProviderInterface $defaultStockProvider
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -130,6 +134,15 @@ class InventoryStockQuery
                     'stock_item' => $this->resourceConnection->getTableName('cataloginventory_stock_item'),
                 ],
                 'stock_item.product_id = isi.product_id',
+                []
+            )->joinInner(
+                [
+                    'source_item' => 'inventory_source_item'
+                ],
+                $connection->quoteInto(
+                    'source_item.source_code = ? and source_item.sku = isi.sku',
+                    self::DEFAULT_STOCK_SOURCE
+                ),
                 []
             )->columns(
                 [

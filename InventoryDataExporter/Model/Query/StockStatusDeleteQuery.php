@@ -9,6 +9,8 @@ namespace Magento\InventoryDataExporter\Model\Query;
 
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Framework\Stdlib\DateTime;
 
 /**
  * Stock Status mark as deleted query builder
@@ -26,15 +28,31 @@ class StockStatusDeleteQuery
     private $metadata;
 
     /**
+     * @var SerializerInterface
+     */
+    private $serializer;
+
+    /**
+     * @var DateTime
+     */
+    private $dateTime;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param FeedIndexMetadata $metadata
+     * @param SerializerInterface $serializer
+     * @param DateTime $dateTime
      */
     public function __construct(
         ResourceConnection $resourceConnection,
-        FeedIndexMetadata $metadata
+        FeedIndexMetadata $metadata,
+        SerializerInterface $serializer,
+        DateTime $dateTime
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->metadata = $metadata;
+        $this->serializer = $serializer;
+        $this->dateTime = $dateTime;
     }
 
     /**
@@ -49,10 +67,11 @@ class StockStatusDeleteQuery
         $select = $connection->select()
             ->from(
                 ['source_item' => $this->resourceConnection->getTableName('inventory_source_item')],
-                ['source_item.sku', 'source_stock_link.stock_id']
+                ['source_item.sku', 'source_stock_link.stock_id', 'source_stock_link.source_code']
             )->joinLeft(
                 ['source_stock_link' => $this->resourceConnection->getTableName('inventory_source_stock_link')],
-                'source_item.source_code = source_stock_link.source_code'
+                'source_item.source_code = source_stock_link.source_code',
+                []
             )->where('source_item.sku IN (?)', $skus);
 
         $fetchedSourceItems = [];
@@ -64,20 +83,91 @@ class StockStatusDeleteQuery
     }
 
     /**
+     * Get stocks which are assigned to the list of provided SKUs
+     *
+     * @param array $sourceCodes
+     * @return array
+     */
+    public function getStocksWithSources(array $sourceCodes): array
+    {
+        $connection = $this->resourceConnection->getConnection();
+        $sourceLinkTableName = $this->resourceConnection->getTableName('inventory_source_stock_link');
+        $select = $connection->select()
+            ->from(
+                ['source_stock_link' => $sourceLinkTableName],
+                ['source_stock_link.stock_id', 'source_stock_link_all_sources.source_code']
+            )->joinInner(
+                ['source_stock_link_all_sources' => $sourceLinkTableName],
+                'source_stock_link_all_sources.stock_id = source_stock_link.stock_id',
+                []
+            )->where(
+                'source_stock_link.source_code IN (?)',
+                $sourceCodes
+            )->group(
+                ['source_stock_link.stock_id',
+                    'source_stock_link_all_sources.source_code'
+                ]
+            );
+        $stocks = [];
+        foreach ($connection->fetchAll($select) as $stockData) {
+            $stocks[$stockData['stock_id']][] = $stockData['source_code'];
+        }
+        return $stocks;
+    }
+
+    /**
      * Mark stock statuses as deleted
      *
      * @param array $idsToDelete
      */
     public function markStockStatusesAsDeleted(array $idsToDelete): void
     {
+        $records = [];
+        foreach ($idsToDelete as $deletedItemId => $stockStatusData) {
+            $records[] = $this->buildFeedData($deletedItemId, $stockStatusData);
+        }
         $connection = $this->resourceConnection->getConnection();
         $feedTableName = $this->resourceConnection->getTableName($this->metadata->getFeedTableName());
-        $connection->update(
+        $connection->insertOnDuplicate(
             $feedTableName,
-            ['is_deleted' => new \Zend_Db_Expr('1')],
-            [
-                'id IN (?)' => $idsToDelete
-            ]
+            $records
         );
+    }
+
+    /**
+     * @param string $stockStatusId
+     * @param array $stockIdAndSku
+     * @return array
+     */
+    private function buildFeedData(string $stockStatusId, array $stockIdAndSku): array
+    {
+        if (!isset($stockIdAndSku['stock_id'], $stockIdAndSku['sku'])) {
+            throw new \RuntimeException(
+                sprintf(
+                    "inventory_data_exporter_stock_status indexer error: cannot build unique id from %s",
+                    \var_export($stockIdAndSku, true)
+                )
+            );
+        }
+        $feedData = [
+            'id' => $stockStatusId,
+            'stockId' => $stockIdAndSku['stock_id'],
+            'sku' => $stockIdAndSku['sku'],
+            'qty' => 0,
+            'qtyForSale' => 0,
+            'infiniteStock' => false,
+            'isSalable' => false,
+            'updatedAt' => $this->dateTime->formatDate(time())
+
+        ];
+
+        return [
+            'id' => $stockStatusId,
+            'stock_id' => $stockIdAndSku['stock_id'],
+            'sku' => $stockIdAndSku['sku'],
+            'feed_data' => $this->serializer->serialize($feedData),
+            'is_deleted' => 1,
+            'modified_at' => $this->dateTime->formatDate(time())
+        ];
     }
 }
