@@ -8,3 +8,5 @@
 - Stock is considered as infinite in the following cases:
   - Manage Stock disabled
   - [Backorders](https://docs.magento.com/user-guide/catalog/inventory-backorders.html?itm_source=devdocs&itm_medium=quick_search&itm_campaign=federated_search&itm_term=backorer) enabled and Out-of-Stock threshold is set to 0.
+- To calculate salable quantity Reservations API is used. 
+  - salabel qty is calculated only for indexer in "on schedule" mode to prevent frequent reindexation during place order
