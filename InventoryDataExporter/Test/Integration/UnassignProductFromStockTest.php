@@ -43,7 +43,7 @@ class UnassignProductFromStockTest extends TestCase
      */
     protected function setUp(): void
     {
-        $this->stockStatusFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('stock_statuses');
+        $this->stockStatusFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('inventoryStockStatus');
         $this->sourceItemProcessor = Bootstrap::getObjectManager()->get(SourceItemsProcessorInterface::class);
         $this->bulkSourceUnassign = Bootstrap::getObjectManager()->get(BulkSourceUnassignInterface::class);
     }

@@ -63,11 +63,6 @@
         <plugin name="mark-stock-status-items-as-deleted"
                 type="Magento\InventoryDataExporter\Plugin\MarkItemsAsDeleted"/>
     </type>
-    <type name="Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface">
-        <plugin name="mark-stock-status-items-unassigned-on-bulk-unassign"
-                type="Magento\InventoryDataExporter\Plugin\BulkSourceUnassign"
-                sortOrder="200"/>
-    </type>
     <type name="Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery">
         <arguments>
             <argument name="metadata" xsi:type="object">
@@ -83,5 +78,6 @@
     </type>
     <type name="Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface">
         <plugin name="reindex-stock-status-exporter-indexer-on-bulk-source-unassign" type="\Magento\InventoryDataExporter\Plugin\SourceItem\BulkSourceUnassign" sortOrder="100"/>
+        <plugin name="mark-stock-status-items-unassigned-on-bulk-unassign" type="Magento\InventoryDataExporter\Plugin\BulkSourceUnassign" sortOrder="200"/>
     </type>
 </config>
