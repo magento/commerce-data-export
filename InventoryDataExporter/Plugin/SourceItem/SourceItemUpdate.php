@@ -6,7 +6,7 @@
 
 namespace Magento\InventoryDataExporter\Plugin\SourceItem;
 
-use Magento\Indexer\Model\Indexer;
+use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 
@@ -18,17 +18,17 @@ class SourceItemUpdate
     private const STOCK_STATUS_FEED_INDEXER = 'inventory_data_exporter_stock_status';
 
     /**
-     * @var Indexer
+     * @var IndexerRegistry
      */
-    private $indexer;
+    private $indexerRegistry;
 
     /**
-     * @param Indexer $indexer
+     * @param IndexerRegistry $indexerRegistry
      */
     public function __construct(
-        Indexer $indexer
+        IndexerRegistry $indexerRegistry
     ) {
-        $this->indexer = $indexer;
+        $this->indexerRegistry = $indexerRegistry;
     }
 
     /**
@@ -44,7 +44,7 @@ class SourceItemUpdate
         $result,
         array $sourceItems
     ): void {
-        $stockStatusIndexer = $this->indexer->load(self::STOCK_STATUS_FEED_INDEXER);
+        $stockStatusIndexer = $this->indexerRegistry->get(self::STOCK_STATUS_FEED_INDEXER);
         if (!$stockStatusIndexer->isScheduled()) {
             $skus = \array_map(
                 static function (SourceItemInterface $sourceItem) {

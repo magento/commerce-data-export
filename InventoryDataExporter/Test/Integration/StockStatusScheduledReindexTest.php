@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace Magento\InventoryDataExporter\Test\Integration;
 
 use Magento\Framework\Indexer\IndexerInterface;
-use Magento\Indexer\Model\Indexer;
+use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
@@ -49,8 +49,8 @@ class StockStatusScheduledReindexTest extends TestCase
     {
         $this->sourceItemsFactory = Bootstrap::getObjectManager()->get(SourceItemInterfaceFactory::class);
         $this->sourceItemsSave = Bootstrap::getObjectManager()->get(SourceItemsSaveInterface::class);
-        $indexer = Bootstrap::getObjectManager()->create(Indexer::class);
-        $this->indexer = $indexer->load(self::STOCK_STATUS_FEED_INDEXER);
+        $indexer = Bootstrap::getObjectManager()->create(IndexerRegistry::class);
+        $this->indexer = $indexer->get(self::STOCK_STATUS_FEED_INDEXER);
         $this->indexer->setScheduled(true);
     }
 

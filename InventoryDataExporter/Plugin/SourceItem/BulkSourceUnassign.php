@@ -5,7 +5,6 @@
  */
 namespace Magento\InventoryDataExporter\Plugin\SourceItem;
 
-use Magento\Indexer\Model\Indexer;
 use Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface;
 
 /**
@@ -16,17 +15,17 @@ class BulkSourceUnassign
     private const STOCK_STATUS_FEED_INDEXER = 'inventory_data_exporter_stock_status';
 
     /**
-     * @var \Magento\Indexer\Model\Indexer
+     * @var \Magento\Framework\Indexer\IndexerRegistry
      */
-    private $indexer;
+    private $indexerRegistry;
 
     /**
-     * @param \Magento\Indexer\Model\Indexer $indexer
+     * @param \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry
      */
     public function __construct(
-        Indexer $indexer
+        \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry
     ) {
-        $this->indexer = $indexer;
+        $this->indexerRegistry = $indexerRegistry;
     }
 
     /**
@@ -44,7 +43,7 @@ class BulkSourceUnassign
         array $skus,
         array $sourceCodes
     ): int {
-        $stockStatusIndexer = $this->indexer->load(self::STOCK_STATUS_FEED_INDEXER);
+        $stockStatusIndexer = $this->indexerRegistry->get(self::STOCK_STATUS_FEED_INDEXER);
         if (!$stockStatusIndexer->isScheduled()) {
             $stockStatusIndexer->reindexList($skus);
         }
