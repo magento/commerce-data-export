@@ -65,14 +65,23 @@ class QtyForSale
             $stockId = $value['stockId'];
             $queryArguments['skus'][] = $sku;
             $queryArguments['stock_ids'][] = $stockId;
+            $uniqueKey = StockStatusIdBuilder::build($value);
             $skuPerStockQty[StockStatusIdBuilder::build($value)] = $value['qty'];
+
+            // set default value
+            $output[$uniqueKey] = [
+                'sku' => $sku,
+                'stockId' => $stockId,
+                'qtyForSale' => $value['qty']
+            ];
+
         }
         $cursor = $this->queryProcessor->execute($this->queryName, $queryArguments);
         while ($row = $cursor->fetch()) {
             $uniqueKey = StockStatusIdBuilder::build($row);
-            if (isset($skuPerStockQty[$uniqueKey])) {
+            if (isset($skuPerStockQty[$uniqueKey])) { // default value
                 // TODO: if infinitive set to "0", check for "<0"
-                $output[] = [
+                $output[$uniqueKey] = [
                     'sku' => $row['sku'],
                     'stockId' => $row['stockId'],
                     'qtyForSale' => $skuPerStockQty[$uniqueKey] + $row['quantity']

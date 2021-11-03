@@ -16,6 +16,11 @@ use Magento\Framework\DB\Select;
 class AllIdsResolver
 {
     /**
+     * Used as a field name in Select statement
+     */
+    private const IDENTITY_FIELD_NAME = '_identity_field';
+
+    /**
      * @var ResourceConnection
      */
     private $resourceConnection;
@@ -46,7 +51,7 @@ class AllIdsResolver
                 $continueReindex = false;
             } else {
                 yield $ids;
-                $lastKnownId = end($ids)['primary_key'];
+                $lastKnownId = end($ids)[self::IDENTITY_FIELD_NAME];
             }
         }
     }
@@ -63,17 +68,15 @@ class AllIdsResolver
         $connection = $this->resourceConnection->getConnection();
         $tableName = $this->resourceConnection->getTableName($metadata->getSourceTableName());
 
-        $indexesList = $connection->getIndexList($tableName);
-        $primaryKey = $indexesList[$connection->getPrimaryKeyName($tableName)]['COLUMNS_LIST'][0];
-        $whereClause = sprintf('s.%s > ?', $primaryKey);
-        $columnExpression = sprintf('s.%s', $primaryKey);
+        $columnExpression = sprintf('s.%s', $metadata->getSourceTableIdentityField());
+        $whereClause = sprintf('s.%s > ?', $metadata->getSourceTableIdentityField());
 
         return $connection->select()
             ->from(
                 ['s' => $tableName],
                 [
                     $metadata->getFeedIdentity() => 's.' . $metadata->getSourceTableField(),
-                    'primary_key' => 's.' . $primaryKey
+                    self::IDENTITY_FIELD_NAME => 's.' . $metadata->getSourceTableIdentityField()
                 ]
             )
             ->where($whereClause, $lastKnownId)
