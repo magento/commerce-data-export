@@ -26,6 +26,7 @@
             <!--  source table used only during full reindex -->
             <argument name="sourceTableName" xsi:type="string">inventory_source_item</argument>
             <argument name="sourceTableField" xsi:type="string">sku</argument>
+            <argument name="sourceTableIdentityField" xsi:type="string">source_item_id</argument>
             <argument name="feedTableName" xsi:type="string">inventory_data_exporter_stock_status</argument>
             <argument name="feedTableField" xsi:type="string">sku</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">

@@ -175,26 +175,13 @@ class Transformer
                 if (isset($snapshot[$key])) {
                     $lookupReference = LookupBuilder::build($field, $row);
                     //todo: add Filter cond
-                    $valueFromProvider = $this->convertComplexData($field, $snapshot, $lookupReference);
-                    $result[$field['name']] = $valueFromProvider ?? $this->getDefaultValueFromParent($field, $row);
+                    $result[$field['name']] = $this->convertComplexData($field, $snapshot, $lookupReference);
                 }
             } elseif (isset($row[$field['name']])) {
                 $result[$field['name']] = $this->castToFieldType($field, $row[$field['name']]);
             }
         }
         return $result;
-    }
-
-    /**
-     * @param array $field
-     * @param array $row
-     * @return array|bool|float|int|string|null
-     */
-    private function getDefaultValueFromParent(array $field, array $row) {
-        if (isset($row[$field['name']])) {
-            return $this->castToFieldType($field, $row[$field['name']]);
-        }
-        return null;
     }
 
     /**
