@@ -128,10 +128,13 @@ class StockStatusDeleteQuery
         }
         $connection = $this->resourceConnection->getConnection();
         $feedTableName = $this->resourceConnection->getTableName($this->metadata->getFeedTableName());
-        $connection->insertOnDuplicate(
-            $feedTableName,
-            $records
-        );
+        $chunks = array_chunk($records, $this->metadata->getBatchSize());
+        foreach ($chunks as $chunk) {
+            $connection->insertOnDuplicate(
+                $feedTableName,
+                $chunk
+            );
+        }
     }
 
     /**
