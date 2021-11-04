@@ -53,6 +53,13 @@ class FeedIndexMetadata
     protected $batchSize;
 
     /**
+     * Field used in WHERE & ORDER statement during select IDs from source table
+     *
+     * @var string
+     */
+    private $sourceTableIdentityField;
+
+    /**
      * @param string $feedName
      * @param string $sourceTableName
      * @param string $sourceTableField
@@ -61,6 +68,7 @@ class FeedIndexMetadata
      * @param string $feedTableField
      * @param array $feedTableMutableColumns
      * @param int $batchSize
+     * @param string|null $sourceTableIdentityField
      */
     public function __construct(
         string $feedName,
@@ -70,7 +78,8 @@ class FeedIndexMetadata
         string $feedTableName,
         string $feedTableField,
         array $feedTableMutableColumns,
-        int $batchSize = 100
+        int $batchSize = 100,
+        string $sourceTableIdentityField = null
     ) {
         $this->feedName = $feedName;
         $this->sourceTableName = $sourceTableName;
@@ -80,6 +89,7 @@ class FeedIndexMetadata
         $this->feedTableField = $feedTableField;
         $this->feedTableMutableColumns = $feedTableMutableColumns;
         $this->batchSize = $batchSize;
+        $this->sourceTableIdentityField = $sourceTableIdentityField ?? $sourceTableField;
     }
 
     /**
@@ -110,6 +120,16 @@ class FeedIndexMetadata
     public function getSourceTableField(): string
     {
         return $this->sourceTableField;
+    }
+
+    /**
+     * Get source table identity field
+     *
+     * @return string
+     */
+    public function getSourceTableIdentityField(): string
+    {
+        return $this->sourceTableIdentityField;
     }
 
     /**

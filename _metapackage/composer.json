@@ -21,6 +21,7 @@
         "magento/module-product-variant-data-exporter": "self.version",
         "magento/module-website-data-exporter": "self.version",
         "magento/module-customer-group-data-exporter": "self.version",
+        "magento/module-inventory-data-exporter": "self.version",
         "magento/module-query-xml": "self.version"
     }
 }

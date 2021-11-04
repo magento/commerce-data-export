@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_DataExporter:etc/et_schema.xsd">
+    <record name="Export">
+        <field name="inventoryStockStatus" type="StockItemStatus" repeated="true" provider="Magento\InventoryDataExporter\Model\Provider\StockStatus"/>
+    </record>
+    <record name="StockItemStatus">
+        <field name="stockId" type="ID"/>
+        <field name="sku" type="String"/>
+        <field name="qty" type="Float" />
+        <field name="qtyForSale" type="Float" provider="Magento\InventoryDataExporter\Model\Provider\QtyForSale">
+            <using field="sku" />
+            <using field="stockId" />
+        </field>
+        <field name="infiniteStock" type="Boolean" provider="Magento\InventoryDataExporter\Model\Provider\InfiniteStock">
+            <using field="sku" />
+        </field>
+        <field name="lowStock" type="Boolean"/>
+        <field name="isSalable" type="Boolean" />
+        <field name="updatedAt" type="String"/>
+    </record>
+</config>

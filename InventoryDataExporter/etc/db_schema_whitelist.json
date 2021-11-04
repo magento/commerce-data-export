@@ -1,0 +1,17 @@
+{
+    "inventory_data_exporter_stock_status": {
+        "index": {
+            "INVENTORY_DATA_EXPORTER_STOCK_STATUS_MODIFIED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "column": {
+            "stock_id": true,
+            "sku": true,
+            "feed_data": true,
+            "modified_at": true,
+            "is_deleted": true
+        }
+    }
+}

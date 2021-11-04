@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\DataExporter\Model\FeedPool">
+        <arguments>
+            <argument name="classMap" xsi:type="array">
+                <item name="inventoryStockStatus" xsi:type="string">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeed</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeed"  type="Magento\DataExporter\Model\Feed">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="feedName" xsi:type="string">inventoryStockStatus</argument>
+            <argument name="feedIdentity" xsi:type="string">sku</argument>
+            <!--  source table used only during full reindex -->
+            <argument name="sourceTableName" xsi:type="string">inventory_source_item</argument>
+            <argument name="sourceTableField" xsi:type="string">sku</argument>
+            <argument name="sourceTableIdentityField" xsi:type="string">source_item_id</argument>
+            <argument name="feedTableName" xsi:type="string">inventory_data_exporter_stock_status</argument>
+            <argument name="feedTableField" xsi:type="string">sku</argument>
+            <argument name="feedTableMutableColumns" xsi:type="array">
+                <item name="feed_data" xsi:type="string">feed_data</item>
+                <item name="is_deleted" xsi:type="string">is_deleted</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
+        <arguments>
+            <argument name="mapping" xsi:type="array">
+                <item name="stock_id" xsi:type="string">stockId</item>
+                <item name="sku" xsi:type="string">sku</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexer"  type="Magento\DataExporter\Model\Indexer\FeedIndexer">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
+            <argument name="serializer" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusDataSerializer</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\InventoryDataExporter\Model\StockStatusFeed" type="Magento\DataExporter\Model\Feed">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="\Magento\Framework\Mview\View\Changelog">
+        <plugin name="create_stock_item_changelog_table" type="\Magento\InventoryDataExporter\Plugin\Mview\StockStatusChangelog"/>
+    </type>
+
+    <type name="Magento\Inventory\Model\ResourceModel\SourceItem\DeleteMultiple">
+        <plugin name="mark-stock-status-items-as-deleted"
+                type="Magento\InventoryDataExporter\Plugin\MarkItemsAsDeleted"/>
+    </type>
+    <type name="Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery">
+        <arguments>
+            <argument name="metadata" xsi:type="object">
+                Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Plugins to cover on-save indexer mode  -->
+    <type name="Magento\InventoryApi\Api\SourceItemsSaveInterface">
+        <!-- sort order guarantee it will be executed after Inventory Index plugin -->
+        <plugin name="reindex-stock-status-exporter-indexer-on-source-item-update" type="\Magento\InventoryDataExporter\Plugin\SourceItem\SourceItemUpdate" sortOrder="10"/>
+    </type>
+    <type name="Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface">
+        <plugin name="reindex-stock-status-exporter-indexer-on-bulk-source-unassign" type="\Magento\InventoryDataExporter\Plugin\SourceItem\BulkSourceUnassign" sortOrder="100"/>
+        <plugin name="mark-stock-status-items-unassigned-on-bulk-unassign" type="Magento\InventoryDataExporter\Plugin\BulkSourceUnassign" sortOrder="200"/>
+    </type>
+</config>

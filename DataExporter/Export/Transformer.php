@@ -173,18 +173,12 @@ class Transformer
             if ($field['provider'] != null) {
                 $key = $this->getKey($field);
                 if (isset($snapshot[$key])) {
-                    $index = [];
-                    foreach ($field['using'] as $key) {
-                        $index[] = [$key['field'] => $row[$key['field']]];
-                    }
-                    $lookupReference = \base64_encode(\json_encode($index));
+                    $lookupReference = LookupBuilder::build($field, $row);
                     //todo: add Filter cond
                     $result[$field['name']] = $this->convertComplexData($field, $snapshot, $lookupReference);
                 }
-            } else {
-                if (isset($row[$field['name']])) {
-                    $result[$field['name']] = $this->castToFieldType($field, $row[$field['name']]);
-                }
+            } elseif (isset($row[$field['name']])) {
+                $result[$field['name']] = $this->castToFieldType($field, $row[$field['name']]);
             }
         }
         return $result;
