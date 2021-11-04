@@ -8,7 +8,7 @@
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
     <table name="inventory_data_exporter_stock_status" resource="default" engine="innodb" comment="Inventory Stock Status Feed Storage">
-        <column xsi:type="int"
+        <column xsi:type="varchar"
                 name="stock_id"
                 nullable="false"
                 length="64"
