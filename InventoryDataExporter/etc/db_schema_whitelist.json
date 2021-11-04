@@ -7,7 +7,6 @@
             "PRIMARY": true
         },
         "column": {
-            "id": true,
             "stock_id": true,
             "sku": true,
             "feed_data": true,

@@ -10,7 +10,6 @@
         <field name="inventoryStockStatus" type="StockItemStatus" repeated="true" provider="Magento\InventoryDataExporter\Model\Provider\StockStatus"/>
     </record>
     <record name="StockItemStatus">
-        <field name="id" type="ID"/>
         <field name="stockId" type="ID"/>
         <field name="sku" type="String"/>
         <field name="qty" type="Float" />

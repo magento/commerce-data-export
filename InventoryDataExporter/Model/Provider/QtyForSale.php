@@ -66,7 +66,7 @@ class QtyForSale
             $queryArguments['skus'][] = $sku;
             $queryArguments['stock_ids'][] = $stockId;
             $uniqueKey = StockStatusIdBuilder::build($value);
-            $skuPerStockQty[StockStatusIdBuilder::build($value)] = $value['qty'];
+            $skuPerStockQty[$uniqueKey] = $value['qty'];
 
             // set default value
             $output[$uniqueKey] = [
@@ -74,7 +74,6 @@ class QtyForSale
                 'stockId' => $stockId,
                 'qtyForSale' => $value['qty']
             ];
-
         }
         $cursor = $this->queryProcessor->execute($this->queryName, $queryArguments);
         while ($row = $cursor->fetch()) {
