@@ -38,7 +38,6 @@
     <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
         <arguments>
             <argument name="mapping" xsi:type="array">
-                <item name="id" xsi:type="string">id</item>
                 <item name="stock_id" xsi:type="string">stockId</item>
                 <item name="sku" xsi:type="string">sku</item>
             </argument>

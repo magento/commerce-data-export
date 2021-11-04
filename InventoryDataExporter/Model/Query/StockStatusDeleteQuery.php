@@ -153,7 +153,6 @@ class StockStatusDeleteQuery
             );
         }
         $feedData = [
-            'id' => $stockStatusId,
             'stockId' => $stockIdAndSku['stock_id'],
             'sku' => $stockIdAndSku['sku'],
             'qty' => 0,
@@ -165,7 +164,6 @@ class StockStatusDeleteQuery
         ];
 
         return [
-            'id' => $stockStatusId,
             'stock_id' => $stockIdAndSku['stock_id'],
             'sku' => $stockIdAndSku['sku'],
             'feed_data' => $this->serializer->serialize($feedData),

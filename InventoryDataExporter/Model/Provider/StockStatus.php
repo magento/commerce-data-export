@@ -116,8 +116,6 @@ class StockStatus
             $row['useConfigManageStock'], $row['backorders'], $row['useConfigBackorders'])) {
             throw new \RuntimeException("missed required field: " . \var_export($row, true));
         }
-        $row['id'] = StockStatusIdBuilder::build($row);
-
         // set updated at
         $row['updatedAt'] = $this->dateTime->formatDate(time());
         // set default values

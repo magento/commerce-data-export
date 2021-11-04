@@ -8,17 +8,10 @@
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
     <table name="inventory_data_exporter_stock_status" resource="default" engine="innodb" comment="Inventory Stock Status Feed Storage">
-        <column xsi:type="varchar"
-                name="id"
-                nullable="false"
-                length="128"
-                comment="ID"
-        />
         <column xsi:type="int"
                 name="stock_id"
-                padding="10"
-                unsigned="true"
                 nullable="false"
+                length="64"
                 comment="Stock ID"
         />
         <column xsi:type="varchar"
@@ -49,7 +42,8 @@
             comment="Stock Item Status Deleted"
         />
         <constraint xsi:type="primary" referenceId="PRIMARY">
-            <column name="id"/>
+            <column name="stock_id"/>
+            <column name="sku"/>
         </constraint>
         <index referenceId="inventory_data_exporter_stock_status_modified_at" indexType="btree">
             <column name="modified_at"/>
