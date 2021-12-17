@@ -366,6 +366,7 @@
         <field name="dataType" type="String" />
         <field name="multi" type="Boolean" />
         <field name="label" type="String" />
+        <field name="frontendInput" type="String" />
         <field name="required" type="Boolean" />
         <field name="unique" type="Boolean" />
         <field name="global" type="Boolean" />
