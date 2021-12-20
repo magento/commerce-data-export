@@ -65,9 +65,9 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setImage('/m/a/magento_image.jpg')
     ->setSmallImage('/m/a/magento_small_image.jpg')
     ->setThumbnail('/m/a/magento_thumbnail.jpg')
-    ->setCustomAttribute('custom_label', 'label1')
+    ->setCustomAttribute('custom_label', 'comma, separated, values')
     ->setCustomAttribute('custom_description', 'description1')
-    ->setCustomSelect($optionIds)
+    ->setCustomSelect($optionIds[0])
     ->save();
 $categoryLinkManagement->assignProductToCategories($product->getSku(), [100, 200]);
 
@@ -97,7 +97,8 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setSmallImage('/m/a/magento_small_image.jpg')
     ->setThumbnail('/m/a/magento_thumbnail.jpg')
     ->setCustomAttribute('custom_label', 'label1')
-    ->setCustomAttribute('custom_description', 'description1')
+    ->setCustomAttribute('custom_description', 'description, <b>data</b>')
+    ->setCustomSelect($optionIds[1])
     ->save();
 $categoryLinkManagement->assignProductToCategories($product->getSku(), [100, 200]);
 
