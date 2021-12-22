@@ -67,7 +67,7 @@ class AttributeMetadata
         return $this->getAttributesSelect($attributeCode)
             ->join(
                 ['o' => $this->resourceConnection->getTableName('eav_attribute_option')],
-                'o.attribute_id',
+                'o.attribute_id = a.attribute_id',
                 [
                     'optionId' => 'o.option_id'
                 ]
@@ -134,6 +134,9 @@ class AttributeMetadata
     {
         $attributeMetadata = $this->getAttributeMetadata($attributeCode);
         $output = null;
+        if (!isset($attributeMetadata['options'])) {
+            return [$value];
+        }
         $optionIds = explode(',', $value);
         foreach ($optionIds as $optionId) {
             if (isset($attributeMetadata['options'][$storeViewCode][$optionId])) {

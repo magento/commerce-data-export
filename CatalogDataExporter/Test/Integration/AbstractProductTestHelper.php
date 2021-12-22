@@ -301,30 +301,34 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
 
         $attributes = null;
         if ($customLabel) {
-            $attributes[] = [
+            $attributes[$customLabel->getAttributeCode()] = [
                 'attributeCode' => $customLabel->getAttributeCode(),
-                'value' => [$customLabel->getValue()]
+                'value' => [$customLabel->getValue()],
+                'valueId' => null
             ];
         }
         if ($customDescription) {
-            $attributes[] = [
+            $attributes[$customDescription->getAttributeCode()] = [
                 'attributeCode' => $customDescription->getAttributeCode(),
-                'value' => [$customDescription->getValue()]
+                'value' => [$customDescription->getValue()],
+                'valueId' => null
             ];
         }
         if ($customSelect) {
-            $attributes[] = [
+            $attributes[$customSelect->getAttributeCode()] = [
                 'attributeCode' => $customSelect->getAttributeCode(),
-                'value' => [$product->getAttributeText('custom_select')]
+                'value' => [$product->getAttributeText('custom_select')],
+                'valueId' => [$product->getData('custom_select')]
             ];
         }
         $feedAttributes = null;
         if (isset($extractedProduct['feedData']['attributes'])) {
             $feedAttributesData = $extractedProduct['feedData']['attributes'];
             foreach ($feedAttributesData as $feed) {
-                $feedAttributes[] = [
+                $feedAttributes[$feed['attributeCode']] = [
                     'attributeCode' => $feed['attributeCode'],
                     'value' => $feed['value'],
+                    'valueId' => $feed['valueId'],
                 ];
             }
         }
