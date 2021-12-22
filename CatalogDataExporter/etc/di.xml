@@ -474,6 +474,9 @@
                     <item name="categories" xsi:type="string">catalog_data_exporter_categories</item>
                     <item name="product_attributes" xsi:type="string">catalog_data_exporter_product_attributes</item>
                 </item>
+                <item name="product_attribute_deleted" xsi:type="array">
+                    <item name="products" xsi:type="string">catalog_data_exporter_products</item>
+                </item>
             </argument>
         </arguments>
     </type>
@@ -497,5 +500,10 @@
                 <item name="cataloginventory/options/stock_threshold_qty" xsi:type="string">cataloginventory/options/stock_threshold_qty</item>
             </argument>
         </arguments>
+    </type>
+
+    <!-- handle product attribute deletion  -->
+    <type name="Magento\Catalog\Model\ResourceModel\Eav\Attribute">
+        <plugin name="exporter-reindex-on-product-attribute-delete" type="\Magento\CatalogDataExporter\Plugin\Eav\Attribute\ProductAttributeDelete"/>
     </type>
 </config>
