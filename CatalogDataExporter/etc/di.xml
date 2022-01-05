@@ -492,6 +492,27 @@
     <type name="Magento\Config\Model\Config">
         <plugin name="invalidate_feed_index_on_config_change" type="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnConfigChange" />
     </type>
+    <type name="Magento\Catalog\Model\ResourceModel\Product\Website\Link">
+        <plugin name="set_products_as_deleted_for_unassigned_websites" type="Magento\CatalogDataExporter\Plugin\Product\WebsiteUnassign" />
+    </type>
+    <type name="Magento\Catalog\Model\Product\Action">
+        <plugin name="set_products_as_deleted_for_bulk_unassigned_websites" type="Magento\CatalogDataExporter\Plugin\Product\BulkWebsiteUnassign" />
+    </type>
+    <type name="Magento\CatalogDataExporter\Plugin\Product\WebsiteUnassign">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
+        </arguments>
+    </type>
+    <type name="Magento\CatalogDataExporter\Plugin\Product\BulkWebsiteUnassign">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
+        </arguments>
+    </type>
+    <type name="Magento\CatalogDataExporter\Model\Query\ProductExporterFeedQuery">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
+        </arguments>
+    </type>
     <type name="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnConfigChange">
         <arguments>
             <argument name="configValues" xsi:type="array">
