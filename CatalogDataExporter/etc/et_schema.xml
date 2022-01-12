@@ -383,6 +383,14 @@
         <field name="boolean" type="Boolean" />
         <field name="systemAttribute" type="Boolean" />
         <field name="numeric" type="Boolean" />
+        <field name="attributeOptions"
+               repeated="true"
+               type="String"
+               provider="Magento\CatalogDataExporter\Model\Provider\ProductAttributeMetadata\AttributeOptions"
+        >
+            <using field="id" />
+            <using field="storeViewCode" />
+        </field>
     </record>
     <record name="Breadcrumbs">
         <field name="categoryId" type="String"/>
