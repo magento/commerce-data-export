@@ -14,7 +14,7 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * UrlRewrites data provider
@@ -105,7 +105,7 @@ class UrlRewrites
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve url rewrites data');
         }
 

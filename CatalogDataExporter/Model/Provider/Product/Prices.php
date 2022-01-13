@@ -10,7 +10,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\Product;
 use Magento\CatalogDataExporter\Model\Query\ProductPriceQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product prices data provider
@@ -97,7 +97,7 @@ class Prices
                 $output[] = $this->format($row);
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve price data');
         }
         return $output;

@@ -10,7 +10,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\Category\Formatter;
 
 use Magento\Catalog\Helper\Output as OutputFormatter;
 use Magento\DataExporter\Exception\UnableRetrieveData;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Prepare category attribute html output
@@ -69,7 +69,7 @@ class Output implements FormatterInterface
                 }
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve category formatted attribute data');
         }
 

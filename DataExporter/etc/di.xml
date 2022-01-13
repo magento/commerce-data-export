@@ -46,4 +46,15 @@
                 type="Magento\DataExporter\Model\Indexer\EntityIdsProvider" />
     <preference for="Magento\DataExporter\Model\Indexer\FeedIndexProcessorInterface"
                 type="\Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete" />
+
+    <!-- Logger -->
+    <virtualType name="CommerceDataExportLogger" type="Magento\DataExporter\Model\Logging\Monolog">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="error" xsi:type="object">Magento\DataExporter\Model\Logging\Error</item>
+                <item name="system" xsi:type="object">Magento\DataExporter\Model\Logging\Base</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <preference for="Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface" type="CommerceDataExportLogger"/>
 </config>

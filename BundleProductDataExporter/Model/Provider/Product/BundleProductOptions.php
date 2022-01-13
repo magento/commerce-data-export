@@ -13,7 +13,7 @@ use Magento\BundleProductDataExporter\Model\Query\BundleProductOptionValuesQuery
 use Magento\CatalogDataExporter\Model\Provider\Product\OptionProviderInterface;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 use Throwable;
 
 /**
@@ -93,7 +93,7 @@ class BundleProductOptions implements OptionProviderInterface
                 }
             }
         } catch (Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve bundle product options data');
         }
 

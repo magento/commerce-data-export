@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurationDataExporter\Model\Whitelist;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
+
 /**
  * Whitelist defined in deployment configuration files
  */
@@ -25,17 +27,17 @@ class EnvironmentProvider implements \Magento\ConfigurationDataExporter\Api\Whit
     private $deploymentConfig;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $logger;
 
     /**
      * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         \Magento\Framework\App\DeploymentConfig $deploymentConfig,
-        \Psr\Log\LoggerInterface $logger
+        LoggerInterface $logger
     ) {
         $this->deploymentConfig = $deploymentConfig;
         $this->logger = $logger;

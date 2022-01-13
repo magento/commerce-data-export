@@ -11,7 +11,7 @@ use Magento\CatalogDataExporter\Model\Provider\Product\Buyable as ProductBuyable
 use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Plugin for fetching products stock status and marking out of stock products
@@ -83,7 +83,7 @@ class Buyable
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve stock data');
         }
         return $result;

@@ -12,7 +12,7 @@ use Magento\CatalogDataExporter\Model\Provider\Product\MediaGallery\MediaGallery
 use Magento\CatalogDataExporter\Model\Query\MediaGalleryQueryBuilder;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product media gallery data provider
@@ -113,7 +113,7 @@ class MediaGallery
                 }
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve product media gallery');
         }
 

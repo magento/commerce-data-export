@@ -13,7 +13,7 @@ use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Store\Model\ScopeInterface;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product low stock data provider
@@ -105,7 +105,7 @@ class LowStock
                 $output[] = $this->format($row, $thresholds);
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve stock data');
         }
         return $output;

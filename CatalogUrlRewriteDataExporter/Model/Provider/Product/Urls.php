@@ -11,7 +11,7 @@ use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\CatalogUrlRewriteDataExporter\Model\Query\ProductUrlQuery;
 use Magento\Store\Api\StoreConfigManagerInterface;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Class Options
@@ -102,7 +102,7 @@ class Urls
                 $product['url'] = $baseUrls[$product['storeViewCode']] . $product['url'];
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve product URL data');
         }
         return $output;

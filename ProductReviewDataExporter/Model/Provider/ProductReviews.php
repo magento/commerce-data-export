@@ -10,7 +10,7 @@ namespace Magento\ProductReviewDataExporter\Model\Provider;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\ProductReviewDataExporter\Model\Query\ProductReviewsQuery;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product reviews data provider
@@ -81,7 +81,7 @@ class ProductReviews
                 }
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve product reviews data');
         }
 

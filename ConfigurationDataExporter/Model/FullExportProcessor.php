@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Magento\ConfigurationDataExporter\Model;
 
 use Magento\Store\Model\ScopeInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Perform full export of system configuration
@@ -34,7 +35,7 @@ class FullExportProcessor implements FullExportProcessorInterface
     private $storeManager;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -42,13 +43,13 @@ class FullExportProcessor implements FullExportProcessorInterface
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param ConfigExportCallbackInterface $configExportCallback
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\ConfigurationDataExporter\Model\ConfigExportCallbackInterface $configExportCallback,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Psr\Log\LoggerInterface $logger
+        LoggerInterface $logger
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->configExportCallback = $configExportCallback;

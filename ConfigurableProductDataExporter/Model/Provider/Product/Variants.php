@@ -10,7 +10,7 @@ namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 use Magento\ConfigurableProductDataExporter\Model\Query\VariantsQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Configurable product variant data provider
@@ -81,7 +81,7 @@ class Variants
                 ];
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve product variant data');
         }
         return array_values($output);

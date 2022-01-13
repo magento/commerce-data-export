@@ -11,7 +11,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\Category;
 use Magento\CatalogDataExporter\Model\Query\Eav\CategoryAttributeQueryBuilder;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Category breadcrumbs data provider
@@ -90,7 +90,7 @@ class Breadcrumbs
                 );
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve category breadcrumbs data');
         }
 

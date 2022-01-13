@@ -12,7 +12,7 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\EntityManager\MetadataPool;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Store\Model\Store;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * MySQL trigger does not call in case of cascade deleting (by FK), as a result product not re-indexed when product

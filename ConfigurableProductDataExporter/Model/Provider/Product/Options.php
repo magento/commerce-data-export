@@ -17,7 +17,7 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Query\BatchIteratorInterface;
 use Magento\Framework\DB\Query\Generator as QueryGenerator;
 use Magento\Framework\DB\Select;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 use Throwable;
 
 /**
@@ -111,7 +111,7 @@ class Options implements OptionProviderInterface
                 yield $connection->fetchAll($batchSelect);
             }
         } catch (Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve configurable option data');
         }
     }
@@ -219,7 +219,7 @@ class Options implements OptionProviderInterface
                 }
             }
         } catch (Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve configurable product options data');
         }
         return $options;

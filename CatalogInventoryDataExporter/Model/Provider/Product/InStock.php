@@ -10,7 +10,7 @@ namespace Magento\CatalogInventoryDataExporter\Model\Provider\Product;
 use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product in stock data provider
@@ -85,7 +85,7 @@ class InStock
                 $output[] = $this->format($row);
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve stock data');
         }
         return $output;

@@ -12,7 +12,7 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\DB\Adapter\TableNotFoundException;
 use Magento\InventoryDataExporter\Model\Query\InventoryStockQuery;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Get inventory stock statuses

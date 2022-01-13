@@ -10,7 +10,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\Category;
 
 use Magento\Catalog\Model\Config as CatalogConfig;
 use Magento\DataExporter\Exception\UnableRetrieveData;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Category default sort by data provider
@@ -79,7 +79,7 @@ class DefaultSortBy
                 ];
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve category default sort by data');
         }
 

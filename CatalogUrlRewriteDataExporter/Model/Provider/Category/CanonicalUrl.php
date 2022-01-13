@@ -13,7 +13,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\CatalogUrlRewriteDataExporter\Model\Query\CategoryUrlQuery;
 use Magento\Store\Model\ScopeInterface;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 use \Magento\Catalog\Helper\Category;
 
 /**
@@ -92,7 +92,7 @@ class CanonicalUrl
                 $output[] = $row;
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve category canonical URL data');
         }
 

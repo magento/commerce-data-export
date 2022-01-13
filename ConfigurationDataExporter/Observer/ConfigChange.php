@@ -10,6 +10,7 @@ namespace Magento\ConfigurationDataExporter\Observer;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\ScopeInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 class ConfigChange implements \Magento\Framework\Event\ObserverInterface
 {
@@ -29,7 +30,7 @@ class ConfigChange implements \Magento\Framework\Event\ObserverInterface
     private $collectionFactory;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -37,13 +38,13 @@ class ConfigChange implements \Magento\Framework\Event\ObserverInterface
      * @param \Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface $configRegistry
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Config\Model\ResourceModel\Config\Data\CollectionFactory $collectionFactory
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         \Magento\ConfigurationDataExporter\Api\ConfigRegistryInterface $configRegistry,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Config\Model\ResourceModel\Config\Data\CollectionFactory $collectionFactory,
-        \Psr\Log\LoggerInterface $logger
+        LoggerInterface $logger
     ) {
         $this->configRegistry = $configRegistry;
         $this->storeManager = $storeManager;

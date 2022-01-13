@@ -10,7 +10,7 @@ namespace Magento\ParentProductDataExporter\Model\Provider;
 use Magento\ParentProductDataExporter\Model\Query\ProductParentQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product parents data provider
@@ -87,7 +87,7 @@ class Parents
                 $output[] = $this->format($row);
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve parent product data');
         }
         return $output;

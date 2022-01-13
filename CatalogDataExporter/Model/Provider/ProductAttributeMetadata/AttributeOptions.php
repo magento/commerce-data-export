@@ -10,7 +10,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\ProductAttributeMetadata;
 use Magento\CatalogDataExporter\Model\Query\AttributeOptionsQuery;
 use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Exception\UnableRetrieveData;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Attribute options data provider

@@ -11,7 +11,7 @@ use Magento\CatalogDataExporter\Model\Provider\Product\Formatter\FormatterInterf
 use Magento\CatalogDataExporter\Model\Query\ProductMetadataQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product attributes metadata provider
@@ -115,7 +115,7 @@ class ProductMetadata
                 $output[] = $this->format($row);
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve product data');
         }
         return $output;

@@ -11,7 +11,7 @@ use Magento\Directory\Helper\Data;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Store\Model\ScopeInterface;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product weight unit data provider
@@ -68,7 +68,7 @@ class WeightUnit
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve weight type data');
         }
         return $output;

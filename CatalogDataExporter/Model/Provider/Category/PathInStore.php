@@ -10,7 +10,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\Category;
 
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Store\Model\StoreManagerInterface;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Category store path data provider
@@ -76,7 +76,7 @@ class PathInStore
                 ];
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve category store path data');
         }
 

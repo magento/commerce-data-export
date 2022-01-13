@@ -14,7 +14,7 @@ use Magento\CatalogDataExporter\Model\Query\ProductMainQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Store\Model\Store;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Products data provider
@@ -109,8 +109,10 @@ class Products
                     $this->entityEavAttributesResolver->resolve($attributesData[$storeCode], $storeCode)
                 ));
             }
+            $this->logger->error('$exception->getMessage()');
+
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve product data');
         }
 

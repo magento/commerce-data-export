@@ -10,7 +10,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\Product;
 use Magento\CatalogDataExporter\Model\Query\ProductAttributeQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product attributes data provider
@@ -104,7 +104,7 @@ class Attributes
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve attributes data', 0, $exception);
         }
         return $output;

@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace Magento\CatalogDataExporter\Model\Provider\Category;
 
 use Magento\DataExporter\Exception\UnableRetrieveData;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Category available sort by data provider
@@ -57,7 +57,7 @@ class AvailableSortBy
                 }
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve category available sort by data');
         }
 

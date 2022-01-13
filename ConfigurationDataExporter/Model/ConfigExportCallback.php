@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace Magento\ConfigurationDataExporter\Model;
 
 use Magento\Framework\MessageQueue\PublisherInterface;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Publishes data of updated config data in queue

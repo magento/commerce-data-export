@@ -10,7 +10,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\Product;
 use Magento\Framework\App\ResourceConnection;
 use Magento\CatalogDataExporter\Model\Query\ProductCategoryIdsQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product categories data provider
@@ -75,7 +75,7 @@ class CategoryIds
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve categories data');
         }
         return $output;

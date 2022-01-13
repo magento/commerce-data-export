@@ -12,7 +12,7 @@ use Magento\Catalog\Model\Product\LinkTypeProvider;
 use Magento\CatalogDataExporter\Model\Query\ProductLinksQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product links data provider
@@ -92,7 +92,7 @@ class Links
                 }
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve product links');
         }
 

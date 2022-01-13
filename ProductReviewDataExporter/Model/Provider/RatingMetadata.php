@@ -10,7 +10,7 @@ namespace Magento\ProductReviewDataExporter\Model\Provider;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\ProductReviewDataExporter\Model\Query\RatingMetadataQuery;
-use Psr\Log\LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Rating metadata data provider
@@ -79,7 +79,7 @@ class RatingMetadata
                 ];
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve rating metadata data');
         }
 

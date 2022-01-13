@@ -9,6 +9,7 @@ namespace Magento\ConfigurationDataExporter\Setup;
 
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Full system configuration sync on every setup:upgrade to apply changes from deploy config and config.xml
@@ -21,17 +22,17 @@ class RecurringData implements \Magento\Framework\Setup\InstallDataInterface
     private $exportProcessor;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $logger;
 
     /**
      * @param \Magento\ConfigurationDataExporter\Model\FullExportProcessorInterface $exportProcessor
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         \Magento\ConfigurationDataExporter\Model\FullExportProcessorInterface $exportProcessor,
-        \Psr\Log\LoggerInterface $logger
+        LoggerInterface $logger
     ) {
         $this->exportProcessor = $exportProcessor;
         $this->logger = $logger;
