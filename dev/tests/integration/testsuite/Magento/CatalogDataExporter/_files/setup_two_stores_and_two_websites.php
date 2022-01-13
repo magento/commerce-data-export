@@ -12,9 +12,6 @@ use Magento\Store\Model\Store;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\CategoryFactory;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
-use Magento\Store\Model\GroupFactory;
-use Magento\Store\Model\StoreFactory;
 
 $objectManager = Bootstrap::getObjectManager();
 /** @var WebsiteRepositoryInterface $websiteRepository */
@@ -68,12 +65,12 @@ $store2 = $objectManager->create(Store::class);
 $store2->load('custom_store_view_two', 'code');
 
 if (!$store2->getId()) {
-    /** @var $website2 \Magento\Store\Model\Website */
     try {
+        /** @var $website2 \Magento\Store\Model\Website */
         $website2 = $websiteRepository->get('test');
     } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
     }
-    if (isset($website2) && !$website2->getId()) {
+    if (!isset($website2) || !$website2->getId()) {
         $website2 = $objectManager->create(\Magento\Store\Model\Website::class);
         $website2->setData(
             [
