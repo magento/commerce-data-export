@@ -109,8 +109,6 @@ class Products
                     $this->entityEavAttributesResolver->resolve($attributesData[$storeCode], $storeCode)
                 ));
             }
-            $this->logger->error('$exception->getMessage()');
-
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve product data');
