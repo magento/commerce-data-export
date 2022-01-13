@@ -43,7 +43,7 @@ class ConfigUpdateExport
      * @return mixed
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function afterSave(Config $subject, $result): Config
+    public function afterSave(Config $subject, $result)
     {
         if (!$this->configRegistry->isEmpty()) {
             $this->configExportCallback->execute(
