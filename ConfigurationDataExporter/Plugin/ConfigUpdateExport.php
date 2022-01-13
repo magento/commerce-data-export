@@ -39,11 +39,11 @@ class ConfigUpdateExport
      * Trigger configuration publish.
      *
      * @param Config $subject
-     * @param Config $result
+     * @param mixed $result
      * @return mixed
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function afterSave(Config $subject, Config $result): Config
+    public function afterSave(Config $subject, $result): Config
     {
         if (!$this->configRegistry->isEmpty()) {
             $this->configExportCallback->execute(
