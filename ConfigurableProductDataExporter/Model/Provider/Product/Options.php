@@ -10,6 +10,7 @@ namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 use Exception;
 use Generator;
 use Magento\CatalogDataExporter\Model\Provider\Product\OptionProviderInterface;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionQuery;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionValueQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
@@ -176,10 +177,17 @@ class Options implements OptionProviderInterface
     {
         $queryArguments = [];
         foreach ($values as $value) {
+            if (!isset($value['productId'], $value['type'], $value['storeViewCode'])
+                || $value['type'] !== Configurable::TYPE_CODE ) {
+                continue;
+            }
             $queryArguments['productId'][$value['productId']] = $value['productId'];
             $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
         }
 
+        if (!$queryArguments) {
+            return [];
+        }
         try {
             $options = [];
             $optionValuesData = $this->getOptionValuesData($queryArguments);
