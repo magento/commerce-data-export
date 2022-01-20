@@ -196,27 +196,6 @@
         </arguments>
     </type>
 
-    <type name="Magento\CatalogDataExporter\Model\Provider\Product\Options">
-        <arguments>
-            <argument name="optionProviders" xsi:type="array">
-                <item name="options" xsi:type="object">
-                    Magento\CatalogDataExporter\Model\Provider\Product\CustomizableOptions\SelectableOptions
-                </item>
-            </argument>
-        </arguments>
-    </type>
-    <type name="Magento\CatalogDataExporter\Model\Provider\Product\CustomizableOptions\EnteredOptions">
-        <arguments>
-            <argument name="optionTypes" xsi:type="array">
-                <item name="field" xsi:type="string">field</item>
-                <item name="area" xsi:type="string">area</item>
-                <item name="file" xsi:type="string">file</item>
-                <item name="date" xsi:type="string">date</item>
-                <item name="time" xsi:type="string">time</item>
-                <item name="date_time" xsi:type="string">date_time</item>
-            </argument>
-        </arguments>
-    </type>
     <type name="Magento\CatalogDataExporter\Model\Provider\Product\CustomizableOptions\ProductShopperInputOptions">
         <arguments>
             <argument name="optionTypes" xsi:type="array">
@@ -226,16 +205,6 @@
                 <item name="date" xsi:type="string">date</item>
                 <item name="time" xsi:type="string">time</item>
                 <item name="date_time" xsi:type="string">date_time</item>
-            </argument>
-        </arguments>
-    </type>
-    <type name="Magento\CatalogDataExporter\Model\Provider\Product\CustomizableOptions\SelectableOptions">
-        <arguments>
-            <argument name="optionTypes" xsi:type="array">
-                <item name="drop_down" xsi:type="string">drop_down</item>
-                <item name="radio" xsi:type="string">radio</item>
-                <item name="checkbox" xsi:type="string">checkbox</item>
-                <item name="multiple" xsi:type="string">multiple</item>
             </argument>
         </arguments>
     </type>

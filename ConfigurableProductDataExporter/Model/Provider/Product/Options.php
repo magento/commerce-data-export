@@ -132,10 +132,6 @@ class Options implements OptionProviderInterface
                 $optionValues[$row['attribute_id']][$row['storeViewCode']][$row['optionId']] = [
                     'id' => $this->optionValueUid->resolve($row['attribute_id'], $row['optionId']),
                     'label' => $row['label'],
-
-                    //TODO: should be deleted in catalog-storefront/issues/304
-                    'default_label' => $row['label'],
-                    'store_label' => $row['label'],
                 ];
             }
         }
@@ -158,17 +154,6 @@ class Options implements OptionProviderInterface
                 'type' => ConfigurableOptionValueUid::OPTION_TYPE,
                 'label' => $row['label'],
                 'sortOrder' => $row['position']
-            ],
-
-            //TODO: should be deleted in catalog-storefront/issues/304
-            'options' => [
-                'id' => $row['super_attribute_id'],
-                'sort_order' => $row['position'],
-                'type' => ConfigurableOptionValueUid::OPTION_TYPE,
-                'attribute_id' => $row['attribute_id'],
-                'attribute_code' => $row['attribute_code'],
-                'use_default' => (bool)$row['use_default'],
-                'title' => $row['label'],
             ],
         ];
     }
@@ -197,7 +182,6 @@ class Options implements OptionProviderInterface
 
         try {
             $options = [];
-            $setOptionValues = [];
             $optionValuesData = $this->getOptionValuesData($queryArguments);
             $select = $this->productOptionQuery->getQuery($queryArguments);
             foreach ($this->getBatchedQueryData($select, 'entity_id') as $batchData) {
@@ -205,16 +189,9 @@ class Options implements OptionProviderInterface
                     $key = $this->getOptionKey($row);
                     $options[$key] = $options[$key] ?? $this->formatOptionsRow($row);
 
-                    if (!isset($setOptionValues[$key . $row['value']])) {
-                        $setOptionValues[$key . $row['value']] = true;
-                        if (isset($optionValuesData[$row['attribute_id']][$row['storeViewCode']][$row['value']])) {
-                            $options[$key]['optionsV2']['values'][] =
-                                $optionValuesData[$row['attribute_id']][$row['storeViewCode']][$row['value']];
-
-                            //TODO: should be deleted in catalog-storefront/issues/304
-                            $options[$key]['options']['values'][] =
-                                $optionValuesData[$row['attribute_id']][$row['storeViewCode']][$row['value']];
-                        }
+                    if (isset($optionValuesData[$row['attribute_id']][$row['storeViewCode']])) {
+                        $options[$key]['optionsV2']['values'] =
+                            \array_values($optionValuesData[$row['attribute_id']][$row['storeViewCode']]);
                     }
                 }
             }
