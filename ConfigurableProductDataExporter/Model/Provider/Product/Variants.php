@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\ConfigurableProductDataExporter\Model\Query\VariantsQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
@@ -63,8 +64,16 @@ class Variants
         try {
             $output = [];
             foreach ($values as $value) {
+                if (!isset($value['productId'], $value['type'], $value['storeViewCode'])
+                    || $value['type'] !== Configurable::TYPE_CODE ) {
+                    continue;
+                }
                 $queryArguments['productId'][$value['productId']] = $value['productId'];
                 $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
+            }
+
+            if (!$queryArguments) {
+                return $output;
             }
             $select = $this->variantQuery->getQuery($queryArguments);
             $cursor = $connection->query($select);

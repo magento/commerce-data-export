@@ -115,20 +115,6 @@
             <using field="storeViewCode" />
         </field>
         <field name="inventory" type="Inventory" />
-        <!-- TODO: delete deprecated "options" field. use "productOptions" instead
-        <field name="options" type="Option" repeated="true"
-               provider="Magento\CatalogDataExporter\Model\Provider\Product\Options">
-            <using field="productId" />
-            <using field="storeViewCode" />
-        </field>
-         -->
-        <!-- TODO: delete deprecated "entered_options" field. use "productShopperInputOptions" instead
-        <field name="entered_options" type="EnteredOption" repeated="true"
-               provider="Magento\CatalogDataExporter\Model\Provider\Product\CustomizableOptions\EnteredOptions">
-            <using field="productId" />
-            <using field="storeViewCode" />
-        </field>
-        -->
         <!-- TODO: delete deprecated "media_gallery" field. use "images" or "videos" instead -->
         <field name="media_gallery" type="MediaItem" repeated="true"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\MediaGallery"
@@ -278,22 +264,7 @@
         <field name="type" type="String" />
         <field name="values" type="ProductOptionValue" repeated="true" />
     </record>
-    <record name="EnteredOption">
-        <field name="id" type="ID" />
-        <field name="value" type="String" />
-        <field name="is_required" type="Boolean" />
-        <field name="sort_order" type="Int" />
-        <field name="type" type="String" />
-        <field name="render_type" type="String" />
-        <field name="product_sku" type="String" />
-        <field name="sku" type="String" />
-        <field name="price" type="ProductPrice" />
-        <field name="price_type" type="String" />
-        <field name="max_characters" type="Int" />
-        <field name="file_extension" type="String" />
-        <field name="image_size_x" type="Int" />
-        <field name="image_size_y" type="Int" />
-    </record>
+
     <record name="ProductOptionValue">
         <field name="id" type="ID" />
         <field name="label" type="String" />
@@ -325,38 +296,7 @@
         <field name="to" type="Float" />
     </record>
 
-    <!-- TODO: delete deprecated "Option" type. use "ProductOption" instead -->
-    <record name="Option">
-        <field name="id" type="ID" />
-        <field name="type" type="String" />
-        <field name="attribute_id" type="String" />
-        <field name="attribute_code" type="String" />
-        <field name="use_default" type="Boolean" />
-        <field name="render_type" type="String" />
-        <field name="is_required" type="Boolean" />
-        <field name="title" type="String" />
-        <field name="sort_order" type="Int" />
-        <field name="product_sku" type="String" />
-        <field name="values" type="OptionValue" repeated="true" />
-    </record>
-    <!-- TODO: delete deprecated "OptionValue" type. use "ProductOptionValue" instead -->
-    <record name="OptionValue">
-        <field name="id" type="ID" />
-        <field name="price" type="ProductPrice" />
-        <field name="price_type" type="String" />
-        <field name="label" type="String" />
-        <field name="sort_order" type="Int" />
-        <field name="is_default" type="Boolean" />
-        <field name="sample" type="String" />
-        <field name="value" type="String" />
-        <field name="sku" type="String" />
-        <field name="default_label" type="String" />
-        <field name="store_label" type="String" />
-        <field name="quantity" type="Float" />
-        <field name="can_change_quantity" type="Boolean" />
-        <field name="entity_id" type="Int" />
-    </record>
-    <record name="ProductAttributeMetadata">
+     <record name="ProductAttributeMetadata">
         <field name="id" type="ID" />
         <field name="storeCode" type="String"/>
         <field name="websiteCode" type="String"/>

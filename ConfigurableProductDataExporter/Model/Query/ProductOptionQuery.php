@@ -46,64 +46,38 @@ class ProductOptionQuery
         );
         $select = $connection->select()
             ->from(
-                ['cpe' => $this->resourceConnection->getTableName('catalog_product_entity')],
-                ['productId' => 'cpe.entity_id']
+                ['product' => $this->resourceConnection->getTableName('catalog_product_entity')],
+                ['productId' => 'product.entity_id']
             )
             ->join(
+                ['super_attribute' => $this->resourceConnection->getTableName('catalog_product_super_attribute')],
+                sprintf('super_attribute.product_id = product.%s', $joinField),
+                [
+                    'attribute_id' => 'super_attribute.attribute_id',
+                    'position' => 'super_attribute.position'
+                ]
+            )->join(
+                ['eav' => $this->resourceConnection->getTableName('eav_attribute')],
+                'eav.attribute_id = super_attribute.attribute_id',
+                ['attribute_code' => 'eav.attribute_code']
+            )->join(
                 ['s' => $this->resourceConnection->getTableName('store')],
-                's.store_id != 0',
+                $storeViewCodes
+                    ? $connection->quoteInto('s.code IN (?)', $storeViewCodes)
+                    : 's.store_id != 0',
                 ['storeViewCode' => 's.code']
-            )
-            ->join(
-                ['psa' => $this->resourceConnection->getTableName('catalog_product_super_attribute')],
-                sprintf('psa.product_id = cpe.%s', $joinField),
+            )->joinLeft(
+                ['attr_label' => $this->resourceConnection->getTableName('eav_attribute_label')],
+                'attr_label.attribute_id = eav.attribute_id and attr_label.store_id = s.store_id',
                 [
-                    'attribute_id' => 'psa.attribute_id',
-                    'super_attribute_id' => 'psa.product_super_attribute_id',
-                    'position' => 'psa.position'
+                    'label' => $connection->getCheckSql(
+                        'attr_label.value is NULL',
+                        'eav.frontend_label',
+                        'attr_label.value'
+                    ),
                 ]
             )
-            ->joinLeft(
-                ['ald' => $this->resourceConnection->getTableName('catalog_product_super_attribute_label')],
-                'ald.product_super_attribute_id = psa.product_super_attribute_id and ald.store_id = 0',
-                []
-            )
-            ->joinLeft(
-                ['als' => $this->resourceConnection->getTableName('eav_attribute_label')],
-                'als.attribute_id = psa.attribute_id and als.store_id = s.store_id',
-                [
-                    'label' => new Expression('CASE WHEN als.value IS NULL THEN ald.value ELSE als.value END'),
-                    'use_default' => new \Zend_Db_Expr('CASE WHEN als.value IS NULL THEN ald.use_default ELSE "0" END'),
-                ]
-            )
-            ->joinLeft(
-                ['ea' => $this->resourceConnection->getTableName('eav_attribute')],
-                'ea.attribute_id = psa.attribute_id',
-                ['attribute_code' => 'ea.attribute_code']
-            )
-            ->join(
-                ['psl' => $this->resourceConnection->getTableName('catalog_product_super_link')],
-                sprintf('psl.parent_id = cpe.%1$s', $joinField),
-                []
-            )
-            ->join(
-                ['cpc' => $this->resourceConnection->getTableName('catalog_product_entity')],
-                'cpc.entity_id = psl.product_id',
-                []
-            )
-            ->join(
-                ['cpi' => $this->resourceConnection->getTableName(['catalog_product_entity', 'int'])],
-                sprintf(
-                    'cpi.%1$s = cpc.%1$s AND psa.attribute_id = cpi.attribute_id AND cpi.store_id = 0',
-                    $joinField
-                ),
-                ['cpi.value']
-            )
-            ->where('s.code IN (?)', $storeViewCodes)
-            ->where('cpe.entity_id IN (?)', $productIds)
-            ->order('cpe.entity_id')
-            ->order('psa.attribute_id')
-            ->order('cpi.value');
+            ->where('product.entity_id IN (?)', $productIds);
         return $select;
     }
 }

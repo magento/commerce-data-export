@@ -13,14 +13,6 @@
             </argument>
         </arguments>
     </type>
-<!--//TODO: should be deleted in catalog-storefront/issues/304-->
-    <type name="Magento\CatalogDataExporter\Model\Provider\Product\Options">
-        <arguments>
-            <argument name="optionProviders" xsi:type="array">
-                <item name="configurable" xsi:type="object">Magento\ConfigurableProductDataExporter\Model\Provider\Product\Options</item>
-            </argument>
-        </arguments>
-    </type>
     <type name="Magento\ConfigurableProductDataExporter\Model\Provider\Product\Options">
         <arguments>
             <argument name="batchSize" xsi:type="number">1000</argument>
