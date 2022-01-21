@@ -57,4 +57,10 @@
         </arguments>
     </virtualType>
     <preference for="Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface" type="CommerceDataExportLogger"/>
+
+    <type name="Magento\DataExporter\Export\Extractor">
+        <arguments>
+            <argument name="profiler" xsi:type="init_parameter">Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface::EXPORTER_PROFILER</argument>
+        </arguments>
+    </type>
 </config>

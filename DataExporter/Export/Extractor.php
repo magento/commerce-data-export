@@ -9,6 +9,7 @@ namespace Magento\DataExporter\Export;
 
 use Magento\DataExporter\Export\Request\Info;
 use Magento\DataExporter\Export\Request\Node;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\ObjectManagerInterface;
 
 /**
@@ -24,12 +25,33 @@ class Extractor
     private $objectManager;
 
     /**
+     * @var bool
+     */
+    private $profiler;
+
+    /**
+     * @var CommerceDataExportLoggerInterface
+     */
+    private $logger;
+
+    /**
+     * @var float
+     */
+    private $profilerTime;
+
+    /**
      * @param ObjectManagerInterface $objectManager
+     * @param CommerceDataExportLoggerInterface $logger
+     * @param bool $profiler
      */
     public function __construct(
-        ObjectManagerInterface $objectManager
+        ObjectManagerInterface $objectManager,
+        CommerceDataExportLoggerInterface $logger,
+        bool $profiler = false
     ) {
         $this->objectManager = $objectManager;
+        $this->logger = $logger;
+        $this->profiler = $profiler;
     }
 
     /**
@@ -77,14 +99,13 @@ class Extractor
 
             $data = [];
             if (!empty($value) || $isRoot) {
-                $t = microtime(true);
+                $this->profilerStart();
                 $data = $this->indexDataByArguments(
                     $node->getField(),
                     array_values($provider->get($value, $node, $info)),
                     $isRoot
                 );
-//                echo PHP_EOL;
-//                echo $providerClass . " " . (microtime(true) - $t);
+                $this->profilerStop($isRoot, $providerClass, $value);
                 foreach ($node->getChildren() as $child) {
                     $output = array_replace_recursive(
                         $output,
@@ -115,5 +136,34 @@ class Extractor
     public function extract(Info $info, array $arguments = []) : array
     {
         return $this->extractDataForNode($info, $info->getRootNode(), $arguments);
+    }
+
+    /**
+     * @param bool $isRoot
+     * @param $providerClass
+     * @param array $value
+     */
+    private function profilerStop(bool $isRoot, $providerClass, array $value): void
+    {
+        if (!$this->profiler) {
+            return ;
+        }
+        $prefix = $isRoot ? '' : '|_ ';
+        $this->logger->info(
+            $prefix . $providerClass
+            . ', ' . count($value)
+            . ', ' . round((microtime(true) - $this->profilerTime), 5)
+            . ', ' . memory_get_peak_usage(true) / 1024 / 1024
+        );
+    }
+
+    /**
+     * @return float|string
+     */
+    private function profilerStart()
+    {
+        if ($this->profiler) {
+            $this->profilerTime = microtime(true);
+        }
     }
 }
