@@ -298,6 +298,7 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $customLabel = $product->getCustomAttribute('custom_label');
         $customDescription = $product->getCustomAttribute('custom_description');
         $customSelect = $product->getCustomAttribute('custom_select');
+        $yesNo = $product->getCustomAttribute('yes_no_attribute');
 
         $attributes = null;
         if ($customLabel) {
@@ -319,6 +320,15 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
                 'attributeCode' => $customSelect->getAttributeCode(),
                 'value' => [$product->getAttributeText('custom_select')],
                 'valueId' => [$product->getData('custom_select')]
+            ];
+        }
+        if ($yesNo) {
+            $yesNoValues = [0 => 'no', 1 => 'yes'];
+            $yesNoActualValue = $product->getData('yes_no_attribute');
+            $attributes[$yesNo->getAttributeCode()] = [
+                'attributeCode' => $yesNo->getAttributeCode(),
+                'value' => [$yesNoValues[$yesNoActualValue] ?? null],
+                'valueId' => [$yesNoActualValue]
             ];
         }
         $feedAttributes = null;
