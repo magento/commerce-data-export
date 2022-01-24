@@ -68,6 +68,7 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setCustomAttribute('custom_label', 'comma, separated, values')
     ->setCustomAttribute('custom_description', 'description1')
     ->setCustomSelect($optionIds[0])
+    ->setCustomAttribute('yes_no_attribute', 1)
     ->save();
 $categoryLinkManagement->assignProductToCategories($product->getSku(), [100, 200]);
 
@@ -99,6 +100,7 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setCustomAttribute('custom_label', 'label1')
     ->setCustomAttribute('custom_description', 'description, <b>data</b>')
     ->setCustomSelect($optionIds[1])
+    ->setCustomAttribute('yes_no_attribute', 0)
     ->save();
 $categoryLinkManagement->assignProductToCategories($product->getSku(), [100, 200]);
 

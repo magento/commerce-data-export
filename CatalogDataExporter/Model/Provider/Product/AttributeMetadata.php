@@ -65,19 +65,19 @@ class AttributeMetadata
     private function getRawOptionsSelect(string $attributeCode) : Select
     {
         return $this->getAttributesSelect($attributeCode)
-            ->join(
+            ->joinLeft(
                 ['o' => $this->resourceConnection->getTableName('eav_attribute_option')],
                 'o.attribute_id = a.attribute_id',
                 [
                     'optionId' => 'o.option_id'
                 ]
             )
-            ->join(
+            ->joinLeft(
                 ['v' => $this->resourceConnection->getTableName('eav_attribute_option_value')],
                 'o.option_id  = v.option_id',
                 ['optionValue' => 'v.value']
             )
-            ->join(
+            ->joinLeft(
                 ['s' => $this->resourceConnection->getTableName('store')],
                 'v.store_id = s.store_id',
                 ['storeViewCode' => 's.code']
@@ -102,7 +102,7 @@ class AttributeMetadata
             if ($row['source_model'] == \Magento\Eav\Model\Entity\Attribute\Source\Boolean::class) {
                 $this->attributeMetadata[$row['attribute_code']]['options']['admin'][0] = 'no';
                 $this->attributeMetadata[$row['attribute_code']]['options']['admin'][1] = 'yes';
-            } else {
+            } elseif (isset($row['optionId'])) {
                 $this->attributeMetadata[$row['attribute_code']]['options'][$row['storeViewCode']][$row['optionId']] =
                     $row['optionValue'];
             }

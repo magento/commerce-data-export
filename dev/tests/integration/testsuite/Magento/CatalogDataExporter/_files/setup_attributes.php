@@ -93,6 +93,28 @@ if (!$attributeSet->getId()) {
                     'option_3' => 3,
                 ],
             ],
+        ],
+        'yes_no_attribute' => [
+            'attribute_code' => 'yes_no_attribute',
+            'entity_type_id' => $entityType->getId(),
+            'is_global' => 0,
+            'is_user_defined' => 1,
+            'frontend_input' => 'boolean',
+            'is_unique' => 0,
+            'is_required' => 0,
+            'is_searchable' => 1,
+            'is_visible_in_advanced_search' => 1,
+            'is_comparable' => 0,
+            'is_filterable' => 1,
+            'is_filterable_in_search' => 1,
+            'is_used_for_promo_rules' => 0,
+            'is_html_allowed_on_front' => 1,
+            'is_visible_on_front' => 1,
+            'used_in_product_listing' => 1,
+            'used_for_sort_by' => 0,
+            'frontend_label' => ['Boolean Attribute'],
+            'backend_type' => 'int',
+            'source_model' => Magento\Eav\Model\Entity\Attribute\Source\Boolean::class
         ]
     ];
 

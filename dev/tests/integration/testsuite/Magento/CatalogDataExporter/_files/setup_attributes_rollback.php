@@ -42,6 +42,11 @@ try {
     if ($attribute->getId()) {
         $attribute->delete();
     }
+
+    $attribute->load('yes_no_attribute', 'attribute_code');
+    if ($attribute->getId()) {
+        $attribute->delete();
+    }
 } catch (Exception $e) {
     // Nothing to delete
 }
