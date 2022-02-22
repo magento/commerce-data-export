@@ -68,7 +68,6 @@ class CategoryBreadCrumbsTest extends AbstractCategoryTest
         //store 2, second store-view
         $data = $this->getCategoryById(402, 'custom_store_view_two');
 
-
         $this->assertContainsBreadCrumbs($data);
         $breadCrumbs = $data['breadcrumbs'];
         $expected = [
@@ -105,7 +104,7 @@ class CategoryBreadCrumbsTest extends AbstractCategoryTest
     {
         // Sort breadcrumbs by category level
         \usort($categoryBreadCrumbs, function ($a, $b) {
-            return $a['categoryLevel'] > $b['categoryLevel'];
+            return $a['categoryLevel'] <=> $b['categoryLevel'];
         });
 
         self::assertEquals($expectedBreadCrumbs, $categoryBreadCrumbs);

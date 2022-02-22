@@ -91,7 +91,7 @@ class Extractor
     private function extractDataForNode(Info $info, Node $node, array $value)
     {
         $output = [];
-        $isRoot = (spl_object_hash($info->getRootNode()) == spl_object_hash($node));
+        $isRoot = (spl_object_hash($info->getRootNode()) === spl_object_hash($node));
         if ($node->getField()['provider']) {
             $key = base64_encode(json_encode($node->getField()));
             $providerClass = $node->getField()['provider'];
@@ -139,11 +139,13 @@ class Extractor
     }
 
     /**
+     * Stop profiling
+     *
      * @param bool $isRoot
-     * @param $providerClass
+     * @param string $providerClass
      * @param array $value
      */
-    private function profilerStop(bool $isRoot, $providerClass, array $value): void
+    private function profilerStop(bool $isRoot, string $providerClass, array $value): void
     {
         if (!$this->profiler) {
             return ;
@@ -158,9 +160,11 @@ class Extractor
     }
 
     /**
-     * @return float|string
+     * Start profiling
+     *
+     * @return void
      */
-    private function profilerStart()
+    private function profilerStart(): void
     {
         if ($this->profiler) {
             $this->profilerTime = microtime(true);

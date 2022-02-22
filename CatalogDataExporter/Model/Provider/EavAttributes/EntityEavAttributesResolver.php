@@ -82,6 +82,10 @@ class EntityEavAttributesResolver
             $fullAttributesData = $this->eavAttributesProvider->getEavAttributesData($entityIds, $storeCode);
         }
 
-        return \array_replace($partialAttributesData, $fullAttributesData);
+        $attributes = \array_replace($partialAttributesData, $fullAttributesData);
+        if (empty($attributes)) {
+            throw new UnableRetrieveData('Empty list of EAV attributes for products: ' . implode(',', $entityIds));
+        }
+        return $attributes;
     }
 }

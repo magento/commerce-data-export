@@ -73,7 +73,6 @@ class Products
      * @param array $values
      *
      * @return array
-     *
      * @throws UnableRetrieveData
      */
     public function get(array $values) : array
@@ -83,37 +82,39 @@ class Products
         $mappedProducts = [];
         $attributesData = [];
 
-        try {
-            foreach ($values as $value) {
-                $scope = $value['scopeId'] ?? Store::DEFAULT_STORE_ID;
-                $queryArguments[$scope][$value['productId']] = $value['attribute_ids'] ?? [];
-            }
-
-            $connection = $this->resourceConnection->getConnection();
-            foreach ($queryArguments as $scopeId => $productData) {
-                $cursor = $connection->query(
-                    $this->productMainQuery->getQuery(\array_keys($productData), $scopeId ?: null)
-                );
-
-                while ($row = $cursor->fetch()) {
-                    $mappedProducts[$row['storeViewCode']][$row['productId']] = $row;
-                    $attributesData[$row['storeViewCode']][$row['productId']] = $productData[$row['productId']];
-                }
-            }
-
-            foreach ($mappedProducts as $storeCode => $products) {
-                $output[] = \array_map(function ($row) {
-                    return $this->formatter->format($row);
-                }, \array_replace_recursive(
-                    $products,
-                    $this->entityEavAttributesResolver->resolve($attributesData[$storeCode], $storeCode)
-                ));
-            }
-        } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve product data');
+        foreach ($values as $value) {
+            $scope = $value['scopeId'] ?? Store::DEFAULT_STORE_ID;
+            $queryArguments[$scope][$value['productId']] = $value['attribute_ids'] ?? [];
         }
 
+        $connection = $this->resourceConnection->getConnection();
+        foreach ($queryArguments as $scopeId => $productData) {
+            $cursor = $connection->query(
+                $this->productMainQuery->getQuery(\array_keys($productData), $scopeId ?: null)
+            );
+
+            while ($row = $cursor->fetch()) {
+                $mappedProducts[$row['storeViewCode']][$row['productId']] = $row;
+                $attributesData[$row['storeViewCode']][$row['productId']] = $productData[$row['productId']];
+            }
+        }
+        if (!$mappedProducts) {
+            $productsIds = \implode(',', \array_unique(\array_column($values, 'productId')));
+            $scopes = \implode(',', \array_unique(\array_column($values, 'scopeId')));
+            throw new UnableRetrieveData(
+                \sprintf('Cannot collect product data for ids %s in scopes %s', $productsIds, $scopes)
+            );
+        }
+
+        foreach ($mappedProducts as $storeCode => $products) {
+            $output[] = \array_map(function ($row) {
+                return $this->formatter->format($row);
+            }, \array_replace_recursive(
+                $products,
+                $this->entityEavAttributesResolver->resolve($attributesData[$storeCode], $storeCode)
+            ));
+        }
+        /** @phpstan-ignore-next-line */
         return !empty($output) ? \array_merge(...$output) : [];
     }
 }

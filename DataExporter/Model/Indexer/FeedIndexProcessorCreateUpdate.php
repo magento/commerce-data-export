@@ -38,7 +38,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     }
 
     /**
-     * @ingeritdoc
+     * {@inerhitDoc}
      *
      * @param FeedIndexMetadata $metadata
      * @param DataSerializerInterface $serializer
@@ -50,8 +50,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         DataSerializerInterface $serializer,
         EntityIdsProviderInterface $idsProvider,
         array $ids = []
-    ): void
-    {
+    ): void {
         $feedIdentity = $metadata->getFeedIdentity();
         $arguments = [];
         foreach ($idsProvider->getAffectedIds($metadata, $ids) as $id) {
@@ -70,7 +69,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     }
 
     /**
-     * @inheridoc
+     * {@inerhitDoc}
      *
      * @param FeedIndexMetadata $metadata
      * @param DataSerializerInterface $serializer
@@ -81,8 +80,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         FeedIndexMetadata $metadata,
         DataSerializerInterface $serializer,
         EntityIdsProviderInterface $idsProvider
-    ): void
-    {
+    ): void {
         $this->truncateIndexTable($metadata);
         foreach ($idsProvider->getAllIds($metadata) as $batch) {
             $ids = \array_column($batch, $metadata->getFeedIdentity());
