@@ -40,6 +40,7 @@
 
 
 - [ ] Story AC is completed
+- [ ] DOD requirements met (https://wiki.corp.adobe.com/display/MC/Accepted+tests+failures)  
 - [ ] proposed changes correspond to [Magento Technical Vision](https://devdocs.magento.com/guides/v2.2/coding-standards/technical-guidelines.html)
 - [ ] new or changed code is covered with web-api/integration tests (if applicable)
 - [ ] no backward incompatible changes
