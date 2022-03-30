@@ -7,66 +7,29 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Provider\Product;
 
-use Magento\Framework\App\ResourceConnection;
-use Magento\CatalogDataExporter\Model\Query\ProductCategoryQuery;
-use Magento\DataExporter\Exception\UnableRetrieveData;
-use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
+use Magento\DataExporter\Export\Processor;
 
 /**
- * Product categories data provider
+ * Fulfill "categories" field for Products feed.
+ * Get categories from "categoryData" field which already contains needed data.
  */
 class Categories
 {
     /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
-
-    /**
-     * @var ProductCategoryQuery
-     */
-    private $productCategoryQuery;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @param ResourceConnection $resourceConnection
-     * @param ProductCategoryQuery $productCategoryQuery
-     * @param LoggerInterface $logger
-     */
-    public function __construct(
-        ResourceConnection $resourceConnection,
-        ProductCategoryQuery $productCategoryQuery,
-        LoggerInterface $logger
-    ) {
-        $this->resourceConnection = $resourceConnection;
-        $this->productCategoryQuery = $productCategoryQuery;
-        $this->logger = $logger;
-    }
-
-    /**
-     * Get provider data
-     *
-     * @param array $values
+     * @param Processor $processor
+     * @param array $result
+     * @param string $fieldName
      * @return array
-     * @throws UnableRetrieveData
      */
-    public function get(array $values) : array
+    public function afterProcess(Processor $processor, array $result, string $fieldName): array
     {
-        $connection = $this->resourceConnection->getConnection();
-        $queryArguments = [];
-        try {
-            foreach ($values as $value) {
-                $queryArguments['productId'][$value['productId']] = $value['productId'];
-                $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
+        if ($fieldName !== 'products') {
+            return $result;
+        }
+        foreach ($result as &$item) {
+            if (isset($item['categoryData'])) {
+                $item['categories'] = \array_column($item['categoryData'], 'categoryPath');
             }
-            $result = $connection->fetchAll($this->productCategoryQuery->getQuery($queryArguments));
-        } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve categories data');
         }
         return $result;
     }

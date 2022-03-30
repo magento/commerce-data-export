@@ -92,18 +92,10 @@
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
-        <field name="categories" type="String" repeated="true"
-               provider="Magento\CatalogDataExporter\Model\Provider\Product\Categories"
-        >
-            <using field="productId" />
-            <using field="storeViewCode" />
-        </field>
-        <field name="categoryIds" type="String" repeated="true"
-               provider="Magento\CatalogDataExporter\Model\Provider\Product\CategoryIds"
-        >
-            <using field="productId" />
-            <using field="storeViewCode" />
-        </field>
+        <!-- @deprecated. use "categoryData" instead -->
+        <field name="categories" type="String" repeated="true"/>
+        <!-- @deprecated. not used-->
+        <field name="categoryIds" type="String" repeated="true" />
         <field name="categoryData" type="CategoryData" repeated="true"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\CategoryData"
         >

@@ -204,6 +204,7 @@ class ProductCategoryDataQuery
             ->where('ccp.product_id IN (?)', $productIds)
             ->where('s.store_id != 0')
             ->where('s.code IN (?)', $storeViewCode)
+            ->where('cpath.level > ?', 1)
             ->where('ccp.category_id NOT IN (?)', $this->getRootCategoryIds($storeViewCode))
             ->columns(
                 [

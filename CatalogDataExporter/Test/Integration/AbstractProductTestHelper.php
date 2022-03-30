@@ -12,6 +12,7 @@ use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Helper\Category as CategoryHelper;
 use Magento\Catalog\Helper\Product as ProductHelper;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
@@ -208,6 +209,10 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
      */
     protected function validateCategoryData(ProductInterface $product, array $extractedProduct) : void
     {
+        // Disabled product does not have information about assigned entities since we got this from index table
+        if ($product->getStatus() == Status::STATUS_DISABLED) {
+            return ;
+        }
         $storeId = $this->storeManager->getStore()->getId();
         $categories = [];
         foreach ($product->getCategoryIds() as $categoryId) {
@@ -216,6 +221,10 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
             $path = $category->getUrlKey();
             while ($parentId) {
                 $parent = $this->categoryRepository->get($parentId, $storeId);
+                // show only storefront-visible categories
+                if ($parent->getLevel() < 2) {
+                    break;
+                }
                 $parentId = $parent->getParentId();
                 $urlKey = $parent->getUrlKey();
                 if ($urlKey) {
@@ -225,7 +234,7 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
             $categories[] = $path;
         }
 
-        $this->assertEquals($categories, $extractedProduct['feedData']['categories']);
+         $this->assertEquals($categories, $extractedProduct['feedData']['categories']);
     }
 
     /**
