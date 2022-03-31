@@ -8,4 +8,6 @@
 <overrides>
     <!-- skip unrelated test: cURL error 56: I/O operation timed out  -->
     <test class="Magento\Framework\HTTP\AsyncClientInterfaceTest" skip="true"/>
+    <!-- skip unrelated test: Product not found after import with staging (MDEE-166) -->
+    <test class="Magento\CatalogImportExport\Model\ProductStagingTest" skip="true"/>
 </overrides>

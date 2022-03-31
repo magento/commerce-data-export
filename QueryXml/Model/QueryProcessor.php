@@ -17,7 +17,6 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
  */
 class QueryProcessor
 {
-
     /**
      * @var ResourceConnection
      */

@@ -11,6 +11,11 @@ use Magento\Framework\Serialize\SerializerInterface;
 
 /**
  * Class responsible for feed data serialization
+ * "mapping" field determinate the unique field for feed table based on data from et_schema. Support both single and multi dimension values. Example format:
+ * [
+ *    "feed_table_column_name" => "field name in et_schema", // 'id' => 'product_id'
+ *    "feed_table_column_name" => ["complex field type", "in et_schema"], // 'id' => ["product", "id"]
+ * ]
  */
 class DataSerializer implements DataSerializerInterface
 {
@@ -49,7 +54,15 @@ class DataSerializer implements DataSerializerInterface
             $outputRow = [];
             $outputRow['feed_data'] = $this->serializer->serialize($row);
             foreach ($this->mapping as $field => $index) {
-                if (isset($row[$index])) {
+                if (\is_array($index)) {
+                    $indexValue = null;
+                    foreach ($index as $key) {
+                        $indexValue = $indexValue
+                            ? $indexValue[$key] ?? null
+                            : $row[$key] ?? null;
+                    }
+                    $outputRow[$field] = $indexValue;
+                } elseif (isset($row[$index])) {
                     $outputRow[$field] = is_array($row[$index]) ?
                         $this->serializer->serialize($row[$index]) :
                         $row[$index];

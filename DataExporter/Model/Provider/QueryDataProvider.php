@@ -58,10 +58,13 @@ class QueryDataProvider
     {
         $parent = null;
         foreach ($root->getChildren() as $child) {
-            if (spl_object_hash($child) == spl_object_hash($node)) {
+            if (spl_object_hash($child) === spl_object_hash($node)) {
                 return $root;
             }
             $parent = $this->getParentNode($node, $child);
+            if (null !== $parent) {
+                return $parent;
+            }
         }
         return $parent;
     }
@@ -87,12 +90,16 @@ class QueryDataProvider
      */
     private function getQueryArguments(array $values, Node $node, Info $info): array
     {
-        $argumentList = array_merge($node->getField()['using'], $this->queryArguments);
+        $argumentList = $node->getField()['using'];
+
         $arguments = [];
         $parent = $this->getParentNode($node, $info->getRootNode());
+        $isSingleValue = $this->isRoot($node, $info)
+            || ($parent && $this->isRoot($parent, $info))
+            || ($parent && !$this->isRepeated($parent));
         foreach ($values as $value) {
             foreach ($argumentList as $argument) {
-                if ($this->isRoot($node, $info) || $this->isRoot($parent, $info) || !$this->isRepeated($parent)) {
+                if ($isSingleValue) {
                     if (isset($value[$argument['field']])) {
                         $arguments[$argument['field']][] = $value[$argument['field']];
                     }
@@ -105,6 +112,7 @@ class QueryDataProvider
                 }
             }
         }
+        $arguments+= $this->queryArguments;
         return $arguments;
     }
 
@@ -117,7 +125,7 @@ class QueryDataProvider
      */
     private function isRoot(Node $node, Info $info): bool
     {
-        return (spl_object_hash($info->getRootNode()) == spl_object_hash($node));
+        return (spl_object_hash($info->getRootNode()) === spl_object_hash($node));
     }
 
     /**
@@ -151,7 +159,7 @@ class QueryDataProvider
     public function get(array $values, Node $node, Info $info): array
     {
         $field = $node->getField();
-        $isRoot = (spl_object_hash($info->getRootNode()) == spl_object_hash($node));
+        $isRoot = (spl_object_hash($info->getRootNode()) === spl_object_hash($node));
         $arguments = $this->getQueryArguments($values, $node, $info);
         $queryName = $this->queryName ?? $field['name'];
         if (!$isRoot) {

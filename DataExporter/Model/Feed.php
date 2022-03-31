@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Magento\DataExporter\Model;
 
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\DataExporter\Model\Query\FeedQuery;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Serialize\SerializerInterface;
@@ -45,21 +46,36 @@ class Feed implements FeedInterface
     private $feedQuery;
 
     /**
+     * @var string|null
+     */
+    private $dateTimeFormat;
+
+    /**
+     * @var CommerceDataExportLoggerInterface
+     */
+    private $logger;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param SerializerInterface $serializer
      * @param FeedIndexMetadata $feedIndexMetadata
      * @param FeedQuery $feedQuery
+     * @param null $dateTimeFormat
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         SerializerInterface $serializer,
         FeedIndexMetadata $feedIndexMetadata,
-        FeedQuery $feedQuery
+        FeedQuery $feedQuery,
+        CommerceDataExportLoggerInterface $logger,
+        $dateTimeFormat = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->serializer = $serializer;
         $this->feedIndexMetadata = $feedIndexMetadata;
         $this->feedQuery = $feedQuery;
+        $this->logger = $logger;
+        $this->dateTimeFormat = $dateTimeFormat;
     }
 
     /**
@@ -101,6 +117,18 @@ class Feed implements FeedInterface
         while ($row = $cursor->fetch()) {
             $dataRow = $this->serializer->unserialize($row['feed_data']);
             $dataRow['modifiedAt'] = $row['modifiedAt'];
+            if (null !== $this->dateTimeFormat) {
+                try {
+                    $dataRow['modifiedAt'] = (new \DateTime($dataRow['modifiedAt']))->format($this->dateTimeFormat);
+                } catch (\Throwable $e) {
+                    $this->logger->warning(\sprintf(
+                        'Cannot convert modifiedAt "%s" to formant "%s", error: %s',
+                        $dataRow['modifiedAt'],
+                        $this->dateTimeFormat,
+                        $e->getMessage()
+                    ));
+                }
+            }
             if (isset($row['deleted'])) {
                 $dataRow['deleted'] = (bool)$row['deleted'];
             }

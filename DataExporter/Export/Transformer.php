@@ -177,7 +177,7 @@ class Transformer
                     //todo: add Filter cond
                     $result[$field['name']] = $this->convertComplexData($field, $snapshot, $lookupReference);
                 }
-            } elseif (isset($row[$field['name']])) {
+            } elseif (array_key_exists($field['name'], $row)) {
                 $result[$field['name']] = $this->castToFieldType($field, $row[$field['name']]);
             }
         }

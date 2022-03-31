@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Export;
 
+use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\DataExporter\Export\Request\Info;
 use Magento\DataExporter\Export\Request\Node;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
@@ -107,20 +108,36 @@ class Extractor
                 );
                 $this->profilerStop($isRoot, $providerClass, $value);
                 foreach ($node->getChildren() as $child) {
-                    $output = array_replace_recursive(
-                        $output,
-                        $this->extractDataForNode($info, $child, $data)
-                    );
+                    try {
+                        $output = array_replace_recursive(
+                            $output,
+                            $this->extractDataForNode($info, $child, $data)
+                        );
+                    } catch (\Throwable $e) {
+                        throw new UnableRetrieveData(
+                            "child provider: " . $child->getField()['provider'],
+                            0,
+                            $e
+                        );
+                    }
                 }
             }
 
             $output[$key] = $data;
         } else {
             foreach ($node->getChildren() as $child) {
+                try {
                 $output = array_replace_recursive(
                     $output,
                     $this->extractDataForNode($info, $child, $value)
                 );
+                } catch (\Throwable $e) {
+                    throw new UnableRetrieveData(
+                        "child provider: " . $child->getField()['provider'],
+                        0,
+                        $e
+                    );
+                }
             }
         }
         return $output;

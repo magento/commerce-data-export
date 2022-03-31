@@ -8,7 +8,10 @@ declare(strict_types=1);
 namespace Magento\DataExporter\Export;
 
 /**
- * Build lookup value based in "using" field
+ * Build lookup value based on "using" field
+ * Fields specified in "using" field in et_schema used to build relation between data returned in provider and
+ * parent entity to be able to assign current entity to parent entity.
+ * If usinf field not set field with type "ID" will be used by default
  */
 class LookupBuilder
 {
@@ -26,9 +29,10 @@ class LookupBuilder
                 if (!isset($key['field'], $item[$key['field']])) {
                     $fieldName = $key['field'] ?? '';
                     throw new \InvalidArgumentException(\sprintf(
-                        'DataExporter error: No value in Data Provider for "%s" specified in "using" expression: "%s"',
+                        'Exporter error: no value in Data Provider for "%s" in "using" field: "%s", item: %s',
                         $fieldName,
-                        \var_export($field, true)
+                        \var_export($field, true),
+                        \var_export($item, true)
                     ));
                 }
                 // cast to string: we don't care about type here

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="data_exporter_uuid" resource="default" engine="innodb"
+           comment="Data Export Items UUID References Table">
+        <column xsi:type="varchar"
+                name="uuid"
+                nullable="false"
+                length="36"
+                comment="Entity UUID"/>
+        <column xsi:type="int"
+                name="entity_id"
+                padding="10"
+                unsigned="true"
+                nullable="false"
+                comment="Entity ID"/>
+        <column xsi:type="varchar"
+                name="type"
+                nullable="false"
+                length="36"
+                comment="Entity type"/>
+        <column
+                xsi:type="timestamp"
+                name="created_at"
+                on_update="true"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"
+                comment="Created At"
+        />
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="uuid"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="DATA_EXPORTER_ENTITY_ID_TYPE_UNIQUE">
+            <column name="entity_id"/>
+            <column name="type"/>
+        </constraint>
+    </table>
+</schema>

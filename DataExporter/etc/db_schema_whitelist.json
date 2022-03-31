@@ -1,0 +1,15 @@
+{
+    "data_exporter_uuid": {
+        "constraint": {
+            "PRIMARY": true,
+            "DATA_EXPORTER_ENTITY_ID_TYPE_UNIQUE": true,
+            "DATA_EXPORTER_UUID_ENTITY_ID_TYPE": true
+        },
+        "column": {
+            "entity_id": true,
+            "type": true,
+            "uuid": true,
+            "created_at": true
+        }
+    }
+}

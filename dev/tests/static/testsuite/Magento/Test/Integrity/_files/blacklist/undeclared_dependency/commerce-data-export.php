@@ -10,7 +10,6 @@ return [
     'app/code/Magento/ConfigurationDataExporter/Model/FullExportProcessor.php' => ['Magento\Store'],
     'app/code/Magento/ConfigurationDataExporter/Observer/ConfigChange.php' => ['Magento\Store','Magento\Config'],
     'app/code/Magento/ConfigurationDataExporter/Plugin/ConfigUpdateExport.php' => ['Magento\Config'],
-    'app/code/Magento/CatalogExport/Console/Command/GenerateDTOFiles.php' => ['Magento\DataExporter'],
     'app/code/Magento/CatalogExport/Model/CategoryRepository.php' => [
         'Magento\DataExporter'
     ],
