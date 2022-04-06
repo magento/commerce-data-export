@@ -394,8 +394,6 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
                     'videoDescription' => $extensionAttributes->getVideoContent()->getVideoDescription(),
                     'videoMetadata' => $extensionAttributes->getVideoContent()->getVideoMetadata(),
                 ];
-            } else {
-                $expectedResult['video_attributes'] = null;
             }
 
             $this->assertEquals($expectedResult, \array_shift($extractedProduct['feedData']['media_gallery']));

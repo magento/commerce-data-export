@@ -84,9 +84,6 @@ class Transformer
      */
     private function castScalarValue(string $type, $value)
     {
-        if ($value === null) {
-            return null;
-        }
         $result = null;
         switch ($type) {
             case "ID":
@@ -120,9 +117,6 @@ class Transformer
      */
     private function castToFieldType(array $rootField, $value)
     {
-        if ($value === null) {
-            return null;
-        }
         $result = null;
         if ($this->isScalar($rootField['type'])) {
             if ($rootField['repeated']) {
@@ -183,7 +177,7 @@ class Transformer
                     //todo: add Filter cond
                     $result[$field['name']] = $this->convertComplexData($field, $snapshot, $lookupReference);
                 }
-            } elseif (array_key_exists($field['name'], $row)) {
+            } elseif (isset($row[$field['name']])) {
                 $result[$field['name']] = $this->castToFieldType($field, $row[$field['name']]);
             }
         }
