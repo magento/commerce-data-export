@@ -84,6 +84,9 @@ class Transformer
      */
     private function castScalarValue(string $type, $value)
     {
+        if ($value === null) {
+            return null;
+        }
         $result = null;
         switch ($type) {
             case "ID":
@@ -117,6 +120,9 @@ class Transformer
      */
     private function castToFieldType(array $rootField, $value)
     {
+        if ($value === null) {
+            return null;
+        }
         $result = null;
         if ($this->isScalar($rootField['type'])) {
             if ($rootField['repeated']) {
