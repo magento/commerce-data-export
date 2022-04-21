@@ -84,10 +84,8 @@ class Variants
                 $output[$key]['storeViewCode'] = $row['storeViewCode'];
                 $output[$key]['variants']['minimumPrice']['regularPrice'] = $row['price'];
                 $output[$key]['variants']['minimumPrice']['finalPrice'] = $row['finalPrice'];
-                $output[$key]['variants']['selections'][] = [
-                    'name' => $row['name'],
-                    'value' => $row['value']
-                ];
+                // Product.Variants are deprecated. Variant.Selections not used anymore
+                $output[$key]['variants']['selections'] = [];
             }
         } catch (\Exception $exception) {
             $this->logger->error($exception->getMessage(), ['exception' => $exception]);

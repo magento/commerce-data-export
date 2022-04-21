@@ -63,6 +63,8 @@ class Options implements OptionProviderInterface
      */
     private $optionValueUid;
 
+    private static $optionValuesPerAttributesCache = [];
+
     /**
      * @param ResourceConnection $resourceConnection
      * @param ProductOptionQuery $productOptionQuery
@@ -126,17 +128,61 @@ class Options implements OptionProviderInterface
      */
     private function getOptionValuesData(array $arguments): array
     {
-        $optionValues = [];
+        $attributeIdsOrigin = $this->getAttributeIds($arguments);
+        $attributeIds = \array_diff(
+            $attributeIdsOrigin,
+            \array_keys(self::$optionValuesPerAttributesCache)
+        );
+
+        if (!$attributeIds) {
+            // get from cache
+            return $this->getOptionValuesFromCache($attributeIdsOrigin);
+        }
+        $arguments['attributes'] = $attributeIds;
+
         $select = $this->productOptionValueQuery->getQuery($arguments);
+        // ad hoc solution to check application cache size. should be replaced with generic approach
+        $cacheSize = \strlen(\json_encode(self::$optionValuesPerAttributesCache));
+        if ($cacheSize > 1024 * 1024 * 20) {
+            self::$optionValuesPerAttributesCache = [];
+        }
         foreach ($this->getBatchedQueryData($select, 'attribute_id') as $batchData) {
             foreach ($batchData as $row) {
-                $optionValues[$row['attribute_id']][$row['storeViewCode']][$row['optionId']] = [
+                self::$optionValuesPerAttributesCache[$row['attribute_id']][$row['storeViewCode']][$row['optionId']] = [
                     'id' => $this->optionValueUid->resolve($row['attribute_id'], $row['optionId']),
                     'label' => $row['label'],
                 ];
             }
         }
-        return $optionValues;
+
+        return $this->getOptionValuesFromCache($attributeIdsOrigin);
+    }
+
+    /**
+     * @param array $arguments
+     * @return array
+     */
+    private function getAttributeIds(array $arguments): array
+    {
+        $productIds = $arguments['productId'] ?? [];
+        $connection = $this->resourceConnection->getConnection();
+        $joinField = $connection->getAutoIncrementField(
+            $this->resourceConnection->getTableName('catalog_product_entity')
+        );
+        $subSelect = $connection->select()
+            ->from(
+                ['cpe' => $this->resourceConnection->getTableName('catalog_product_entity')],
+                []
+            )
+            ->join(
+                ['psa' => $this->resourceConnection->getTableName('catalog_product_super_attribute')],
+                sprintf('psa.product_id = cpe.%s', $joinField),
+                ['attribute_id' => 'psa.attribute_id']
+            )
+            ->where('cpe.entity_id IN (?)', $productIds)
+            ->distinct(true);
+        $connection = $this->resourceConnection->getConnection();
+        return $connection->fetchCol($subSelect);
     }
 
     /**
@@ -175,6 +221,7 @@ class Options implements OptionProviderInterface
      */
     public function get(array $values): array
     {
+
         $queryArguments = [];
         foreach ($values as $value) {
             if (!isset($value['productId'], $value['type'], $value['storeViewCode'])
@@ -191,6 +238,7 @@ class Options implements OptionProviderInterface
         try {
             $options = [];
             $optionValuesData = $this->getOptionValuesData($queryArguments);
+
             $select = $this->productOptionQuery->getQuery($queryArguments);
             foreach ($this->getBatchedQueryData($select, 'entity_id') as $batchData) {
                 foreach ($batchData as $row) {
@@ -208,5 +256,14 @@ class Options implements OptionProviderInterface
             throw new UnableRetrieveData('Unable to retrieve configurable product options data');
         }
         return $options;
+    }
+
+    /**
+     * @param array|null $attributeIds
+     * @return array
+     */
+    private function getOptionValuesFromCache(?array $attributeIds): array
+    {
+        return \array_intersect_key(self::$optionValuesPerAttributesCache, \array_flip($attributeIds));
     }
 }

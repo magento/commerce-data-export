@@ -196,7 +196,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                     'regularPrice' => $childProductPricing['price'],
                     'finalPrice' => $childProductPricing['final_price']
                 ],
-                'selections' => $this->getVariantSelections($childProduct, $attributeCodes)
+                'selections' => null,
             ];
         }
         $actualVariants = $extract['feedData']['variants'];
@@ -234,24 +234,5 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
             $i++;
         }
         return $values;
-    }
-
-    /**
-     * Get variant selections data
-     *
-     * @param ProductInterface $childProduct
-     * @param array $attributeCodes
-     * @return array
-     */
-    private function getVariantSelections(ProductInterface $childProduct, array $attributeCodes) : array
-    {
-        $selections = [];
-        foreach ($attributeCodes as $attributeCode) {
-            $selections[] = [
-                'name' => $childProduct->getAttributes()[$attributeCode]->getStoreLabel(),
-                'value' => $childProduct->getAttributeText($attributeCode)
-            ];
-        }
-        return $selections;
     }
 }

@@ -51,7 +51,6 @@ class VariantsQuery
     public function getQuery(array $arguments) : Select
     {
         $productIds = isset($arguments['productId']) ? $arguments['productId'] : [];
-        $storeViewCodes = isset($arguments['storeViewCode']) ? $arguments['storeViewCode'] : [];
         $connection = $this->resourceConnection->getConnection();
         $joinField = $connection->getAutoIncrementField($this->getTable('catalog_product_entity'));
 
@@ -60,11 +59,6 @@ class VariantsQuery
             ->joinInner(
                 ['cpsa' => $this->getTable('catalog_product_super_attribute')],
                 'cpsa.product_id = cpsl.parent_id',
-                []
-            )
-            ->joinInner(
-                ['cpsal' => $this->getTable('catalog_product_super_attribute_label')],
-                'cpsa.product_super_attribute_id = cpsal.product_super_attribute_id',
                 []
             )
             ->joinInner(
@@ -78,23 +72,8 @@ class VariantsQuery
                 []
             )
             ->joinInner(
-                ['cpei' => $this->getTable('catalog_product_entity_int')],
-                sprintf('cpei.%1$s = cpe.%1$s AND cpsa.attribute_id = cpei.attribute_id', $joinField),
-                []
-            )
-            ->joinInner(
                 ['cpip' => $this->getTable('catalog_product_index_price')],
                 'cpip.entity_id = cpe.entity_id',
-                []
-            )
-            ->joinInner(
-                ['eao' => $this->getTable('eav_attribute_option')],
-                'eao.attribute_id = cpsa.attribute_id',
-                []
-            )
-            ->joinInner(
-                ['eaov' => $this->getTable('eav_attribute_option_value')],
-                'eaov.option_id = cpei.value and eaov.option_id = eao.option_id',
                 []
             )
             ->joinInner(
@@ -103,21 +82,17 @@ class VariantsQuery
             )
             ->columns(
                 [
-                    'productId' => 'cpeParent.entity_id',
                     'storeViewCode' => 's.code',
+                    'productId' => 'cpeParent.entity_id',
                     'sku' => 'cpe.sku',
                     'price' => 'cpip.price',
                     'finalPrice' => 'cpip.final_price',
-                    'name' => 'cpsal.value',
-                    'value' => 'eaov.value',
-                    'cpei.attribute_id',
-                    'optionId' => 'cpei.value'
                 ]
             )
             ->where('cpeParent.entity_id IN (?)', $productIds)
             ->where('cpip.customer_group_id = 0')
-            ->where('s.code IN (?)', $storeViewCodes)
-            ->distinct(true);
+            ->distinct();
+
         return $select;
     }
 }

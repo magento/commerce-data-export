@@ -38,23 +38,10 @@ class ProductOptionValueQuery
      */
     public function getQuery(array $arguments): Select
     {
-        $productIds = isset($arguments['productId']) ? $arguments['productId'] : [];
-        $storeViewCodes = isset($arguments['storeViewCode']) ? $arguments['storeViewCode'] : [];
+        $storeViewCodes = $arguments['storeViewCode'] ?? [];
         $connection = $this->resourceConnection->getConnection();
-        $joinField = $connection->getAutoIncrementField(
-            $this->resourceConnection->getTableName('catalog_product_entity')
-        );
-        $subSelect = $connection->select()
-            ->from(
-                ['cpe' => $this->resourceConnection->getTableName('catalog_product_entity')],
-                []
-            )
-            ->join(
-                ['psa' => $this->resourceConnection->getTableName('catalog_product_super_attribute')],
-                sprintf('psa.product_id = cpe.%s', $joinField),
-                ['attribute_id' => 'psa.attribute_id']
-            )
-            ->where('cpe.entity_id IN (?)', $productIds);
+        $attributeIds = $arguments['attributes'] ?? [];
+
         $select = $connection->select()
             ->from(
                 ['eao' => $this->resourceConnection->getTableName('eav_attribute_option')],
@@ -80,7 +67,7 @@ class ProductOptionValueQuery
                     'label' => new Expression('CASE WHEN ovs.value IS NULL THEN ovd.value ELSE ovs.value END'),
                 ]
             )
-            ->where(sprintf('eao.attribute_id IN (%s)', $subSelect->assemble()))
+            ->where('eao.attribute_id IN (?)', $attributeIds)
             ->where('s.code IN (?)', $storeViewCodes);
         return $select;
     }
