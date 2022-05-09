@@ -170,7 +170,7 @@ class QueryDataProvider
                 foreach ($this->getNodeIndexFields($node) as $indexField) {
                     $index[$indexField] = $row[$indexField];
                 }
-                $result[json_encode($index)] = array_merge($index, [$field['name'] => $row]);
+                $result[] = array_merge($index, [$field['name'] => $row]);
             }
         } else {
             $result = $this->queryProcessor->execute($queryName, $arguments)->fetchAll();

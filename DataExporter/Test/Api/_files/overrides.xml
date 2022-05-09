@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<overrides>
+    <!-- Tests are failed because of incompatible version of MSI (MDEE-187) -->
+    <test class="Magento\Downloadable\Api\CartItemRepositoryTest">
+        <method name="testUpdateItem" skip="true" />
+        <method name="testUpdateItemWithInvalidLinkId" skip="true" />
+        <method name="testGetList" skip="true" />
+        <method name="testUpdateItemQty" skip="true" />
+    </test>
+    <!-- Tests are failed because of incompatible version of MSI (MDEE-187) -->
+    <test class="Magento\GraphQl\DownloadableProduct\UpdateDownloadableCartItemsTest" skip="true"/>
+</overrides>

@@ -378,39 +378,54 @@ class CreateOrderTest extends AbstractOrderFeedTest
     {
         foreach ($expectedOrderData as $expectedField => $expectedData) {
             if ($expectedField === 'items') {
+                $uncheckedIds = \array_flip(array_keys($expectedData));
                 foreach ($feedData['items'] as $itemData) {
-                    if (isset($itemData['itemId'])) {
-                        $this->checkFields($expectedData[$itemData['itemId']['id']], $itemData);
-                    } else {
-                        $this->checkFields($expectedData[$itemData['orderItemId']['id']], $itemData);
+                    $itemIdField = isset($itemData['itemId']) ? 'itemId' : 'orderItemId';
+                    $expectedDataId = $itemData[$itemIdField]['id'];
+                    if (isset($itemData[$itemIdField])) {
+                        $this->checkFields($expectedData[$expectedDataId], $itemData);
+                        unset($uncheckedIds[$expectedDataId]);
                     }
                 }
+                self::assertEmpty($uncheckedIds, "Some items are missed in feed");
                 continue;
             }
             if ($expectedField === 'shipments') {
+                $uncheckedIds = \array_flip(array_keys($expectedData));
                 foreach ($feedData['shipments'] as $itemData) {
                     $this->checkFields($expectedData[$itemData['shipmentId']['id']], $itemData);
+                    unset($uncheckedIds[$itemData['shipmentId']['id']]);
                 }
+                self::assertEmpty($uncheckedIds, "Some shipment items are missed in feed");
                 continue;
             }
             if ($expectedField === 'invoices') {
+                $uncheckedIds = \array_flip(array_keys($expectedData));
                 foreach ($feedData[$expectedField] as $itemData) {
                     $this->checkFields($expectedData[$itemData['entityId']], $itemData);
+                    unset($uncheckedIds[$itemData['entityId']]);
                 }
+                self::assertEmpty($uncheckedIds, "Some invoice items are missed in feed");
                 continue;
             }
 
             if ($expectedField === 'creditMemos') {
+                $uncheckedIds = \array_flip(array_keys($expectedData));
                 foreach ($feedData[$expectedField] as $itemData) {
                     $this->checkFields($expectedData[$itemData['creditMemoId']['id']], $itemData);
+                    unset($uncheckedIds[$itemData['creditMemoId']['id']]);
                 }
+                self::assertEmpty($uncheckedIds, "Some credit memo items are missed in feed");
                 continue;
             }
 
             if ($expectedField === 'transactions') {
+                $uncheckedIds = \array_flip(array_keys($expectedData));
                 foreach ($feedData[$expectedField] as $itemData) {
                     $this->checkFields($expectedData[$itemData['entityId']], $itemData);
+                    unset($uncheckedIds[$itemData['entityId']]);
                 }
+                self::assertEmpty($uncheckedIds, "Some transaction items are missed in feed");
                 continue;
             }
 
@@ -461,7 +476,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
             $expectedOrderData['shipments'] = $this->getExpectedShipmentData($order);
         }
 
-            return $expectedOrderData;
+        return $expectedOrderData;
     }
 
     /**
@@ -477,7 +492,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
         $output = [];
         foreach ($this->ordersFeed->getFeedSince('1')['feed'] as $item) {
             if ((!$excludeDeleted || !$item['deleted']) && \in_array($item['commerceOrderId'], $ids)) {
-                    $output[] = $item;
+                $output[] = $item;
             }
         }
         return $output;
