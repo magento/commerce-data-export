@@ -68,12 +68,13 @@ class FeedQuery
             'feed_data',
             'modifiedAt' => 'modified_at'
         ];
-        if ($connection->tableColumnExists($metadata->getFeedTableName(), 'is_deleted')) {
+        $feedTableName = $this->resourceConnection->getTableName($metadata->getFeedTableName());
+        if ($connection->tableColumnExists($feedTableName, 'is_deleted')) {
             $columns['deleted'] = 'is_deleted';
         }
         $select = $connection->select()
             ->from(
-                ['t' => $this->resourceConnection->getTableName($metadata->getFeedTableName())],
+                ['t' => $feedTableName],
                 $columns
             )
             ->where('t.modified_at > ?', $modifiedAt);
