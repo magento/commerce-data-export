@@ -246,8 +246,10 @@ class Options implements OptionProviderInterface
                     $options[$key] = $options[$key] ?? $this->formatOptionsRow($row);
 
                     if (isset($optionValuesData[$row['attribute_id']][$row['storeViewCode']])) {
-                        $options[$key]['optionsV2']['values'] =
-                            \array_values($optionValuesData[$row['attribute_id']][$row['storeViewCode']]);
+                        $options[$key]['optionsV2']['values'] = $this->getAssignedAttributeValues(
+                            $optionValuesData[$row['attribute_id']][$row['storeViewCode']],
+                            explode(',', $row['attributeValues'])
+                        );
                     }
                 }
             }
@@ -265,5 +267,17 @@ class Options implements OptionProviderInterface
     private function getOptionValuesFromCache(?array $attributeIds): array
     {
         return \array_intersect_key(self::$optionValuesPerAttributesCache, \array_flip($attributeIds));
+    }
+
+    /**
+     * @param array $attributeValuesList
+     * @param array $assignedAttributeValuesId
+     * @return array
+     */
+    private function getAssignedAttributeValues(array $attributeValuesList, array $assignedAttributeValuesId): array
+    {
+        $assignedAttributeValues = array_intersect_key($attributeValuesList, array_flip($assignedAttributeValuesId));
+
+        return !empty($assignedAttributeValues) ? \array_values($assignedAttributeValues) : [];
     }
 }

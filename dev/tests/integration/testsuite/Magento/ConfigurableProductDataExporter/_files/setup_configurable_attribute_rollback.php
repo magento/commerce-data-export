@@ -20,7 +20,11 @@ $registry->register('isSecureArea', true);
 try {
     /** @var Attribute $attribute */
     $attribute = $objectManager->create(Attribute::class);
-    $attribute->load('test_configurable', 'attribute_code');
+    $attribute->load('first_test_configurable', 'attribute_code');
+    if ($attribute->getId()) {
+        $attribute->delete();
+    }
+    $attribute->load('second_test_configurable', 'attribute_code');
     if ($attribute->getId()) {
         $attribute->delete();
     }

@@ -61,12 +61,31 @@ class ProductOptionQuery
                 'eav.attribute_id = super_attribute.attribute_id',
                 ['attribute_code' => 'eav.attribute_code']
             )->join(
+                ['product_website' => $this->resourceConnection->getTableName('catalog_product_website')],
+                'product_website.product_id = product.entity_id',
+                []
+            )->join(
                 ['s' => $this->resourceConnection->getTableName('store')],
                 $storeViewCodes
-                    ? $connection->quoteInto('s.code IN (?)', $storeViewCodes)
-                    : 's.store_id != 0',
+                    ? $connection->quoteInto('s.code IN (?) ', $storeViewCodes)
+                     . ' AND s.website_id = product_website.website_id'
+                    : 's.store_id != 0' . ' AND s.website_id = product_website.website_id',
                 ['storeViewCode' => 's.code']
-            )->joinLeft(
+            )->join(
+                ['configurable_link' => $this->resourceConnection->getTableName('catalog_product_super_link')],
+                sprintf('configurable_link.parent_id = product.%s', $joinField),
+                []
+            )->join(
+                ['catalog_product_entity' => $this->resourceConnection->getTableName('catalog_product_entity')],
+                'catalog_product_entity.entity_id = configurable_link.product_id',
+                []
+            )->join(
+                ['super_attribute_value' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
+                sprintf('super_attribute_value.%s = catalog_product_entity.%s', $joinField, $joinField)
+                    . ' AND super_attribute_value.attribute_id = super_attribute.attribute_id',
+                ['attributeValues' => 'GROUP_CONCAT(DISTINCT super_attribute_value.value)']
+            )
+            ->joinLeft(
                 ['attr_label' => $this->resourceConnection->getTableName('eav_attribute_label')],
                 'attr_label.attribute_id = eav.attribute_id and attr_label.store_id = s.store_id',
                 [
@@ -77,7 +96,8 @@ class ProductOptionQuery
                     ),
                 ]
             )
-            ->where('product.entity_id IN (?)', $productIds);
+            ->where('product.entity_id IN (?)', $productIds)
+            ->group(['product.entity_id', 's.store_id', 'eav.attribute_code']);
         return $select;
     }
 }

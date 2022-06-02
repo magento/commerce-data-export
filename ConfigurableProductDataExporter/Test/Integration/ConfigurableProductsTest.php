@@ -60,7 +60,6 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     {
         $skus = ['configurable1'];
         $storeViewCodes = ['default', 'fixture_second_store'];
-        $attributeCodes = ['test_configurable'];
 
         foreach ($skus as $sku) {
             $product = $this->productRepository->get($sku);
@@ -74,7 +73,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                 $this->validateImageUrls($product, $extractedProduct);
                 $this->validateAttributeData($product, $extractedProduct);
                 $this->validateOptionsData($product, $extractedProduct);
-                $this->validateVariantsData($product, $extractedProduct, $attributeCodes);
+                $this->validateVariantsData($product, $extractedProduct);
             }
         }
     }
@@ -151,7 +150,6 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                 'values' => $this->getOptionValues($productOption->getAttributeId(), $productOption->getOptions()),
             ];
         }
-
         $this->assertCount(count($expectedOptions), $extractedProduct['feedData']['optionsV2']);
         foreach ($extractedProduct['feedData']['optionsV2'] as $extractedOption) {
             $optionId = $extractedOption['id'];
@@ -177,13 +175,12 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
      *
      * @param ProductInterface $product
      * @param array $extract
-     * @param array $attributeCodes
      * @return void
      * @throws LocalizedException
      * @throws NoSuchEntityException
      * @throws Zend_Db_Statement_Exception
      */
-    private function validateVariantsData(ProductInterface $product, array $extract, array $attributeCodes) : void
+    private function validateVariantsData(ProductInterface $product, array $extract) : void
     {
         $childIds = $product->getExtensionAttributes()->getConfigurableProductLinks();
         $variants = [];

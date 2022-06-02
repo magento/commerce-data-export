@@ -36,6 +36,21 @@ if ($product->getId()) {
     $productInterface->delete($product);
 }
 
+$product = $productInterface->get('simple_option_55');
+if ($product->getId()) {
+    $productInterface->delete($product);
+}
+
+$product = $productInterface->get('simple_option_59');
+if ($product->getId()) {
+    $productInterface->delete($product);
+}
+
+$product = $productInterface->get('simple_option_65');
+if ($product->getId()) {
+    $productInterface->delete($product);
+}
+
 $product = $productInterface->get('configurable1');
 if ($product->getId()) {
     $productInterface->delete($product);
