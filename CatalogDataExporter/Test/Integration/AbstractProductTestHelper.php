@@ -21,6 +21,9 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
 use Magento\Indexer\Model\Indexer;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Store\Api\StoreRepositoryInterface;
+use Magento\Store\Api\WebsiteRepositoryInterface;
+use Magento\Store\Api\GroupRepositoryInterface;
 use Magento\Tax\Model\TaxClass\Source\Product as TaxClassSource;
 use Magento\TestFramework\Helper\Bootstrap;
 
@@ -34,9 +37,7 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     /**
      * Test Constants
      */
-    const WEBSITE_CODE = 'base';
-    const STORE_CODE = 'main_website_store';
-    const CATALOG_DATA_EXPORTER = 'catalog_data_exporter_products';
+    public const CATALOG_DATA_EXPORTER = 'catalog_data_exporter_products';
 
     /**
      * @var ProductRepositoryInterface
@@ -89,6 +90,21 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     protected $taxClassSource;
 
     /**
+     * @var StoreRepositoryInterface
+     */
+    protected $storeRepositoryInterface;
+
+    /**
+     * @var WebsiteRepositoryInterface
+     */
+    private $websiteRepositoryInterface;
+
+    /**
+     * @var GroupRepositoryInterface|mixed
+     */
+    private $storeGroupRepositoryInterface;
+
+    /**
      * Setup tests
      */
     protected function setUp(): void
@@ -103,6 +119,9 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
         $this->productHelper = Bootstrap::getObjectManager()->create(ProductHelper::class);
         $this->storeManager = Bootstrap::getObjectManager()->create(StoreManagerInterface::class);
+        $this->storeRepositoryInterface = Bootstrap::getObjectManager()->create(StoreRepositoryInterface::class);
+        $this->storeGroupRepositoryInterface = Bootstrap::getObjectManager()->create(GroupRepositoryInterface::class);
+        $this->websiteRepositoryInterface = Bootstrap::getObjectManager()->create(WebsiteRepositoryInterface::class);
         $this->taxClassSource = Bootstrap::getObjectManager()->create(TaxClassSource::class);
 
         $this->jsonSerializer = Bootstrap::getObjectManager()->create(Json::class);
@@ -207,13 +226,14 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
      * @return void
      * @throws NoSuchEntityException
      */
-    protected function validateCategoryData(ProductInterface $product, array $extractedProduct) : void
+    protected function validateCategoryData(ProductInterface $product, array $extractedProduct, $storeViewCode) : void
     {
         // Disabled product does not have information about assigned entities since we got this from index table
         if ($product->getStatus() == Status::STATUS_DISABLED) {
             return ;
         }
-        $storeId = $this->storeManager->getStore()->getId();
+        $storeViewId = $this->storeRepositoryInterface->get($storeViewCode)->getCode();
+        $storeId = $this->storeManager->getStore($storeViewId)->getId();
         $categories = [];
         foreach ($product->getCategoryIds() as $categoryId) {
             $category = $this->categoryRepository->get($categoryId, $storeId);
@@ -248,14 +268,18 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
      */
     protected function validateBaseProductData(ProductInterface $product, array $extract, string $storeViewCode) : void
     {
+        $storeViewId = $this->storeRepositoryInterface->get($storeViewCode)->getCode();
+        $storeView = $this->storeManager->getStore($storeViewId);
+        $websiteCode = $this->websiteRepositoryInterface->getById($storeView->getWebsiteId())->getCode();
+        $storeGroupCode = $this->storeGroupRepositoryInterface->get($storeView->getStoreGroupId())->getCode();
         $enabled = $product->getStatus() == 1 ? 'Enabled' : 'Disabled';
         $visibility = Visibility::getOptionText($product->getVisibility());
 
         $this->assertEquals($product->getSku(), $extract['sku']);
         $this->assertEquals($product->getSku(), $extract['feedData']['sku']);
         $this->assertEquals($product->getId(), $extract['feedData']['productId']);
-        $this->assertEquals(self::WEBSITE_CODE, $extract['feedData']['websiteCode']);
-        $this->assertEquals(self::STORE_CODE, $extract['feedData']['storeCode']);
+        $this->assertEquals($websiteCode, $extract['feedData']['websiteCode']);
+        $this->assertEquals($storeGroupCode, $extract['feedData']['storeCode']);
         $this->assertEquals($storeViewCode, $extract['feedData']['storeViewCode']);
         $this->assertEquals($product->getName(), $extract['feedData']['name']);
         $this->assertEquals($enabled, $extract['feedData']['status']);
@@ -268,13 +292,24 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals($product->getCreatedAt(), $extract['feedData']['createdAt']);
         $this->assertEquals($product->getUpdatedAt(), $extract['feedData']['updatedAt']);
-        $this->assertEquals($product->getWeight(), $extract['feedData']['weight']);
         $this->assertEquals($product->getDescription(), $extract['feedData']['description']);
         $this->assertEquals($product->getMetaDescription(), $extract['feedData']['metaDescription']);
         $this->assertEquals($product->getMetaKeyword(), $extract['feedData']['metaKeyword']);
         $this->assertEquals($product->getMetaTitle(), $extract['feedData']['metaTitle']);
         $this->assertEquals($product->getTaxClassId(), $extract['feedData']['taxClassId']);
         $this->assertEquals($visibility, $extract['feedData']['visibility']);
+    }
+
+    /**
+     * Validate base product data in extracted product data
+     *
+     * @param ProductInterface $product
+     * @param array $extract
+     * @return void
+     */
+    protected function validateRealProductData(ProductInterface $product, array $extract) : void
+    {
+        $this->assertEquals($product->getWeight(), $extract['feedData']['weight']);
     }
 
     /**

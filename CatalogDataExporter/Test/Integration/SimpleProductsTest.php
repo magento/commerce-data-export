@@ -43,7 +43,8 @@ class SimpleProductsTest extends AbstractProductTestHelper
 
                 $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
                 $this->validateBaseProductData($product, $extractedProduct, $storeViewCode);
-                $this->validateCategoryData($product, $extractedProduct);
+                $this->validateRealProductData($product, $extractedProduct);
+                $this->validateCategoryData($product, $extractedProduct, $storeViewCode);
                 $this->validatePricingData($product, $extractedProduct);
                 $this->validateImageUrls($product, $extractedProduct);
                 $this->validateAttributeData($product, $extractedProduct);

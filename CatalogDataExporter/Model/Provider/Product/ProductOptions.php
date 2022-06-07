@@ -39,7 +39,7 @@ class ProductOptions implements ProductOptionProviderInterface
         foreach ($this->optionProviderFactories as $providerFactory) {
             /** @var \Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\ProductOptionProviderInterface $provider */
             $provider = $providerFactory->create();
-            $productOptions = $productOptions + $provider->get($values);
+            $productOptions += $provider->get($values);
         }
         return $productOptions;
     }

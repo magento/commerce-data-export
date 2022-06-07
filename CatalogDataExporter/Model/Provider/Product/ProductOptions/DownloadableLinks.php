@@ -81,23 +81,30 @@ class DownloadableLinks
     public function get(array $values): array
     {
         $productIds = [];
-        $storeViewCode = current($values)['storeViewCode'];
+        $storeViews = [];
+        $output = [];
         foreach ($values as $value) {
-            if ($value['type'] == DownloadableLinksOptionUid::OPTION_TYPE) {
+            if ($value['type'] === DownloadableLinksOptionUid::OPTION_TYPE) {
                 $productIds[] = $value['productId'];
+                if (!isset($storeViews[$value['storeViewCode']])) {
+                    $storeViews[$value['storeViewCode']] = (int)$this->storeRepository->get($value['storeViewCode'])
+                        ->getId();
+                }
             }
         }
         if (!empty($productIds)) {
-            $storeId = (int)$this->storeRepository->get($storeViewCode)->getId();
-            $downloadableLinksSelect = $this->productDownloadableLinksQuery->getQuery($productIds, $storeId);
-            $downloadableLinksQuery = $this->resourceConnection->getConnection()->query($downloadableLinksSelect);
-            $this->linkOptions = $downloadableLinksQuery->fetchAll();
-            return $this->format(
-                $this->buildProductAttributes($values),
-                $storeViewCode
-            );
+            $productIds = array_unique($productIds);
+            foreach ($storeViews as $storeViewCode => $storeId) {
+                $downloadableLinksSelect = $this->productDownloadableLinksQuery->getQuery($productIds, $storeId);
+                $downloadableLinksQuery = $this->resourceConnection->getConnection()->query($downloadableLinksSelect);
+                $this->linkOptions = $downloadableLinksQuery->fetchAll();
+                $output += $this->format(
+                    $this->buildProductAttributes($values, $productIds),
+                    $storeViewCode
+                );
+            }
         }
-        return [];
+        return $output;
     }
 
     /**
@@ -187,14 +194,17 @@ class DownloadableLinks
      * Build the downloadable product attributes
      *
      * @param array $products
+     * @param array $downloadableProductIds
      * @return array
      */
-    private function buildProductAttributes(array $products): array
+    private function buildProductAttributes(array $products, array $downloadableProductIds): array
     {
         $attributes = [];
 
         foreach ($products as $attribute) {
-            $attributes[$attribute['productId']] = ['links_title' => $attribute['linksTitle']];
+            if (\in_array($attribute['productId'], $downloadableProductIds, true)) {
+                $attributes[$attribute['productId']] = ['links_title' => $attribute['linksTitle']];
+            }
         }
         return $attributes;
     }
