@@ -11,6 +11,7 @@
                provider="Magento\ParentProductDataExporter\Model\Provider\Parents"
         >
             <using field="productId" />
+            <using field="storeViewCode" />
         </field>
     </record>
     <record name="ParentProduct">

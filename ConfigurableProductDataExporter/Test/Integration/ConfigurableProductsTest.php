@@ -110,6 +110,61 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     }
 
     /**
+     * Validate parent product data assigned to different websites
+     *
+     * @magentoDataFixture Magento/ConfigurableProductDataExporter/_files/setup_configurable_products_on_different_websites.php
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @return void
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
+     * @throws Zend_Db_Statement_Exception
+     * @throws Throwable
+     */
+    public function testParentProductsOnDifferentWebsites() : void
+    {
+        $this->runIndexer([40, 50, 60, 70, 55, 59, 65]);
+
+
+        $skus = [
+            'simple_option_50' => [
+                'custom_store_view_one' => true,
+                'custom_store_view_two' => false
+            ],
+            'simple_option_60' => [
+                'custom_store_view_one' => true,
+                'custom_store_view_two' => false
+            ],
+            'simple_option_70' => [
+                'custom_store_view_one' => true,
+                'custom_store_view_two' => false
+            ],
+            'simple_option_55' => [
+                'custom_store_view_one' => false,
+                'custom_store_view_two' => true
+            ],
+            'simple_option_59' => [
+                'custom_store_view_one' => false,
+                'custom_store_view_two' => true
+            ],
+            'simple_option_65' => [
+                'custom_store_view_one' => false,
+                'custom_store_view_two' => true
+            ],
+        ];
+
+        foreach ($skus as $sku => $stores) {
+            $product = $this->productRepository->get($sku);
+            $product->setTypeInstance(Bootstrap::getObjectManager()->create(Configurable::class));
+
+            foreach ($stores as $storeViewCode => $parentAssignedToStore) {
+                $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
+                $this->validateParentData($product, $extractedProduct, $parentAssignedToStore);
+            }
+        }
+    }
+
+    /**
      * Validate product's parent data
      *
      * @param ProductInterface $product
@@ -117,10 +172,17 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
      * @return void
      * @throws NoSuchEntityException
      */
-    private function validateParentData(ProductInterface $product, array $extractedProduct) : void
-    {
+    private function validateParentData(
+        ProductInterface $product,
+        array $extractedProduct,
+        bool $isParentAssigned = true
+    ) : void {
         $parents = [];
         $parentIds = $this->configurable->getParentIdsByChild($product->getId());
+        if ($isParentAssigned === false) {
+            $this->assertEquals(null, $extractedProduct['feedData']['parents']);
+            return;
+        }
         foreach ($parentIds as $parentId) {
             $parentProduct = $this->productRepository->getById($parentId);
             $parents[] = [

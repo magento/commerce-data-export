@@ -50,18 +50,42 @@ class ProductParentQuery
      */
     public function getQuery(array $arguments) : Select
     {
-        $productIds = isset($arguments['productId']) ? $arguments['productId'] : [];
+        $productIds = $arguments['productId'] ?? [];
+        $storeViewCodes = $arguments['storeViewCode'] ?? [];
         $connection = $this->resourceConnection->getConnection();
         $joinField = $connection->getAutoIncrementField($this->getTable('catalog_product_entity'));
-
         $select = $connection->select()
             ->from(['cpsl' => $this->getTable('catalog_product_super_link')])
+            ->joinInner(
+                ['s' => $this->getTable('store')],
+                '',
+                ['s.code AS storeViewCode']
+            )
+            ->joinInner(
+                ['product_cpw' => $this->getTable('catalog_product_website')],
+                'product_cpw.website_id = s.website_id AND product_cpw.product_id = cpsl.product_id',
+                []
+            )
+            ->joinInner(
+                ['parent_cpe' => $this->getTable('catalog_product_entity')],
+                sprintf('parent_cpe.%1$s = cpsl.parent_id', $joinField),
+                []
+            )
+            ->joinInner(
+                ['parent_cpw' => $this->getTable('catalog_product_website')],
+                'parent_cpw.website_id = product_cpw.website_id'
+                    . ' AND parent_cpw.product_id = parent_cpe.entity_id',
+                []
+            )
             ->joinInner(
                 ['cpe' => $this->getTable('catalog_product_entity')],
                 sprintf('cpe.%1$s = cpsl.parent_id', $joinField)
             )
             ->columns(['productId' => 'cpsl.product_id', 'sku' => 'cpe.sku', 'productType' => 'cpe.type_id'])
             ->where('cpsl.product_id IN (?)', $productIds);
+        if (!empty($storeViewCodes)) {
+            $select->where('s.code IN (?)', $storeViewCodes);
+        }
         return $select;
     }
 }

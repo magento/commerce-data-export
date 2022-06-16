@@ -76,8 +76,11 @@ class Parents
     {
         $queryArguments = [];
         foreach ($values as $value) {
-            $queryArguments['productId'][$value['productId']] = $value['productId'];
+            $queryArguments['productId'][] = $value['productId'];
+            $queryArguments['storeViewCode'][] = $value['storeViewCode'];
         }
+        $queryArguments['storeViewCode'] = array_unique($queryArguments['storeViewCode']);
+        $queryArguments['productId'] = array_unique($queryArguments['productId']);
         $output = [];
         try {
             $connection = $this->resourceConnection->getConnection();
