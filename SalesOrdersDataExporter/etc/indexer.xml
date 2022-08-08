@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
+    <indexer id="sales_order_data_exporter_v2"
+            view_id="sales_order_data_exporter_v2"
+            class="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexer">
+        <title translate="true">Sales Orders Feed</title>
+        <description translate="true">Collects data for a Sales Orders Feed</description>
+    </indexer>
+</config>

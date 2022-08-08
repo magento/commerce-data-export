@@ -23,6 +23,6 @@
         "magento/module-customer-group-data-exporter": "self.version",
         "magento/module-inventory-data-exporter": "self.version",
         "magento/module-query-xml": "self.version",
-        "magento/module-sales-data-exporter": "self.version"
+        "magento/module-sales-orders-data-exporter": "self.version"
     }
 }

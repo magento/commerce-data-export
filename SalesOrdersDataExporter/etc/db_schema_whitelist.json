@@ -1,0 +1,16 @@
+{
+    "sales_data_exporter_orders_v2": {
+        "index": {
+            "SALES_DATA_EXPORTER_ORDERS_V2_MODIFIED_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "column": {
+            "id": true,
+            "mode": true,
+            "feed_data": true,
+            "modified_at": true
+        }
+    }
+}
