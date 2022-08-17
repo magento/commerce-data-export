@@ -62,8 +62,12 @@ class Prices
             'storeViewCode' => $row['storeViewCode'],
             'prices' => [
                 'minimumPrice' => [
-                    'regularPrice' => $row['price'],
-                    'finalPrice' => $row['final_price']
+                    'regularPrice' => (float)$row['price'] === 0.0 && $row['min_price'] !== 0.0
+                        ? $row['min_price']
+                        : $row['price'],
+                    'finalPrice' => (float)$row['final_price'] === 0.0 && $row['min_price'] !== 0.0
+                        ? $row['min_price']
+                        : $row['final_price']
                 ],
                 'maximumPrice' => [
                     'regularPrice' => $row['max_price'],
