@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\BundleProductDataExporter\Test\Integration;
+namespace Magento\CatalogDataExporter\Test\Integration;
 
 use Magento\CatalogDataExporter\Test\Integration\AbstractProductTestHelper;
 use Magento\Framework\Stdlib\ArrayUtils;
