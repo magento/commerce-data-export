@@ -128,6 +128,7 @@ class ProductLinksQuery
                 [
                     'parentId' => 'cpe_parent.entity_id',
                     'productId' => 'cpe_product.entity_id',
+                    'sku' => 'cpe_product.sku',
                     'link_type_id' => 'links.link_type_id',
                 ]
             )

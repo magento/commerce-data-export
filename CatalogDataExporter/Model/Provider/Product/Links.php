@@ -13,6 +13,8 @@ use Magento\CatalogDataExporter\Model\Query\ProductLinksQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
+use Magento\GroupedProduct\Model\Product\Type\Grouped;
+use Magento\GroupedProduct\Model\ResourceModel\Product\Link;
 
 /**
  * Product links data provider
@@ -84,11 +86,23 @@ class Links
                 );
 
                 while ($row = $cursor->fetch()) {
-                    $output[] = [
+                    $info = [
                         'productId' => $row['parentId'],
                         'storeViewCode' => $storeViewCode,
-                        'links' => $this->formatLinkRow($row, $linkTypes),
                     ];
+
+                    if ($row['link_type_id'] == Link::LINK_TYPE_GROUPED) {
+                        $info['optionsV2'] = [
+                            'type' => Grouped::TYPE_CODE,
+                            'required' => true,
+                            'sortOrder' => 1,
+                            'values' => $this->formatOptionsRow($row),
+                        ];
+                    } else {
+                        $info['links'] = $this->formatLinkRow($row, $linkTypes);
+                    }
+
+                    $output[] = $info;
                 }
             }
         } catch (\Throwable $exception) {
@@ -114,6 +128,26 @@ class Links
             'position' => $row['position'],
             'qty' => $row['qty'],
             'type' => $linkTypes[$row['link_type_id']] ?? null,
+        ];
+    }
+
+    /**
+     * Format options value row data for grouped products.
+     *
+     * @param array $row
+     *
+     * @return array
+     */
+    private function formatOptionsRow(array $row) : array
+    {
+        return [
+            'id' => $row['productId'],
+            'sku' => $row['sku'],
+            'qty' => $row['qty'],
+            'sortOrder' => $row['position'],
+            'label' => null,
+            'isDefault' => true,
+            'qtyMutability' => false,
         ];
     }
 }
