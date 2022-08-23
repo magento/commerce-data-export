@@ -3,65 +3,56 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-
 declare(strict_types=1);
 
-namespace Magento\CatalogDataExporter\Model\Provider\Product;
+namespace Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions;
 
-use Magento\Catalog\Model\Product\LinkTypeProvider;
 use Magento\CatalogDataExporter\Model\Query\ProductLinksQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
-use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
+use Magento\Framework\App\ResourceConnection;
+use Magento\GroupedProduct\Model\Product\Type\Grouped;
+use Magento\GroupedProduct\Model\ResourceModel\Product\Link;
 
 /**
- * Product links data provider
+ * Provider class for grouped product options
  */
-class Links
+class GroupedProductOptions implements ProductOptionProviderInterface
 {
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
 
     /**
      * @var ProductLinksQuery
      */
-    private $productLinksQuery;
-
-    /**
-     * @var LinkTypeProvider
-     */
-    private $linkTypeProvider;
+    private ProductLinksQuery $productLinksQuery;
 
     /**
      * @var LoggerInterface
      */
-    private $logger;
+    private LoggerInterface $logger;
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param ProductLinksQuery $productLinksQuery
-     * @param LinkTypeProvider $linkTypeProvider
      * @param LoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         ProductLinksQuery $productLinksQuery,
-        LinkTypeProvider $linkTypeProvider,
         LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->productLinksQuery = $productLinksQuery;
-        $this->linkTypeProvider = $linkTypeProvider;
         $this->logger = $logger;
     }
 
     /**
-     * Get provider data
+     * @inheritdoc
      *
      * @param array $values
-     *
      * @return array
      *
      * @throws UnableRetrieveData
@@ -76,18 +67,22 @@ class Links
         }
 
         try {
-            $linkTypes = \array_flip($this->linkTypeProvider->getLinkTypes());
-
-            foreach ($queryArguments as $storeViewCode => $productIds) {
+             foreach ($queryArguments as $storeViewCode => $productIds) {
                 $cursor = $this->resourceConnection->getConnection()->query(
-                    $this->productLinksQuery->getQuery($productIds, $storeViewCode)
+                    $this->productLinksQuery->getQuery($productIds, $storeViewCode, Link::LINK_TYPE_GROUPED)
                 );
 
                 while ($row = $cursor->fetch()) {
-                    $output[] = [
+                    $optionValues[$row['parentId']][] = $this->formatOptionsValueRow($row);
+
+                    $output[$row['parentId']] = [
                         'productId' => $row['parentId'],
                         'storeViewCode' => $storeViewCode,
-                        'links' => $this->formatLinkRow($row, $linkTypes),
+                        'optionsV2' => [
+                            'type' => Grouped::TYPE_CODE,
+                            'id' => $row['parentId'],
+                            'values' => $optionValues[$row['parentId']],
+                        ]
                     ];
                 }
             }
@@ -100,20 +95,20 @@ class Links
     }
 
     /**
-     * Format link row data.
+     * Format options value row data for grouped products.
      *
      * @param array $row
-     * @param array $linkTypes
      *
      * @return array
      */
-    private function formatLinkRow(array $row, array $linkTypes) : array
+    private function formatOptionsValueRow(array $row) : array
     {
         return [
-            'productId' => $row['productId'],
-            'position' => $row['position'],
+            'id' => $row['productId'],
+            'sku' => $row['sku'],
             'qty' => $row['qty'],
-            'type' => $linkTypes[$row['link_type_id']] ?? null,
+            'sortOrder' => $row['position'],
+            'qtyMutability' => true,
         ];
     }
 }

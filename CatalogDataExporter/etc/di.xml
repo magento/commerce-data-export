@@ -29,6 +29,7 @@
             <argument name="optionProviderFactories" xsi:type="array">
                 <item name="customOptionsFactory" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\SelectableOptionsFactory</item>
                 <item name="downloadableLinksFactory" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\DownloadableLinksFactory</item>
+                <item name="groupedProductOptionsFactory" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\GroupedProductOptionsFactory</item>
             </argument>
         </arguments>
     </type>

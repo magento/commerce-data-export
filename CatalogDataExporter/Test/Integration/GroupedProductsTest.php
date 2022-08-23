@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\GroupedProductDataExporter\Test\Integration;
+namespace Magento\CatalogDataExporter\Test\Integration;
 
 use Magento\CatalogDataExporter\Test\Integration\AbstractProductTestHelper;
 use Magento\Framework\Stdlib\ArrayUtils;
@@ -15,7 +15,7 @@ use Magento\TestFramework\Helper\Bootstrap;
 /**
  * Test for grouped product export
  */
-class GroupedProductTest extends AbstractProductTestHelper
+class GroupedProductsTest extends AbstractProductTestHelper
 {
     /**
      * @var ArrayUtils
@@ -48,6 +48,7 @@ class GroupedProductTest extends AbstractProductTestHelper
      */
     public function testGroupedProductOptions(array $groupedProductOptionsDataProvider) : void
     {
+        $this->runIndexer();
         $extractedProduct = $this->getExtractedProduct('grouped-product', 'default');
         $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
