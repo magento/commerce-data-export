@@ -120,6 +120,7 @@ class BundleProductOptionValuesQuery
                 'option_id' => 'main_table.option_id',
                 'parent_id' => 'main_table.parent_product_id',
                 'label' => $connection->getIfNullSql('name_store.value', 'name_default.value'),
+                'sku' => 'cpe_product.sku',
             ]);
     }
 

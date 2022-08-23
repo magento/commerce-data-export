@@ -159,6 +159,7 @@ class BundleProductOptions implements OptionProviderInterface
     {
         return [
             'id' => $this->bundleItemOptionUid->resolve($row['option_id'], $row['id'], $row['qty']),
+            'sku' => $row['sku'],
             'label' => $row['label'],
             'qty' => $row['qty'],
             'sortOrder' => $row['sort_order'],

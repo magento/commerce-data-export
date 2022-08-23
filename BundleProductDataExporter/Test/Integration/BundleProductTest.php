@@ -85,6 +85,7 @@ class BundleProductTest extends AbstractProductTestHelper
                                         'qty' => 1,
                                         'isDefault' => false,
                                         'qtyMutability' => true,
+                                        'sku' => 'simple',
                                     ],
                                 ],
                             ],
