@@ -48,7 +48,6 @@ class GroupedProductsTest extends AbstractProductTestHelper
      */
     public function testGroupedProductOptions(array $groupedProductOptionsDataProvider) : void
     {
-        $this->runIndexer();
         $extractedProduct = $this->getExtractedProduct('grouped-product', 'default');
         $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
@@ -76,26 +75,19 @@ class GroupedProductsTest extends AbstractProductTestHelper
                         'optionsV2' => [
                             [
                                 'type' => 'grouped',
-                                'renderType' => null,
-                                'required' => true,
-                                'sortOrder' => 1,
                                 'values' => [
                                     [
-                                        'sortOrder' => 0,
-                                        'label' => 'Simple Product',
                                         'id' => 1,
+                                        'sortOrder' => 1,
                                         'qty' => 1,
-                                        'sku' => "simple",
-                                        'isDefault' => false,
+                                        'sku' => 'simple',
                                         'qtyMutability' => true,
                                     ],
                                     [
-                                        'sortOrder' => 1,
-                                        'label' => 'Virtual Product',
                                         'id' => 21,
-                                        'qty' => 1,
-                                        'sku' => "virtual",
-                                        'isDefault' => false,
+                                        'sortOrder' => 2,
+                                        'qty' => 2,
+                                        'sku' => 'virtual-product',
                                         'qtyMutability' => true,
                                     ],
                                 ],
