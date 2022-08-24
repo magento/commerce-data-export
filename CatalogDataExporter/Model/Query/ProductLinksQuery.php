@@ -33,11 +33,6 @@ class ProductLinksQuery
     private const LINK_TYPE_CROSSSELL = 5;
 
     /**
-     * @see \Magento\GroupedProduct\Model\ResourceModel\Product\Link::LINK_TYPE_GROUPED
-     */
-    private const LINK_TYPE_ASSOCIATED = 3;
-
-    /**
      * Link types array
      *
      * @var array
@@ -46,7 +41,6 @@ class ProductLinksQuery
         self::LINK_TYPE_RELATED,
         self::LINK_TYPE_UPSELL,
         self::LINK_TYPE_CROSSSELL,
-        self::LINK_TYPE_ASSOCIATED,
     ];
 
     /**
@@ -73,10 +67,11 @@ class ProductLinksQuery
      *
      * @param int[] $productIds
      * @param string $storeViewCode
+     * @param int|null $linkTypeId
      *
      * @return Select
      */
-    public function getQuery(array $productIds, string $storeViewCode) : Select
+    public function getQuery(array $productIds, string $storeViewCode, int $linkTypeId = null) : Select
     {
         $connection = $this->resourceConnection->getConnection();
         $catalogProductTable = $this->resourceConnection->getTableName('catalog_product_entity');
@@ -128,13 +123,14 @@ class ProductLinksQuery
                 [
                     'parentId' => 'cpe_parent.entity_id',
                     'productId' => 'cpe_product.entity_id',
+                    'sku' => 'cpe_product.sku',
                     'link_type_id' => 'links.link_type_id',
                 ]
             )
             ->where('cpe_parent.entity_id IN (?)', $productIds)
-            ->where('links.link_type_id IN (?)', $this->linkTypes);
+            ->where('links.link_type_id IN (?)', $linkTypeId != null ? $linkTypeId : $this->linkTypes);
 
-        foreach ($this->getProductLinkAttributesData() as $attributeData) {
+        foreach ($this->getProductLinkAttributesData($linkTypeId) as $attributeData) {
             $tableAlias = \sprintf('attribute_%s', $attributeData['code']);
 
             $select->joinLeft(
@@ -160,9 +156,10 @@ class ProductLinksQuery
     /**
      * Retrieve product link attributes data
      *
+     * @param int|null $linkTypeId
      * @return array
      */
-    private function getProductLinkAttributesData() : array
+    private function getProductLinkAttributesData(int $linkTypeId = null) : array
     {
         if (null === $this->productLinkAttributesCache) {
             $connection = $this->resourceConnection->getConnection();
@@ -177,7 +174,7 @@ class ProductLinksQuery
                     ]
                 )
                 ->where('cpla.product_link_attribute_code IN (?)', ['position', 'qty'])
-                ->where('cpla.link_type_id IN (?)', $this->linkTypes)
+                ->where('cpla.link_type_id IN (?)', $linkTypeId != null ? $linkTypeId : $this->linkTypes)
                 ->group('cpla.product_link_attribute_code');
 
             $this->productLinkAttributesCache = $connection->fetchAll($select);
