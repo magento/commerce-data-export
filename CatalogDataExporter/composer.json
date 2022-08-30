@@ -24,6 +24,7 @@
         "magento/module-customer": ">=102.0.2",
         "magento/module-downloadable": ">=100.3.2",
         "magento/module-indexer": ">=100.3.2",
+        "magento/module-grouped-product": ">=100.3.2",
         "magento/module-data-exporter": "self.version"
     },
     "suggest": {
