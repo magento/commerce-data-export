@@ -43,15 +43,24 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
     public function getQuery(array $ids, FeedIndexMetadata $metadata): Select
     {
         $connection = $this->resourceConnection->getConnection();
-        $select = $connection->select()
+        $fieldName = $metadata->getSourceTableField();
+
+        return $connection->select()
             ->joinLeft(
-                ['s' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
-                \sprintf('f.product_id = s.%s', $metadata->getSourceTableField()),
+                ['e' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
+                \sprintf('f.parent_id = e.%s', $fieldName),
                 ['is_deleted' => new \Zend_Db_Expr('1')]
             )
-            ->where('f.product_id IN (?)', $ids)
-            ->where(\sprintf('s.%s IS NULL', $metadata->getSourceTableField()));
-
-        return $select;
+            ->joinLeft(
+                ['p' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
+                \sprintf('f.parent_id = p.%s', $fieldName),
+                []
+            )
+            ->joinLeft(
+                ['s' => $this->resourceConnection->getTableName('catalog_product_super_link')],
+                \sprintf('s.product_id = e.%s AND s.parent_id = p.%s', $fieldName, $fieldName),
+                []
+            )
+            ->where(\sprintf('f.product_id IN (?) OR e.%s IS NULL', $fieldName), $ids);
     }
 }
