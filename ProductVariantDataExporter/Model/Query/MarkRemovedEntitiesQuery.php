@@ -7,7 +7,9 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Model\Query;
 
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery as DefaultMarkRemovedEntitiesQuery;
@@ -18,17 +20,28 @@ use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery as DefaultMarkRemo
  */
 class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
 {
+    private const STATUS_ATTRIBUTE_CODE = "status";
+
+    private const STATUS_DISABLED = Status::STATUS_DISABLED;
+
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
+
+    /**
+     * @var Config
+     */
+    private Config $eavConfig;
 
     /**
      * @param ResourceConnection $resourceConnection
+     * @param Config $eavConfig
      */
-    public function __construct(ResourceConnection $resourceConnection)
+    public function __construct(ResourceConnection $resourceConnection, Config $eavConfig)
     {
         $this->resourceConnection = $resourceConnection;
+        $this->eavConfig = $eavConfig;
         parent::__construct($resourceConnection);
     }
 
@@ -42,8 +55,14 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
      */
     public function getQuery(array $ids, FeedIndexMetadata $metadata): Select
     {
-        $connection = $this->resourceConnection->getConnection();
         $fieldName = $metadata->getSourceTableField();
+        $connection = $this->resourceConnection->getConnection();
+
+        $catalogProductTable = $this->resourceConnection->getTableName($metadata->getSourceTableName());
+        $productEntityJoinField = $connection->getAutoIncrementField($catalogProductTable);
+
+        $statusAttribute = $this->eavConfig->getAttribute('catalog_product', self::STATUS_ATTRIBUTE_CODE);
+        $statusAttributeId = $statusAttribute?->getId();
 
         return $connection->select()
             ->joinLeft(
@@ -61,6 +80,23 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
                 \sprintf('s.product_id = e.%s AND s.parent_id = p.%s', $fieldName, $fieldName),
                 []
             )
-            ->where(\sprintf('f.product_id IN (?) OR e.%s IS NULL', $fieldName), $ids);
+            ->joinLeft(
+                ['pi' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
+                \sprintf(
+                    'f.product_id = pi.%s 
+                    AND pi.attribute_id = %s
+                    AND pi.store_id = 0',
+                    $productEntityJoinField,
+                    $statusAttributeId
+                ),
+                []
+            )
+            ->where(
+                \sprintf(
+                    'f.product_id IN (?) OR e.%s IS NULL OR pi.value = %s',
+                    $fieldName,
+                    self::STATUS_DISABLED
+                ), $ids
+            );
     }
 }

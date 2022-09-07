@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Test\Integration;
 
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId;
 use RuntimeException;
 use Throwable;
@@ -140,6 +141,55 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
 
             $this->assertEquals('simple_20', $variantsData[1]['productSku']);
             $this->assertFalse($variantsData[1]['deleted']);
+        } catch (Throwable $e) {
+            $this->fail($e->getMessage());
+        }
+    }
+
+    /**
+     * Test that deleted flag is true when one of the children is disabled
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture Magento/ConfigurableProduct/_files/product_configurable.php
+     *
+     * @return void
+     */
+    public function testWithDisabledChildFromConfigurableProductVariants(): void
+    {
+        try {
+            $configurable = $this->productRepository->get('configurable');
+            $configurableId = $configurable->getId();
+
+            $simple10 = $this->productRepository->get('simple_10');
+
+            $variantSimple10 = $this->idResolver->resolve([
+                ConfigurableId::PARENT_SKU_KEY => 'configurable',
+                ConfigurableId::CHILD_SKU_KEY => 'simple_10'
+            ]);
+            $variantSimple20 = $this->idResolver->resolve([
+                ConfigurableId::PARENT_SKU_KEY => 'configurable',
+                ConfigurableId::CHILD_SKU_KEY => 'simple_20'
+            ]);
+
+            $this->runIndexer([$configurableId]);
+
+            $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20], true);
+            $this->assertCount(2, $variantsData); //id20, id10
+
+            // we disabled simple_10
+            $simple10->setStatus(Status::STATUS_DISABLED);
+            $this->productRepository->save($simple10);
+
+            $this->runIndexer([$configurableId, $simple10->getId()]);
+
+            $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
+            $this->assertCount(2, $variantsData); //id20, id10 (disabled)
+            $this->assertEquals('simple_10', $variantsData[0]['productSku']);
+            $this->assertTrue($variantsData[0]['deleted'], "simple_10 should have been flag as deleted");
+
+            $this->assertEquals('simple_20', $variantsData[1]['productSku']);
+            $this->assertFalse($variantsData[1]['deleted'], "simple_20 should not have been flag as deleted");
         } catch (Throwable $e) {
             $this->fail($e->getMessage());
         }
