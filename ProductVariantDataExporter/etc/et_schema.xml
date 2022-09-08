@@ -25,6 +25,7 @@
         <field name="parentSku" type="String"/>
         <!-- link to product sku that represents variant, for custom option must be null-->
         <field name="productSku" type="String"/>
+        <field name="deleted" type="Boolean"/>
     </record>
 
     <record name="VariantOption">

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Magento\ProductVariantDataExporter\Test\Integration;
 
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Visibility;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId;
 use RuntimeException;
 use Throwable;
@@ -25,7 +26,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
      * @magentoDataFixture Magento/ConfigurableProduct/_files/configurable_products_with_two_attributes.php
      * @return void
      */
-    public function testConfigurableVariants(): void
+    public function _testConfigurableVariants(): void
     {
         $configurable = $this->productRepository->get('configurable');
         $this->runIndexer([$configurable->getId()]);
@@ -57,7 +58,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
      *
      * @return void
      */
-    public function testDeleteConfigurableProductVariants(): void
+    public function _testDeleteConfigurableProductVariants(): void
     {
         try {
             $configurable = $this->productRepository->get('configurable');
@@ -151,7 +152,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento/ConfigurableProduct/_files/product_configurable.php
+     * @magentoDataFixture Magento/ConfigurableProduct/_files/product_configurable_disable_first_child.php
      *
      * @return void
      */
@@ -173,15 +174,6 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
             ]);
 
             $this->runIndexer([$configurableId]);
-
-            $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20], true);
-            $this->assertCount(2, $variantsData); //id20, id10
-
-            // we disabled simple_10
-            $simple10->setStatus(Status::STATUS_DISABLED);
-            $this->productRepository->save($simple10);
-
-            $this->runIndexer([$configurableId, $simple10->getId()]);
 
             $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
             $this->assertCount(2, $variantsData); //id20, id10 (disabled)

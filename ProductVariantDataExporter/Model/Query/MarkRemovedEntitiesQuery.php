@@ -66,37 +66,38 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
 
         return $connection->select()
             ->joinLeft(
-                ['e' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
-                \sprintf('f.parent_id = e.%s', $fieldName),
+                ['removed_product' => $catalogProductTable],
+                \sprintf('f.product_id = removed_product.%s', $fieldName),
                 ['is_deleted' => new \Zend_Db_Expr('1')]
             )
             ->joinLeft(
-                ['p' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
-                \sprintf('f.parent_id = p.%s', $fieldName),
+                ['link' => $this->resourceConnection->getTableName('catalog_product_super_link')],
+                'link.product_id = f.product_id AND link.parent_id = f.parent_id',
                 []
             )
             ->joinLeft(
-                ['s' => $this->resourceConnection->getTableName('catalog_product_super_link')],
-                \sprintf('s.product_id = e.%s AND s.parent_id = p.%s', $fieldName, $fieldName),
+                ['unassigned_product' => $catalogProductTable],
+                \sprintf('unassigned_product.row_id = link.parent_id and unassigned_product.%s = f.parent_id', $fieldName),
                 []
             )
             ->joinLeft(
-                ['pi' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
+                ['disabled_product' => $catalogProductTable],
+                \sprintf('f.product_id = disabled_product.%s', $fieldName),
+                []
+            )
+            ->joinLeft(
+                ['disabled_product_status' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
                 \sprintf(
-                    'f.product_id = pi.%s 
-                    AND pi.attribute_id = %s
-                    AND pi.store_id = 0',
+                    'disabled_product_status.%s = disabled_product_status.%s 
+                    AND disabled_product_status.attribute_id = %s
+                    AND disabled_product_status.store_id = 0',
                     $productEntityJoinField,
-                    $statusAttributeId
+                    $productEntityJoinField,
+                    $statusAttributeId,
                 ),
                 []
             )
-            ->where(
-                \sprintf(
-                    'f.product_id IN (?) OR e.%s IS NULL OR pi.value = %s',
-                    $fieldName,
-                    self::STATUS_DISABLED
-                ), $ids
-            );
+            ->where('f.product_id IN (?)', $ids)
+            ->where('removed_product.entity_id IS NULL OR disabled_product_status.value = 2 OR unassigned_product.entity_id IS NULL');
     }
 }
