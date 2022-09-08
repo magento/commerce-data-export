@@ -62,7 +62,7 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
         $productEntityJoinField = $connection->getAutoIncrementField($catalogProductTable);
 
         $statusAttribute = $this->eavConfig->getAttribute('catalog_product', self::STATUS_ATTRIBUTE_CODE);
-        $statusAttributeId = $statusAttribute?->getId();
+        $statusAttributeId = $statusAttribute ? $statusAttribute->getId() : null;
 
         return $connection->select()
             ->joinLeft(
