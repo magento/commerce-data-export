@@ -77,7 +77,11 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
             )
             ->joinLeft(
                 ['unassigned_product' => $catalogProductTable],
-                \sprintf('unassigned_product.row_id = link.parent_id and unassigned_product.%s = f.parent_id', $fieldName),
+                \sprintf(
+                    'unassigned_product.%s = link.parent_id and unassigned_product.%s = f.parent_id',
+                    $productEntityJoinField,
+                    $fieldName
+                ),
                 []
             )
             ->joinLeft(
@@ -88,9 +92,10 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
             ->joinLeft(
                 ['disabled_product_status' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
                 \sprintf(
-                    'disabled_product_status.row_id = disabled_product.%s 
+                    'disabled_product_status.%s = disabled_product.%s 
                     AND disabled_product_status.attribute_id = %s
                     AND disabled_product_status.store_id = 0',
+                    $productEntityJoinField,
                     $productEntityJoinField,
                     $statusAttributeId,
                 ),
