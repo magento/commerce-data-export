@@ -44,7 +44,7 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
      */
     public function partialReindex(FeedIndexMetadata $metadata, DataSerializerInterface $serializer, EntityIdsProviderInterface $idsProvider, array $ids = []): void
     {
-        $this->markRemovedEntities->execute($ids, $metadata);
         parent::partialReindex($metadata, $serializer, $idsProvider, $ids);
+        $this->markRemovedEntities->execute($ids, $metadata);
     }
 }

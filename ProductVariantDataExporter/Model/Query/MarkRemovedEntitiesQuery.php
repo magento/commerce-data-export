@@ -14,7 +14,6 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery as DefaultMarkRemovedEntitiesQuery;
 
-
 /**
  * Mark removed entities select query provider
  */
@@ -42,6 +41,7 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
     {
         $this->resourceConnection = $resourceConnection;
         $this->eavConfig = $eavConfig;
+
         parent::__construct($resourceConnection);
     }
 
@@ -88,16 +88,22 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
             ->joinLeft(
                 ['disabled_product_status' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
                 \sprintf(
-                    'disabled_product_status.%s = disabled_product_status.%s 
+                    'disabled_product_status.row_id = disabled_product.%s 
                     AND disabled_product_status.attribute_id = %s
                     AND disabled_product_status.store_id = 0',
-                    $productEntityJoinField,
                     $productEntityJoinField,
                     $statusAttributeId,
                 ),
                 []
             )
             ->where('f.product_id IN (?)', $ids)
-            ->where('removed_product.entity_id IS NULL OR disabled_product_status.value = 2 OR unassigned_product.entity_id IS NULL');
+            ->where(
+                \sprintf(
+                    'removed_product.entity_id IS NULL 
+                    OR disabled_product_status.value = %d 
+                    OR unassigned_product.entity_id IS NULL',
+                    self::STATUS_DISABLED
+                )
+            );
     }
 }

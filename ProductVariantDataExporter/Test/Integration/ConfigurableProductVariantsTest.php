@@ -7,8 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Test\Integration;
 
-use Magento\Catalog\Model\Product\Attribute\Source\Status;
-use Magento\Catalog\Model\Product\Visibility;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId;
 use RuntimeException;
 use Throwable;
@@ -26,7 +24,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
      * @magentoDataFixture Magento/ConfigurableProduct/_files/configurable_products_with_two_attributes.php
      * @return void
      */
-    public function _testConfigurableVariants(): void
+    public function testConfigurableVariants(): void
     {
         $configurable = $this->productRepository->get('configurable');
         $this->runIndexer([$configurable->getId()]);
@@ -58,7 +56,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
      *
      * @return void
      */
-    public function _testDeleteConfigurableProductVariants(): void
+    public function testDeleteConfigurableProductVariants(): void
     {
         try {
             $configurable = $this->productRepository->get('configurable');
@@ -173,7 +171,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
                 ConfigurableId::CHILD_SKU_KEY => 'simple_20'
             ]);
 
-            $this->runIndexer([$configurableId]);
+            $this->runIndexer([$configurableId, $simple10->getId()]);
 
             $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
             $this->assertCount(2, $variantsData); //id20, id10 (disabled)
