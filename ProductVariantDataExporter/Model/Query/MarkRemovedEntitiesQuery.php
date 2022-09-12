@@ -7,28 +7,41 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Model\Query;
 
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery as DefaultMarkRemovedEntitiesQuery;
-
 
 /**
  * Mark removed entities select query provider
  */
 class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
 {
+    private const STATUS_ATTRIBUTE_CODE = "status";
+
+    private const STATUS_DISABLED = Status::STATUS_DISABLED;
+
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
+
+    /**
+     * @var Config
+     */
+    private Config $eavConfig;
 
     /**
      * @param ResourceConnection $resourceConnection
+     * @param Config $eavConfig
      */
-    public function __construct(ResourceConnection $resourceConnection)
+    public function __construct(ResourceConnection $resourceConnection, Config $eavConfig)
     {
         $this->resourceConnection = $resourceConnection;
+        $this->eavConfig = $eavConfig;
+
         parent::__construct($resourceConnection);
     }
 
@@ -42,16 +55,60 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
      */
     public function getQuery(array $ids, FeedIndexMetadata $metadata): Select
     {
+        $fieldName = $metadata->getSourceTableField();
         $connection = $this->resourceConnection->getConnection();
-        $select = $connection->select()
+
+        $catalogProductTable = $this->resourceConnection->getTableName($metadata->getSourceTableName());
+        $productEntityJoinField = $connection->getAutoIncrementField($catalogProductTable);
+
+        $statusAttribute = $this->eavConfig->getAttribute('catalog_product', self::STATUS_ATTRIBUTE_CODE);
+        $statusAttributeId = $statusAttribute ? $statusAttribute->getId() : null;
+
+        return $connection->select()
             ->joinLeft(
-                ['s' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
-                \sprintf('f.product_id = s.%s', $metadata->getSourceTableField()),
+                ['removed_product' => $catalogProductTable],
+                \sprintf('f.product_id = removed_product.%s', $fieldName),
                 ['is_deleted' => new \Zend_Db_Expr('1')]
             )
+            ->joinLeft(
+                ['link' => $this->resourceConnection->getTableName('catalog_product_super_link')],
+                'link.product_id = f.product_id AND link.parent_id = f.parent_id',
+                []
+            )
+            ->joinLeft(
+                ['unassigned_product' => $catalogProductTable],
+                \sprintf(
+                    'unassigned_product.%s = link.parent_id and unassigned_product.%s = f.parent_id',
+                    $productEntityJoinField,
+                    $fieldName
+                ),
+                []
+            )
+            ->joinLeft(
+                ['disabled_product' => $catalogProductTable],
+                \sprintf('f.product_id = disabled_product.%s', $fieldName),
+                []
+            )
+            ->joinLeft(
+                ['disabled_product_status' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
+                \sprintf(
+                    'disabled_product_status.%s = disabled_product.%s 
+                    AND disabled_product_status.attribute_id = %s
+                    AND disabled_product_status.store_id = 0',
+                    $productEntityJoinField,
+                    $productEntityJoinField,
+                    $statusAttributeId,
+                ),
+                []
+            )
             ->where('f.product_id IN (?)', $ids)
-            ->where(\sprintf('s.%s IS NULL', $metadata->getSourceTableField()));
-
-        return $select;
+            ->where(
+                \sprintf(
+                    'removed_product.entity_id IS NULL 
+                    OR disabled_product_status.value = %d 
+                    OR unassigned_product.entity_id IS NULL',
+                    self::STATUS_DISABLED
+                )
+            );
     }
 }
