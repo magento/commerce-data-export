@@ -9,6 +9,7 @@
     <view id="catalog_data_exporter_product_variants" class="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer" group="indexer">
         <subscriptions>
             <table name="catalog_product_entity" entity_column="entity_id" />
+            <table name="catalog_product_entity_int" entity_column="entity_id" />
             <table name="catalog_product_super_link" entity_column="product_id" />
         </subscriptions>
     </view>
