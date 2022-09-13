@@ -549,6 +549,8 @@ class CreateOrderTest extends AbstractOrderFeedTest
             'currency' => $order->getOrderCurrencyCode(),
             'amountPaid' => $order->getPayment()->getBaseAmountPaid(),
             'storeViewCode' => $order->getStore()->getCode(),
+            'websiteCode' => $order->getStore()->getWebsite()->getCode(),
+            'storeCode' => $order->getStore()->getWebsite()->getDefaultGroup()->getCode(),
             'customerEmail' => $order->getCustomerEmail(),
             'additionalInformation' => $this->getExpectedOrderAdditionalInformationData($order),
             'payment' => [

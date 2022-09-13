@@ -66,6 +66,18 @@
                     <condition attribute="store_id" operator="eq" type="identifier">store_id</condition>
                 </using>
             </link-source>
+            <link-source name="store_group" link-type="left">
+                <attribute name="code" alias="storeCode"/>
+                <using glue="and">
+                    <condition attribute="group_id" operator="eq" type="identifier">store.group_id</condition>
+                </using>
+            </link-source>
+            <link-source name="store_website" link-type="left">
+                <attribute name="code" alias="websiteCode"/>
+                <using glue="and">
+                    <condition attribute="website_id" operator="eq" type="identifier">store.website_id</condition>
+                </using>
+            </link-source>
         </source>
     </query>
     <query name="salesOrderItemsV2">

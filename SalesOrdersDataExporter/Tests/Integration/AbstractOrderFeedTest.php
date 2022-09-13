@@ -98,7 +98,7 @@ abstract class AbstractOrderFeedTest extends TestCase
         $this->jsonSerializer = Bootstrap::getObjectManager()->create(Json::class);
         $this->orderRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
         $this->storeManager = Bootstrap::getObjectManager()->create(StoreManagerInterface::class);
-        $this->ordersFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('salesOrdersV2');
+        $this->ordersFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('salesOrders');
         $this->attributeRepository = Bootstrap::getObjectManager()->create(AttributeRepository::class);
         $this->arrayUtils = $objectManager->create(ArrayUtils::class);
         $this->registry = Bootstrap::getObjectManager()->get(Registry::class);

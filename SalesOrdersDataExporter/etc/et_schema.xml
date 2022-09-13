@@ -42,6 +42,8 @@
         <field name="amountRefunded" type="Float"/>
         <field name="amountCanceled" type="Float"/>
         <field name="storeViewCode" type="String"/>
+        <field name="storeCode" type="String"/>
+        <field name="websiteCode" type="String"/>
         <field name="storeId" type="Int"/>
         <field name="customerEmail" type="String"/>
         <field name="customerNote" type="String"/>
