@@ -63,4 +63,8 @@
             <argument name="profiler" xsi:type="init_parameter">Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface::EXPORTER_PROFILER</argument>
         </arguments>
     </type>
+
+    <type name="Magento\Catalog\Model\ResourceModel\Indexer\ActiveTableSwitcher">
+        <plugin name="ResetTriggers" type="Magento\DataExporter\Plugin\ResetTriggers" />
+    </type>
 </config>
