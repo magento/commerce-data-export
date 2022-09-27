@@ -138,6 +138,9 @@
         <field name="region" type="String"/>
         <field name="postcode" type="String"/>
         <field name="street" type="String"/>
+        <field name="multiLineStreet" type="String" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\MultiLineStreet">
+            <using field="commerceOrderId"/>
+        </field>
         <field name="city" type="String"/>
         <field name="country" type="String"/>
         <field name="firstname" type="String"/>
