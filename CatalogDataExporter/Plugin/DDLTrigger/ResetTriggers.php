@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\DataExporter\Plugin;
+namespace Magento\CatalogDataExporter\Plugin\DDLTrigger;
 
 use Magento\Catalog\Model\ResourceModel\Indexer\ActiveTableSwitcher as Subject;
 use Magento\Framework\DB\Adapter\AdapterInterface;

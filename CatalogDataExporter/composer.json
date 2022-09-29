@@ -28,6 +28,7 @@
         "magento/module-data-exporter": "self.version"
     },
     "suggest": {
-        "magento/module-config": ">=101.1.2"
+        "magento/module-config": ">=101.1.2",
+        "magento/module-catalog": ">=103.0.2"
     }
 }

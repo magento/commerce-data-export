@@ -502,4 +502,8 @@
     <type name="Magento\DataExporter\Export\Processor">
         <plugin name="product-exporter-get-product-categories-data" type="Magento\CatalogDataExporter\Model\Provider\Product\Categories" />
     </type>
+
+    <type name="Magento\Catalog\Model\ResourceModel\Indexer\ActiveTableSwitcher">
+        <plugin name="ResetTriggers" type="Magento\CatalogDataExporter\Plugin\DDLTrigger\ResetTriggers" />
+    </type>
 </config>
