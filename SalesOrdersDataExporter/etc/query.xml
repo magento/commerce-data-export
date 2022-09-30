@@ -293,10 +293,13 @@
                 </using>
             </link-source>
             <link-source name="sales_order_tax_item" link-type="inner">
-                <attribute name="item_id" alias="order_item_id"/>
+                <attribute name="item_id" alias="entityId"/>
                 <attribute name="tax_item_id"/>
                 <attribute name="taxable_item_type" alias="taxType"/>
                 <attribute name="amount" alias="taxAmount"/>
+                <filter glue="and">
+                    <condition attribute="item_id" operator="in" type="placeholder">entityId</condition>
+                </filter>
                 <using glue="and">
                     <condition attribute="tax_id" operator="eq" type="identifier">tax_id</condition>
                 </using>

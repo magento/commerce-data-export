@@ -181,14 +181,15 @@
     </record>
     <record name="RefundItem"> <!--only for product refunds ???-->
         <field name="orderItemId" type="UUID" provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\OrderItem"> <!--UUID of original order item -->
-            <using field="linkCreditMemoId"/>
+            <using field="entityId"/>
         </field>
         <field name="qtyRefunded" type="Float"/>
         <field name="basePrice" type="Float"/>
         <field name="baseRowTotal" type="Float" provider="Magento\SalesOrdersDataExporter\Model\Provider\CreditMemoBaseRowTotal"> <!--price for row items (qty*base_price * [coefficient]) May include adjusted price including promotions-->
-            <using field="linkCreditMemoId"/>
+            <using field="entityId"/>
         </field>
         <field name="productTaxes" type="Tax" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\ProductTaxes">
+            <using field="entityId"/>
             <using field="linkCreditMemoId"/>
         </field>
     </record>

@@ -30,7 +30,7 @@ class CreditMemoBaseRowTotal
             foreach ($group as $refundItem) {
                 $output[$refundItem['entityId']]['baseRowTotal']
                     = $refundItem['qty'] * $refundItem['base_price'] - $refundItem['discount_amount'];
-                $output[$refundItem['entityId']]['linkCreditMemoId'] = $refundItem['linkCreditMemoId'];
+                $output[$refundItem['entityId']]['entityId'] = $refundItem['entityId'];
             }
         }
 
