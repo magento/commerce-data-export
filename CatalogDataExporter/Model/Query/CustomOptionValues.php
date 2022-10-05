@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Query;
 
+use Magento\CatalogDataExporter\Model\Resolver\PriceTableResolver;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\EntityManager\MetadataPool;
@@ -36,18 +37,26 @@ class CustomOptionValues
     private $metadataPool;
 
     /**
+     * @var PriceTableResolver
+     */
+    private $priceTableResolver;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param StoreRepository $storeRepository
      * @param MetadataPool $metadataPool
+     * @param PriceTableResolver $priceTableResolver
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         StoreRepository $storeRepository,
-        MetadataPool $metadataPool
+        MetadataPool $metadataPool,
+        PriceTableResolver $priceTableResolver
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->storeRepository = $storeRepository;
         $this->metadataPool = $metadataPool;
+        $this->priceTableResolver = $priceTableResolver;
     }
 
     /**
@@ -81,7 +90,7 @@ class CustomOptionValues
      */
     public function percentPriceQuery(array $productIds, string $storeViewCode): Select
     {
-        $mainTable = $this->resourceConnection->getTableName('catalog_product_index_price');
+        $mainTable = $this->priceTableResolver->getTableName('catalog_product_index_price');
         $connection = $this->resourceConnection->getConnection();
         $websiteId = (int)$this->storeRepository->get($storeViewCode)->getWebsiteId();
         $select = $connection->select()->from(

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Query;
 
+use Magento\CatalogDataExporter\Model\Resolver\PriceTableResolver;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 
@@ -23,14 +24,21 @@ class ProductPriceQuery
     private $resourceConnection;
 
     /**
+     * @var PriceTableResolver
+     */
+    private $priceTableResolver;
+
+    /**
      * MainProductQuery constructor.
-     *
      * @param ResourceConnection $resourceConnection
+     * @param PriceTableResolver $priceTableResolver
      */
     public function __construct(
-        ResourceConnection $resourceConnection
+        ResourceConnection $resourceConnection,
+        PriceTableResolver $priceTableResolver
     ) {
         $this->resourceConnection = $resourceConnection;
+        $this->priceTableResolver = $priceTableResolver;
     }
 
     /**
@@ -41,7 +49,7 @@ class ProductPriceQuery
      */
     private function getTable(string $tableName) : string
     {
-        return $this->resourceConnection->getTableName($tableName);
+        return $this->priceTableResolver->getTableName($tableName);
     }
 
     /**

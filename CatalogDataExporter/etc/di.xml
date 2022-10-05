@@ -504,6 +504,17 @@
     </type>
 
     <type name="Magento\Catalog\Model\ResourceModel\Indexer\ActiveTableSwitcher">
-        <plugin name="ResetTriggers" type="Magento\CatalogDataExporter\Plugin\DDLTrigger\ResetTriggers" />
+        <plugin name="data-exporter-reset-triggers" type="Magento\CatalogDataExporter\Plugin\DDLTrigger\ResetTriggers" />
+    </type>
+
+    <!-- Solution for command indexer:set-dimensions-mode -->
+    <type name="Magento\Catalog\Model\Indexer\Product\Price\TableMaintainer">
+        <plugin name="data-exporter-create-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreatePriceReadTable" />
+    </type>
+    <type name="Magento\Catalog\Model\Indexer\Product\Price\ModeSwitcher">
+        <plugin name="data-exporter-mode-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreatePriceReadTable" />
+    </type>
+    <type name="\Magento\Catalog\Model\Indexer\Product\Price\ModeSwitcherConfiguration">
+        <plugin name="data-exporter-config-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreatePriceReadTable" />
     </type>
 </config>
