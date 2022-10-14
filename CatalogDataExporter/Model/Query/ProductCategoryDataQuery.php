@@ -20,6 +20,11 @@ use Magento\Framework\Search\Request\Dimension;
 class ProductCategoryDataQuery
 {
     /**
+     * Maximum categories nesting level
+     */
+    private const MAX_NESTING_LEVEL = 20;
+
+    /**
      * @var ResourceConnection
      */
     private $resourceConnection;
@@ -140,6 +145,9 @@ class ProductCategoryDataQuery
     {
         $productIds = isset($arguments['productId']) ? $arguments['productId'] : [];
         $connection = $this->resourceConnection->getConnection();
+        $numbersSelect = $this->getSqlForCategoriesNestingNumbers();
+        $joinField = $connection->getAutoIncrementField($this->getTable($this->mainTable));
+        $catalogCategoryEntityTableName = $this->resourceConnection->getTableName('catalog_category_entity');
         $select = $connection->select()
             ->from(
                 ['ccp' => $this->getIndexTableName($storeViewCode)],
@@ -154,18 +162,26 @@ class ProductCategoryDataQuery
                 ['storeViewCode' => 's.code']
             )
             ->join(
-                ['cce' => $this->resourceConnection->getTableName('catalog_category_entity')],
+                ['cce' => $catalogCategoryEntityTableName],
                 'cce.entity_id = ccp.category_id',
                 []
             )
             ->join(
-                ['cpath' => $this->resourceConnection->getTableName('catalog_category_entity')],
-                "find_in_set(cpath.entity_id, replace(cce.path, '/', ','))",
+                ['cpath' => $catalogCategoryEntityTableName],
+                "cpath.entity_id IN (
+                SELECT
+                    DISTINCT(SUBSTRING_INDEX(SUBSTRING_INDEX(cce.path, '/', increment.i), '/', -1)) as path
+                FROM
+                    ($numbersSelect) as increment
+                        INNER JOIN $catalogCategoryEntityTableName as cpp
+                                   ON CHAR_LENGTH(cpp.path)
+                                          -CHAR_LENGTH(REPLACE(cpp.path, '/', ''))>=increment.i-1
+                                       AND cpp.$joinField = cce.$joinField
+                    )",
                 []
             );
 
         $attributeId = $this->getUrlKeyAttributeId();
-        $joinField = $connection->getAutoIncrementField($this->getTable($this->mainTable));
         $defaultValueTableAlias = 'url_key_default';
         $storeValueTableAlias = 'url_key_store';
         $defaultValueJoinCondition = sprintf(
@@ -200,7 +216,7 @@ class ProductCategoryDataQuery
                 $storeViewValueJoinCondition,
                 []
             )
-            ->group(['product_id', 'category_id', 's.code'])
+            ->group(['product_id', 'category_id', 's.code', 'ccp.position'])
             ->where('ccp.product_id IN (?)', $productIds)
             ->where('s.store_id != 0')
             ->where('s.code IN (?)', $storeViewCode)
@@ -244,5 +260,15 @@ class ProductCategoryDataQuery
         );
 
         return $tableName;
+    }
+
+    private function getSqlForCategoriesNestingNumbers(): string
+    {
+        $sql = 'SELECT 1 i';
+        for ($i = 1; self::MAX_NESTING_LEVEL >= $i; ++$i) {
+            $sql .= ' UNION ALL SELECT ' . $i;
+        }
+
+        return $sql;
     }
 }
