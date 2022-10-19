@@ -111,6 +111,20 @@ class Breadcrumbs
 
         foreach ($categories as $entityId => $categoryData) {
             foreach ($categoriesMapping[$entityId] as $childId) {
+                if (!isset(
+                    $categoryData['category_name'],
+                    $categoryData['category_level'],
+                    $categoryData['category_url_key'],
+                    $categoryData['category_url_path'])
+                ) {
+                    $this->logger->warning(
+                        \sprintf(
+                            "Category Feed Exporter: breadcrumbs data is empty: %s",
+                            \var_export($categoryData, true)
+                        )
+                    );
+                    continue;
+                }
                 $output[] = [
                     'categoryId' => $childId,
                     'storeViewCode' => $categoryData['store_view_code'],
@@ -147,6 +161,9 @@ class Breadcrumbs
 
         $cursor = $this->resourceConnection->getConnection()->query($select);
         while ($row = $cursor->fetch()) {
+            if (!isset($row['attribute_code'])) {
+                continue;
+            }
             $categories[$row['entity_id']]['store_view_code'] = $storeViewCode;
             $categories[$row['entity_id']]['category_' . $row['attribute_code']] = $row['value'];
             $categories[$row['entity_id']]['category_id'] = $row['entity_id'];
