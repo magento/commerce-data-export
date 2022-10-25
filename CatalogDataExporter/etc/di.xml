@@ -509,12 +509,12 @@
 
     <!-- Solution for command indexer:set-dimensions-mode -->
     <type name="Magento\Catalog\Model\Indexer\Product\Price\TableMaintainer">
-        <plugin name="data-exporter-create-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreatePriceReadTable" />
+        <plugin name="data-exporter-create-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreateViewAfterTableMaintenance" />
     </type>
     <type name="Magento\Catalog\Model\Indexer\Product\Price\ModeSwitcher">
-        <plugin name="data-exporter-mode-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreatePriceReadTable" />
+        <plugin name="data-exporter-mode-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreateViewAfterSwitchDimensionMode" />
     </type>
     <type name="\Magento\Catalog\Model\Indexer\Product\Price\ModeSwitcherConfiguration">
-        <plugin name="data-exporter-config-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreatePriceReadTable" />
+        <plugin name="data-exporter-config-price-view" type="Magento\CatalogDataExporter\Plugin\Index\SaveNewPriceIndexerMode" />
     </type>
 </config>
