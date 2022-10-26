@@ -101,7 +101,7 @@ class Products
         if (!$mappedProducts) {
             $productsIds = \implode(',', \array_unique(\array_column($values, 'productId')));
             $scopes = \implode(',', \array_unique(\array_column($values, 'scopeId')));
-            throw new UnableRetrieveData(
+            $this->logger->info(
                 \sprintf('Cannot collect product data for ids %s in scopes %s', $productsIds, $scopes)
             );
         }
