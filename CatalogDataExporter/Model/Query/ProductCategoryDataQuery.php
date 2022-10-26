@@ -35,6 +35,11 @@ class ProductCategoryDataQuery
     private $tableResolver;
 
     /**
+     * @var array
+     */
+    private $cache = [];
+
+    /**
      * ProductCategoryIdsQuery constructor.
      *
      * @param ResourceConnection $resourceConnection
@@ -67,7 +72,7 @@ class ProductCategoryDataQuery
      *
      * @return int
      */
-    private function getUrlKeyAttributeId() : int
+    private function getUrlPathAttributeId() : int
     {
         $connection = $this->resourceConnection->getConnection();
         return (int)$connection->fetchOne(
@@ -79,54 +84,18 @@ class ProductCategoryDataQuery
                     []
                 )
                 ->where('t.entity_table = ?', $this->mainTable)
-                ->where('a.attribute_code = ?', 'url_key')
+                ->where('a.attribute_code = ?', 'url_path')
         );
-    }
-
-    /**
-     * Get Root Category Ids
-     *
-     * @param string $storeViewCode
-     * @return int[]
-     */
-    private function getRootCategoryIds(string $storeViewCode) : array
-    {
-        $rootIds = [0];
-        $connection = $this->resourceConnection->getConnection();
-        $rows = $connection->fetchCol(
-            $connection->select()
-                ->from(
-                    ['store' => $this->getTable('store')],
-                    []
-                )
-                ->join(
-                    ['store_group' => $this->getTable('store_group')],
-                    'store.group_id = store_group.group_id',
-                    ['root_category_id']
-                )
-                ->where('store.store_id != 0')
-                ->where('store.code = ?', $storeViewCode)
-        );
-
-        if ($rows) {
-            foreach ($rows as $row) {
-                $rootIds[] = (int)$row;
-            }
-        }
-
-        return $rootIds;
     }
 
     /**
      * Get resource table for attribute
-     *
      * @param string $tableName
-     * @param string $type
      * @return string
      */
-    private function getAttributeTable(string $tableName, string $type) : string
+    private function getAttributeTable(string $tableName) : string
     {
-        return $this->resourceConnection->getTableName([$tableName, $type]);
+        return $this->resourceConnection->getTableName([$tableName, 'varchar']);
     }
 
     /**
@@ -138,81 +107,75 @@ class ProductCategoryDataQuery
      */
     public function getQuery(array $arguments, string $storeViewCode) : Select
     {
-        $productIds = isset($arguments['productId']) ? $arguments['productId'] : [];
+        $productIds = $arguments['productId'] ?? [];
         $connection = $this->resourceConnection->getConnection();
+
+        if (isset($this->cache[$storeViewCode])) {
+            extract($this->cache[$storeViewCode], EXTR_SKIP);
+        } else {
+            $categoryEntityTableName = $this->getTable($this->mainTable);
+            $joinField = $connection->getAutoIncrementField($categoryEntityTableName);
+            $storeId = $this->getStoreId($storeViewCode);
+            $attributeId = $this->getUrlPathAttributeId();
+            $categoryProductIndexTableName = $this->getIndexTableName($storeId);
+            $categoryAttributeTableName = $this->getAttributeTable($this->mainTable);
+            $this->cache[$storeViewCode] = compact(
+                'categoryEntityTableName',
+                'joinField',
+                'storeId',
+                'attributeId',
+                'categoryProductIndexTableName',
+                'categoryAttributeTableName'
+            );
+        }
+
         $select = $connection->select()
             ->from(
-                ['ccp' => $this->getIndexTableName($storeViewCode)],
+                ['ccp' => $categoryProductIndexTableName],
                 [
                     'productId' => 'ccp.product_id',
                     'categoryId' => 'ccp.category_id',
                     'productPosition' => 'ccp.position',
                 ]
             )
-            ->joinCross(
-                ['s' => $this->getTable('store')],
-                ['storeViewCode' => 's.code']
-            )
             ->join(
-                ['cce' => $this->resourceConnection->getTableName('catalog_category_entity')],
-                'cce.entity_id = ccp.category_id',
-                []
-            )
-            ->join(
-                ['cpath' => $this->resourceConnection->getTableName('catalog_category_entity')],
-                "find_in_set(cpath.entity_id, replace(cce.path, '/', ','))",
+                ['cce' => $categoryEntityTableName],
+                'ccp.category_id = cce.entity_id',
                 []
             );
 
-        $attributeId = $this->getUrlKeyAttributeId();
-        $joinField = $connection->getAutoIncrementField($this->getTable($this->mainTable));
         $defaultValueTableAlias = 'url_key_default';
         $storeValueTableAlias = 'url_key_store';
         $defaultValueJoinCondition = sprintf(
-            '%1$s.%2$s = cpath.%2$s AND %1$s.attribute_id = %3$d AND %1$s.store_id = 0',
+            '%1$s.%2$s = cce.%2$s AND %1$s.attribute_id = %3$d AND %1$s.store_id = 0',
             $defaultValueTableAlias,
             $joinField,
             $attributeId
         );
         $storeViewValueJoinCondition = sprintf(
-            '%1$s.%2$s = cpath.%2$s AND %1$s.attribute_id = %3$d AND %1$s.store_id = s.store_id',
+            '%1$s.%2$s = cce.%2$s AND %1$s.attribute_id = %3$d AND %1$s.store_id = %4$d',
             $storeValueTableAlias,
             $joinField,
-            $attributeId
-        );
-        $attributeValueExpression = sprintf(
-            'CASE WHEN %1$s.value IS NULL THEN %2$s.value ELSE %1$s.value END',
-            $storeValueTableAlias,
-            $defaultValueTableAlias
+            $attributeId,
+            $storeId
         );
         $select
-            ->joinLeft(
-                [
-                    $defaultValueTableAlias => $this->getAttributeTable($this->mainTable, 'varchar')
-                ],
+            ->joinRight(
+                [$defaultValueTableAlias => $categoryAttributeTableName],
                 $defaultValueJoinCondition,
                 []
             )
             ->joinLeft(
-                [
-                    $storeValueTableAlias => $this->getAttributeTable($this->mainTable, 'varchar')
-                ],
+                [$storeValueTableAlias => $categoryAttributeTableName],
                 $storeViewValueJoinCondition,
                 []
             )
-            ->group(['product_id', 'category_id', 's.code'])
             ->where('ccp.product_id IN (?)', $productIds)
-            ->where('s.store_id != 0')
-            ->where('s.code IN (?)', $storeViewCode)
-            ->where('cpath.level > ?', 1)
-            ->where('ccp.category_id NOT IN (?)', $this->getRootCategoryIds($storeViewCode))
+            ->having('categoryPath IS NOT NULL')
             ->columns(
                 [
                     'categoryPath' => new ColumnValueExpression(
-                        sprintf(
-                            "group_concat(%s order by cpath.level separator  '/' )",
-                            $attributeValueExpression
-                        )
+                        sprintf('IFNULL(%1$s.value, %2$s.value)', $storeValueTableAlias, $defaultValueTableAlias)
                     )
                 ]
             );
@@ -220,29 +183,35 @@ class ProductCategoryDataQuery
     }
 
     /**
-     * Returns name of catalog_category_product_index table based on currently used dimension.
-     *
      * @param string $storeViewCode
-     * @return string
+     * @return Int
      */
-    private function getIndexTableName(string $storeViewCode) : String
+    private function getStoreId(string $storeViewCode) : Int
     {
         $connection = $this->resourceConnection->getConnection();
-        $storeId = $connection->fetchOne(
+        return (int) $connection->fetchOne(
             $connection->select()
                 ->from(['store' => $this->getTable('store')],'store_id')
                 ->where('store.code = ?', $storeViewCode)
         );
+    }
+
+    /**
+     * Returns name of catalog_category_product_index table based on currently used dimension.
+     *
+     * @param int $storeId
+     * @return string
+     */
+    private function getIndexTableName(int $storeId) : String
+    {
         $catalogCategoryProductDimension = new Dimension(
             \Magento\Store\Model\Store::ENTITY,
             $storeId
         );
 
-        $tableName = $this->tableResolver->resolve(
+        return $this->tableResolver->resolve(
             AbstractAction::MAIN_INDEX_TABLE,
             [$catalogCategoryProductDimension]
         );
-
-        return $tableName;
     }
 }

@@ -72,13 +72,7 @@ class CategoryData
                     $key = implode('-', [$storeViewCode, $result['productId'], $result['categoryId']]);
                     $output[$key]['productId'] = $result['productId'];
                     $output[$key]['storeViewCode'] = $storeViewCode;
-                    $output[$key]['categoryData'] = [
-                        'productId' => $result['productId'],
-                        'storeViewCode' => $result['storeViewCode'],
-                        'categoryId' => $result['categoryId'],
-                        'categoryPath' => $result['categoryPath'],
-                        'productPosition' => $result['productPosition']
-                    ];
+                    $output[$key]['categoryData'] = $result;
                 }
             }
         } catch (\Exception $exception) {
