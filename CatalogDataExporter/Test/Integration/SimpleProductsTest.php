@@ -54,4 +54,35 @@ class SimpleProductsTest extends AbstractProductTestHelper
             }
         }
     }
+
+    /**
+     * Validate simple product data
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture Magento/CatalogDataExporter/_files/setup_simple_products_without_date.php
+     *
+     * @return void
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
+     * @throws \Zend_Db_Statement_Exception
+     * @throws \Throwable
+     */
+    public function testSimpleProductsWithoutCreatedAtAndUpdatedAt() : void
+    {
+        $sku = 'simple1';
+        $storeViewCode = 'default';
+        $store = $this->storeManager->getStore($storeViewCode);
+
+        $product = $this->productRepository->get($sku, false, $store->getId());
+        //$product->setTypeInstance(Bootstrap::getObjectManager()->create(Simple::class));
+
+        $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
+
+        $this->assertNotEmpty($extractedProduct['feedData']['createdAt']);
+        $this->assertNotEmpty($extractedProduct['feedData']['updatedAt']);
+
+        $this->assertNotEquals('0000-00-00 00:00:00', $extractedProduct['feedData']['createdAt']);
+        $this->assertNotEquals('0000-00-00 00:00:00', $extractedProduct['feedData']['updatedAt']);
+    }
 }

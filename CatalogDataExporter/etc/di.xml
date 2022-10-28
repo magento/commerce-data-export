@@ -20,6 +20,7 @@
                 <item name="taxClass" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\TaxClassFormatter</item>
                 <item name="scopes" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Formatter\ScopeFormatter</item>
                 <item name="description" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\DescriptionFormatter</item>
+                <item name="dates" xsi:type="object">Magento\CatalogDataExporter\Model\Provider\Product\Formatter\DateFormatter</item>
             </argument>
         </arguments>
     </type>
