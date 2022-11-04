@@ -58,6 +58,37 @@ class GroupedProductsTest extends AbstractProductTestHelper
     }
 
     /**
+     * Validate grouped product options data in multiple website
+     *
+     * @param array $groupedProductOptionsDataProvider
+     *
+     * @magentoDataFixture Magento/Store/_files/second_website_with_two_stores.php
+     * @magentoDataFixture Magento/GroupedProduct/_files/product_grouped_in_multiple_websites.php
+     * @dataProvider getGroupedProductOptionsDataProvider
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     *
+     * @return void
+     */
+    public function testGroupedProductOptionsInMultipleWebsites(array $groupedProductOptionsDataProvider) : void
+    {
+        $storeViews = ['fixture_second_store','fixture_third_store'];
+
+        foreach ($storeViews as $store) {
+            $extractedProduct = $this->getExtractedProduct('grouped-product', $store);
+            $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
+
+            // Assert values are equal for fixture_second_store
+            $groupedProductOptionsDataProvider['feedData']['storeViewCode'] = $store;
+            foreach ($groupedProductOptionsDataProvider as $key => $expectedData) {
+                $diff = $this->arrayUtils->recursiveDiff($expectedData, $extractedProduct[$key]);
+                self::assertEquals([], $diff, 'Actual feed data doesn\'t equal to expected data');
+            }
+        }
+    }
+
+    /**
      * Get grouped product options data provider
      *
      * @return array

@@ -73,15 +73,16 @@ class GroupedProductOptions implements ProductOptionProviderInterface
                 );
 
                 while ($row = $cursor->fetch()) {
-                    $optionValues[$row['parentId']][] = $this->formatOptionsValueRow($row);
+                    $key = $this->getOptionKey($row['parentId'], $storeViewCode);
+                    $optionValues[$key][] = $this->formatOptionsValueRow($row);
 
-                    $output[$row['parentId']] = [
+                    $output[$key] = [
                         'productId' => $row['parentId'],
                         'storeViewCode' => $storeViewCode,
                         'optionsV2' => [
                             'type' => Grouped::TYPE_CODE,
                             'id' => $row['parentId'],
-                            'values' => $optionValues[$row['parentId']],
+                            'values' => $optionValues[$key],
                         ]
                     ];
                 }
@@ -92,6 +93,19 @@ class GroupedProductOptions implements ProductOptionProviderInterface
         }
 
         return $output;
+    }
+
+    /**
+     * Generate option key by concatenating parentId, storeViewCode
+     *
+     * @param string $parentId
+     * @param string $storeViewCode
+     *
+     * @return string
+     */
+    private function getOptionKey(string $parentId, string $storeViewCode): string
+    {
+        return $parentId . $storeViewCode;
     }
 
     /**
