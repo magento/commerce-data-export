@@ -60,6 +60,16 @@ class FeedIndexMetadata
     private $sourceTableIdentityField;
 
     /**
+     * @var int
+     */
+    private $fullReindexDaysLimit;
+
+    /**
+     * @var string
+     */
+    private $sourceTableFieldOnFullReIndexDaysLimit;
+
+    /**
      * @param string $feedName
      * @param string $sourceTableName
      * @param string $sourceTableField
@@ -79,7 +89,9 @@ class FeedIndexMetadata
         string $feedTableField,
         array $feedTableMutableColumns,
         int $batchSize = 100,
-        string $sourceTableIdentityField = null
+        string $sourceTableIdentityField = null,
+        int $fullReIndexDaysLimit = 0,
+        string $sourceTableFieldOnFullReIndexDaysLimit = 'updated_at'
     ) {
         $this->feedName = $feedName;
         $this->sourceTableName = $sourceTableName;
@@ -90,6 +102,8 @@ class FeedIndexMetadata
         $this->feedTableMutableColumns = $feedTableMutableColumns;
         $this->batchSize = $batchSize;
         $this->sourceTableIdentityField = $sourceTableIdentityField ?? $sourceTableField;
+        $this->fullReindexDaysLimit = $fullReIndexDaysLimit;
+        $this->sourceTableFieldOnFullReIndexDaysLimit = $sourceTableFieldOnFullReIndexDaysLimit;
     }
 
     /**
@@ -180,5 +194,23 @@ class FeedIndexMetadata
     public function getFeedTableMutableColumns(): array
     {
         return $this->feedTableMutableColumns;
+    }
+
+    /**
+     * Determines the amount of days back when triggering a full reindex
+     * @return int the amount in days, 0 means no limit
+     */
+    public function getFullReIndexDaysLimit(): int
+    {
+        return $this->fullReindexDaysLimit;
+    }
+
+    /**
+     * Table field name to use when full reindex is limited by days back (see fullReindexDaysLimit)
+     * @return string the field name
+     */
+    public function getSourceTableFieldOnFullReIndexDaysLimit(): string
+    {
+        return $this->sourceTableFieldOnFullReIndexDaysLimit;
     }
 }
