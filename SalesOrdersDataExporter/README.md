@@ -30,7 +30,8 @@ Current time will be used by default
 ```
 
 ### Reindexing
-To export full orders data simply run reindex command:
+To export orders data simply run reindex command:
 ```shell
 bin/magento indexer:reindex sales_order_data_exporter_v2
 ```
+Note currently reindexing is limited to orders modified in the last 7 days.

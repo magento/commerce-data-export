@@ -62,12 +62,12 @@ class FeedIndexMetadata
     /**
      * @var int
      */
-    private $fullReindexDaysLimit;
+    private $fullReindexSecondsLimit;
 
     /**
      * @var string
      */
-    private $sourceTableFieldOnFullReIndexDaysLimit;
+    private $sourceTableFieldOnFullReIndexLimit;
 
     /**
      * @param string $feedName
@@ -79,6 +79,8 @@ class FeedIndexMetadata
      * @param array $feedTableMutableColumns
      * @param int $batchSize
      * @param string|null $sourceTableIdentityField
+     * @param int $fullReIndexSecondsLimit
+     * @param string $sourceTableFieldOnFullReIndexLimit
      */
     public function __construct(
         string $feedName,
@@ -90,8 +92,8 @@ class FeedIndexMetadata
         array $feedTableMutableColumns,
         int $batchSize = 100,
         string $sourceTableIdentityField = null,
-        int $fullReIndexDaysLimit = 0,
-        string $sourceTableFieldOnFullReIndexDaysLimit = 'updated_at'
+        int $fullReIndexSecondsLimit = 0,
+        string $sourceTableFieldOnFullReIndexLimit = 'updated_at'
     ) {
         $this->feedName = $feedName;
         $this->sourceTableName = $sourceTableName;
@@ -102,8 +104,8 @@ class FeedIndexMetadata
         $this->feedTableMutableColumns = $feedTableMutableColumns;
         $this->batchSize = $batchSize;
         $this->sourceTableIdentityField = $sourceTableIdentityField ?? $sourceTableField;
-        $this->fullReindexDaysLimit = $fullReIndexDaysLimit;
-        $this->sourceTableFieldOnFullReIndexDaysLimit = $sourceTableFieldOnFullReIndexDaysLimit;
+        $this->fullReindexSecondsLimit = $fullReIndexSecondsLimit;
+        $this->sourceTableFieldOnFullReIndexLimit = $sourceTableFieldOnFullReIndexLimit;
     }
 
     /**
@@ -197,20 +199,20 @@ class FeedIndexMetadata
     }
 
     /**
-     * Determines the amount of days back when triggering a full reindex
-     * @return int the amount in days, 0 means no limit
+     * Determines the amount of seconds back in time when triggering a full reindex
+     * @return int the amount in seconds, 0 means no limit
      */
-    public function getFullReIndexDaysLimit(): int
+    public function getFullReIndexSecondsLimit(): int
     {
-        return $this->fullReindexDaysLimit;
+        return $this->fullReindexSecondsLimit;
     }
 
     /**
-     * Table field name to use when full reindex is limited by days back (see fullReindexDaysLimit)
+     * Table field name to use when full reindex is limited (see fullReindexSecondsLimit)
      * @return string the field name
      */
-    public function getSourceTableFieldOnFullReIndexDaysLimit(): string
+    public function getSourceTableFieldOnFullReIndexLimit(): string
     {
-        return $this->sourceTableFieldOnFullReIndexDaysLimit;
+        return $this->sourceTableFieldOnFullReIndexLimit;
     }
 }

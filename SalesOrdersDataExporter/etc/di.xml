@@ -19,8 +19,8 @@
             <argument name="feedTableMutableColumns" xsi:type="array">
                 <item name="feed_data" xsi:type="string">feed_data</item>
             </argument>
-            <argument name="fullReIndexDaysLimit" xsi:type="number">7</argument>
-            <argument name="sourceTableFieldOnFullReIndexDaysLimit" xsi:type="string">updated_at</argument>
+            <argument name="fullReIndexSecondsLimit" xsi:type="number">604800</argument> <!-- 7 days -->
+            <argument name="sourceTableFieldOnFullReIndexLimit" xsi:type="string">updated_at</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">

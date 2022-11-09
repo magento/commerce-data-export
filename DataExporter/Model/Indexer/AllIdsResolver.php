@@ -85,12 +85,12 @@ class AllIdsResolver
             )
             ->where($whereClause, $lastKnownId);
 
-        if ($metadata->getFullReIndexDaysLimit() != 0) {
+        if ($metadata->getFullReIndexSecondsLimit() != 0) {
             $select->where(sprintf(
-                "s.%s >= DATE_SUB(STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s'), INTERVAL %d DAY)",
-                $metadata->getSourceTableFieldOnFullReIndexDaysLimit(),
+                "s.%s >= DATE_SUB(STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s'), INTERVAL %d SECOND)",
+                $metadata->getSourceTableFieldOnFullReIndexLimit(),
                 $dateTime->format('Y-m-d H:i:s'),
-                $metadata->getFullReIndexDaysLimit()
+                $metadata->getFullReIndexSecondsLimit()
             ));
         }
 
