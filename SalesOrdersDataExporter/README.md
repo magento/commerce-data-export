@@ -34,4 +34,8 @@ To export orders data simply run reindex command:
 ```shell
 bin/magento indexer:reindex sales_order_data_exporter_v2
 ```
-Note currently reindexing is limited to orders modified in the last 7 days.
+
+Reindexing is currently limited to orders modified in the last 7 days.
+
+Note that `commerce-data-export:orders:link` will assign uuids to the orders older than last 7 days but only orders 
+modified within that timeframe will be exported. 
