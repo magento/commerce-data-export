@@ -60,6 +60,16 @@ class FeedIndexMetadata
     private $sourceTableIdentityField;
 
     /**
+     * @var int
+     */
+    private $fullReindexSecondsLimit;
+
+    /**
+     * @var string
+     */
+    private $sourceTableFieldOnFullReIndexLimit;
+
+    /**
      * @param string $feedName
      * @param string $sourceTableName
      * @param string $sourceTableField
@@ -69,6 +79,8 @@ class FeedIndexMetadata
      * @param array $feedTableMutableColumns
      * @param int $batchSize
      * @param string|null $sourceTableIdentityField
+     * @param int $fullReIndexSecondsLimit
+     * @param string $sourceTableFieldOnFullReIndexLimit
      */
     public function __construct(
         string $feedName,
@@ -79,7 +91,9 @@ class FeedIndexMetadata
         string $feedTableField,
         array $feedTableMutableColumns,
         int $batchSize = 100,
-        string $sourceTableIdentityField = null
+        string $sourceTableIdentityField = null,
+        int $fullReIndexSecondsLimit = 0,
+        string $sourceTableFieldOnFullReIndexLimit = 'updated_at'
     ) {
         $this->feedName = $feedName;
         $this->sourceTableName = $sourceTableName;
@@ -90,6 +104,8 @@ class FeedIndexMetadata
         $this->feedTableMutableColumns = $feedTableMutableColumns;
         $this->batchSize = $batchSize;
         $this->sourceTableIdentityField = $sourceTableIdentityField ?? $sourceTableField;
+        $this->fullReindexSecondsLimit = $fullReIndexSecondsLimit;
+        $this->sourceTableFieldOnFullReIndexLimit = $sourceTableFieldOnFullReIndexLimit;
     }
 
     /**
@@ -180,5 +196,23 @@ class FeedIndexMetadata
     public function getFeedTableMutableColumns(): array
     {
         return $this->feedTableMutableColumns;
+    }
+
+    /**
+     * Determines the amount of seconds back in time when triggering a full reindex
+     * @return int the amount in seconds, 0 means no limit
+     */
+    public function getFullReIndexSecondsLimit(): int
+    {
+        return $this->fullReindexSecondsLimit;
+    }
+
+    /**
+     * Table field name to use when full reindex is limited (see fullReindexSecondsLimit)
+     * @return string the field name
+     */
+    public function getSourceTableFieldOnFullReIndexLimit(): string
+    {
+        return $this->sourceTableFieldOnFullReIndexLimit;
     }
 }
