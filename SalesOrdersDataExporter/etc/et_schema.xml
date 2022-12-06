@@ -20,10 +20,10 @@
         <field name="externalId" type="OrderExternalId" provider="Magento\SalesOrdersDataExporter\Model\Provider\ExternalOrderId">
             <using field="commerceOrderId"/>
         </field>
-        <field name="createdAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
+        <field name="createdAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="commerceOrderId"/>
         </field>
-        <field name="updatedAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
+        <field name="updatedAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="commerceOrderId"/>
         </field>
         <field name="state" type="Int" provider="Magento\SalesOrdersDataExporter\Model\Provider\State">

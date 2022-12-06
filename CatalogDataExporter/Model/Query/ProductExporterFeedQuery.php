@@ -49,7 +49,7 @@ class ProductExporterFeedQuery
         $connection = $this->resourceConnection->getConnection();
         $select = $connection->select()
             ->from(
-                ['cdep' => $this->feedIndexMetadata->getFeedTableName()],
+                ['cdep' => $this->resourceConnection->getTableName($this->feedIndexMetadata->getFeedTableName())],
                 ['cdep.id', 'cdep.store_view_code']
             );
         if (empty($productIds) || empty($websiteIds)) {

@@ -137,7 +137,7 @@ class InventoryStockQuery
                 []
             )->joinInner(
                 [
-                    'source_item' => 'inventory_source_item'
+                    'source_item' => $this->resourceConnection->getTableName('inventory_source_item')
                 ],
                 $connection->quoteInto(
                     'source_item.source_code = ? and source_item.sku = isi.sku',

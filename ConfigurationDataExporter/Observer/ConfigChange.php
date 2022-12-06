@@ -114,10 +114,10 @@ class ConfigChange implements \Magento\Framework\Event\ObserverInterface
             $select = $connection->select()
                 ->distinct()
                 ->from(
-                    ['s' => $connection->getTableName('store')],
+                    ['s' => $collection->getTable('store')],
                     ['store_id']
                 )->joinLeft(
-                    ['c' => $connection->getTableName('core_config_data')],
+                    ['c' => $collection->getTable('core_config_data')],
                     '(s.store_id = c.scope_id AND c.scope = "stores") OR '.
                     '(s.website_id = c.scope_id AND c.scope = "websites")',
                     []

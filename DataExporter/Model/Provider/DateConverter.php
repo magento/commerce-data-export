@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\SalesOrdersDataExporter\Model\Provider;
+namespace Magento\DataExporter\Model\Provider;
 
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\DataExporter\Export\Request\Node;
