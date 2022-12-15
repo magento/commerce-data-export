@@ -25,7 +25,7 @@ class DateTimeRangeOrderIdsProvider implements EntityIdsProviderInterface
     private DateTime $from;
     private DateTime $to;
 
-    public function __construct(ResourceConnection $resourceConnection, BatchIteratorFactory $batchIteratorFactory, DateTime $to, DateTime $from)
+    public function __construct(ResourceConnection $resourceConnection, BatchIteratorFactory $batchIteratorFactory, DateTime $from, DateTime $to)
     {
         $this->from = $from;
         $this->to = $to;
@@ -41,8 +41,9 @@ class DateTimeRangeOrderIdsProvider implements EntityIdsProviderInterface
      */
     public function getAllIds(FeedIndexMetadata $metadata): ?Generator
     {
+        $fieldName = $metadata->getFeedIdentity();
         $tableName = $this->resourceConnection->getTableName($metadata->getSourceTableName());
-        return $this->findOrders($this->from, $this->to, $tableName);
+        return $this->findOrders($this->from, $this->to, $fieldName, $tableName);
     }
 
     /**
@@ -53,16 +54,16 @@ class DateTimeRangeOrderIdsProvider implements EntityIdsProviderInterface
      */
     public function getAffectedIds(FeedIndexMetadata $metadata, array $ids): array
     {
-        throw new Exception('Not implemented, only `getAllIds` is supported for this implementation');
+        return $ids;
     }
 
-    private function findOrders(DateTime $from, DateTime $to, $tableName, int $batchSize = 50): Generator
+    private function findOrders(DateTime $from, DateTime $to, string $fieldName, string $tableName, int $batchSize = 100): Generator
     {
         $connection = $this->resourceConnection->getConnection();
         $select = $connection->select()
             ->from(
                 ['order' => $tableName],
-                ['entity_id']
+                [$fieldName => 'entity_id']
             )
             ->where('order.created_at >= ?', $from)
             ->where('order.created_at <= ?', $to);
@@ -71,12 +72,14 @@ class DateTimeRangeOrderIdsProvider implements EntityIdsProviderInterface
             [
                 'select' => $select,
                 'batchSize' => $batchSize,
+                'correlationName' => 'order',
                 'rangeField' => 'entity_id',
+                'rangeFieldAlias' => $fieldName,
             ]
         );
 
         foreach ($iterator as $batchSelect) {
-            yield $connection->fetchCol($batchSelect);
+            yield $connection->fetchAll($batchSelect);
         }
     }
 }

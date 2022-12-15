@@ -51,6 +51,18 @@
         </arguments>
     </virtualType>
 
+    <type name="Magento\SalesOrdersDataExporter\Console\Command\Export">
+        <arguments>
+            <argument name="metadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OrdersExportFeedIndexMetadata</argument>
+            <argument name="processor" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\DateTimeRangeOrderProcessor</argument>
+        </arguments>
+    </type>
+    <type name="Magento\SalesOrdersDataExporter\Model\Indexer\DateTimeRangeOrderProcessor">
+        <arguments>
+            <argument name="serializer" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OrdersDataSerializer</argument>
+        </arguments>
+    </type>
+
     <!-- Providers -->
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\OrderItems" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>

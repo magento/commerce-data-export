@@ -7,11 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\SalesOrdersDataExporter\Model\Indexer;
 
-use DateTime;
-use Exception;
-use Generator;
 use Magento\DataExporter\Model\Indexer\DataSerializerInterface;
-use Magento\DataExporter\Model\Indexer\EntityIdsProviderInterface;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\DataExporter\Model\Indexer\FeedIndexProcessorInterface;
 use Magento\Framework\App\ResourceConnection;

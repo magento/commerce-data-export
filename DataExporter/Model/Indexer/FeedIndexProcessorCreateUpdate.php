@@ -56,6 +56,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         foreach ($idsProvider->getAffectedIds($metadata, $ids) as $id) {
             $arguments[] = [$feedIdentity => $id];
         }
+        var_dump($arguments);
         $data = $this->exportProcessor->process($metadata->getFeedName(), $arguments);
         $chunks = array_chunk($data, $metadata->getBatchSize());
         $connection = $this->resourceConnection->getConnection();
@@ -83,6 +84,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     ): void {
         $this->truncateIndexTable($metadata);
         foreach ($idsProvider->getAllIds($metadata) as $batch) {
+            var_dump($batch);
             $ids = \array_column($batch, $metadata->getFeedIdentity());
             $this->partialReindex($metadata, $serializer, $idsProvider, $ids);
         }
