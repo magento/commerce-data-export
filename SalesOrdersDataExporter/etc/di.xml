@@ -23,6 +23,19 @@
             <argument name="sourceTableFieldOnFullReIndexLimit" xsi:type="string">updated_at</argument>
         </arguments>
     </virtualType>
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersExportFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="feedName" xsi:type="string">salesOrdersExportV2</argument>
+            <argument name="feedIdentity" xsi:type="string">commerceOrderId</argument>
+            <argument name="sourceTableName" xsi:type="string">sales_order</argument>
+            <argument name="sourceTableField" xsi:type="string">entity_id</argument>
+            <argument name="feedTableName" xsi:type="string">sales_data_export_exporter_orders_v2</argument>
+            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableMutableColumns" xsi:type="array">
+                <item name="feed_data" xsi:type="string">feed_data</item>
+            </argument>
+        </arguments>
+    </virtualType>
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexMetadata</argument>
@@ -188,6 +201,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="link" xsi:type="object">Magento\SalesOrdersDataExporter\Console\Command\Link</item>
+                <item name="export" xsi:type="object">Magento\SalesOrdersDataExporter\Console\Command\Export</item>
             </argument>
         </arguments>
     </type>
