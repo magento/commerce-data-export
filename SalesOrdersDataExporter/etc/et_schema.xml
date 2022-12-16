@@ -10,6 +10,9 @@
         <field name="salesOrdersV2" type="OrderV2" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\Orders">
             <using field="commerceOrderId"/>
         </field>
+        <field name="salesOrdersExportV2" type="OrderV2" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\Orders">
+            <using field="commerceOrderId"/>
+        </field>
     </record>
     <record name="OrderV2">
         <field name="orderId" type="UUID" provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\Order">
@@ -107,7 +110,7 @@
         <field name="taxAmount" type="Float"/>
         <field name="totalAmount" type="Float"/>
         <field name="weight" type="Float"/>
-        <field name="updatedAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
+        <field name="updatedAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="entityId"/>
         </field>
         <field name="additionalInformation" type="CustomAttribute" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\OrderItemCustomAttribute">
@@ -161,7 +164,7 @@
         </field>
         <field name="entityId" type="String"/>
         <field name="state" type="Int"/>
-        <field name="createdAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
+        <field name="createdAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="entityId"/>
         </field>
         <field name="creditMemoComments" type="String" repeated="true"/>
@@ -202,7 +205,7 @@
         <field name="entityId" type="ID"/>
         <field name="txnId" type="String"/>
         <field name="type" type="String"/>
-        <field name="createdAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
+        <field name="createdAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="entityId"/>
         </field>
     </record>
@@ -210,10 +213,10 @@
         <field name="shipmentId" type="UUID" provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\Shipment"> <!--shipment UUID -->
             <using field="shipment_id"/>
         </field>
-        <field name="createdAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
+        <field name="createdAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="shipment_id"/>
         </field>
-        <field name="updatedAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
+        <field name="updatedAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="shipment_id"/>
         </field>
         <field name="trackingInfo" type="TrackingInfo" repeated="false" provider="Magento\SalesOrdersDataExporter\Model\Provider\TrackingInfo">

@@ -8,6 +8,81 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
     <query name="salesOrdersV2">
         <source name="sales_order">
+            <alias>Myalias</alias>
+            <attribute name="entity_id" alias="commerceOrderId"/>
+            <attribute name="increment_id" alias="commerceOrderNumber"/>
+            <attribute name="created_at" alias="createdAt"/>
+            <attribute name="updated_at" alias="updatedAt"/>
+            <attribute name="state"/>
+            <attribute name="status"/>
+            <attribute name="base_total_invoiced" alias="totalInvoiced"/>
+            <attribute name="total_qty_ordered" alias="totalQtyOrdered"/>
+            <attribute name="is_virtual" alias="isVirtual"/>
+            <attribute name="subtotal" alias="grandTotal"/>
+            <attribute name="order_currency_code" alias="currency"/>
+            <attribute name="store_id" alias="storeId"/>
+            <attribute name="customer_email" alias="customerEmail"/>
+            <attribute name="customer_note" alias="customerNote"/>
+            <filter glue="and">
+                <condition attribute="entity_id" operator="in" type="placeholder">commerceOrderId</condition>
+            </filter>
+            <link-source name="sales_order_payment" link-type="inner">
+                <attribute name="base_amount_paid_online" alias="amountCapturedOnline"/>
+                <attribute name="base_amount_refunded_online" alias="amountRefundedOnline"/>
+                <attribute name="base_amount_authorized" alias="amountAuthorized"/>
+                <attribute name="base_amount_paid" alias="amountPaid"/>
+                <attribute name="base_amount_refunded" alias="amountRefunded"/>
+                <attribute name="base_amount_canceled" alias="amountCanceled"/>
+                <using glue="and">
+                    <condition attribute="parent_id" operator="eq" type="identifier">entity_id</condition>
+                </using>
+                <!-- for Payment type -->
+                <attribute name="method" alias="paymentMethodCode"/>
+                <attribute name="additional_information" alias="additionalInformation"/>
+            </link-source>
+            <!-- for Payment type start -->
+            <attribute name="base_subtotal" alias="totalAmount"/>
+            <attribute name="base_tax_amount" alias="taxAmount"/>
+            <!-- for Payment type end -->
+
+            <!-- for Shipping type start -->
+            <attribute name="shipping_method" alias="shippingMethodCode"/>
+            <attribute name="shipping_description" alias="shippingMethodName"/>
+            <attribute name="shipping_amount" alias="shippingAmount"/>
+            <attribute name="shipping_tax_amount" alias="shippingTax"/>
+            <!-- for Shipping type end -->
+
+            <!-- select orders only with assigned UUID. DO NOT change inner to left! -->
+            <link-source name="data_exporter_uuid" link-type="inner">
+                <attribute name="uuid"/>
+                <using glue="and">
+                    <condition attribute="entity_id" operator="eq" type="identifier">entity_id</condition>
+                    <condition attribute="type" operator="eq" type="value">order</condition>
+                </using>
+            </link-source>
+            <!-- left join used to handle case: exports orders for store view which has being deleted -->
+            <link-source name="store" link-type="left">
+                <attribute name="code" alias="storeViewCode"/>
+                <using glue="and">
+                    <condition attribute="store_id" operator="eq" type="identifier">store_id</condition>
+                </using>
+            </link-source>
+            <link-source name="store_group" link-type="left">
+                <attribute name="code" alias="storeCode"/>
+                <using glue="and">
+                    <condition attribute="group_id" operator="eq" type="identifier">store.group_id</condition>
+                </using>
+            </link-source>
+            <link-source name="store_website" link-type="left">
+                <attribute name="code" alias="websiteCode"/>
+                <using glue="and">
+                    <condition attribute="website_id" operator="eq" type="identifier">store.website_id</condition>
+                </using>
+            </link-source>
+        </source>
+    </query>
+    <query name="salesOrdersExportV2">
+        <source name="sales_order">
             <attribute name="entity_id" alias="commerceOrderId"/>
             <attribute name="increment_id" alias="commerceOrderNumber"/>
             <attribute name="created_at" alias="createdAt"/>
