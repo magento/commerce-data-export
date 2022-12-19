@@ -3,152 +3,154 @@
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
- */
+*/
 -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
     <query name="salesOrdersV2">
         <source name="sales_order">
-            <alias>Myalias</alias>
-            <attribute name="entity_id" alias="commerceOrderId"/>
-            <attribute name="increment_id" alias="commerceOrderNumber"/>
-            <attribute name="created_at" alias="createdAt"/>
-            <attribute name="updated_at" alias="updatedAt"/>
-            <attribute name="state"/>
-            <attribute name="status"/>
-            <attribute name="base_total_invoiced" alias="totalInvoiced"/>
-            <attribute name="total_qty_ordered" alias="totalQtyOrdered"/>
-            <attribute name="is_virtual" alias="isVirtual"/>
-            <attribute name="subtotal" alias="grandTotal"/>
-            <attribute name="order_currency_code" alias="currency"/>
-            <attribute name="store_id" alias="storeId"/>
-            <attribute name="customer_email" alias="customerEmail"/>
-            <attribute name="customer_note" alias="customerNote"/>
+            <attribute name="entity_id" alias="commerceOrderId" />
+            <attribute name="increment_id" alias="commerceOrderNumber" />
+            <attribute name="created_at" alias="createdAt" />
+            <attribute name="updated_at" alias="updatedAt" />
+            <attribute name="state" />
+            <attribute name="status" />
+            <attribute name="base_total_invoiced" alias="totalInvoiced" />
+            <attribute name="total_qty_ordered" alias="totalQtyOrdered" />
+            <attribute name="is_virtual" alias="isVirtual" />
+            <attribute name="subtotal" alias="grandTotal" />
+            <attribute name="order_currency_code" alias="currency" />
+            <attribute name="store_id" alias="storeId" />
+            <attribute name="customer_email" alias="customerEmail" />
+            <attribute name="customer_note" alias="customerNote" />
             <filter glue="and">
                 <condition attribute="entity_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
             <link-source name="sales_order_payment" link-type="inner">
-                <attribute name="base_amount_paid_online" alias="amountCapturedOnline"/>
-                <attribute name="base_amount_refunded_online" alias="amountRefundedOnline"/>
-                <attribute name="base_amount_authorized" alias="amountAuthorized"/>
-                <attribute name="base_amount_paid" alias="amountPaid"/>
-                <attribute name="base_amount_refunded" alias="amountRefunded"/>
-                <attribute name="base_amount_canceled" alias="amountCanceled"/>
+                <attribute name="base_amount_paid_online" alias="amountCapturedOnline" />
+                <attribute name="base_amount_refunded_online" alias="amountRefundedOnline" />
+                <attribute name="base_amount_authorized" alias="amountAuthorized" />
+                <attribute name="base_amount_paid" alias="amountPaid" />
+                <attribute name="base_amount_refunded" alias="amountRefunded" />
+                <attribute name="base_amount_canceled" alias="amountCanceled" />
                 <using glue="and">
                     <condition attribute="parent_id" operator="eq" type="identifier">entity_id</condition>
                 </using>
                 <!-- for Payment type -->
-                <attribute name="method" alias="paymentMethodCode"/>
-                <attribute name="additional_information" alias="additionalInformation"/>
+                <attribute name="method" alias="paymentMethodCode" />
+                <attribute name="additional_information" alias="additionalInformation" />
             </link-source>
             <!-- for Payment type start -->
-            <attribute name="base_subtotal" alias="totalAmount"/>
-            <attribute name="base_tax_amount" alias="taxAmount"/>
+            <attribute name="base_subtotal" alias="totalAmount" />
+            <attribute name="base_tax_amount" alias="taxAmount" />
             <!-- for Payment type end -->
 
             <!-- for Shipping type start -->
-            <attribute name="shipping_method" alias="shippingMethodCode"/>
-            <attribute name="shipping_description" alias="shippingMethodName"/>
-            <attribute name="shipping_amount" alias="shippingAmount"/>
-            <attribute name="shipping_tax_amount" alias="shippingTax"/>
+            <attribute name="shipping_method" alias="shippingMethodCode" />
+            <attribute name="shipping_description" alias="shippingMethodName" />
+            <attribute name="shipping_amount" alias="shippingAmount" />
+            <attribute name="shipping_tax_amount" alias="shippingTax" />
             <!-- for Shipping type end -->
 
             <!-- select orders only with assigned UUID. DO NOT change inner to left! -->
             <link-source name="data_exporter_uuid" link-type="inner">
-                <attribute name="uuid"/>
+                <attribute name="uuid" />
                 <using glue="and">
                     <condition attribute="entity_id" operator="eq" type="identifier">entity_id</condition>
                     <condition attribute="type" operator="eq" type="value">order</condition>
                 </using>
             </link-source>
-            <!-- left join used to handle case: exports orders for store view which has being deleted -->
+            <!-- left join used to handle case: exports orders for store view which has being
+            deleted -->
             <link-source name="store" link-type="left">
-                <attribute name="code" alias="storeViewCode"/>
+                <attribute name="code" alias="storeViewCode" />
                 <using glue="and">
                     <condition attribute="store_id" operator="eq" type="identifier">store_id</condition>
                 </using>
             </link-source>
             <link-source name="store_group" link-type="left">
-                <attribute name="code" alias="storeCode"/>
+                <attribute name="code" alias="storeCode" />
                 <using glue="and">
                     <condition attribute="group_id" operator="eq" type="identifier">store.group_id</condition>
                 </using>
             </link-source>
             <link-source name="store_website" link-type="left">
-                <attribute name="code" alias="websiteCode"/>
+                <attribute name="code" alias="websiteCode" />
                 <using glue="and">
                     <condition attribute="website_id" operator="eq" type="identifier">store.website_id</condition>
                 </using>
             </link-source>
         </source>
     </query>
-    <query name="salesOrdersExportV2">
+    <query name="salesOrdersOnDemmandExport">
         <source name="sales_order">
-            <attribute name="entity_id" alias="commerceOrderId"/>
-            <attribute name="increment_id" alias="commerceOrderNumber"/>
-            <attribute name="created_at" alias="createdAt"/>
-            <attribute name="updated_at" alias="updatedAt"/>
-            <attribute name="state"/>
-            <attribute name="status"/>
-            <attribute name="base_total_invoiced" alias="totalInvoiced"/>
-            <attribute name="total_qty_ordered" alias="totalQtyOrdered"/>
-            <attribute name="is_virtual" alias="isVirtual"/>
-            <attribute name="subtotal" alias="grandTotal"/>
-            <attribute name="order_currency_code" alias="currency"/>
-            <attribute name="store_id" alias="storeId"/>
-            <attribute name="customer_email" alias="customerEmail"/>
-            <attribute name="customer_note" alias="customerNote"/>
+            <attribute name="entity_id" alias="commerceOrderId" />
+            <attribute name="increment_id" alias="commerceOrderNumber" />
+            <attribute name="created_at" alias="createdAt" />
+            <attribute name="updated_at" alias="updatedAt" />
+            <attribute name="state" />
+            <attribute name="status" />
+            <attribute name="base_total_invoiced" alias="totalInvoiced" />
+            <attribute name="total_qty_ordered" alias="totalQtyOrdered" />
+            <attribute name="is_virtual" alias="isVirtual" />
+            <attribute name="subtotal" alias="grandTotal" />
+            <attribute name="order_currency_code" alias="currency" />
+            <attribute name="store_id" alias="storeId" />
+            <attribute name="customer_email" alias="customerEmail" />
+            <attribute name="customer_note" alias="customerNote" />
             <filter glue="and">
                 <condition attribute="entity_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
             <link-source name="sales_order_payment" link-type="inner">
-                <attribute name="base_amount_paid_online" alias="amountCapturedOnline"/>
-                <attribute name="base_amount_refunded_online" alias="amountRefundedOnline"/>
-                <attribute name="base_amount_authorized" alias="amountAuthorized"/>
-                <attribute name="base_amount_paid" alias="amountPaid"/>
-                <attribute name="base_amount_refunded" alias="amountRefunded"/>
-                <attribute name="base_amount_canceled" alias="amountCanceled"/>
+                <attribute name="base_amount_paid_online" alias="amountCapturedOnline" />
+                <attribute name="base_amount_refunded_online" alias="amountRefundedOnline" />
+                <attribute name="base_amount_authorized" alias="amountAuthorized" />
+                <attribute name="base_amount_paid" alias="amountPaid" />
+                <attribute name="base_amount_refunded" alias="amountRefunded" />
+                <attribute name="base_amount_canceled" alias="amountCanceled" />
                 <using glue="and">
                     <condition attribute="parent_id" operator="eq" type="identifier">entity_id</condition>
                 </using>
                 <!-- for Payment type -->
-                <attribute name="method" alias="paymentMethodCode"/>
-                <attribute name="additional_information" alias="additionalInformation"/>
+                <attribute name="method" alias="paymentMethodCode" />
+                <attribute name="additional_information" alias="additionalInformation" />
             </link-source>
             <!-- for Payment type start -->
-            <attribute name="base_subtotal" alias="totalAmount"/>
-            <attribute name="base_tax_amount" alias="taxAmount"/>
+            <attribute name="base_subtotal" alias="totalAmount" />
+            <attribute name="base_tax_amount" alias="taxAmount" />
             <!-- for Payment type end -->
 
             <!-- for Shipping type start -->
-            <attribute name="shipping_method" alias="shippingMethodCode"/>
-            <attribute name="shipping_description" alias="shippingMethodName"/>
-            <attribute name="shipping_amount" alias="shippingAmount"/>
-            <attribute name="shipping_tax_amount" alias="shippingTax"/>
+            <attribute name="shipping_method" alias="shippingMethodCode" />
+            <attribute name="shipping_description" alias="shippingMethodName" />
+            <attribute name="shipping_amount" alias="shippingAmount" />
+            <attribute name="shipping_tax_amount" alias="shippingTax" />
             <!-- for Shipping type end -->
 
             <!-- select orders only with assigned UUID. DO NOT change inner to left! -->
             <link-source name="data_exporter_uuid" link-type="inner">
-                <attribute name="uuid"/>
+                <attribute name="uuid" />
                 <using glue="and">
                     <condition attribute="entity_id" operator="eq" type="identifier">entity_id</condition>
                     <condition attribute="type" operator="eq" type="value">order</condition>
                 </using>
             </link-source>
-            <!-- left join used to handle case: exports orders for store view which has being deleted -->
+            <!-- left join used to handle case: exports orders for store view which has being
+            deleted -->
             <link-source name="store" link-type="left">
-                <attribute name="code" alias="storeViewCode"/>
+                <attribute name="code" alias="storeViewCode" />
                 <using glue="and">
                     <condition attribute="store_id" operator="eq" type="identifier">store_id</condition>
                 </using>
             </link-source>
             <link-source name="store_group" link-type="left">
-                <attribute name="code" alias="storeCode"/>
+                <attribute name="code" alias="storeCode" />
                 <using glue="and">
                     <condition attribute="group_id" operator="eq" type="identifier">store.group_id</condition>
                 </using>
             </link-source>
             <link-source name="store_website" link-type="left">
-                <attribute name="code" alias="websiteCode"/>
+                <attribute name="code" alias="websiteCode" />
                 <using glue="and">
                     <condition attribute="website_id" operator="eq" type="identifier">store.website_id</condition>
                 </using>
@@ -157,34 +159,34 @@
     </query>
     <query name="salesOrderItemsV2">
         <source name="sales_order_item">
-            <attribute name="order_id" alias="commerceOrderId"/>
-            <attribute name="item_id" alias="entityId"/>
-            <attribute name="parent_item_id" alias="parentEntityId"/>
-            <attribute name="is_virtual" alias="isVirtual"/>
-            <attribute name="qty_invoiced" alias="qtyInvoiced"/>
-            <attribute name="qty_shipped" alias="qtyShipped"/>
-            <attribute name="qty_backordered" alias="qtyBackordered"/>
-            <attribute name="qty_ordered"  alias="qtyOrdered"/>
-            <attribute name="qty_refunded" alias="qtyRefunded"/>
-            <attribute name="qty_canceled" alias="qtyCanceled"/>
-            <attribute name="product_type" alias="productType"/>
-            <attribute name="product_options"/> <!-- used to calculate itemsShippedTogether -->
-            <attribute name="sku"/>
-            <attribute name="name"/>
-            <attribute name="qty_ordered" alias="qty"/>
-            <attribute name="base_price" alias="unitPrice"/>
-            <attribute name="base_row_total" alias="itemPrice"/>
-            <attribute name="discount_amount" alias="discountAmount"/>
-            <attribute name="tax_amount" alias="taxAmount"/>
-            <attribute name="row_total_incl_tax" alias="totalAmount"/>
-            <attribute name="weight"/>
-            <attribute name="additional_data" alias="additionalInformation"/>
-            <attribute name="updated_at" alias="updatedAt"/>
+            <attribute name="order_id" alias="commerceOrderId" />
+            <attribute name="item_id" alias="entityId" />
+            <attribute name="parent_item_id" alias="parentEntityId" />
+            <attribute name="is_virtual" alias="isVirtual" />
+            <attribute name="qty_invoiced" alias="qtyInvoiced" />
+            <attribute name="qty_shipped" alias="qtyShipped" />
+            <attribute name="qty_backordered" alias="qtyBackordered" />
+            <attribute name="qty_ordered" alias="qtyOrdered" />
+            <attribute name="qty_refunded" alias="qtyRefunded" />
+            <attribute name="qty_canceled" alias="qtyCanceled" />
+            <attribute name="product_type" alias="productType" />
+            <attribute name="product_options" /> <!-- used to calculate itemsShippedTogether -->
+            <attribute name="sku" />
+            <attribute name="name" />
+            <attribute name="qty_ordered" alias="qty" />
+            <attribute name="base_price" alias="unitPrice" />
+            <attribute name="base_row_total" alias="itemPrice" />
+            <attribute name="discount_amount" alias="discountAmount" />
+            <attribute name="tax_amount" alias="taxAmount" />
+            <attribute name="row_total_incl_tax" alias="totalAmount" />
+            <attribute name="weight" />
+            <attribute name="additional_data" alias="additionalInformation" />
+            <attribute name="updated_at" alias="updatedAt" />
             <filter glue="and">
                 <condition attribute="order_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
             <link-source name="data_exporter_uuid" link-type="left">
-                <attribute name="uuid"/>
+                <attribute name="uuid" />
                 <using glue="and">
                     <condition attribute="entity_id" operator="eq" type="identifier">item_id</condition>
                     <condition attribute="type" operator="eq" type="value">order_item</condition>
@@ -194,10 +196,10 @@
     </query>
     <query name="salesInvoicesV2">
         <source name="sales_invoice">
-            <attribute name="entity_id" alias="entityId"/>
-            <attribute name="order_id" alias="commerceOrderId"/>
-            <attribute name="is_used_for_refund" alias="isUsedForRefund"/>
-            <attribute name="base_grand_total" alias="grandTotal"/>
+            <attribute name="entity_id" alias="entityId" />
+            <attribute name="order_id" alias="commerceOrderId" />
+            <attribute name="is_used_for_refund" alias="isUsedForRefund" />
+            <attribute name="base_grand_total" alias="grandTotal" />
             <filter glue="and">
                 <condition attribute="order_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
@@ -205,15 +207,15 @@
     </query>
     <query name="salesShipmentV2">
         <source name="sales_shipment">
-            <attribute name="created_at" alias="createdAt"/>
-            <attribute name="updated_at" alias="updatedAt"/>
-            <attribute name="order_id" alias="commerceOrderId"/>
-            <attribute name="entity_id" alias="shipment_id"/>
+            <attribute name="created_at" alias="createdAt" />
+            <attribute name="updated_at" alias="updatedAt" />
+            <attribute name="order_id" alias="commerceOrderId" />
+            <attribute name="entity_id" alias="shipment_id" />
             <filter glue="and">
                 <condition attribute="order_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
             <link-source name="data_exporter_uuid" link-type="left">
-                <attribute name="uuid"/>
+                <attribute name="uuid" />
                 <using glue="and">
                     <condition attribute="entity_id" operator="eq" type="identifier">entity_id</condition>
                     <condition attribute="type" operator="eq" type="value">order_shipment</condition>
@@ -223,19 +225,19 @@
     </query>
     <query name="salesTrackingInfoV2">
         <source name="sales_shipment_track">
-            <attribute name="carrier_code" alias="shippingCarrier"/>
-            <attribute name="track_number" alias="trackingNumber"/>
-            <attribute name="title" alias="trackingUrl"/>
-            <attribute name="parent_id" alias="shipment_id"/>
-            <attribute name="entity_id" alias="id"/>
+            <attribute name="carrier_code" alias="shippingCarrier" />
+            <attribute name="track_number" alias="trackingNumber" />
+            <attribute name="title" alias="trackingUrl" />
+            <attribute name="parent_id" alias="shipment_id" />
+            <attribute name="entity_id" alias="id" />
             <filter glue="and">
                 <!-- sales_shipment.entity_id = sales_shipment_track.parent_id -->
                 <condition attribute="parent_id" operator="in" type="placeholder">shipment_id</condition>
             </filter>
             <link-source name="sales_order" link-type="inner">
-                <attribute name="shipping_method" alias="shippingMethod"/>
-                <attribute name="store_id"/>
-                <attribute name="protect_code"/>
+                <attribute name="shipping_method" alias="shippingMethod" />
+                <attribute name="store_id" />
+                <attribute name="protect_code" />
                 <using glue="and">
                     <condition attribute="entity_id" operator="eq" type="identifier">order_id</condition>
                 </using>
@@ -244,15 +246,15 @@
     </query>
     <query name="salesShipmentItemV2">
         <source name="sales_shipment_item">
-            <attribute name="qty" alias="qtyShipped"/>
-            <attribute name="parent_id" alias="shipment_id"/>
-            <attribute name="order_item_id" alias="order_item_id"/>
+            <attribute name="qty" alias="qtyShipped" />
+            <attribute name="parent_id" alias="shipment_id" />
+            <attribute name="order_item_id" alias="order_item_id" />
             <filter glue="and">
                 <!-- sales_shipment.entity_id = sales_shipment_item.parent_id -->
                 <condition attribute="parent_id" operator="in" type="placeholder">shipment_id</condition>
             </filter>
             <link-source name="data_exporter_uuid" link-type="left">
-                <attribute name="uuid"/>
+                <attribute name="uuid" />
                 <using glue="and">
                     <condition attribute="entity_id" operator="eq" type="identifier">order_item_id</condition>
                     <condition attribute="type" operator="eq" type="value">order_item</condition>
@@ -262,17 +264,17 @@
     </query>
     <query name="salesAddressV2">
         <source name="sales_order_address">
-            <attribute name="entity_id" alias="id"/>
-            <attribute name="parent_id" alias="order_id"/>
-            <attribute name="parent_id" alias="commerceOrderId"/>
-            <attribute name="telephone" alias="phone"/>
-            <attribute name="region"/>
-            <attribute name="postcode"/>
-            <attribute name="street"/>
-            <attribute name="city"/>
-            <attribute name="country_id" alias="country"/>
-            <attribute name="firstname"/>
-            <attribute name="lastname"/>
+            <attribute name="entity_id" alias="id" />
+            <attribute name="parent_id" alias="order_id" />
+            <attribute name="parent_id" alias="commerceOrderId" />
+            <attribute name="telephone" alias="phone" />
+            <attribute name="region" />
+            <attribute name="postcode" />
+            <attribute name="street" />
+            <attribute name="city" />
+            <attribute name="country_id" alias="country" />
+            <attribute name="firstname" />
+            <attribute name="lastname" />
             <filter glue="and">
                 <condition attribute="address_type" operator="eq" type="placeholder">addressType</condition>
                 <condition attribute="parent_id" operator="in" type="placeholder">commerceOrderId</condition>
@@ -281,30 +283,30 @@
     </query>
     <query name="salesCreditMemosV2">
         <source name="sales_creditmemo">
-            <attribute name="order_id" alias="commerceOrderId"/>
-            <attribute name="base_adjustment_positive"/>
-            <attribute name="base_adjustment_negative"/>
-            <attribute name="entity_id" alias="entityId"/>
-            <attribute name="entity_id" alias="linkCreditMemoId"/>
-            <attribute name="state"/>
-            <attribute name="created_at" alias="createdAt"/>
-            <attribute name="base_shipping_amount" alias="shippingAmount"/>
-            <attribute name="base_shipping_tax_amount" alias="shippingTaxAmount"/>
-            <attribute name="base_currency_code" alias="currency"/>
-            <attribute name="base_subtotal" alias="subtotal"/>
-            <attribute name="base_tax_amount" alias="productsTaxAmount"/>
-            <attribute name="adjustment"/>
+            <attribute name="order_id" alias="commerceOrderId" />
+            <attribute name="base_adjustment_positive" />
+            <attribute name="base_adjustment_negative" />
+            <attribute name="entity_id" alias="entityId" />
+            <attribute name="entity_id" alias="linkCreditMemoId" />
+            <attribute name="state" />
+            <attribute name="created_at" alias="createdAt" />
+            <attribute name="base_shipping_amount" alias="shippingAmount" />
+            <attribute name="base_shipping_tax_amount" alias="shippingTaxAmount" />
+            <attribute name="base_currency_code" alias="currency" />
+            <attribute name="base_subtotal" alias="subtotal" />
+            <attribute name="base_tax_amount" alias="productsTaxAmount" />
+            <attribute name="adjustment" />
             <filter glue="and">
                 <condition attribute="order_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
             <link-source name="sales_creditmemo_comment" link-type="left">
-                <attribute name="comment" alias="credit_memo_comments"/>
+                <attribute name="comment" alias="credit_memo_comments" />
                 <using glue="and">
                     <condition attribute="parent_id" operator="eq" type="identifier">entity_id</condition>
                 </using>
             </link-source>
             <link-source name="data_exporter_uuid" link-type="left">
-                <attribute name="uuid"/>
+                <attribute name="uuid" />
                 <using glue="and">
                     <condition attribute="entity_id" operator="eq" type="identifier">entity_id</condition>
                     <condition attribute="type" operator="eq" type="value">credit_memo</condition>
@@ -314,21 +316,21 @@
     </query>
     <query name="salesRefundItemV2">
         <source name="sales_creditmemo_item">
-            <attribute name="parent_id" alias="linkCreditMemoId"/>
-            <attribute name="qty"/>
-            <attribute name="base_price"/>
-            <attribute name="base_row_total"/>
-            <attribute name="discount_amount"/>
-            <attribute name="order_item_id"/>
-            <attribute name="entity_id" alias="entityId"/>
-            <attribute name="qty" alias="qtyRefunded"/>
-            <attribute name="price" alias="basePrice"/>
+            <attribute name="parent_id" alias="linkCreditMemoId" />
+            <attribute name="qty" />
+            <attribute name="base_price" />
+            <attribute name="base_row_total" />
+            <attribute name="discount_amount" />
+            <attribute name="order_item_id" />
+            <attribute name="entity_id" alias="entityId" />
+            <attribute name="qty" alias="qtyRefunded" />
+            <attribute name="price" alias="basePrice" />
             <filter glue="and">
                 <!-- parent_id => sales_creditmemo.entity_id -->
                 <condition attribute="parent_id" operator="in" type="placeholder">linkCreditMemoId</condition>
             </filter>
             <link-source name="data_exporter_uuid" link-type="left">
-                <attribute name="uuid"/>
+                <attribute name="uuid" />
                 <using glue="and">
                     <condition attribute="entity_id" operator="eq" type="identifier">order_item_id</condition>
                     <condition attribute="type" operator="eq" type="value">order_item</condition>
@@ -338,18 +340,18 @@
     </query>
     <query name="salesTaxV2">
         <source name="sales_order_tax">
-            <attribute name="order_id"/>
-            <attribute name="tax_id" alias="taxId"/>
-            <attribute name="title" alias="taxName"/>
-            <attribute name="amount" alias="taxAmount"/>
+            <attribute name="order_id" />
+            <attribute name="tax_id" alias="taxId" />
+            <attribute name="title" alias="taxName" />
+            <attribute name="amount" alias="taxAmount" />
             <link-source name="sales_order_tax_item" link-type="inner">
-                <attribute name="taxable_item_type" alias="taxType" group="true"/>
+                <attribute name="taxable_item_type" alias="taxType" group="true" />
                 <using glue="and">
                     <condition attribute="tax_id" operator="eq" type="identifier">tax_id</condition>
                 </using>
             </link-source>
             <link-source name="sales_creditmemo" link-type="inner">
-                <attribute name="entity_id" alias="linkCreditMemoId"/>
+                <attribute name="entity_id" alias="linkCreditMemoId" />
                 <using glue="and">
                     <condition attribute="order_id" operator="eq" type="identifier">order_id</condition>
                     <condition attribute="entity_id" operator="in" type="placeholder">linkCreditMemoId</condition>
@@ -359,19 +361,19 @@
     </query>
     <query name="salesTaxItemV2">
         <source name="sales_order_tax">
-            <attribute name="title" alias="taxName"/>
+            <attribute name="title" alias="taxName" />
             <link-source name="sales_creditmemo" link-type="inner">
-                <attribute name="entity_id" alias="linkCreditMemoId"/>
+                <attribute name="entity_id" alias="linkCreditMemoId" />
                 <using glue="and">
                     <condition attribute="order_id" operator="eq" type="identifier">order_id</condition>
                     <condition attribute="entity_id" operator="in" type="placeholder">linkCreditMemoId</condition>
                 </using>
             </link-source>
             <link-source name="sales_order_tax_item" link-type="inner">
-                <attribute name="item_id" alias="entityId"/>
-                <attribute name="tax_item_id"/>
-                <attribute name="taxable_item_type" alias="taxType"/>
-                <attribute name="amount" alias="taxAmount"/>
+                <attribute name="item_id" alias="entityId" />
+                <attribute name="tax_item_id" />
+                <attribute name="taxable_item_type" alias="taxType" />
+                <attribute name="amount" alias="taxAmount" />
                 <filter glue="and">
                     <condition attribute="item_id" operator="in" type="placeholder">entityId</condition>
                 </filter>
@@ -383,11 +385,11 @@
     </query>
     <query name="salesTransactionsV2">
         <source name="sales_payment_transaction">
-            <attribute name="transaction_id" alias="entityId"/>
-            <attribute name="order_id" alias="commerceOrderId"/>
-            <attribute name="txn_id" alias="txnId"/>
-            <attribute name="txn_type" alias="type"/>
-            <attribute name="created_at" alias="createdAt"/>
+            <attribute name="transaction_id" alias="entityId" />
+            <attribute name="order_id" alias="commerceOrderId" />
+            <attribute name="txn_id" alias="txnId" />
+            <attribute name="txn_type" alias="type" />
+            <attribute name="created_at" alias="createdAt" />
             <filter glue="and">
                 <condition attribute="order_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>

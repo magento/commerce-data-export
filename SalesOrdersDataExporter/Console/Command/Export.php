@@ -49,8 +49,8 @@ class Export extends Command
     protected function configure()
     {
         $this
-            ->setName('commerce-data-export:orders:export')
-            ->setDescription('Exports orders since certain time in the past.')
+            ->setName('commerce-data-export:orders:export-on-demmand')
+            ->setDescription('Exports orders since certain time in the past on demmand.')
             ->addArgument(
                 'from',
                 InputArgument::REQUIRED,
