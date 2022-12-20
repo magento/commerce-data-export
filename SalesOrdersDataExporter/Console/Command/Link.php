@@ -153,7 +153,7 @@ class Link extends \Symfony\Component\Console\Command\Command
      * @param OutputInterface $output
      * @return int
      */
-    public function addUUID(
+    public function prepareToExport(
         int $batchSize,
         OutputInterface $output,
         string $from = null,

@@ -87,7 +87,7 @@ class Export extends Command
 
         try {
             return $this->linkCommand->
-            addUUID(10000, $output, $from->format(DateTimeInterface::W3C), $to->format(DateTimeInterface::W3C));
+            prepareToExport(10000, $output, $from->format(DateTimeInterface::W3C), $to->format(DateTimeInterface::W3C));
         } catch (ExceptionInterface $e) {
             $this->logger->error(
                 sprintf('Command "commerce-data-export:orders:link" failed. Message: %s', $e->getMessage())
