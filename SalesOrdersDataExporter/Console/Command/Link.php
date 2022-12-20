@@ -135,6 +135,32 @@ class Link extends \Symfony\Component\Console\Command\Command
                 ? (new \DateTime($input->getOption(self::OPTION_TO)))->format(\DateTimeInterface::W3C)
                 : null;
 
+            return $this->link($batchSize, $output, $from, $to, $state);
+        } catch (\Throwable $e) {
+            $output->writeln('<error>Failed to update UUID. Check logs</error>');
+            $this->logger->error(
+                sprintf('Command "%s" failed. Error message: %s', self::COMMAND_NAME, $e->getMessage())
+            );
+
+            return Cli::RETURN_FAILURE;
+        }
+    }
+
+    /**
+     * Updating UUID
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     */
+    public function addUUID(
+        int $batchSize,
+        OutputInterface $output,
+        string $from = null,
+        string $to = null,
+        string $state = ''
+    ) {
+        try {
             $output->writeln(
                 sprintf(
                     '<info>Start updating UUID with parameters [state=%s, from=%s, to=%s, batch_size=%s]</info>',
@@ -150,6 +176,14 @@ class Link extends \Symfony\Component\Console\Command\Command
                 $this->uuidManager->assignBulk($entityIds, $type);
                 $updatedEntities += count($entityIds);
             }
+            $output->writeln(
+                sprintf(
+                    '<info>Update completed successfully, %s entities updated</info>',
+                    $updatedEntities
+                )
+            );
+            return Cli::RETURN_SUCCESS;
+
         } catch (\Throwable $e) {
             $output->writeln('<error>Failed to update UUID. Check logs</error>');
             $this->logger->error(
@@ -158,15 +192,6 @@ class Link extends \Symfony\Component\Console\Command\Command
 
             return Cli::RETURN_FAILURE;
         }
-
-        $output->writeln(
-            sprintf(
-                '<info>Update completed successfully, %s entities updated</info>',
-                $updatedEntities
-            )
-        );
-
-        return Cli::RETURN_SUCCESS;
     }
 
     /**
@@ -178,6 +203,7 @@ class Link extends \Symfony\Component\Console\Command\Command
      */
     private function getOrders(string $state, int $batchSize, string $from = null, string $to = null): \Generator
     {
+
         $mapTypes = array_map(function ($type) {
             $type['table'] = $this->resourceConnection->getTableName($type['table']);
             return $type;
