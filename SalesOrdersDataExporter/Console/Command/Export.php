@@ -46,9 +46,9 @@ class Export extends Command
         $this->logger = $logger;
         $this->metadata = $metadata;
         $this->processor = $processor;
-        parent::__construct();
         $this->dateTimeFactory = $dateTimeFactory;
         $this->linkCommand = $link;
+        parent::__construct();
     }
 
     protected function configure()
@@ -78,7 +78,7 @@ class Export extends Command
 
         $this->processor->fullReindex($this->metadata, $from, $to);
 
-        return 0;
+        return Cli::RETURN_SUCCESS;
     }
 
     private function ensureAssignedUuids(DateTime $from, DateTime $to, OutputInterface $output): int
