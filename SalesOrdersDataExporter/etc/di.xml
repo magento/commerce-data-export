@@ -234,6 +234,8 @@
             <argument name="classMap" xsi:type="array">
                 <item name="salesOrders" xsi:type="string">
                     Magento\SalesOrdersDataExporter\Model\OrdersFeed</item>
+                <item name="salesOrdersOnDemmandExport" xsi:type="string">
+                    Magento\SalesOrdersDataExporter\Model\OrdersOnDemmandExportFeed</item>
             </argument>
         </arguments>
     </type>
