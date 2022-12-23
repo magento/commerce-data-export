@@ -7,24 +7,23 @@
 -->
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
-    <table name="sales_data_exporter_orders_v2" resource="default" engine="innodb"
-        comment="Sales Orders Feed Storage">
+    <table name="sales_data_exporter_orders_v2" resource="default" engine="innodb" comment="Sales Orders Feed Storage">
         <column xsi:type="int"
             name="id"
             padding="10"
             unsigned="true"
             nullable="false"
-            comment="ID" />
+            comment="ID"/>
         <column xsi:type="mediumtext"
             name="feed_data"
             nullable="false"
-            comment="Feed Data" />
+            comment="Feed Data"/>
         <column xsi:type="timestamp"
             name="modified_at"
             on_update="true"
             nullable="false"
             default="CURRENT_TIMESTAMP"
-            comment="Modified At" />
+            comment="Modified At"/>
         <column
             xsi:type="tinyint"
             name="is_deleted"
@@ -33,10 +32,10 @@
             comment="Order Deleted"
         />
         <constraint xsi:type="primary" referenceId="PRIMARY">
-            <column name="id" />
+            <column name="id"/>
         </constraint>
         <index referenceId="sales_data_exporter_orders_modified_at" indexType="btree">
-            <column name="modified_at" />
+            <column name="modified_at"/>
         </index>
     </table>
     <table name="sales_data_export_on_demmand_orders" resource="default" engine="innodb"
@@ -44,7 +43,7 @@
         <column xsi:type="int"
             name="id"
             padding="10"
-            unsigned="true"
+            unsigned="true"––
             nullable="false"
             comment="ID" />
         <column xsi:type="mediumtext"
