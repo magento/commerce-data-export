@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <virtualType
+            name="Magento\ScopesDataExporter\Model\Indexer\ScopesCustomerGroupFeedIndexMetadata"
+            type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="feedName" xsi:type="string">scopesCustomerGroup</argument>
+            <argument name="feedIdentity" xsi:type="string">customerGroupId</argument>
+            <argument name="sourceTableName" xsi:type="string">customer_group</argument>
+            <argument name="sourceTableField" xsi:type="string">customer_group_id</argument>
+            <argument name="feedTableName" xsi:type="string">scopes_customergroup_data_exporter</argument>
+            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableMutableColumns" xsi:type="array">
+                <item name="feed_data" xsi:type="string">feed_data</item>
+                <item name="is_deleted" xsi:type="string">is_deleted</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType
+            name="Magento\ScopesDataExporter\Model\Indexer\ScopesCustomerGroupDataSerializer"
+            type="Magento\DataExporter\Model\Indexer\DataSerializer">
+        <arguments>
+            <argument name="mapping" xsi:type="array">
+                <item name="id" xsi:type="string">customerGroupId</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType
+            name="Magento\ScopesDataExporter\Model\Indexer\ScopesCustomerGroupFeedIndexer"
+            type="Magento\DataExporter\Model\Indexer\FeedIndexer">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\ScopesDataExporter\Model\Indexer\ScopesCustomerGroupFeedIndexMetadata
+            </argument>
+            <argument name="serializer" xsi:type="object">
+                Magento\ScopesDataExporter\Model\Indexer\ScopesCustomerGroupDataSerializer
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType
+            name="Magento\ScopesDataExporter\Model\ScopesCustomerGroupFeed"
+            type="Magento\DataExporter\Model\Feed">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\ScopesDataExporter\Model\Indexer\ScopesCustomerGroupFeedIndexMetadata
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType
+            name="Magento\ScopesDataExporter\Model\Indexer\ScopesWebsiteFeedIndexMetadata"
+            type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="feedName" xsi:type="string">scopesWebsite</argument>
+            <argument name="feedIdentity" xsi:type="string">websiteId</argument>
+            <argument name="sourceTableName" xsi:type="string">store_website</argument>
+            <argument name="sourceTableField" xsi:type="string">website_id</argument>
+            <argument name="feedTableName" xsi:type="string">scopes_website_data_exporter</argument>
+            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableMutableColumns" xsi:type="array">
+                <item name="feed_data" xsi:type="string">feed_data</item>
+                <item name="is_deleted" xsi:type="string">is_deleted</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType
+            name="Magento\ScopesDataExporter\Model\Indexer\ScopesWebsiteDataSerializer"
+            type="Magento\DataExporter\Model\Indexer\DataSerializer">
+        <arguments>
+            <argument name="mapping" xsi:type="array">
+                <item name="id" xsi:type="string">websiteId</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType
+            name="Magento\ScopesDataExporter\Model\Indexer\ScopesWebsiteFeedIndexer"
+            type="Magento\DataExporter\Model\Indexer\FeedIndexer">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\ScopesDataExporter\Model\Indexer\ScopesWebsiteFeedIndexMetadata
+            </argument>
+            <argument name="serializer" xsi:type="object">
+                Magento\ScopesDataExporter\Model\Indexer\ScopesWebsiteDataSerializer
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType
+            name="Magento\ScopesDataExporter\Model\ScopesWebsiteFeed"
+            type="Magento\DataExporter\Model\Feed">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">
+                Magento\ScopesDataExporter\Model\Indexer\ScopesWebsiteFeedIndexMetadata
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\DataExporter\Model\FeedPool">
+        <arguments>
+            <argument name="classMap" xsi:type="array">
+                <item name="scopesWebsite" xsi:type="string">Magento\ScopesDataExporter\Model\ScopesWebsiteFeed</item>
+                <item name="scopesCustomerGroup" xsi:type="string">Magento\ScopesDataExporter\Model\ScopesCustomerGroupFeed</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_DataExporter:etc/et_schema.xsd">
+
+    <record name="Export">
+        <field name="scopesWebsite"
+               type="Website"
+               repeated="true"
+               provider="Magento\DataExporter\Model\Provider\QueryDataProvider">
+            <using field="websiteId"/>
+        </field>
+        <field name="scopesCustomerGroup"
+               type="CustomerGroup"
+               repeated="true"
+               provider="Magento\DataExporter\Model\Provider\QueryDataProvider">
+            <using field="customerGroupId"/>
+        </field>
+    </record>
+
+    <record name="Website">
+        <field name="websiteId" type="ID"/>
+        <field name="websiteCode" type="String"/>
+        <field name="stores"
+               type="StoreGroup"
+               repeated="true"
+               provider="Magento\DataExporter\Model\Provider\QueryDataProvider">
+            <using field="websiteId"/>
+        </field>
+    </record>
+
+    <record name="StoreGroup">
+        <field name="storeId" type="ID"/>
+        <field name="storeCode" type="String"/>
+        <field name="storeViews"
+               type="StoreView"
+               repeated="true"
+               provider="Magento\DataExporter\Model\Provider\QueryDataProvider">
+            <using field="storeId"/>
+        </field>
+    </record>
+
+    <record name="StoreView">
+        <field name="storeViewId" type="ID"/>
+        <field name="storeViewCode" type="String"/>
+    </record>
+
+    <record name="CustomerGroup">
+        <field name="customerGroupId" type="ID"/>
+        <field name="customerGroupCode" type="String"/>
+        <field name="websites"
+               type="CustomerGroupWebsite"
+               repeated="true"
+               provider="Magento\ScopesDataExporter\Model\Provider\ScopesCustomerGroupWebsitesProvider">
+        </field>
+    </record>
+
+    <record name="CustomerGroupWebsite">
+        <field name="websiteId" type="ID"/>
+        <field name="websiteCode" type="String"/>
+    </record>
+</config>

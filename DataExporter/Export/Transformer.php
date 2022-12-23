@@ -121,8 +121,7 @@ class Transformer
         if ($this->isScalar($rootField['type'])) {
             if ($rootField['repeated']) {
                 if (is_array($value)) {
-                    // phpcs:ignore Generic.CodeAnalysis.ForLoopWithTestFunctionCall
-                    for ($i = 0; count($value) > $i; $i++) {
+                    for ($i = 0, $count=count($value); $count > $i; $i++) {
                         $result[$i] = $this->castScalarValue($rootField['type'], $value[$i]);
                     }
                 }
@@ -133,8 +132,7 @@ class Transformer
             $type = $this->config->get($rootField['type']);
             if ($rootField['repeated']) {
                 if (is_array($value)) {
-                    // phpcs:ignore Generic.CodeAnalysis.ForLoopWithTestFunctionCall
-                    for ($i=0; count($value) > $i; $i++) {
+                    for ($i=0, $count=count($value); $count > $i; $i++) {
                         foreach ($type['field'] as $field) {
                             if (isset($value[$i][$field['name']])) {
                                 $result[$i][$field['name']] =
@@ -211,8 +209,7 @@ class Transformer
         } else {
             $type = $this->config->get($field['type']);
             if ($field['repeated']) {
-                // phpcs:ignore Generic.CodeAnalysis.ForLoopWithTestFunctionCall
-                for ($i=0; $i < count($data); $i++) {
+                for ($i=0, $count=count($data); $i < $count; $i++) {
                     $result[$i] = $this->convertComplexRow($data[$i], $type, $snapshot);
                 }
             } else {

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
+
+    <indexer
+        id="scopes_website_data_exporter"
+        view_id="scopes_website_data_exporter"
+        class="Magento\ScopesDataExporter\Model\Indexer\ScopesWebsiteFeedIndexer">
+        <title translate="true">Scopes website data feed</title>
+        <description translate="true">Collects websites scope data</description>
+    </indexer>
+
+    <indexer
+        id="scopes_customergroup_data_exporter"
+        view_id="scopes_customergroup_data_exporter"
+        class="Magento\ScopesDataExporter\Model\Indexer\ScopesCustomerGroupFeedIndexer">
+        <title translate="true">Scopes customer groups data feed</title>
+        <description translate="true">Collects customer groups scope data</description>
+    </indexer>
+</config>

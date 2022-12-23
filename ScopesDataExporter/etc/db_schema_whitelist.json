@@ -1,0 +1,30 @@
+{
+  "scopes_website_data_exporter": {
+    "index": {
+      "scopes_website_data_exporter_modified_at": true
+    },
+    "constraint": {
+      "PRIMARY": true
+    },
+    "column": {
+      "id": true,
+      "feed_data": true,
+      "modified_at": true,
+      "is_deleted": true
+    }
+  },
+  "scopes_customergroup_data_exporter": {
+    "index": {
+      "scopes_customergroup_data_exporter_modified_at": true
+    },
+    "constraint": {
+      "PRIMARY": true
+    },
+    "column": {
+      "id": true,
+      "feed_data": true,
+      "modified_at": true,
+      "is_deleted": true
+    }
+  }
+}
