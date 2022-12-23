@@ -20,8 +20,12 @@ class DateTimeRangeOrderProcessor
     private DataSerializerInterface $serializer;
     private FeedIndexProcessorInterface $delegatingProcessor;
 
-    public function __construct(ResourceConnection $resourceConnection, BatchIteratorFactory $batchIteratorFactory, DataSerializerInterface $serializer, FeedIndexProcessorInterface $delegatingProcessor)
-    {
+    public function __construct(
+        ResourceConnection $resourceConnection,
+        BatchIteratorFactory $batchIteratorFactory,
+        DataSerializerInterface $serializer,
+        FeedIndexProcessorInterface $delegatingProcessor
+    ) {
         $this->resourceConnection = $resourceConnection;
         $this->batchIteratorFactory = $batchIteratorFactory;
         $this->serializer = $serializer;
@@ -30,7 +34,12 @@ class DateTimeRangeOrderProcessor
 
     public function fullReindex(FeedIndexMetadata $metadata, $from, $to): void
     {
-        $idsProvider = new DateTimeRangeOrderIdsProvider($this->resourceConnection, $this->batchIteratorFactory, $from, $to);
+        $idsProvider = new DateTimeRangeOrderIdsProvider(
+            $this->resourceConnection,
+            $this->batchIteratorFactory,
+            $from,
+            $to
+        );
         $this->delegatingProcessor->fullReindex($metadata, $this->serializer, $idsProvider);
     }
 }

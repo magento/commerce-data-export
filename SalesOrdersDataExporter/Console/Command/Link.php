@@ -135,7 +135,7 @@ class Link extends \Symfony\Component\Console\Command\Command
                 ? (new \DateTime($input->getOption(self::OPTION_TO)))->format(\DateTimeInterface::W3C)
                 : null;
 
-            return $this->link($batchSize, $output, $from, $to, $state);
+            return $this->prepareForExport($batchSize, $output, $from, $to, $state);
         } catch (\Throwable $e) {
             $output->writeln('<error>Failed to update UUID. Check logs</error>');
             $this->logger->error(

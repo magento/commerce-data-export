@@ -43,7 +43,7 @@
         <column xsi:type="int"
             name="id"
             padding="10"
-            unsigned="true"––
+            unsigned="true"
             nullable="false"
             comment="ID" />
         <column xsi:type="mediumtext"

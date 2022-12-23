@@ -16,17 +16,14 @@ use Magento\Framework\Intl\DateTimeFactory;
 use Magento\SalesOrdersDataExporter\Console\Command\Link;
 use Magento\SalesOrdersDataExporter\Model\Indexer\DateTimeRangeOrderProcessor;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Exception\ExceptionInterface;
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
 /**
  * Command export orders since certain time in the past
  */
-class Export extends Command
+class ExportOnDemmand extends Command
 {
     private const COMMAND_NAME = 'commerce-data-export:orders:export-on-demmand';
     private CommerceDataExportLoggerInterface $logger;
@@ -35,6 +32,13 @@ class Export extends Command
     private DateTimeFactory $dateTimeFactory;
     private Link $linkCommand;
 
+    /**
+     * @param CommerceDataExportLoggerInterface $logger
+     * @param FeedIndexMetadata $metadata
+     * @param DateTimeRangeOrderProcessor $processor
+     * @param DateTimeRangeOrderProcessor dateTimeFactory
+     * @param Link $link
+     */
     public function __construct(
         CommerceDataExportLoggerInterface $logger,
         FeedIndexMetadata                 $metadata,
@@ -51,6 +55,9 @@ class Export extends Command
         parent::__construct();
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function configure()
     {
         $this
@@ -65,14 +72,16 @@ class Export extends Command
         parent::configure();
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $from = $this->dateTimeFactory->create($input->getArgument('from'));
         $to = $this->dateTimeFactory->create();
 
-
         $returnCode = $this->ensureAssignedUuids($from, $to, $output);
-        if ($returnCode != 0) {
+        if ($returnCode != Cli::RETURN_SUCCESS) {
             return Cli::RETURN_FAILURE;
         }
 
@@ -83,18 +92,16 @@ class Export extends Command
 
     private function ensureAssignedUuids(DateTime $from, DateTime $to, OutputInterface $output): int
     {
-
-
-        try {
-            return $this->linkCommand->
-            prepareForExport(10000, $output, $from->format(DateTimeInterface::W3C),
-                $to->format(DateTimeInterface::W3C));
-        } catch (ExceptionInterface $e) {
-            $this->logger->error(
-                sprintf('Command "commerce-data-export:orders:link" failed. Message: %s', $e->getMessage())
+        $returnCode = $this->linkCommand->
+            prepareForExport(
+                10000,
+                $output,
+                $from->format(DateTimeInterface::W3C),
+                $to->format(DateTimeInterface::W3C)
             );
-
-            return Cli::RETURN_FAILURE;
+        if ($returnCode != Cli::RETURN_SUCCESS) {
+            $this->logger->error('Command "commerce-data-export:orders:link" failed.');
         }
+        return $returnCode;
     }
 }
