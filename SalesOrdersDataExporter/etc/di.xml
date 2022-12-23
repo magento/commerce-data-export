@@ -5,12 +5,10 @@
  * See COPYING.txt for license details.
 */
 -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <!-- Indexer & metadata declaration -->
     <!-- Sales Orders Feed -->
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexMetadata"
-        type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">salesOrdersV2</argument>
             <argument name="feedIdentity" xsi:type="string">commerceOrderId</argument>
@@ -84,137 +82,116 @@
     </type>
 
     <!-- Providers -->
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\OrderItems"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\OrderItems" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesOrderItemsV2</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\ShippingAddress"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\ShippingAddress" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesAddressV2</argument>
-            <argument name="queryArguments" xsi:type="array">
+            <argument name="queryArguments"  xsi:type="array">
                 <item name="addressType" xsi:type="string">shipping</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\BillingAddress"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\BillingAddress" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesAddressV2</argument>
-            <argument name="queryArguments" xsi:type="array">
+            <argument name="queryArguments"  xsi:type="array">
                 <item name="addressType" xsi:type="string">billing</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Invoices"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Invoices" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesInvoicesV2</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\CreditMemos"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\CreditMemos" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesCreditMemosV2</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\RefundTaxes"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\RefundTaxes" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesTaxV2</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\ProductTaxes"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\ProductTaxes" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesTaxItemV2</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\RefundItem"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\RefundItem" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesRefundItemV2</argument>
         </arguments>
     </virtualType>
     <!-- uuid-->
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\CreditMemoItem"
-        type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\CreditMemoItem" type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
         <arguments>
             <argument name="uuidType" xsi:type="string">order_item</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\CreditMemo"
-        type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\CreditMemo" type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
         <arguments>
             <argument name="uuidType" xsi:type="string">credit_memo</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\ShipmentItem"
-        type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\ShipmentItem" type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
         <arguments>
             <argument name="uuidType" xsi:type="string">order_item</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\Shipment"
-        type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\Shipment" type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
         <arguments>
             <argument name="uuidType" xsi:type="string">order_shipment</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\OrderItem"
-        type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\OrderItem" type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
         <arguments>
             <argument name="uuidType" xsi:type="string">order_item</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\Order"
-        type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\Order" type="Magento\SalesOrdersDataExporter\Model\Provider\Uuid">
         <arguments>
             <argument name="uuidType" xsi:type="string">order</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Transactions"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Transactions" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesTransactionsV2</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Shipment"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\Shipment" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesShipmentV2</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\TrackingInfo"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\TrackingInfo" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesTrackingInfoV2</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\ShipmentItem"
-        type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\ShipmentItem" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesShipmentItemV2</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersDataSerializer"
-        type="Magento\DataExporter\Model\Indexer\DataSerializer">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
         <arguments>
             <argument name="mapping" xsi:type="array">
                 <item name="id" xsi:type="string">commerceOrderId</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\OrderItemCustomAttribute"
-        type="Magento\SalesOrdersDataExporter\Model\Provider\CustomAttribute">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\OrderItemCustomAttribute" type="Magento\SalesOrdersDataExporter\Model\Provider\CustomAttribute">
         <arguments>
             <argument name="usingField" xsi:type="string">entityId</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\OrderCustomAttribute"
-        type="Magento\SalesOrdersDataExporter\Model\Provider\CustomAttribute">
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\OrderCustomAttribute" type="Magento\SalesOrdersDataExporter\Model\Provider\CustomAttribute">
         <arguments>
             <argument name="usingField" xsi:type="string">commerceOrderId</argument>
         </arguments>
@@ -234,35 +211,28 @@
     <type name="Magento\DataExporter\Model\FeedPool">
         <arguments>
             <argument name="classMap" xsi:type="array">
-                <item name="salesOrders" xsi:type="string">
-                    Magento\SalesOrdersDataExporter\Model\OrdersFeed</item>
-                <item name="onDemandSalesOrders" xsi:type="string">
-                    Magento\SalesOrdersDataExporter\Model\OrdersOnDemmandExportFeed</item>
+                <item name="salesOrders" xsi:type="string">Magento\SalesOrdersDataExporter\Model\OrdersFeed</item>
+                <item name="onDemandSalesOrders" xsi:type="string">Magento\SalesOrdersDataExporter\Model\OrdersOnDemmandExportFeed</item>
             </argument>
         </arguments>
     </type>
 
     <!-- Assign UUID to sales order, order items, shipments, credit memos and refunds entities    -->
     <type name="Magento\Sales\Model\ResourceModel\Order">
-        <plugin name="AssignUuidForOrder"
-            type="Magento\SalesOrdersDataExporter\Plugin\AssignUuidForOrder" />
+        <plugin name="AssignUuidForOrder" type="Magento\SalesOrdersDataExporter\Plugin\AssignUuidForOrder"/>
     </type>
     <type name="Magento\Sales\Model\ResourceModel\Order\Creditmemo">
-        <plugin name="AssignUuidForCreditMemo"
-            type="Magento\SalesOrdersDataExporter\Plugin\AssignUuidForCreditMemo" />
+        <plugin name="AssignUuidForCreditMemo" type="Magento\SalesOrdersDataExporter\Plugin\AssignUuidForCreditMemo"/>
     </type>
     <type name="Magento\Sales\Model\ResourceModel\Order\Shipment">
-        <plugin name="AssignUuidForShipment"
-            type="Magento\SalesOrdersDataExporter\Plugin\AssignUuidForShipment" />
+        <plugin name="AssignUuidForShipment" type="Magento\SalesOrdersDataExporter\Plugin\AssignUuidForShipment"/>
     </type>
 
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="link" xsi:type="object">
-                    Magento\SalesOrdersDataExporter\Console\Command\Link</item>
-                <item name="export" xsi:type="object">
-                    Magento\SalesOrdersDataExporter\Console\Command\ExportOnDemmand</item>
+                <item name="link" xsi:type="object">Magento\SalesOrdersDataExporter\Console\Command\Link</item>
+                <item name="export" xsi:type="object">Magento\SalesOrdersDataExporter\Console\Command\ExportOnDemmand</item>
             </argument>
         </arguments>
     </type>
