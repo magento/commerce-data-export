@@ -25,8 +25,12 @@ class DateTimeRangeOrderIdsProvider implements EntityIdsProviderInterface
     private DateTime $from;
     private DateTime $to;
 
-    public function __construct(ResourceConnection $resourceConnection, BatchIteratorFactory $batchIteratorFactory, DateTime $from, DateTime $to)
-    {
+    public function __construct(
+        ResourceConnection $resourceConnection,
+        BatchIteratorFactory $batchIteratorFactory,
+        DateTime $from,
+        DateTime $to
+    ) {
         $this->from = $from;
         $this->to = $to;
         $this->resourceConnection = $resourceConnection;
@@ -57,8 +61,13 @@ class DateTimeRangeOrderIdsProvider implements EntityIdsProviderInterface
         return $ids;
     }
 
-    private function findOrders(DateTime $from, DateTime $to, string $fieldName, string $tableName, int $batchSize = 100): Generator
-    {
+    private function findOrders(
+        DateTime $from,
+        DateTime $to,
+        string $fieldName,
+        string $tableName,
+        int $batchSize = 100
+    ): Generator {
         $connection = $this->resourceConnection->getConnection();
         $select = $connection->select()
             ->from(
