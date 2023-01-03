@@ -47,7 +47,7 @@ class DateTimeRangeOrderIdsProvider implements EntityIdsProviderInterface
     {
         $fieldName = $metadata->getFeedIdentity();
         $tableName = $this->resourceConnection->getTableName($metadata->getSourceTableName());
-        return $this->findOrders($this->from, $this->to, $fieldName, $tableName);
+        return $this->findOrders($this->from, $this->to, $fieldName, $tableName, $metadata->getBatchSize());
     }
 
     /**
