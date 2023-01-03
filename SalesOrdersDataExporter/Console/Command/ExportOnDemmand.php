@@ -94,7 +94,7 @@ class ExportOnDemmand extends Command
     {
         $returnCode = $this->linkCommand->
             prepareForExport(
-                10000,
+                $this->metadata->getBatchSize(),
                 $output,
                 $from->format(DateTimeInterface::W3C),
                 $to->format(DateTimeInterface::W3C)
