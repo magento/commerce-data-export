@@ -149,8 +149,11 @@ class Link extends \Symfony\Component\Console\Command\Command
     /**
      * Updating UUID
      *
-     * @param InputInterface $input
+     * @param int $batchSize
      * @param OutputInterface $output
+     * @param string $from
+     * @param string $to
+     * @param string $state
      * @return int
      */
     public function prepareForExport(
