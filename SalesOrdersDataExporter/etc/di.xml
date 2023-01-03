@@ -25,11 +25,11 @@
     </virtualType>
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OnDemandOrdersFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
-            <argument name="feedName" xsi:type="string">onDemandSalesOrders</argument>
+            <argument name="feedName" xsi:type="string">onDemandSalesOrdersV2</argument>
             <argument name="feedIdentity" xsi:type="string">commerceOrderId</argument>
             <argument name="sourceTableName" xsi:type="string">sales_order</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
-            <argument name="feedTableName" xsi:type="string">sales_data_export_on_demmand_orders</argument>
+            <argument name="feedTableName" xsi:type="string">sales_data_exporter_on_demmand_orders_v2</argument>
             <argument name="feedTableField" xsi:type="string">id</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">
                 <item name="feed_data" xsi:type="string">feed_data</item>
@@ -200,7 +200,7 @@
         <arguments>
             <argument name="classMap" xsi:type="array">
                 <item name="salesOrders" xsi:type="string">Magento\SalesOrdersDataExporter\Model\OrdersFeed</item>
-                <item name="onDemandSalesOrders" xsi:type="string">Magento\SalesOrdersDataExporter\Model\OrdersOnDemmandExportFeed</item>
+                <item name="onDemandSalesOrdersV2" xsi:type="string">Magento\SalesOrdersDataExporter\Model\OrdersOnDemmandExportFeed</item>
             </argument>
         </arguments>
     </type>

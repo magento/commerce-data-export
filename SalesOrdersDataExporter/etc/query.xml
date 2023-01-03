@@ -83,7 +83,7 @@
             </link-source>
         </source>
     </query>
-    <query name="onDemandSalesOrders">
+    <query name="onDemandSalesOrdersV2">
         <source name="sales_order">
             <attribute name="entity_id" alias="commerceOrderId" />
             <attribute name="increment_id" alias="commerceOrderNumber" />
