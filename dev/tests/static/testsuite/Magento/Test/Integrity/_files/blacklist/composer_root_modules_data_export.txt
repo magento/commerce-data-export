@@ -13,3 +13,5 @@ magento/module-query-xml
 magento/module-website-data-exporter
 magento/module-customer-group-data-exporter
 magento/module-sales-orders-data-exporter
+magento/module-product-price-data-exporter
+magento/module-scopes-data-exporter

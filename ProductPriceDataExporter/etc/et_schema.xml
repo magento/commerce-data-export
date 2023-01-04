@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_DataExporter:etc/et_schema.xsd">
+    <record name="ProductPriceV2">
+        <field name="websiteId" type="Int"/>
+        <field name="productId" type="Int"/>
+
+        <field name="websiteCode" type="String"/>
+        <field name="customerGroupCode" type="String"/>
+        <field name="sku" type="String"/>
+        <field name="regular" type="Float"/>
+        <field name="parents" type="ProductPriceParent" repeated="true"/>
+        <field name="deleted" type="Boolean"/>
+        <field name="discounts" type="DiscountPrice" repeated="true"/>
+        <field name="updatedAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
+            <using field="productPriceId"/>
+        </field>
+    </record>
+    <record name="ProductPriceParent">
+        <field name="type" type="Int"/>
+        <field name="sku" type="String"/>
+    </record>
+    <record name="DiscountPrice">
+        <field name="code" type="String"/>
+        <field name="price" type="Float"/>
+    </record>
+    <record name="Export">
+        <field name="productPrices" type="ProductPriceV2" repeated="true"
+               provider="Magento\ProductPriceDataExporter\Model\Provider\ProductPrice">
+            <using field="productPriceId"/>
+        </field>
+    </record>
+</config>

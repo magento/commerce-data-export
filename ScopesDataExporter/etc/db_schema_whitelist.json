@@ -1,7 +1,7 @@
 {
   "scopes_website_data_exporter": {
     "index": {
-      "scopes_website_data_exporter_modified_at": true
+      "SCOPES_WEBSITE_DATA_EXPORTER_MODIFIED_AT": true
     },
     "constraint": {
       "PRIMARY": true
@@ -15,7 +15,7 @@
   },
   "scopes_customergroup_data_exporter": {
     "index": {
-      "scopes_customergroup_data_exporter_modified_at": true
+      "SCOPES_CUSTOMERGROUP_DATA_EXPORTER_MODIFIED_AT": true
     },
     "constraint": {
       "PRIMARY": true

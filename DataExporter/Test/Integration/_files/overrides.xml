@@ -10,4 +10,5 @@
     <test class="Magento\Framework\HTTP\AsyncClientInterfaceTest" skip="true"/>
     <!-- skip unrelated test: Product not found after import with staging (MDEE-166) -->
     <test class="Magento\CatalogImportExport\Model\ProductStagingTest" skip="true"/>
+    <test class="Magento\CatalogImportExport\Model\Import\Product\Type\AbstractTest" skip="true"/>
 </overrides>

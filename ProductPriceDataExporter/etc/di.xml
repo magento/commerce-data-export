@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="feedName" xsi:type="string">productPrices</argument>
+            <argument name="feedIdentity" xsi:type="string">productId</argument>
+            <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
+            <argument name="sourceTableField" xsi:type="string">entity_id</argument>
+            <argument name="feedTableName" xsi:type="string">catalog_data_exporter_product_prices</argument>
+            <argument name="feedTableField" xsi:type="string">product_id</argument>
+            <argument name="feedTableMutableColumns" xsi:type="array">
+                <item name="feed_data" xsi:type="string">feed_data</item>
+                <item name="is_deleted" xsi:type="string">is_deleted</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
+        <arguments>
+            <argument name="mapping" xsi:type="array">
+                <item name="product_id" xsi:type="string">productId</item>
+                <item name="website_id" xsi:type="string">websiteId</item>
+                <item name="customer_group_code" xsi:type="string">customerGroupCode</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata</argument>
+            <argument name="serializer" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceDataSerializer</argument>
+            <argument name="processor" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexProcessorCreateUpdateDelete</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\ProductPriceDataExporter\Model\ProductPriceFeed" type="Magento\DataExporter\Model\Feed">
+        <arguments>
+            <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata</argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\DataExporter\Model\FeedPool">
+        <arguments>
+            <argument name="classMap" xsi:type="array">
+                <item name="productPrices" xsi:type="string">Magento\ProductPriceDataExporter\Model\ProductPriceFeed</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceMarkRemovedEntities" type="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
+        <arguments>
+            <argument name="markRemovedEntitiesQuery" xsi:type="object">Magento\ProductPriceDataExporter\Model\Query\MarkRemovedEntitiesQuery</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexProcessorCreateUpdateDelete" type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
+        <arguments>
+            <argument name="markRemovedEntities" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceMarkRemovedEntities</argument>
+        </arguments>
+    </virtualType>
+</config>
