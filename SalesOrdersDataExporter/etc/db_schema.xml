@@ -38,8 +38,8 @@
             <column name="modified_at"/>
         </index>
     </table>
-    <table name="sales_data_exporter_on_demmand_orders_v2" resource="default" engine="innodb"
-        comment="Sales Orders On Demmand Export Feed Storage">
+    <table name="sales_data_exporter_on_demand_orders_v2" resource="default" engine="innodb"
+        comment="Sales Orders On Demand Export Feed Storage">
         <column xsi:type="int"
             name="id"
             padding="10"
@@ -66,7 +66,7 @@
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id" />
         </constraint>
-        <index referenceId="sales_data_exporter_on_demmand_orders_v2_modified_at" indexType="btree">
+        <index referenceId="sales_data_exporter_on_demand_orders_v2_modified_at" indexType="btree">
             <column name="modified_at" />
         </index>
     </table>

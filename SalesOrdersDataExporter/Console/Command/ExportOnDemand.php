@@ -23,9 +23,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Command export orders since certain time in the past
  */
-class ExportOnDemmand extends Command
+class ExportOnDemand extends Command
 {
-    private const COMMAND_NAME = 'commerce-data-export:orders:export-on-demmand';
+    private const COMMAND_NAME = 'commerce-data-export:orders:export-on-demand';
     private CommerceDataExportLoggerInterface $logger;
     private FeedIndexMetadata $metadata;
     private DateTimeRangeOrderProcessor $processor;
@@ -62,7 +62,7 @@ class ExportOnDemmand extends Command
     {
         $this
             ->setName(self::COMMAND_NAME)
-            ->setDescription('Exports orders since certain time in the past on demmand.')
+            ->setDescription('Exports orders since certain time in the past on demand.')
             ->addArgument(
                 'from',
                 InputArgument::REQUIRED,
