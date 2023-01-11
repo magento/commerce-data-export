@@ -3,238 +3,288 @@
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
- */
+*/
 -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_DataExporter:etc/et_schema.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_DataExporter:etc/et_schema.xsd">
     <record name="Export">
-        <field name="salesOrdersV2" type="OrderV2" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\Orders">
-            <using field="commerceOrderId"/>
+        <field name="salesOrdersV2" type="OrderV2" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Orders">
+            <using field="commerceOrderId" />
+        </field>
+        <field name="onDemandSalesOrdersV2" type="OrderV2" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Orders">
+            <using field="commerceOrderId" />
         </field>
     </record>
     <record name="OrderV2">
-        <field name="orderId" type="UUID" provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\Order">
-            <using field="commerceOrderId"/>
+        <field name="orderId" type="UUID"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\Order">
+            <using field="commerceOrderId" />
         </field>
-        <field name="commerceOrderId" type="String"/> <!-- legacy Commerce Order Id -->
-        <field name="commerceOrderNumber" type="String"/>
-        <field name="externalId" type="OrderExternalId" provider="Magento\SalesOrdersDataExporter\Model\Provider\ExternalOrderId">
-            <using field="commerceOrderId"/>
+        <field name="commerceOrderId" type="String" /> <!-- legacy Commerce Order Id -->
+        <field name="commerceOrderNumber" type="String" />
+        <field name="externalId" type="OrderExternalId"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\ExternalOrderId">
+            <using field="commerceOrderId" />
         </field>
-        <field name="createdAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
-            <using field="commerceOrderId"/>
+        <field name="createdAt" type="String"
+            provider="Magento\DataExporter\Model\Provider\DateConverter">
+            <using field="commerceOrderId" />
         </field>
-        <field name="updatedAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
-            <using field="commerceOrderId"/>
+        <field name="updatedAt" type="String"
+            provider="Magento\DataExporter\Model\Provider\DateConverter">
+            <using field="commerceOrderId" />
         </field>
-        <field name="state" type="Int" provider="Magento\SalesOrdersDataExporter\Model\Provider\State">
-            <using field="commerceOrderId"/>
+        <field name="state" type="Int"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\State">
+            <using field="commerceOrderId" />
         </field>
-        <field name="status" type="String"/>
-        <field name="totalInvoiced" type="Float"/>
-        <field name="totalQtyOrdered" type="Float"/>
-        <field name="isVirtual" type="Boolean"/>
-        <field name="grandTotal" type="Float"/>
-        <field name="currency" type="String"/>
-        <field name="amountCapturedOnline" type="Float"/>
-        <field name="amountRefundedOnline" type="Float"/>
-        <field name="amountAuthorized" type="Float"/>
-        <field name="amountPaid" type="Float"/>
-        <field name="amountRefunded" type="Float"/>
-        <field name="amountCanceled" type="Float"/>
-        <field name="storeViewCode" type="String"/>
-        <field name="storeCode" type="String"/>
-        <field name="websiteCode" type="String"/>
-        <field name="storeId" type="Int"/>
-        <field name="customerEmail" type="String"/>
-        <field name="customerNote" type="String"/>
-        <field name="payment" type="Payment" repeated="false" provider="Magento\SalesOrdersDataExporter\Model\Provider\Payment">
-            <using field="commerceOrderId"/>
+        <field name="status" type="String" />
+        <field name="totalInvoiced" type="Float" />
+        <field name="totalQtyOrdered" type="Float" />
+        <field name="isVirtual" type="Boolean" />
+        <field name="grandTotal" type="Float" />
+        <field name="currency" type="String" />
+        <field name="amountCapturedOnline" type="Float" />
+        <field name="amountRefundedOnline" type="Float" />
+        <field name="amountAuthorized" type="Float" />
+        <field name="amountPaid" type="Float" />
+        <field name="amountRefunded" type="Float" />
+        <field name="amountCanceled" type="Float" />
+        <field name="storeViewCode" type="String" />
+        <field name="storeCode" type="String" />
+        <field name="websiteCode" type="String" />
+        <field name="storeId" type="Int" />
+        <field name="customerEmail" type="String" />
+        <field name="customerNote" type="String" />
+        <field name="payment" type="Payment" repeated="false"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Payment">
+            <using field="commerceOrderId" />
         </field>
-        <field name="shipping" type="Shipping" repeated="false" provider="Magento\SalesOrdersDataExporter\Model\Provider\Shipping">
-            <using field="commerceOrderId"/>
+        <field name="shipping" type="Shipping" repeated="false"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Shipping">
+            <using field="commerceOrderId" />
         </field>
 
-        <field name="items" type="OrderItemV2" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\OrderItems">
-            <using field="commerceOrderId"/>
+        <field name="items" type="OrderItemV2" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\OrderItems">
+            <using field="commerceOrderId" />
         </field>
-        <field name="invoices" type="InvoiceV2" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\Invoices">
-            <using field="commerceOrderId"/>
+        <field name="invoices" type="InvoiceV2" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Invoices">
+            <using field="commerceOrderId" />
         </field>
-        <field name="creditMemos" type="CreditMemoV2" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\CreditMemos">
-            <using field="commerceOrderId"/>
+        <field name="creditMemos" type="CreditMemoV2" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\CreditMemos">
+            <using field="commerceOrderId" />
         </field>
-        <field name="transactions" type="TransactionV2" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\Transactions">
-            <using field="commerceOrderId"/>
+        <field name="transactions" type="TransactionV2" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Transactions">
+            <using field="commerceOrderId" />
         </field>
-        <field name="shipments" type="Shipment" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\Shipment">
-            <using field="commerceOrderId"/>
+        <field name="shipments" type="Shipment" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Shipment">
+            <using field="commerceOrderId" />
         </field>
-        <field name="additionalInformation" type="CustomAttribute" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\OrderCustomAttribute">
-            <using field="commerceOrderId"/>
+        <field name="additionalInformation" type="CustomAttribute" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\OrderCustomAttribute">
+            <using field="commerceOrderId" />
         </field>
     </record>
 
     <record name="OrderExternalId">
-        <field name="id" type="ID"/>
-        <field name="salesChannel" type="String"/>
+        <field name="id" type="ID" />
+        <field name="salesChannel" type="String" />
     </record>
     <record name="UUID">
-        <field name="id" type="String"/>
+        <field name="id" type="String" />
     </record>
     <record name="OrderItemV2">
-        <field name="itemId" type="UUID" provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\OrderItem"> <!--Order Item UUID -->
-            <using field="entityId"/>
+        <field name="itemId" type="UUID"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\OrderItem"> <!--Order Item
+            UUID -->
+            <using field="entityId" />
         </field>
-        <field name="entityId" type="String"/> <!-- legacy identifiers -->
-        <field name="parentEntityId" type="String"/> <!-- legacy identifiers -->
-        <field name="isVirtual" type="Boolean"/>
-        <field name="qtyInvoiced" type="Float"/>
-        <field name="qtyShipped" type="Float"/>
-        <field name="qtyBackordered" type="Float"/>
-        <field name="qtyOrdered" type="Float"/>
-        <field name="qtyRefunded" type="Float"/>
-        <field name="qtyCanceled" type="Float"/>
-        <field name="productType" type="String"/>
-        <field name="itemsShippedTogether" type="Boolean" provider="Magento\SalesOrdersDataExporter\Model\Provider\Items\OrderItemAdjustment">
-            <using field="entityId"/>
+        <field name="entityId" type="String" /> <!-- legacy identifiers -->
+        <field name="parentEntityId" type="String" /> <!-- legacy identifiers -->
+        <field name="isVirtual" type="Boolean" />
+        <field name="qtyInvoiced" type="Float" />
+        <field name="qtyShipped" type="Float" />
+        <field name="qtyBackordered" type="Float" />
+        <field name="qtyOrdered" type="Float" />
+        <field name="qtyRefunded" type="Float" />
+        <field name="qtyCanceled" type="Float" />
+        <field name="productType" type="String" />
+        <field name="itemsShippedTogether" type="Boolean"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Items\OrderItemAdjustment">
+            <using field="entityId" />
         </field>
-        <field name="sku" type="String"/>
-        <field name="name" type="String"/>
-        <field name="qty" type="Int"/>
-        <field name="unitPrice" type="Float"/>
-        <field name="itemPrice" type="Float"/>
-        <field name="discountAmount" type="Float"/>
-        <field name="taxAmount" type="Float"/>
-        <field name="totalAmount" type="Float"/>
-        <field name="weight" type="Float"/>
-        <field name="updatedAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
-            <using field="entityId"/>
+        <field name="sku" type="String" />
+        <field name="name" type="String" />
+        <field name="qty" type="Int" />
+        <field name="unitPrice" type="Float" />
+        <field name="itemPrice" type="Float" />
+        <field name="discountAmount" type="Float" />
+        <field name="taxAmount" type="Float" />
+        <field name="totalAmount" type="Float" />
+        <field name="weight" type="Float" />
+        <field name="updatedAt" type="String"
+            provider="Magento\DataExporter\Model\Provider\DateConverter">
+            <using field="entityId" />
         </field>
-        <field name="additionalInformation" type="CustomAttribute" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\OrderItemCustomAttribute">
-            <using field="entityId"/>
+        <field name="additionalInformation" type="CustomAttribute" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\OrderItemCustomAttribute">
+            <using field="entityId" />
         </field>
     </record>
     <record name="Shipping">
-        <field name="shippingAddress" type="Address" repeated="false" provider="Magento\SalesOrdersDataExporter\Model\Provider\ShippingAddress">
-            <using field="commerceOrderId"/>
+        <field name="shippingAddress" type="Address" repeated="false"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\ShippingAddress">
+            <using field="commerceOrderId" />
         </field>
-        <field name="shippingMethodName" type="String"/>
-        <field name="shippingMethodCode" type="String"/>
-        <field name="shippingAmount" type="Float"/>
-        <field name="shippingTax" type="Float"/>
+        <field name="shippingMethodName" type="String" />
+        <field name="shippingMethodCode" type="String" />
+        <field name="shippingAmount" type="Float" />
+        <field name="shippingTax" type="Float" />
     </record>
     <record name="Payment">
-        <field name="billingAddress" type="Address" repeated="false" provider="Magento\SalesOrdersDataExporter\Model\Provider\BillingAddress">
-            <using field="commerceOrderId"/>
+        <field name="billingAddress" type="Address" repeated="false"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\BillingAddress">
+            <using field="commerceOrderId" />
         </field>
-        <field name="paymentMethodName" type="String"/>
-        <field name="paymentMethodCode" type="String"/>
-        <field name="totalAmount" type="Float"/>
-        <field name="taxAmount" type="Float"/>
-        <field name="currency" type="String"/>
+        <field name="paymentMethodName" type="String" />
+        <field name="paymentMethodCode" type="String" />
+        <field name="totalAmount" type="Float" />
+        <field name="taxAmount" type="Float" />
+        <field name="currency" type="String" />
     </record>
     <record name="Address">
-        <field name="phone" type="String"/>
-        <field name="region" type="String"/>
-        <field name="postcode" type="String"/>
-        <field name="street" type="String"/>
-        <field name="multiLineStreet" type="String" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\MultiLineStreet">
-            <using field="commerceOrderId"/>
+        <field name="phone" type="String" />
+        <field name="region" type="String" />
+        <field name="postcode" type="String" />
+        <field name="street" type="String" />
+        <field name="multiLineStreet" type="String" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\MultiLineStreet">
+            <using field="commerceOrderId" />
         </field>
-        <field name="city" type="String"/>
-        <field name="country" type="String"/>
-        <field name="firstname" type="String"/>
-        <field name="lastname" type="String"/>
+        <field name="city" type="String" />
+        <field name="country" type="String" />
+        <field name="firstname" type="String" />
+        <field name="lastname" type="String" />
     </record>
     <record name="CustomAttribute">
-        <field name="name" type="String"/>
-        <field name="value" type="String"/>
+        <field name="name" type="String" />
+        <field name="value" type="String" />
     </record>
     <record name="InvoiceV2">
-        <field name="entityId" type="ID"/>
-        <field name="isUsedForRefund" type="Boolean"/>
-        <field name="grandTotal" type="Float"/>
+        <field name="entityId" type="ID" />
+        <field name="isUsedForRefund" type="Boolean" />
+        <field name="grandTotal" type="Float" />
     </record>
     <record name="CreditMemoV2">
-        <field name="creditMemoId" type="UUID" provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\CreditMemo"> <!--Credit Memo UUID -->
-            <using field="entityId"/>
+        <field name="creditMemoId" type="UUID"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\CreditMemo"> <!--Credit
+            Memo UUID -->
+            <using field="entityId" />
         </field>
-        <field name="entityId" type="String"/>
-        <field name="state" type="Int"/>
-        <field name="createdAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
-            <using field="entityId"/>
+        <field name="entityId" type="String" />
+        <field name="state" type="Int" />
+        <field name="createdAt" type="String"
+            provider="Magento\DataExporter\Model\Provider\DateConverter">
+            <using field="entityId" />
         </field>
-        <field name="creditMemoComments" type="String" repeated="true"/>
-        <field name="shippingAmount" type="Float"/>
-        <field name="shippingTaxAmount" type="Float"/>
+        <field name="creditMemoComments" type="String" repeated="true" />
+        <field name="shippingAmount" type="Float" />
+        <field name="shippingTaxAmount" type="Float" />
 
-        <field name="adjustment" type="Float"/>
-        <field name="currency" type="String"/>
-        <field name="refundTaxes" type="Tax" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\RefundTaxes">
-            <using field="linkCreditMemoId"/>
+        <field name="adjustment" type="Float" />
+        <field name="currency" type="String" />
+        <field name="refundTaxes" type="Tax" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\RefundTaxes">
+            <using field="linkCreditMemoId" />
         </field>
-        <field name="subtotal" type="Float"/> <!--base_subtotal. Not sure that we need that as subtotal can be calculated using shipping_price + items_price-->
-        <field name="productsTaxAmount" type="Float"/> <!--base_tax_amount. Not sure that we need that as products_tax also can be calculated-->
-        <field name="refundItems" type="RefundItem" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\RefundItem">
-            <using field="linkCreditMemoId"/>
+        <field name="subtotal" type="Float" /> <!--base_subtotal. Not sure that we need that as
+        subtotal can be calculated using shipping_price + items_price-->
+        <field name="productsTaxAmount" type="Float" /> <!--base_tax_amount. Not sure that we need
+        that as products_tax also can be calculated-->
+        <field name="refundItems" type="RefundItem" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\RefundItem">
+            <using field="linkCreditMemoId" />
         </field>
     </record>
     <record name="RefundItem"> <!--only for product refunds ???-->
-        <field name="orderItemId" type="UUID" provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\OrderItem"> <!--UUID of original order item -->
-            <using field="entityId"/>
+        <field name="orderItemId" type="UUID"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\OrderItem"> <!--UUID of
+            original order item -->
+            <using field="entityId" />
         </field>
-        <field name="qtyRefunded" type="Float"/>
-        <field name="basePrice" type="Float"/>
-        <field name="baseRowTotal" type="Float" provider="Magento\SalesOrdersDataExporter\Model\Provider\CreditMemoBaseRowTotal"> <!--price for row items (qty*base_price * [coefficient]) May include adjusted price including promotions-->
-            <using field="entityId"/>
+        <field name="qtyRefunded" type="Float" />
+        <field name="basePrice" type="Float" />
+        <field name="baseRowTotal" type="Float"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\CreditMemoBaseRowTotal"> <!--price
+            for row items (qty*base_price * [coefficient]) May include adjusted price including
+            promotions-->
+            <using field="entityId" />
         </field>
-        <field name="productTaxes" type="Tax" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\ProductTaxes">
-            <using field="entityId"/>
-            <using field="linkCreditMemoId"/>
+        <field name="productTaxes" type="Tax" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\ProductTaxes">
+            <using field="entityId" />
+            <using field="linkCreditMemoId" />
         </field>
     </record>
     <record name="Tax">
-        <field name="taxName" type="String"/>
-        <field name="taxType" type="String"/>
-        <field name="taxAmount" type="Float"/>
+        <field name="taxName" type="String" />
+        <field name="taxType" type="String" />
+        <field name="taxAmount" type="Float" />
     </record>
     <record name="TransactionV2">
-        <field name="entityId" type="ID"/>
-        <field name="txnId" type="String"/>
-        <field name="type" type="String"/>
-        <field name="createdAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
-            <using field="entityId"/>
+        <field name="entityId" type="ID" />
+        <field name="txnId" type="String" />
+        <field name="type" type="String" />
+        <field name="createdAt" type="String"
+            provider="Magento\DataExporter\Model\Provider\DateConverter">
+            <using field="entityId" />
         </field>
     </record>
     <record name="Shipment">
-        <field name="shipmentId" type="UUID" provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\Shipment"> <!--shipment UUID -->
-            <using field="shipment_id"/>
+        <field name="shipmentId" type="UUID"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\Shipment"> <!--shipment
+            UUID -->
+            <using field="shipment_id" />
         </field>
-        <field name="createdAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
-            <using field="shipment_id"/>
+        <field name="createdAt" type="String"
+            provider="Magento\DataExporter\Model\Provider\DateConverter">
+            <using field="shipment_id" />
         </field>
-        <field name="updatedAt" type="String" provider="Magento\SalesOrdersDataExporter\Model\Provider\DateConverter">
-            <using field="shipment_id"/>
+        <field name="updatedAt" type="String"
+            provider="Magento\DataExporter\Model\Provider\DateConverter">
+            <using field="shipment_id" />
         </field>
-        <field name="trackingInfo" type="TrackingInfo" repeated="false" provider="Magento\SalesOrdersDataExporter\Model\Provider\TrackingInfo">
-            <using field="shipment_id"/>
+        <field name="trackingInfo" type="TrackingInfo" repeated="false"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\TrackingInfo">
+            <using field="shipment_id" />
         </field>
-        <field name="items" type="ShipmentItem" repeated="true" provider="Magento\SalesOrdersDataExporter\Model\Provider\ShipmentItem">
-            <using field="shipment_id"/>
+        <field name="items" type="ShipmentItem" repeated="true"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\ShipmentItem">
+            <using field="shipment_id" />
         </field>
     </record>
     <record name="ShipmentItem">
-        <field name="orderItemId" type="UUID" provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\CreditMemoItem"> <!--UUID of original order item -->
-            <using field="order_item_id"/>
+        <field name="orderItemId" type="UUID"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\CreditMemoItem"> <!--UUID
+            of original order item -->
+            <using field="order_item_id" />
         </field>
-        <field name="qtyShipped" type="Float"/>
+        <field name="qtyShipped" type="Float" />
     </record>
     <record name="TrackingInfo">
-        <field name="shippingCarrier" type="String"/>
-        <field name="shippingMethod" type="String"/>
-        <field name="trackingNumber" type="String"/>
-        <field name="trackingUrl" type="String" repeated="false" provider="Magento\SalesOrdersDataExporter\Model\Provider\TrackingUrl">
-            <using field="id"/>
+        <field name="shippingCarrier" type="String" />
+        <field name="shippingMethod" type="String" />
+        <field name="trackingNumber" type="String" />
+        <field name="trackingUrl" type="String" repeated="false"
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\TrackingUrl">
+            <using field="id" />
         </field>
     </record>
 </config>

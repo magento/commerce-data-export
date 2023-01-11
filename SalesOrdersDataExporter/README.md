@@ -37,5 +37,13 @@ bin/magento indexer:reindex sales_order_data_exporter_v2
 
 Reindexing is currently limited to orders modified in the last 7 days.
 
-Note that `commerce-data-export:orders:link` will assign uuids to the orders older than last 7 days but only orders 
-modified within that timeframe will be exported. 
+Note that `commerce-data-export:orders:link` will assign uuids to the orders older than last 7 days but only orders
+modified within that timeframe will be exported.
+
+### Orders on demand
+Posibility to load sales orders from a date on SaaS Order Service. It's an independent process from usual sales order flow.
+To load orders:
+```shell
+ bin/magento commerce-data-export:orders:export-on-demand yyyymmdd
+```
+The command will assing uuids to orders and index them in sales_data_export_on_demand_orders. As it is a on demand op, no index is scheduled.
