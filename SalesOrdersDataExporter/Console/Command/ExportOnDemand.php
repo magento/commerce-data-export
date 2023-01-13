@@ -22,6 +22,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Command export orders since certain time in the past
+ * @deprecated will be removed
  */
 class ExportOnDemand extends Command
 {
