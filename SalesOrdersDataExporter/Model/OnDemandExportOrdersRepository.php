@@ -10,6 +10,7 @@ namespace Magento\SalesOrdersDataExporter\Model;
 use Generator;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Query\BatchIteratorFactory;
 
 class OnDemandExportOrdersRepository
 {

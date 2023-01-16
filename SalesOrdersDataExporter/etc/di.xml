@@ -69,6 +69,18 @@
         </arguments>
     </type>
 
+    <type name="Magento\SalesOrdersDataExporter\Model\OnDemandOrdersExporter">
+        <arguments>
+            <argument name="metadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OnDemandOrdersFeedIndexMetadata</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\SalesOrdersDataExporter\Model\OnDemandExportOrdersRepository">
+        <arguments>
+            <argument name="metadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OnDemandOrdersFeedIndexMetadata</argument>
+        </arguments>
+    </type>
+
     <!-- Providers -->
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\OrderItems" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
