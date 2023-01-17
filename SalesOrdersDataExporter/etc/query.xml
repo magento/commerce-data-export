@@ -77,8 +77,7 @@
             <link-source name="store_website" link-type="left">
                 <attribute name="code" alias="websiteCode" />
                 <using glue="and">
-                    <condition attribute="website_id" operator="eq" type="identifier">
-                        store.website_id</condition>
+                    <condition attribute="website_id" operator="eq" type="identifier">store.website_id</condition>
                 </using>
             </link-source>
         </source>
