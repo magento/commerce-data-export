@@ -21,14 +21,6 @@
             <using field="storeViewCode"/>
         </field>
     </record>
-    <record name="Category">
-        <field name="canonicalUrl" type="String"
-               provider="Magento\CatalogUrlRewriteDataExporter\Model\Provider\Category\CanonicalUrl"
-        >
-            <using field="categoryId" />
-            <using field="storeViewCode" />
-        </field>
-    </record>
     <record name="UrlRewrite">
         <field name="url" type="String"/>
         <field name="parameters" type="UrlRewriteParameter" repeated="true" />

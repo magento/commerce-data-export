@@ -110,7 +110,6 @@ abstract class AbstractCategoryTest extends TestCase
         $this->assertEquals($category->getIsActive(), $extract['isActive']);
         $this->assertEquals($category->getName(), $extract['name']);
         $this->assertEquals($category->getPath(), $extract['path']);
-        $this->assertEquals($category->getPathInStore(), $extract['pathInStore']);
         $this->assertEquals($category->getUrlKey(), $extract['urlKey']);
         $this->assertEquals($category->getUrlPath(), $extract['urlPath']);
         $this->assertEquals($category->getPosition(), $extract['position']);

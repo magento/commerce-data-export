@@ -170,7 +170,6 @@
                 <item name="name" xsi:type="string">name</item>
                 <item name="description" xsi:type="string">description</item>
                 <item name="url_key" xsi:type="string">url_key</item>
-                <item name="children_count" xsi:type="string">children_count</item>
                 <item name="url_path" xsi:type="string">url_path</item>
                 <item name="default_sort_by" xsi:type="string">default_sort_by</item>
                 <item name="available_sort_by" xsi:type="string">available_sort_by</item>

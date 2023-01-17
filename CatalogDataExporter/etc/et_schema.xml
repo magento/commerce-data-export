@@ -151,67 +151,7 @@
         </field>
         -->
     </record>
-    <record name="Category">
-        <field name="categoryId" type="ID"/>
-        <field name="storeViewCode" type="String"/>
-        <field name="storeCode" type="String"/>
-        <field name="websiteCode" type="String"/>
-        <field name="isActive" type="Int"/>
-        <field name="isAnchor" type="Int"/>
-        <field name="displayMode" type="String"/>
-        <field name="description" type="String"/>
-        <field name="metaTitle" type="String"/>
-        <field name="metaKeywords" type="String"/>
-        <field name="metaDescription" type="String"/>
-        <field name="name" type="String"/>
-        <field name="childrenCount" type="Int" />
-        <field name="includeInMenu" type="Int" />
-        <field name="path" type="String"/>
-        <field name="pathInStore" type="String"
-               provider="Magento\CatalogDataExporter\Model\Provider\Category\PathInStore"
-        >
-            <using field="categoryId"/>
-            <using field="storeViewCode"/>
-        </field>
-        <field name="urlKey" type="String"/>
-        <field name="urlPath" type="String"/>
-        <field name="image" type="String"
-               provider="Magento\CatalogDataExporter\Model\Provider\Category\Image"
-        >
-            <using field="categoryId"/>
-            <using field="storeViewCode"/>
-        </field>
-        <field name="position" type="Int"/>
-        <field name="level" type="Int"/>
-        <field name="parentId" type="Int"/>
-        <field name="createdAt" type="String"/>
-        <field name="updatedAt" type="String"/>
-        <field name="productCount" type="Int"
-               provider="Magento\CatalogDataExporter\Model\Provider\Category\ProductCount">
-            <using field="categoryId"/>
-            <using field="storeViewCode"/>
-        </field>
-        <field name="availableSortBy" type="String" repeated="true"
-               provider="Magento\CatalogDataExporter\Model\Provider\Category\AvailableSortBy"
-        >
-            <using field="categoryId"/>
-            <using field="storeViewCode"/>
-        </field>
-        <field name="defaultSortBy" type="String"
-               provider="Magento\CatalogDataExporter\Model\Provider\Category\DefaultSortBy"
-        >
-            <using field="categoryId"/>
-            <using field="storeViewCode"/>
-        </field>
-        <field name="breadcrumbs" type="Breadcrumbs" provider="Magento\CatalogDataExporter\Model\Provider\Category\Breadcrumbs" repeated="true">
-            <using field="categoryId" />
-            <using field="storeViewCode" />
-        </field>
-        <field name="children" type="String" provider="Magento\CatalogDataExporter\Model\Provider\Category\Children" repeated="true">
-            <using field="categoryId" />
-            <using field="storeViewCode" />
-        </field>
-    </record>
+
     <record name="Attribute">
         <field name="attributeCode" type="String"/>
         <field name="type" type="String" />
@@ -327,13 +267,7 @@
             <using field="storeViewCode" />
         </field>
     </record>
-    <record name="Breadcrumbs">
-        <field name="categoryId" type="String"/>
-        <field name="categoryName" type="String"/>
-        <field name="categoryLevel" type="Int"/>
-        <field name="categoryUrlKey" type="String"/>
-        <field name="categoryUrlPath" type="String"/>
-    </record>
+
     <!-- TODO: delete deprecated "MediaItem" type. use "Image" or "Video" instead -->
     <record name="MediaItem">
         <field name="url" type="String"/>
@@ -386,4 +320,67 @@
         <field name="type" type="String" />
         <field name="qty" type="Float" />
     </record>
+
+
+    <!-- Categories Feed -->
+    <record name="Category">
+        <!-- Category ID -->
+        <field name="categoryId" type="ID"/>
+        <field name="storeViewCode" type="String"/>
+        <field name="storeCode" type="String"/>
+        <field name="websiteCode" type="String"/>
+
+        <field name="name" type="String"/>
+        <field name="description" type="String"/>
+
+        <field name="metaTitle" type="String"/>
+        <field name="metaKeywords" type="String"/>
+        <field name="metaDescription" type="String"/>
+
+        <field name="displayMode" type="String"/>
+        <field name="urlKey" type="String"/>
+        <field name="urlPath" type="String"/>
+        <field name="image" type="String"
+               provider="Magento\CatalogDataExporter\Model\Provider\Category\Image"
+        >
+            <using field="categoryId"/>
+            <using field="storeViewCode"/>
+        </field>
+
+        <!-- Tree -->
+        <field name="level" type="Int"/>
+        <field name="path" type="String"/>
+        <field name="parentId" type="String"/>
+        <field name="children" type="String" provider="Magento\CatalogDataExporter\Model\Provider\Category\Children" repeated="true">
+            <using field="categoryId" />
+            <using field="storeViewCode" />
+        </field>
+
+        <!-- Sort  -->
+        <field name="position" type="Int"/>
+        <field name="defaultSortBy" type="String"
+               provider="Magento\CatalogDataExporter\Model\Provider\Category\DefaultSortBy"
+        >
+            <using field="categoryId"/>
+            <using field="storeViewCode"/>
+        </field>
+        <field name="availableSortBy" type="String" repeated="true"
+               provider="Magento\CatalogDataExporter\Model\Provider\Category\AvailableSortBy"
+        >
+            <using field="categoryId"/>
+            <using field="storeViewCode"/>
+        </field>
+
+        <!-- State  -->
+        <field name="isAnchor" type="Int"/>
+        <field name="includeInMenu" type="Int" />
+        <field name="isActive" type="Int"/>
+        <field name="deleted" type="Boolean"/>
+
+        <!--  Timestamp -->
+        <field name="createdAt" type="String"/>
+        <field name="updatedAt" type="String"/>
+        <field name="modifiedAt" type="String"/>
+    </record>
+
 </config>
