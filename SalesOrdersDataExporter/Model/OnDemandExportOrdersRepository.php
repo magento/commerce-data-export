@@ -39,10 +39,10 @@ class OnDemandExportOrdersRepository
                 ['count' => 'COUNT(*)']
             );
         $row = $connection->fetchRow($select);
-        return $row['count'];
+        return intval($row['count']);
     }
 
-    public function fetchOrders(int $batchSize = 100): Generator
+    public function fetchOrders(): Generator
     {
         $tableName = $this->resourceConnection->getTableName($this->metadata->getFeedTableName());
         $connection = $this->resourceConnection->getConnection();
@@ -56,7 +56,7 @@ class OnDemandExportOrdersRepository
         $iterator = $this->batchIteratorFactory->create(
             [
                 'select' => $select,
-                'batchSize' => $batchSize,
+                'batchSize' => $this->metadata->getBatchSize(),
                 'correlationName' => 'order',
                 'rangeField' => 'id',
                 'rangeFieldAlias' => 'id',

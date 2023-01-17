@@ -13,7 +13,6 @@ use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Intl\DateTimeFactory;
-use Magento\SalesOrdersDataExporter\Console\Command\Link;
 use Magento\SalesOrdersDataExporter\Model\Indexer\DateTimeRangeOrderProcessor;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -46,8 +45,7 @@ class ExportOnDemand extends Command
         DateTimeRangeOrderProcessor       $processor,
         DateTimeFactory                   $dateTimeFactory,
         Link                              $link
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->metadata = $metadata;
         $this->processor = $processor;
@@ -94,9 +92,8 @@ class ExportOnDemand extends Command
     private function ensureAssignedUuids(DateTime $from, DateTime $to, OutputInterface $output): int
     {
         $returnCode = $this->linkCommand->
-            prepareForExport(
+            assignUuidsToOrderEntities(
                 $this->metadata->getBatchSize(),
-                $output,
                 $from->format(DateTimeInterface::W3C),
                 $to->format(DateTimeInterface::W3C)
             );

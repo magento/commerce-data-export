@@ -135,7 +135,26 @@ class Link extends \Symfony\Component\Console\Command\Command
                 ? (new \DateTime($input->getOption(self::OPTION_TO)))->format(\DateTimeInterface::W3C)
                 : null;
 
-            return $this->prepareForExport($batchSize, $output, $from, $to, $state);
+            $output->writeln(
+                sprintf(
+                    '<info>Start updating UUID with parameters [state=%s, from=%s, to=%s, batch_size=%s]</info>',
+                    $state ?: 'all',
+                    $from ?: date(\DateTimeInterface::W3C, 0),
+                    $to ?: date(\DateTimeInterface::W3C),
+                    $batchSize
+                )
+            );
+
+            $updatedEntities = $this->assignUuidsToOrderEntities($batchSize, $from, $to, $state);
+
+            $output->writeln(
+                sprintf(
+                    '<info>Update completed successfully, %s entities updated</info>',
+                    $updatedEntities
+                )
+            );
+
+            return CLI::RETURN_SUCCESS;
         } catch (\Throwable $e) {
             $output->writeln('<error>Failed to update UUID. Check logs</error>');
             $this->logger->error(
@@ -150,51 +169,23 @@ class Link extends \Symfony\Component\Console\Command\Command
      * Updating UUID
      *
      * @param int $batchSize
-     * @param OutputInterface $output
-     * @param string $from
-     * @param string $to
+     * @param string|null $from
+     * @param string|null $to
      * @param string $state
      * @return int
      */
-    public function prepareForExport(
+    public function assignUuidsToOrderEntities(
         int $batchSize,
-        OutputInterface $output,
         string $from = null,
         string $to = null,
         string $state = ''
-    ) {
-        try {
-            $output->writeln(
-                sprintf(
-                    '<info>Start updating UUID with parameters [state=%s, from=%s, to=%s, batch_size=%s]</info>',
-                    $state ?: 'all',
-                    $from ?: date(\DateTimeInterface::W3C, 0),
-                    $to ?: date(\DateTimeInterface::W3C),
-                    $batchSize
-                )
-            );
-
-            $updatedEntities = 0;
-            foreach ($this->getOrders($state, $batchSize, $from, $to) as $type => $entityIds) {
-                $this->uuidManager->assignBulk($entityIds, $type);
-                $updatedEntities += count($entityIds);
-            }
-            $output->writeln(
-                sprintf(
-                    '<info>Update completed successfully, %s entities updated</info>',
-                    $updatedEntities
-                )
-            );
-            return Cli::RETURN_SUCCESS;
-
-        } catch (\Throwable $e) {
-            $output->writeln('<error>Failed to update UUID. Check logs</error>');
-            $this->logger->error(
-                sprintf('Command "%s" failed. Error message: %s', self::COMMAND_NAME, $e->getMessage())
-            );
-
-            return Cli::RETURN_FAILURE;
+    ): int {
+        $updatedEntities = 0;
+        foreach ($this->getOrders($state, $batchSize, $from, $to) as $type => $entityIds) {
+            $this->uuidManager->assignBulk($entityIds, $type);
+            $updatedEntities += count($entityIds);
         }
+        return $updatedEntities;
     }
 
     /**

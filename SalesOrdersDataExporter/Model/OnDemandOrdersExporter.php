@@ -11,11 +11,8 @@ use DateTime;
 use DateTimeInterface;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
-use Magento\Framework\Console\Cli;
 use Magento\SalesOrdersDataExporter\Console\Command\Link;
 use Magento\SalesOrdersDataExporter\Model\Indexer\DateTimeRangeOrderProcessor;
-use Symfony\Component\Console\Output\NullOutput;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class OnDemandOrdersExporter
 {
@@ -36,23 +33,15 @@ class OnDemandOrdersExporter
         $this->linkCommand = $linkCommand;
     }
 
-    public function export(DateTime $from, DateTime $to, OutputInterface $output = null): void
+    public function export(DateTime $from, DateTime $to): void
     {
-        $output = $output ?? new NullOutput();
-        $this->ensureAssignedUuids($from, $to, $output);
-        $this->processor->fullReindex($this->metadata, $from, $to);
-    }
-
-    private function ensureAssignedUuids(DateTime $from, DateTime $to, OutputInterface $output): void
-    {
-        $returnCode = $this->linkCommand->prepareForExport(
+        $this->linkCommand->assignUuidsToOrderEntities(
             $this->metadata->getBatchSize(),
-            $output,
             $from->format(DateTimeInterface::W3C),
             $to->format(DateTimeInterface::W3C)
         );
-        if ($returnCode != Cli::RETURN_SUCCESS) {
-            $this->logger->error('Command "commerce-data-export:orders:link" failed.');
-        }
+        $this->processor->fullReindex($this->metadata, $from, $to);
+        // TODO: would be interesting here to return the amount of orders indexed but impl needs further thinking
     }
+
 }
