@@ -149,7 +149,7 @@ class FeedIndexMetadata
     }
 
     /**
-     * Get feed identity
+     * Feed identity. Used as argument name in Data Provider that holds ids from Source Table
      *
      * @return string
      */
@@ -169,7 +169,7 @@ class FeedIndexMetadata
     }
 
     /**
-     * Get feed table field
+     * Feed Table Field - part of the feed identity, used to find all feed items and mark entity as "deleted"
      *
      * @return string
      */

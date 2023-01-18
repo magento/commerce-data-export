@@ -49,6 +49,7 @@ class Converter implements ConverterInterface
         foreach ($configData['config'][0]['record'] as $queryData) {
             $records[$queryData['name']] = [
                 'name' => $queryData['name'],
+                'skipNull' => isset($queryData['skipNull']) && $queryData['skipNull'] == "true"
             ];
             $idField = null;
             foreach ($queryData['field'] as $fieldData) {

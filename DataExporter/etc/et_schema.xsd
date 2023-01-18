@@ -38,6 +38,8 @@
             <xs:element name="field" type="Field"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required" />
+        <!-- With skipNull=true fields with null values will be omitted from payload for REST API -->
+        <xs:attribute name="skipNull" type="xs:boolean" use="optional" default="false" />
     </xs:complexType>
     <xs:complexType name="Field">
         <xs:choice minOccurs="0" maxOccurs="unbounded">

@@ -147,7 +147,7 @@ class Transformer
                 foreach ($type['field'] as $field) {
                     if (isset($value[$field['name']])) {
                         $result[$field['name']] = $this->castToFieldType($field, $value[$field['name']]);
-                    } else {
+                    } elseif (!$type['skipNull']) {
                         $result[$field['name']] = null;
                     }
                 }
