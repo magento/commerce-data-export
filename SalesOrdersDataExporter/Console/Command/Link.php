@@ -147,12 +147,7 @@ class Link extends \Symfony\Component\Console\Command\Command
 
             $updatedEntities = $this->assignUuidsToOrderEntities($batchSize, $from, $to, $state);
 
-            $output->writeln(
-                sprintf(
-                    '<info>Update completed successfully, %s entities updated</info>',
-                    $updatedEntities
-                )
-            );
+            $output->writeln("<info>Assign UUID completed successfully, $updatedEntities entities updated</info>");
 
             return CLI::RETURN_SUCCESS;
         } catch (\Throwable $e) {
