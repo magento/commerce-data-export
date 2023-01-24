@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Provider;
 
+use Magento\DataExporter\Exception\UnableSendData;
 use Magento\DataExporter\Export\Request\Node;
 use Magento\DataExporter\Export\Request\Info;
 use Magento\QueryXml\Model\QueryProcessor;
@@ -165,9 +166,19 @@ class QueryDataProvider
         if (!$isRoot) {
             $result = [];
             $cursor = $this->queryProcessor->execute($queryName, $arguments);
+            $nodeIndexFields = $this->getNodeIndexFields($node);
             while ($row = $cursor->fetch()) {
                 $index = [];
-                foreach ($this->getNodeIndexFields($node) as $indexField) {
+                foreach ($nodeIndexFields as $indexField) {
+                    if(!isset($row[$indexField])) {
+                        $errormsg = __(
+                            'Data mismatch in query "%1", expected indexField: "%2". row: "%3". Verify query.xml configuration and clean data cache.',
+                            $queryName,
+                            $indexField,
+                            var_export($row, true)
+                        );
+                        throw new UnableSendData($errormsg);
+                    }
                     $index[$indexField] = $row[$indexField];
                 }
                 $result[] = array_merge($index, [$field['name'] => $row]);
