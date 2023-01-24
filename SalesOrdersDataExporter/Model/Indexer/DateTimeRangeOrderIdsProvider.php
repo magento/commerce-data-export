@@ -20,10 +20,10 @@ use Magento\Framework\DB\Query\BatchIteratorFactory;
  */
 class DateTimeRangeOrderIdsProvider implements EntityIdsProviderInterface
 {
-    private ResourceConnection $resourceConnection;
-    private BatchIteratorFactory $batchIteratorFactory;
-    private DateTime $from;
-    private DateTime $to;
+    private $resourceConnection;
+    private $batchIteratorFactory;
+    private $from;
+    private $to;
 
     public function __construct(
         ResourceConnection $resourceConnection,

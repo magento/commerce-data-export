@@ -26,11 +26,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ExportOnDemand extends Command
 {
     private const COMMAND_NAME = 'commerce-data-export:orders:export-on-demand';
-    private CommerceDataExportLoggerInterface $logger;
-    private FeedIndexMetadata $metadata;
-    private DateTimeRangeOrderProcessor $processor;
-    private DateTimeFactory $dateTimeFactory;
-    private Link $linkCommand;
+    private $logger;
+    private $metadata;
+    private $processor;
+    private $dateTimeFactory;
+    private $linkCommand;
 
     /**
      * @param CommerceDataExportLoggerInterface $logger

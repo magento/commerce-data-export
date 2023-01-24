@@ -15,10 +15,10 @@ use Magento\Framework\DB\Query\BatchIteratorFactory;
 
 class DateTimeRangeOrderProcessor
 {
-    private ResourceConnection $resourceConnection;
-    private BatchIteratorFactory $batchIteratorFactory;
-    private DataSerializerInterface $serializer;
-    private FeedIndexProcessorInterface $delegatingProcessor;
+    private $resourceConnection;
+    private $batchIteratorFactory;
+    private $serializer;
+    private $delegatingProcessor;
 
     public function __construct(
         ResourceConnection $resourceConnection,

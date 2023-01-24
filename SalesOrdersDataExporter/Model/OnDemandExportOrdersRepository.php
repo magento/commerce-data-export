@@ -14,9 +14,9 @@ use Magento\Framework\DB\Query\BatchIteratorFactory;
 
 class OnDemandExportOrdersRepository
 {
-    private FeedIndexMetadata $metadata;
-    private ResourceConnection $resourceConnection;
-    private BatchIteratorFactory $batchIteratorFactory;
+    private $metadata;
+    private $resourceConnection;
+    private $batchIteratorFactory;
 
     public function __construct(
         FeedIndexMetadata    $metadata,

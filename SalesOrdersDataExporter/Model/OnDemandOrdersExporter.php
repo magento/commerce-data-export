@@ -16,10 +16,10 @@ use Magento\SalesOrdersDataExporter\Model\Indexer\DateTimeRangeOrderProcessor;
 
 class OnDemandOrdersExporter
 {
-    private CommerceDataExportLoggerInterface $logger;
-    private FeedIndexMetadata $metadata;
-    private DateTimeRangeOrderProcessor $processor;
-    private Link $linkCommand;
+    private $logger;
+    private $metadata;
+    private $processor;
+    private $linkCommand;
 
     public function __construct(
         CommerceDataExportLoggerInterface $logger,
