@@ -30,7 +30,7 @@
         <field name="stores"
                type="StoreGroup"
                repeated="true"
-               provider="Magento\DataExporter\Model\Provider\QueryDataProvider">
+               provider="Magento\ScopesDataExporter\Model\Provider\ScopesStoreGroupProvider">
             <using field="websiteId"/>
         </field>
     </record>
@@ -41,7 +41,7 @@
         <field name="storeViews"
                type="StoreView"
                repeated="true"
-               provider="Magento\DataExporter\Model\Provider\QueryDataProvider">
+               provider="Magento\ScopesDataExporter\Model\Provider\ScopesStoreViewProvider">
             <using field="storeId"/>
         </field>
     </record>

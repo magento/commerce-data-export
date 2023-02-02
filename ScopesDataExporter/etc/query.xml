@@ -20,7 +20,7 @@
         </source>
     </query>
 
-    <query name="stores">
+    <query name="scopesStoreGroup">
         <source name="store_group">
             <attribute name="group_id" alias="storeId" />
             <attribute name="website_id" alias="websiteId" />
@@ -31,7 +31,7 @@
         </source>
     </query>
 
-    <query name="storeViews">
+    <query name="scopesStoreView">
         <source name="store">
             <attribute name="group_id" alias="storeId" />
             <attribute name="store_id" alias="storeViewId" />

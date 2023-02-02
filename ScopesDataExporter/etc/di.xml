@@ -117,4 +117,20 @@
             </argument>
         </arguments>
     </type>
+
+    <virtualType
+            name="Magento\ScopesDataExporter\Model\Provider\ScopesStoreGroupProvider"
+            type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+        <arguments>
+            <argument name="queryName" xsi:type="string">scopesStoreGroup</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType
+            name="Magento\ScopesDataExporter\Model\Provider\ScopesStoreViewProvider"
+            type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+        <arguments>
+            <argument name="queryName" xsi:type="string">scopesStoreView</argument>
+        </arguments>
+    </virtualType>
 </config>
