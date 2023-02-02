@@ -45,7 +45,7 @@
     <query name="scopesCustomerGroup">
         <source name="customer_group">
             <attribute name="customer_group_id" alias="customerGroupId"/>
-            <attribute name="customer_group_code" alias="customerGroupCode" />
+            <attribute name="customer_group_id" alias="customerGroupCode" function="sha1"/>
             <filter glue="and">
                 <condition attribute="customer_group_id" operator="in" type="placeholder">customerGroupId</condition>
             </filter>

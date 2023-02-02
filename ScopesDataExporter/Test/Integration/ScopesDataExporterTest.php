@@ -32,14 +32,14 @@ final class ScopesDataExporterTest extends TestCase
     private const EXPECTED_CUSTOMER_GROUP_DATA = [
         [
             "customerGroupId" => "0",
-            "customerGroupCode" => "NOT LOGGED IN",
+            "customerGroupCode" => "b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
             "websites" => [
                 ["websiteId" => "1", "websiteCode" => "base"]
             ]
         ],
         [
             "customerGroupId" => "1",
-            "customerGroupCode" => "General",
+            "customerGroupCode" => "356a192b7913b04c54574d18c28d46e6395428ab",
             "websites" => [
                 ["websiteId" => 1, "websiteCode" => "base"]
             ]
