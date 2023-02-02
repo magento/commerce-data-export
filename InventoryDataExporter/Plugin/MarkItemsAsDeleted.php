@@ -49,23 +49,27 @@ class MarkItemsAsDeleted
 
         $fetchedSourceItems = $this->stockStatusDeleteQuery->getStocksAssignedToSkus(array_keys($deletedSourceItems));
 
-        $stocksToDelete = $this->getStocksToDelete($deletedSourceItems, $fetchedSourceItems);
+        if (!empty($fetchedSourceItems)) {
+            $stocksToDelete = $this->getStocksToDelete($deletedSourceItems, $fetchedSourceItems);
+        }
         if (!empty($stocksToDelete)) {
             $this->stockStatusDeleteQuery->markStockStatusesAsDeleted($stocksToDelete);
         }
     }
 
     /**
+     * Get stocks to delete
+     *
      * @param array $deletedSourceItems
-     * @param $fetchedSourceItems
+     * @param array $fetchedSourceItems
      * @return array
      */
-    private function getStocksToDelete(array $deletedSourceItems, $fetchedSourceItems): array
+    private function getStocksToDelete(array $deletedSourceItems, array $fetchedSourceItems): array
     {
         $stocksToDelete = [];
         foreach ($deletedSourceItems as $deletedItemSku => $deletedItemSources) {
             foreach ($fetchedSourceItems[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
-                if ($this->getContainsAllKeys($fetchedItemSources, $deletedItemSources)) {
+                if ($this->isContainsAllKeys($fetchedItemSources, $deletedItemSources)) {
                     $stockStatusId = StockStatusIdBuilder::build(
                         ['stockId' => (string)$fetchedItemStockId, 'sku' => $deletedItemSku]
                     );
@@ -81,11 +85,13 @@ class MarkItemsAsDeleted
     }
 
     /**
+     * Is contains all keys
+     *
      * @param array $fetchedSources
      * @param array $deletedSources
      * @return bool
      */
-    private function getContainsAllKeys(array $fetchedSources, array $deletedSources): bool
+    private function isContainsAllKeys(array $fetchedSources, array $deletedSources): bool
     {
         return empty(\array_diff($fetchedSources, $deletedSources));
     }

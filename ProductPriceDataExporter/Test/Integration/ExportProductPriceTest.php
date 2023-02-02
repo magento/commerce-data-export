@@ -73,34 +73,34 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
     private function getExpectedProductPricesForSimpleProducts(): array
     {
         return [
-             [
+            [
                 'sku' => 'simple_product_with_regular_price',
                 'customerGroupCode' => '0',
                 'regular' => 10,
                 'deleted' => false,
                 'discounts' => null,
-             ],
-             [
+            ],
+            [
                 'sku' => 'simple_product_with_special_price',
                 'customerGroupCode' => '0',
                 'regular' => 20,
                 'deleted' => false,
                 'discounts' => [0 => ['code' => 'special_price', 'price' => 5]],
-             ],
-             [
+            ],
+            [
                 'sku' => 'virtual_product_with_special_price',
                 'customerGroupCode' => '0',
                 'regular' => 200,
                 'deleted' => false,
                 'discounts' => [0 => ['code' => 'special_price', 'price' => 50]],
-             ],
-             [
+            ],
+            [
                 'sku' => 'grouped_product',
                 'customerGroupCode' => '0',
                 'regular' => 0,
                 'deleted' => false,
                 'discounts' => null,
-             ],
+            ],
             [
                 'sku' => 'simple_product_with_special_price_for_cg',
                 'customerGroupCode' => '0',
@@ -218,7 +218,7 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
             // unset fields from feed that we don't care about for test
             $actualFeed = $this->unsetNotImportantField($actualProductPricesFeed['feed'][$index]);
 
-            self::assertEquals($product, $actualFeed, "Some items are missing in product price feed ${index}");
+            self::assertEquals($product, $actualFeed, "Some items are missing in product price feed $index");
         }
     }
 

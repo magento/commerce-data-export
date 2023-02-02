@@ -1,14 +1,3 @@
-<!---
-    Thank you for contributing to Magento.
-    To help us process this pull request we recommend that you add the following information:
-     - Summary of the pull request,
-     - Issue(s) related to the changes made,
-     - Manual testing scenarios
-    Fields marked with (*) are required. Please don't remove the template.
--->
-
-<!--- Please provide a general summary of the Pull Request in the Title above -->
-
 ### Description (*)
 <!---
     Please provide a description of the changes proposed in the pull request.
@@ -20,27 +9,12 @@
 <!-- related pull request placeholder -->
 <!--- ^ DO NOT REMOVE placeholder above ^ -->
 
-
-
-### Fixed Issues (if relevant)
+### Fixed Issues (*)
 <!---
-    If relevant, please provide a list of fixed issues in the format magento/catalog-storefront#<issue_number>.
     There could be 1 or more issues linked here and it will help us find some more information about the reasoning behind this change.
 -->
-1. Fixes magento/catalog-storefront#<issue_number>
+1. Jira MDEE-<issue_number>
 
-
-### Questions or comments
-<!---
-	If relevant, here you can ask questions or provide comments on your pull request for the reviewer
-	For example if you need assistance with writing tests or would like some feedback on one of your development ideas
--->
-
-### Code Review Checklist (*)
-
-
-- [ ] Story AC is completed
-- [ ] DOD requirements met (https://wiki.corp.adobe.com/display/MC/Accepted+tests+failures)  
-- [ ] proposed changes correspond to [Magento Technical Vision](https://devdocs.magento.com/guides/v2.2/coding-standards/technical-guidelines.html)
-- [ ] new or changed code is covered with web-api/integration tests (if applicable)
-- [ ] no backward incompatible changes
+### Docs
+- [Contribution Requirements and Guide](https://wiki.corp.adobe.com/display/MC/Contribution+Requirements+and+Guide)
+- [Publication process](https://wiki.corp.adobe.com/display/MC/Commerce+Data+Export+and+Saas+Export+publication)

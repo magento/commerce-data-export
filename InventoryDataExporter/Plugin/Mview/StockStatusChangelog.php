@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Magento\InventoryDataExporter\Plugin\Mview;
 
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Adapter\ConnectionException;
 use Magento\Framework\Mview\View\Changelog;
 use Magento\Framework\Mview\View\ChangelogTableNotExistsException;
@@ -20,23 +22,37 @@ use Magento\Framework\Phrase;
 class StockStatusChangelog
 {
     /**
-     * @var \Magento\Framework\App\ResourceConnection
+     * @var ResourceConnection
      */
-    private $resource;
+    private ResourceConnection $resource;
 
     private const SKU_FIELD_SIZE = 64;
     private const STOCK_STATUS_CHANGELOG_NAME = 'inventory_data_exporter_stock_status_' . Changelog::NAME_SUFFIX;
 
     /**
-     * @param \Magento\Framework\App\ResourceConnection $resource
-     * @throws ConnectionException
+     * @var AdapterInterface
      */
-    public function __construct(\Magento\Framework\App\ResourceConnection $resource)
+    private AdapterInterface $connection;
+
+    /**
+     * Constructor for class StockStatusChangelog
+     *
+     * @param ResourceConnection $resource
+     */
+    public function __construct(ResourceConnection $resource)
     {
         $this->connection = $resource->getConnection();
         $this->resource = $resource;
     }
 
+    /**
+     * Around plugin for create method
+     *
+     * @param Changelog $subject
+     * @param callable $proceed
+     * @return void
+     * @throws \Zend_Db_Exception
+     */
     public function aroundCreate(
         \Magento\Framework\Mview\View\Changelog $subject,
         callable $proceed
@@ -49,7 +65,10 @@ class StockStatusChangelog
     }
 
     /**
+     * Create changelog table
+     *
      * @param Changelog $subject
+     * @throws \Zend_Db_Exception
      */
     private function createChangelogTable(Changelog $subject): void
     {
@@ -75,6 +94,8 @@ class StockStatusChangelog
     }
 
     /**
+     * Is stock status has changelog
+     *
      * @param Changelog $changelog
      * @return bool
      */
@@ -84,8 +105,10 @@ class StockStatusChangelog
     }
 
     /**
-     * Override original method: return list of SKUs instead of
-     * Retrieve entity ids by range [$fromVersionId..$toVersionId]
+     * Override original method
+     *
+     * Return list of SKUs instead of
+     * retrieve entity ids by range [$fromVersionId..$toVersionId]
      *
      * @param Changelog $subject
      * @param callable $proceed

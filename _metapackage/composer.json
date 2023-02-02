@@ -8,7 +8,7 @@
     ],
     "type": "metapackage",
     "require": {
-        "php": "~7.2.0||~7.3.0||~7.4.0||~8.1.0",
+        "php": "~8.1.0||~8.2.0",
         "magento/module-bundle-product-data-exporter": "self.version",
         "magento/module-catalog-data-exporter": "self.version",
         "magento/module-catalog-inventory-data-exporter": "self.version",

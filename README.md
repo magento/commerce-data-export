@@ -9,7 +9,7 @@ a merchant will notice new indexers in the corresponding admin menu,
 where each indexer represents a data feed.
 
 ## Requirements and Dependencies
-The export component is a set Magento modules and requires Magento 2.3 and higher.
+The export component is a set Magento modules and requires Magento 2.4.4 and higher.
 
 ### Contributing
 Contributions are welcomed! Read the [Contributing Guide](./CONTRIBUTING.md) for more information.
