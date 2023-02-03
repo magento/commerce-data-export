@@ -41,34 +41,40 @@ class ProductPrice
         Configurable::TYPE_CODE => self::PRODUCT_TYPE_CONFIGURABLE,
         Grouped::TYPE_CODE => self::PRODUCT_TYPE_CONFIGURABLE,
         Type::TYPE_BUNDLE => self::PRODUCT_TYPE_BUNDLE,
-//        \Magento\GiftCard\Model\Catalog\Product\Type\Giftcard::TYPE_GIFTCARD => self::PRODUCT_TYPE_DEFAULT,
     ];
 
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
 
     /**
      * @var ProductPricesQuery
      */
-    private $pricesQuery;
+    private ProductPricesQuery $pricesQuery;
 
     /**
      * @var CustomerGroupPricesQuery
      */
-    private $customerGroupPricesQuery;
+    private CustomerGroupPricesQuery $customerGroupPricesQuery;
 
     /**
      * @var DateTime
      */
-    private $dateTime;
+    private DateTime $dateTime;
 
     /**
      * @var CatalogRulePricesQuery
      */
-    private $catalogRulePricesQuery;
+    private CatalogRulePricesQuery $catalogRulePricesQuery;
 
+    /**
+     * @param ProductPricesQuery $pricesQuery
+     * @param CustomerGroupPricesQuery $customerGroupPricesQuery
+     * @param CatalogRulePricesQuery $catalogRulePricesQuery
+     * @param ResourceConnection $resourceConnection
+     * @param DateTime $dateTime
+     */
     public function __construct(
         ProductPricesQuery       $pricesQuery,
         CustomerGroupPricesQuery $customerGroupPricesQuery,
@@ -84,6 +90,8 @@ class ProductPrice
     }
 
     /**
+     * Get ProductPrice
+     *
      * @param array $values
      * @return array
      * @throws \Zend_Db_Statement_Exception
@@ -110,6 +118,15 @@ class ProductPrice
         return $output;
     }
 
+    /**
+     * Add Customer Group Prices
+     *
+     * @param array $prices
+     * @param array $productIds
+     * @return void
+     * @throws UnableRetrieveData
+     * @throws \Zend_Db_Statement_Exception
+     */
     private function addCustomerGroupPrices(array &$prices, array $productIds): void
     {
         $cursor = $this->resourceConnection->getConnection()
@@ -146,6 +163,8 @@ class ProductPrice
     }
 
     /**
+     * Add Catalog Rule Prices
+     *
      * @param array $prices
      * @param array $productIds
      * @return void
@@ -184,6 +203,8 @@ class ProductPrice
     }
 
     /**
+     * Build Key
+     *
      * @param string $productId
      * @param string $websiteId
      * @param string $customerGroup
@@ -195,6 +216,8 @@ class ProductPrice
     }
 
     /**
+     * Add Discount Price
+     *
      * @param array $prices
      * @param string $code
      * @param float $price
@@ -218,6 +241,8 @@ class ProductPrice
     }
 
     /**
+     * Fill Output
+     *
      * @param array $row
      * @param string $key
      * @return array
@@ -253,6 +278,8 @@ class ProductPrice
     }
 
     /**
+     * Calculate Percent DiscountValue
+     *
      * @param string $price
      * @param string $percent
      * @return float
@@ -264,6 +291,8 @@ class ProductPrice
     }
 
     /**
+     * Convert Product Type
+     *
      * @param string $typeId
      * @return string
      */
@@ -275,13 +304,12 @@ class ProductPrice
     }
 
     /**
-     * Build customer group code from the customer group id.
-     * Using sha1 to generate the code
+     * Build customer group code from the customer group id. Using sha1 to generate the code
      *
-     * @param $customerGroupId
+     * @param string $customerGroupId
      * @return string
      */
-    private function buildCustomerGroupCode($customerGroupId): string
+    private function buildCustomerGroupCode(string $customerGroupId): string
     {
         return sha1($customerGroupId);
     }

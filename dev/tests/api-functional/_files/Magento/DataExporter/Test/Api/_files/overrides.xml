@@ -7,12 +7,7 @@
 -->
 <overrides>
     <!-- Tests are failed because of incompatible version of MSI (MDEE-187) -->
-    <test class="Magento\Downloadable\Api\CartItemRepositoryTest">
-        <method name="testUpdateItem" skip="true" />
-        <method name="testUpdateItemWithInvalidLinkId" skip="true" />
-        <method name="testGetList" skip="true" />
-        <method name="testUpdateItemQty" skip="true" />
-    </test>
+    <test class="Magento\Downloadable\Api\CartItemRepositoryTest" skip="true"/>
     <!-- Tests are failed because of incompatible version of MSI (MDEE-187) -->
     <test class="Magento\GraphQl\DownloadableProduct\UpdateDownloadableCartItemsTest" skip="true"/>
 </overrides>
