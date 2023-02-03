@@ -23,19 +23,6 @@
             <argument name="sourceTableFieldOnFullReIndexLimit" xsi:type="string">updated_at</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OnDemandOrdersFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
-        <arguments>
-            <argument name="feedName" xsi:type="string">onDemandSalesOrdersV2</argument>
-            <argument name="feedIdentity" xsi:type="string">commerceOrderId</argument>
-            <argument name="sourceTableName" xsi:type="string">sales_order</argument>
-            <argument name="sourceTableField" xsi:type="string">entity_id</argument>
-            <argument name="feedTableName" xsi:type="string">sales_data_exporter_on_demand_orders_v2</argument>
-            <argument name="feedTableField" xsi:type="string">id</argument>
-            <argument name="feedTableMutableColumns" xsi:type="array">
-                <item name="feed_data" xsi:type="string">feed_data</item>
-            </argument>
-        </arguments>
-    </virtualType>
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexMetadata</argument>
@@ -50,36 +37,6 @@
             <argument name="dateTimeFormat" xsi:type="const">\DateTimeInterface::RFC3339</argument>
         </arguments>
     </virtualType>
-    <virtualType name="Magento\SalesOrdersDataExporter\Model\OrdersOnDemandExportFeed" type="Magento\DataExporter\Model\Feed">
-        <arguments>
-            <argument name="feedIndexMetadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OnDemandOrdersFeedIndexMetadata</argument>
-            <argument name="hasRemovableEntities" xsi:type="boolean">false</argument>
-            <argument name="dateTimeFormat" xsi:type="const">\DateTimeInterface::RFC3339</argument>
-        </arguments>
-    </virtualType>
-    <type name="Magento\SalesOrdersDataExporter\Console\Command\ExportOnDemand">
-        <arguments>
-            <argument name="metadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OnDemandOrdersFeedIndexMetadata</argument>
-            <argument name="processor" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\DateTimeRangeOrderProcessor</argument>
-        </arguments>
-    </type>
-    <type name="Magento\SalesOrdersDataExporter\Model\Indexer\DateTimeRangeOrderProcessor">
-        <arguments>
-            <argument name="serializer" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OrdersDataSerializer</argument>
-        </arguments>
-    </type>
-
-    <type name="Magento\SalesOrdersDataExporter\Model\OnDemandOrdersExporter">
-        <arguments>
-            <argument name="metadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OnDemandOrdersFeedIndexMetadata</argument>
-        </arguments>
-    </type>
-
-    <type name="Magento\SalesOrdersDataExporter\Model\OnDemandExportOrdersRepository">
-        <arguments>
-            <argument name="metadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OnDemandOrdersFeedIndexMetadata</argument>
-        </arguments>
-    </type>
 
     <!-- Providers -->
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\OrderItems" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
@@ -232,7 +189,6 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="link" xsi:type="object">Magento\SalesOrdersDataExporter\Console\Command\Link</item>
-                <item name="export" xsi:type="object">Magento\SalesOrdersDataExporter\Console\Command\ExportOnDemand</item>
             </argument>
         </arguments>
     </type>

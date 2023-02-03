@@ -38,36 +38,4 @@
             <column name="modified_at"/>
         </index>
     </table>
-    <table name="sales_data_exporter_on_demand_orders_v2" resource="default" engine="innodb"
-        comment="Sales Orders On Demand Export Feed Storage">
-        <column xsi:type="int"
-            name="id"
-            padding="10"
-            unsigned="true"
-            nullable="false"
-            comment="ID" />
-        <column xsi:type="mediumtext"
-            name="feed_data"
-            nullable="false"
-            comment="Feed Data" />
-        <column xsi:type="timestamp"
-            name="modified_at"
-            on_update="true"
-            nullable="false"
-            default="CURRENT_TIMESTAMP"
-            comment="Modified At" />
-        <column
-            xsi:type="tinyint"
-            name="is_deleted"
-            nullable="false"
-            default="0"
-            comment="Order Deleted"
-        />
-        <constraint xsi:type="primary" referenceId="PRIMARY">
-            <column name="id" />
-        </constraint>
-        <index referenceId="sales_data_exporter_on_demand_orders_v2_modified_at" indexType="btree">
-            <column name="modified_at" />
-        </index>
-    </table>
 </schema>
