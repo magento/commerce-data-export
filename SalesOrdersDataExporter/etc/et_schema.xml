@@ -112,6 +112,7 @@
         <field name="qtyRefunded" type="Float" />
         <field name="qtyCanceled" type="Float" />
         <field name="productType" type="String" />
+        <field name="productOptions" type="String" />
         <field name="itemsShippedTogether" type="Boolean"
             provider="Magento\SalesOrdersDataExporter\Model\Provider\Items\OrderItemAdjustment">
             <using field="entityId" />

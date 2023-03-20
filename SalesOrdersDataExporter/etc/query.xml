@@ -95,7 +95,7 @@
             <attribute name="qty_refunded" alias="qtyRefunded" />
             <attribute name="qty_canceled" alias="qtyCanceled" />
             <attribute name="product_type" alias="productType" />
-            <attribute name="product_options" /> <!-- used to calculate itemsShippedTogether -->
+            <attribute name="product_options" alias="productOptions" /> <!-- used to calculate itemsShippedTogether -->
             <attribute name="sku" />
             <attribute name="name" />
             <attribute name="qty_ordered" alias="qty" />
