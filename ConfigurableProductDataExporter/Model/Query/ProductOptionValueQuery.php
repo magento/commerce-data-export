@@ -67,6 +67,19 @@ class ProductOptionValueQuery
                     'label' => new Expression('CASE WHEN ovs.value IS NULL THEN ovd.value ELSE ovs.value END'),
                 ]
             )
+            ->joinLeft(
+                ['aod' => $this->resourceConnection->getTableName('eav_attribute_option_swatch')],
+                'aod.option_id = eao.option_id AND aod.store_id = 0',
+                []
+            )
+            ->joinLeft(
+                ['aos' => $this->resourceConnection->getTableName('eav_attribute_option_swatch')],
+                'aos.option_id = eao.option_id AND aos.store_id = s.store_id',
+                [
+                    'swatchValue' => new Expression('CASE WHEN aos.value IS NULL THEN aod.value ELSE aos.value END'),
+                    'swatchType' => new Expression('CASE WHEN aos.value IS NULL THEN aod.type ELSE aos.type END'),
+                ]
+            )
             ->where('eao.attribute_id IN (?)', $attributeIds)
             ->where('s.code IN (?)', $storeViewCodes);
         return $select;

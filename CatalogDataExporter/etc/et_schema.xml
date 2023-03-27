@@ -197,6 +197,7 @@
         <field name="required" type="Boolean" />
         <field name="renderType" type="String" />
         <field name="type" type="String" />
+        <field name="swatchType" type="String" />
         <field name="values" type="ProductOptionValue" repeated="true" />
     </record>
 
@@ -205,7 +206,9 @@
         <field name="label" type="String" />
         <field name="sortOrder" type="Int" />
         <field name="isDefault" type="Boolean" />
+        <field name="colorHex" type="String" />
         <field name="imageUrl" type="String" />
+        <field name="customSwatchValue" type="String" />
         <field name="qtyMutability" type="Boolean" />
         <field name="qty" type="Float" />
         <field name="infoUrl" type="String" />

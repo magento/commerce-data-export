@@ -8,30 +8,22 @@ declare(strict_types=1);
 namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 
 use Exception;
-use Generator;
 use Magento\CatalogDataExporter\Model\Provider\Product\OptionProviderInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionQuery;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionValueQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Query\BatchIteratorInterface;
-use Magento\Framework\DB\Query\Generator as QueryGenerator;
-use Magento\Framework\DB\Select;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
-use Throwable;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Sql\ColumnValueExpression;
+use Magento\Swatches\Helper\Media as MediaHelper;
+use Magento\Swatches\Model\Swatch;
 
 /**
  * Configurable product options data provider
  */
 class Options implements OptionProviderInterface
 {
-    /**
-     * Batch sizing for performing queries
-     *
-     * @var int
-     */
-    private $batchSize;
 
     /**
      * @var ResourceConnection
@@ -54,69 +46,92 @@ class Options implements OptionProviderInterface
     private $logger;
 
     /**
-     * @var QueryGenerator
-     */
-    private $queryGenerator;
-
-    /**
      * @var ConfigurableOptionValueUid
      */
     private $optionValueUid;
 
-    private static $optionValuesPerAttributesCache = [];
+    /**
+     * @var MediaHelper
+     */
+    private $mediaHelper;
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param ProductOptionQuery $productOptionQuery
      * @param ProductOptionValueQuery $productOptionValueQuery
-     * @param QueryGenerator $queryGenerator
      * @param ConfigurableOptionValueUid $optionValueUid
+     * @param MediaHelper $mediaHelper
      * @param LoggerInterface $logger
-     * @param int $batchSize
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         ProductOptionQuery $productOptionQuery,
         ProductOptionValueQuery $productOptionValueQuery,
-        QueryGenerator $queryGenerator,
         ConfigurableOptionValueUid $optionValueUid,
-        LoggerInterface $logger,
-        int $batchSize
+        MediaHelper $mediaHelper,
+        LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->productOptionQuery = $productOptionQuery;
         $this->productOptionValueQuery = $productOptionValueQuery;
-        $this->queryGenerator = $queryGenerator;
         $this->optionValueUid = $optionValueUid;
+        $this->mediaHelper = $mediaHelper;
         $this->logger = $logger;
-        $this->batchSize = $batchSize;
     }
 
     /**
-     * Retrieve query data in batches
+     * Returns table name
      *
-     * @param Select $select
-     * @param string $rangeField
-     * @return Generator
-     * @throws UnableRetrieveData
+     * @param string $reference
+     * @return string
      */
-    private function getBatchedQueryData(Select $select, string $rangeField): Generator
+    private function getTable(string $reference)
     {
-        try {
-            $connection = $this->resourceConnection->getConnection();
-            $iterator = $this->queryGenerator->generate(
-                $rangeField,
-                $select,
-                $this->batchSize,
-                BatchIteratorInterface::NON_UNIQUE_FIELD_ITERATOR
+        return $this->resourceConnection->getTableName($reference);
+    }
+
+    /**
+     * Returns possible attribute valies for a product
+     *
+     * @param int $entityId
+     * @param int $attributeId
+     * @return array
+     */
+    private function getPossibleAttributeValues($entityId, $attributeId)
+    {
+        $connection = $this->resourceConnection->getConnection();
+        $joinField = $connection->getAutoIncrementField($this->getTable('catalog_product_entity'));
+        $select = $connection->select()
+            ->from(['cpe' => $this->getTable('catalog_product_entity')], [])
+            ->join(
+                ['psl' => $this->getTable('catalog_product_super_link')],
+                sprintf('psl.parent_id = cpe.%s', $joinField),
+                []
+            )
+            ->join(
+                ['iss' => $this->getTable('cataloginventory_stock_status')],
+                'iss.product_id = psl.product_id AND iss.stock_status = 1',
+                []
+            )
+            ->join(
+                ['cpc' => $this->getTable('catalog_product_entity')],
+                'cpc.entity_id = psl.product_id',
+                []
+            )
+            ->join(
+                ['cpi' => $this->getTable('catalog_product_entity_int')],
+                sprintf(
+                    'cpi.%1$s = cpc.%1$s AND cpi.store_id = 0 AND cpi.attribute_id = %2$d',
+                    $joinField,
+                    $attributeId
+                ),
+                []
+            )
+            ->where('cpe.entity_id = ?', $entityId)
+            ->columns(
+                new ColumnValueExpression('DISTINCT cpi.value')
             );
-            foreach ($iterator as $batchSelect) {
-                yield $connection->fetchAll($batchSelect);
-            }
-        } catch (Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve configurable option data');
-        }
+        return $connection->fetchCol($select);
     }
 
     /**
@@ -128,37 +143,32 @@ class Options implements OptionProviderInterface
      */
     private function getOptionValuesData(array $arguments): array
     {
-        $attributeIdsOrigin = $this->getAttributeIds($arguments);
-        $attributeIds = \array_diff(
-            $attributeIdsOrigin,
-            \array_keys(self::$optionValuesPerAttributesCache)
-        );
-
-        if (!$attributeIds) {
-            // get from cache
-            return $this->getOptionValuesFromCache($attributeIdsOrigin);
-        }
-        $arguments['attributes'] = $attributeIds;
-
+        $arguments['attributes'] = $this->getAttributeIds($arguments);
         $select = $this->productOptionValueQuery->getQuery($arguments);
-        // ad hoc solution to check application cache size. should be replaced with generic approach
-        $cacheSize = \strlen(\json_encode(self::$optionValuesPerAttributesCache));
-        if ($cacheSize > 1024 * 1024 * 20) {
-            self::$optionValuesPerAttributesCache = [];
-        }
-        foreach ($this->getBatchedQueryData($select, 'attribute_id') as $batchData) {
-            foreach ($batchData as $row) {
-                self::$optionValuesPerAttributesCache[$row['attribute_id']][$row['storeViewCode']][$row['optionId']] = [
-                    'id' => $this->optionValueUid->resolve($row['attribute_id'], $row['optionId']),
-                    'label' => $row['label'],
-                ];
-            }
-        }
 
-        return $this->getOptionValuesFromCache($attributeIdsOrigin);
+        $cursor = $this->resourceConnection->getConnection()->query($select);
+
+        $data = [];
+        while ($row = $cursor->fetch()) {
+            $data[$row['attribute_id']][$row['storeViewCode']][$row['optionId']] = [
+                'id' => $this->optionValueUid->resolve($row['attribute_id'], $row['optionId']),
+                'label' => $row['label'],
+                'colorHex' => $row['swatchType'] == Swatch::SWATCH_TYPE_VISUAL_COLOR
+                    ? $row['swatchValue'] : null,
+                'imageUrl' => $row['swatchType'] == Swatch::SWATCH_TYPE_VISUAL_IMAGE
+                    ? $this->mediaHelper->getSwatchMediaUrl() . $row['swatchValue'] : null,
+                'customSwatchValue' => !in_array(
+                    $row['swatchType'],
+                    [Swatch::SWATCH_TYPE_TEXTUAL, Swatch::SWATCH_TYPE_VISUAL_COLOR, Swatch::SWATCH_TYPE_VISUAL_IMAGE]
+                ) ? $row['swatchValue'] : null
+            ];
+        }
+        return $data;
     }
 
     /**
+     * Returns attribute IDs associated with this product
+     *
      * @param array $arguments
      * @return array
      */
@@ -200,7 +210,8 @@ class Options implements OptionProviderInterface
                 'id' => $row['attribute_code'],
                 'type' => ConfigurableOptionValueUid::OPTION_TYPE,
                 'label' => $row['label'],
-                'sortOrder' => $row['position']
+                'sortOrder' => $row['position'],
+                'swatchType' => $row['swatchType']
             ],
         ];
     }
@@ -221,11 +232,12 @@ class Options implements OptionProviderInterface
      */
     public function get(array $values): array
     {
+        $temp = [];
 
         $queryArguments = [];
         foreach ($values as $value) {
             if (!isset($value['productId'], $value['type'], $value['storeViewCode'])
-                || $value['type'] !== Configurable::TYPE_CODE ) {
+                || $value['type'] !== Configurable::TYPE_CODE) {
                 continue;
             }
             $queryArguments['productId'][$value['productId']] = $value['productId'];
@@ -240,17 +252,24 @@ class Options implements OptionProviderInterface
             $optionValuesData = $this->getOptionValuesData($queryArguments);
 
             $select = $this->productOptionQuery->getQuery($queryArguments);
-            foreach ($this->getBatchedQueryData($select, 'entity_id') as $batchData) {
-                foreach ($batchData as $row) {
-                    $key = $this->getOptionKey($row);
-                    $options[$key] = $options[$key] ?? $this->formatOptionsRow($row);
 
-                    if (isset($optionValuesData[$row['attribute_id']][$row['storeViewCode']])) {
-                        $options[$key]['optionsV2']['values'] = $this->getAssignedAttributeValues(
-                            $optionValuesData[$row['attribute_id']][$row['storeViewCode']],
-                            explode(',', $row['attributeValues'])
-                        );
-                    }
+            $cursor = $this->resourceConnection->getConnection()->query($select);
+
+            while ($row = $cursor->fetch()) {
+                if (!isset($temp[$row['productId'] . '-' . $row['attribute_id']])) {
+                    $temp[$row['productId'] . '-' . $row['attribute_id']] =
+                        $this->getPossibleAttributeValues($row['productId'], $row['attribute_id']);
+                }
+                $filter = $temp[$row['productId'] . '-' . $row['attribute_id']];
+
+                $key = $this->getOptionKey($row);
+                $options[$key] = $options[$key] ?? $this->formatOptionsRow($row);
+
+                if (isset($optionValuesData[$row['attribute_id']][$row['storeViewCode']])) {
+                    $options[$key]['optionsV2']['values'] = $this->getAssignedAttributeValues(
+                        $optionValuesData[$row['attribute_id']][$row['storeViewCode']],
+                        $filter
+                    );
                 }
             }
         } catch (Exception $exception) {
@@ -261,15 +280,8 @@ class Options implements OptionProviderInterface
     }
 
     /**
-     * @param array|null $attributeIds
-     * @return array
-     */
-    private function getOptionValuesFromCache(?array $attributeIds): array
-    {
-        return \array_intersect_key(self::$optionValuesPerAttributesCache, \array_flip($attributeIds));
-    }
-
-    /**
+     * Filter values
+     *
      * @param array $attributeValuesList
      * @param array $assignedAttributeValuesId
      * @return array
