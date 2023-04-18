@@ -9,20 +9,20 @@
     <record name="ProductPriceV2">
         <field name="websiteId" type="Int"/>
         <field name="productId" type="Int"/>
-
-        <field name="websiteCode" type="String"/>
-        <field name="customerGroupCode" type="String"/>
         <field name="sku" type="String"/>
-        <field name="regular" type="Float"/>
+        <field name="type" type="String"/>
+        <field name="customerGroupCode" type="String"/>
+        <field name="websiteCode" type="String"/>
         <field name="parents" type="ProductPriceParent" repeated="true"/>
-        <field name="deleted" type="Boolean"/>
+        <field name="regular" type="Float"/>
         <field name="discounts" type="DiscountPrice" repeated="true"/>
+        <field name="deleted" type="Boolean"/>
         <field name="updatedAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="productPriceId"/>
         </field>
     </record>
     <record name="ProductPriceParent">
-        <field name="type" type="Int"/>
+        <field name="type" type="String"/>
         <field name="sku" type="String"/>
     </record>
     <record name="DiscountPrice">

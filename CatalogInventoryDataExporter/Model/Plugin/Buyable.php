@@ -8,9 +8,8 @@ declare(strict_types=1);
 namespace Magento\CatalogInventoryDataExporter\Model\Plugin;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\Buyable as ProductBuyable;
-use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryQuery;
+use Magento\CatalogInventoryDataExporter\Model\Provider\Product\InventoryDataProvider;
 use Magento\DataExporter\Exception\UnableRetrieveData;
-use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
@@ -18,36 +17,21 @@ use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as Logg
  */
 class Buyable
 {
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
+    private LoggerInterface $logger;
+
+    private InventoryDataProvider $inventoryDataProvider;
 
     /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var CatalogInventoryQuery
-     */
-    private $catalogInventoryQuery;
-
-    /**
-     * @param ResourceConnection $resourceConnection
-     * @param CatalogInventoryQuery $catalogInventoryQuery
      * @param LoggerInterface $logger
+     * @param InventoryDataProvider $inventoryDataProvider
      */
     public function __construct(
-        ResourceConnection $resourceConnection,
-        CatalogInventoryQuery $catalogInventoryQuery,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        InventoryDataProvider $inventoryDataProvider
     ) {
-        $this->resourceConnection = $resourceConnection;
-        $this->catalogInventoryQuery = $catalogInventoryQuery;
         $this->logger = $logger;
+        $this->inventoryDataProvider = $inventoryDataProvider;
     }
-
     /**
      * Check stock status after getting buyable product status
      *
@@ -62,23 +46,15 @@ class Buyable
      */
     public function afterGet(ProductBuyable $subject, array $result)
     {
-        $connection = $this->resourceConnection->getConnection();
-        $queryArguments = [];
         try {
-            foreach ($result as $value) {
-                $queryArguments['productId'][$value['productId']] = $value['productId'];
-                $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
-            }
-            $select = $this->catalogInventoryQuery->getInStock($queryArguments);
-            $cursor = $connection->query($select);
             $outOfStock = [];
-            while ($row = $cursor->fetch()) {
-                if ($row['is_in_stock'] == 0) {
-                    $outOfStock[$row['product_id']] = false;
+            foreach ($this->inventoryDataProvider->get($result) as $stockItem) {
+                if (!$stockItem['inStock']) {
+                    $outOfStock[$this->getKey($stockItem)] = true;
                 }
             }
             foreach ($result as &$item) {
-                if (isset($outOfStock[$item['productId']])) {
+                if (isset($outOfStock[$this->getKey($item)])) {
                     $item['buyable'] = false;
                 }
             }
@@ -87,5 +63,14 @@ class Buyable
             throw new UnableRetrieveData('Unable to retrieve stock data');
         }
         return $result;
+    }
+
+    /**
+     * @param mixed $stockItem
+     * @return string
+     */
+    private function getKey(mixed $stockItem): string
+    {
+        return $stockItem['storeViewCode'] . '_' . $stockItem['productId'];
     }
 }

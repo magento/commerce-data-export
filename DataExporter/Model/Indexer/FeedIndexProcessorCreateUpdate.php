@@ -18,12 +18,12 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
 
     /**
      * @var ExportProcessor
      */
-    private $exportProcessor;
+    private ExportProcessor $exportProcessor;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -95,6 +95,9 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      */
     private function truncateIndexTable(FeedIndexMetadata $metadata): void
     {
+        if (!$metadata->isTruncateFeedOnFullReindex()) {
+            return ;
+        }
         $connection = $this->resourceConnection->getConnection();
         $feedTable = $this->resourceConnection->getTableName($metadata->getFeedTableName());
         $connection->truncateTable($feedTable);

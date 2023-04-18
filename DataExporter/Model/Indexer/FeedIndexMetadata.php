@@ -70,6 +70,16 @@ class FeedIndexMetadata
     private $sourceTableFieldOnFullReIndexLimit;
 
     /**
+     * @var int
+     */
+    private int $feedOffsetLimit;
+
+    /**
+     * @var bool
+     */
+    private bool $truncateFeedOnFullReindex;
+
+    /**
      * @param string $feedName
      * @param string $sourceTableName
      * @param string $sourceTableField
@@ -91,9 +101,11 @@ class FeedIndexMetadata
         string $feedTableField,
         array $feedTableMutableColumns,
         int $batchSize = 100,
+        int $feedOffsetLimit = 100,
         string $sourceTableIdentityField = null,
         int $fullReIndexSecondsLimit = 0,
-        string $sourceTableFieldOnFullReIndexLimit = 'updated_at'
+        string $sourceTableFieldOnFullReIndexLimit = 'updated_at',
+        bool $truncateFeedOnFullReindex = true
     ) {
         $this->feedName = $feedName;
         $this->sourceTableName = $sourceTableName;
@@ -106,6 +118,8 @@ class FeedIndexMetadata
         $this->sourceTableIdentityField = $sourceTableIdentityField ?? $sourceTableField;
         $this->fullReindexSecondsLimit = $fullReIndexSecondsLimit;
         $this->sourceTableFieldOnFullReIndexLimit = $sourceTableFieldOnFullReIndexLimit;
+        $this->feedOffsetLimit = $feedOffsetLimit;
+        $this->truncateFeedOnFullReindex = $truncateFeedOnFullReindex;
     }
 
     /**
@@ -214,5 +228,25 @@ class FeedIndexMetadata
     public function getSourceTableFieldOnFullReIndexLimit(): string
     {
         return $this->sourceTableFieldOnFullReIndexLimit;
+    }
+
+    /**
+     * Limit number of items returned in query
+     *
+     * @return int
+     */
+    public function getFeedOffsetLimit(): int
+    {
+        return $this->feedOffsetLimit;
+    }
+
+    /**
+     * Determine if need to truncate feed indexer during full reindex
+     *
+     * @return bool
+     */
+    public function isTruncateFeedOnFullReindex(): bool
+    {
+        return $this->truncateFeedOnFullReindex;
     }
 }

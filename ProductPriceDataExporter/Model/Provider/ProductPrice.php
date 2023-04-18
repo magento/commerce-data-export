@@ -9,7 +9,8 @@ namespace Magento\ProductPriceDataExporter\Model\Provider;
 
 use Magento\Catalog\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Magento\DataExporter\Exception\UnableRetrieveData;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\Downloadable\Model\Product\Type as Downloadable;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
@@ -30,17 +31,16 @@ class ProductPrice
     private const PRICE_SCOPE_KEY_PART = 0;
     private const REGULAR_PRICE = 'price';
 
-    // mapping for ProductPriceAggregate.type
-    public const PRODUCT_TYPE_DEFAULT = 0;
-    public const PRODUCT_TYPE_CONFIGURABLE = 1;
-    public const PRODUCT_TYPE_BUNDLE = 2;
-
-    private const PRODUCT_TYPE_MAPPING = [
-        Type::TYPE_SIMPLE => self::PRODUCT_TYPE_DEFAULT,
-        Type::TYPE_VIRTUAL => self::PRODUCT_TYPE_DEFAULT,
-        Configurable::TYPE_CODE => self::PRODUCT_TYPE_CONFIGURABLE,
-        Grouped::TYPE_CODE => self::PRODUCT_TYPE_CONFIGURABLE,
-        Type::TYPE_BUNDLE => self::PRODUCT_TYPE_BUNDLE,
+    /**
+     * mapping for ProductPriceAggregate.type
+     */
+    private const PRODUCT_TYPE = [
+        Type::TYPE_SIMPLE,
+        Configurable::TYPE_CODE,
+        Type::TYPE_BUNDLE,
+        Downloadable::TYPE_DOWNLOADABLE,
+        Grouped::TYPE_CODE,
+        'giftcard', // represet giftcard product type
     ];
 
     /**
@@ -69,10 +69,18 @@ class ProductPrice
     private CatalogRulePricesQuery $catalogRulePricesQuery;
 
     /**
+     * @var DeleteFeedItems
+     */
+    private DeleteFeedItems $deleteFeedItems;
+
+    private CommerceDataExportLoggerInterface $logger;
+
+    /**
      * @param ProductPricesQuery $pricesQuery
      * @param CustomerGroupPricesQuery $customerGroupPricesQuery
      * @param CatalogRulePricesQuery $catalogRulePricesQuery
      * @param ResourceConnection $resourceConnection
+     * @param DeleteFeedItems $deleteFeedItems
      * @param DateTime $dateTime
      */
     public function __construct(
@@ -80,13 +88,17 @@ class ProductPrice
         CustomerGroupPricesQuery $customerGroupPricesQuery,
         CatalogRulePricesQuery   $catalogRulePricesQuery,
         ResourceConnection       $resourceConnection,
-        DateTime                 $dateTime
+        DeleteFeedItems          $deleteFeedItems,
+        DateTime                 $dateTime,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->pricesQuery = $pricesQuery;
         $this->customerGroupPricesQuery = $customerGroupPricesQuery;
         $this->dateTime = $dateTime;
         $this->catalogRulePricesQuery = $catalogRulePricesQuery;
+        $this->deleteFeedItems = $deleteFeedItems;
+        $this->logger = $logger;
     }
 
     /**
@@ -94,12 +106,10 @@ class ProductPrice
      *
      * @param array $values
      * @return array
-     * @throws \Zend_Db_Statement_Exception
-     * @throws \Magento\DataExporter\Exception\UnableRetrieveData
      */
     public function get(array $values): array
     {
-        $ids = \array_column($values, 'productId');
+        $ids = array_column($values, 'productId');
         $cursor = $this->resourceConnection->getConnection()->query($this->pricesQuery->getQuery($ids));
         $output = [];
         while ($row = $cursor->fetch()) {
@@ -113,8 +123,11 @@ class ProductPrice
                 $this->addDiscountPrice($output[$key], $row['price_attribute'], (float)$row['price']);
             }
         }
-        $this->addCustomerGroupPrices($output, $ids);
-        $this->addCatalogRulePrices($output, $ids);
+        $filteredIds = array_unique(array_column($output, 'productId'));
+        $this->addCustomerGroupPrices($output, $filteredIds);
+        $this->addCatalogRulePrices($output, $filteredIds);
+
+        $this->deleteFeedItems->execute($output);
         return $output;
     }
 
@@ -124,8 +137,6 @@ class ProductPrice
      * @param array $prices
      * @param array $productIds
      * @return void
-     * @throws UnableRetrieveData
-     * @throws \Zend_Db_Statement_Exception
      */
     private function addCustomerGroupPrices(array &$prices, array $productIds): void
     {
@@ -136,9 +147,9 @@ class ProductPrice
             $key = $this->buildKey($row['entity_id'], $row['website_id'], $customerGroupId . $row['all_groups']);
             $keyFallback = $this->buildKey($row['entity_id'], $row['website_id'], self::FALLBACK_CUSTOMER_GROUP);
             $fallbackPrice = $prices[$keyFallback] ?? null;
-            // TODO: log error if no fallback price found
             if (!$fallbackPrice) {
-                throw new UnableRetrieveData('Fallback price not found ...' . var_export($row, true));
+                $this->logger->error('Fallback price not found when adding customer group' . var_export($row, true));
+                continue ;
             }
 
             $priceValue = (float)$row['value'];
@@ -168,8 +179,6 @@ class ProductPrice
      * @param array $prices
      * @param array $productIds
      * @return void
-     * @throws UnableRetrieveData
-     * @throws \Zend_Db_Statement_Exception
      */
     private function addCatalogRulePrices(array &$prices, array $productIds): void
     {
@@ -185,9 +194,9 @@ class ProductPrice
 
             $keyFallback = $this->buildKey($row['entity_id'], $row['website_id'], self::FALLBACK_CUSTOMER_GROUP);
             $fallbackPrice = $prices[$keyFallback] ?? null;
-            // TODO: log error if no fallback price found
             if (!$fallbackPrice) {
-                throw new UnableRetrieveData('Fallback price not found ...' . var_export($row, true));
+                $this->logger->error('Fallback price not found when adding catalog rule' . var_export($row, true));
+                continue ;
             }
 
             // copy feed data from fallbackPrice for each row of customer group price
@@ -212,7 +221,7 @@ class ProductPrice
      */
     private function buildKey(string $productId, string $websiteId, string $customerGroup): string
     {
-        return $productId . $websiteId . $customerGroup;
+        return implode('-', [$productId, $websiteId, $customerGroup]);
     }
 
     /**
@@ -249,13 +258,13 @@ class ProductPrice
      */
     private function fillOutput(array $row, string $key): array
     {
-        $parentsRaw = !empty($row['parent_skus']) ? \explode(',', $row['parent_skus']) : [];
+        $parentsRaw = !empty($row['parent_skus']) ? explode(',', $row['parent_skus']) : [];
         $parents = [];
         foreach ($parentsRaw as $parent) {
             // TODO: split by "<type1|type2>:.*>" to handle case when sku contains ":"
-            list($parentType, $parentSku) = \explode(':', $parent);
+            [$parentType, $parentSku] = explode(':', $parent);
             $parents[] = [
-                'type' => $this->convertProductType($parentType),
+                'type' => $this->convertProductType(trim($parentType)),
                 'sku' => $parentSku
             ];
         }
@@ -267,6 +276,7 @@ class ProductPrice
 
             // feed fields
             'sku' => $row['sku'],
+            'type' => $this->convertProductType($row['type_id']),
             'websiteCode' => $row['websiteCode'],
             'updatedAt' => $this->dateTime->formatDate(time()),
             'customerGroupCode' => self::FALLBACK_CUSTOMER_GROUP,
@@ -298,9 +308,9 @@ class ProductPrice
      */
     private function convertProductType(string $typeId): string
     {
-        $productType = self::PRODUCT_TYPE_MAPPING[$typeId] ?? self::PRODUCT_TYPE_DEFAULT;
+        $productType = in_array($typeId, self::PRODUCT_TYPE, true) ? $typeId : Type::TYPE_SIMPLE;
 
-        return strtoupper((string)$productType);
+        return strtoupper($productType);
     }
 
     /**

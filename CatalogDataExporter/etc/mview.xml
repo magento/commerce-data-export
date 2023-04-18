@@ -9,6 +9,7 @@
     <view id="catalog_data_exporter_products" class="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer" group="indexer">
         <subscriptions>
             <table name="catalog_product_entity" entity_column="entity_id" />
+            <table name="catalog_product_website" entity_column="product_id" />
             <table name="catalog_product_entity_gallery" entity_column="entity_id" />
             <table name="catalog_product_entity_int" entity_column="entity_id" />
             <table name="catalog_product_entity_media_gallery_value" entity_column="entity_id" />
@@ -20,6 +21,8 @@
             <table name="catalog_product_entity_tier_price" entity_column="entity_id" />
             <table name="catalogrule_product_price" entity_column="product_id" />
             <table name="catalog_category_product" entity_column="product_id" />
+            <!-- parent/child relationship. Trigger update for child product only -->
+            <table name="catalog_product_relation" entity_column="child_id" />
         </subscriptions>
     </view>
     <view id="catalog_data_exporter_product_attributes" class="Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndex" group="indexer">

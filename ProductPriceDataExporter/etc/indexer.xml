@@ -13,5 +13,11 @@
     >
         <title translate="true">Product Prices Feed</title>
         <description translate="true">Product price data exporter</description>
+        <dependencies>
+            <!--  to handle partial reindex when product price has been changed           -->
+            <indexer id="catalogrule_product" />
+            <!-- to handle full reindex when rule has been changed            -->
+            <indexer id="catalogrule_rule" />
+        </dependencies>
     </indexer>
 </config>

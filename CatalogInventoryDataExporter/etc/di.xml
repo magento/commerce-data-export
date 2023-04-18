@@ -14,4 +14,13 @@
     <type name="Magento\CatalogDataExporter\Model\Provider\Product\Buyable">
         <plugin name="modified-buyable-value" type="Magento\CatalogInventoryDataExporter\Model\Plugin\Buyable"/>
     </type>
+    <type name="Magento\InventoryApi\Api\SourceItemsSaveInterface">
+        <plugin name="exporter-reindex-feed-on-source-item-update" type="Magento\CatalogInventoryDataExporter\Model\Plugin\SourceItemUpdate" sortOrder="10"/>
+    </type>
+    <type name="Magento\InventoryIndexer\Model\ResourceModel\UpdateIsSalable">
+        <plugin name="exporter-reindex-feed-on-stock-status-update" type="Magento\CatalogInventoryDataExporter\Model\Plugin\StockStatusUpdater"/>
+    </type>
+    <type name="Magento\InventoryIndexer\Model\ResourceModel\UpdateLegacyStockStatus">
+        <plugin name="exporter-reindex-feed-on-legacy-stock-status-update" type="Magento\CatalogInventoryDataExporter\Model\Plugin\LegacyStockStatusUpdater"/>
+    </type>
 </config>

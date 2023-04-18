@@ -74,7 +74,7 @@ class LowStock
             $lowStock = false;
         }
         $output = [
-            'productId' => $row['product_id'],
+            'productId' => $row['productId'],
             'storeViewCode' => $row['storeViewCode'],
             'lowStock' => $lowStock,
         ];

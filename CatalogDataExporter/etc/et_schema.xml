@@ -78,6 +78,7 @@
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
+        <!--  buyable = [product status is "Enabled"] && [<product is In Stock] -->
         <field name="buyable" type="Boolean"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\Buyable"
         >

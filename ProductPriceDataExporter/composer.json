@@ -21,6 +21,7 @@
         "magento/module-store": ">=101.1.4",
         "magento/module-configurable-product": ">=100.4.4",
         "magento/module-grouped-product": ">=100.4.2",
+        "magento/module-downloadable": ">=100.4.4",
         "magento/module-catalog-rule": ">=101.2.4",
         "magento/module-customer": ">=103.0.4",
         "magento/module-catalog": ">=104.0.4",

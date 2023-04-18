@@ -12,7 +12,7 @@ use Magento\Catalog\Api\Data\ProductTierPriceInterfaceFactory;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Type;
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Downloadable\Model\Product\Type as Downloadable;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\TestFramework\Helper\Bootstrap;
 
@@ -106,3 +106,13 @@ $productTierPrices[] = $tierPriceFactory->create([
 
 $productSimpleWithCg->setTierPrices($productTierPrices);
 $productRepository->save($productSimpleWithCg);
+
+// Create Downloadable product with regular price
+$productDownloadable = $productFactory->create();
+$productDownloadable->setTypeId(Downloadable::TYPE_DOWNLOADABLE)
+    ->setAttributeSetId(4)
+    ->setName('Downloadable Product With Regular Price')
+    ->setSku('downloadable_product_with_regular_price')
+    ->setPrice(15)
+    ->setStatus(Status::STATUS_ENABLED);
+$productRepository->save($productDownloadable);

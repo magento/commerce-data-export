@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model;
 
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+
 /**
  * Interface FeedInterface
  */
@@ -21,4 +23,9 @@ interface FeedInterface
      * @throws \Zend_Db_Statement_Exception
      */
     public function getFeedSince(string $timestamp): array;
+
+    /**
+     * @return FeedIndexMetadata
+     */
+    public function getFeedMetadata(): FeedIndexMetadata;
 }

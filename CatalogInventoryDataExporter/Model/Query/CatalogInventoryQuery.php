@@ -54,18 +54,22 @@ class CatalogInventoryQuery
         $storeViewCodes = isset($arguments['storeViewCode']) ? $arguments['storeViewCode'] : [];
         $connection = $this->resourceConnection->getConnection();
         $select = $connection->select()
-            ->from(['cpe' => $this->getTable('catalog_product_entity')])
+            ->from(['cpe' => $this->getTable('catalog_product_entity')], '')
             ->joinCross(
-                ['s' => $this->getTable('store')]
+                ['s' => $this->getTable('store')],
+                ''
             )
             ->joinInner(
-                ['csi' => $this->getTable('cataloginventory_stock_item')],
-                "cpe.entity_id = csi.product_id"
+                ['csi' => $this->getTable('cataloginventory_stock_status')],
+                "cpe.entity_id = csi.product_id",
+                ''
             )
             ->columns(
                 [
                     'productId' => 'csi.product_id',
-                    'storeViewCode' => 's.code'
+                    'storeViewCode' => 's.code',
+                    'qty' => 'csi.qty',
+                    'is_in_stock' => 'csi.stock_status'
                 ]
             )
             ->where('s.code IN (?)', $storeViewCodes)

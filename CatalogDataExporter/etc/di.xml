@@ -514,7 +514,10 @@
     <type name="Magento\Catalog\Model\Indexer\Product\Price\ModeSwitcher">
         <plugin name="data-exporter-mode-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreateViewAfterSwitchDimensionMode" />
     </type>
-    <type name="\Magento\Catalog\Model\Indexer\Product\Price\ModeSwitcherConfiguration">
+    <type name="Magento\Catalog\Model\Indexer\Product\Price\ModeSwitcherConfiguration">
         <plugin name="data-exporter-config-price-view" type="Magento\CatalogDataExporter\Plugin\Index\SaveNewPriceIndexerMode" />
+    </type>
+    <type name="Magento\Setup\Model\FixtureGenerator\SqlCollector">
+        <plugin name="exporter-filter-changelog-table" type="Magento\CatalogDataExporter\Plugin\FilterChangeLogTable"/>
     </type>
 </config>

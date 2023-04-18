@@ -18,6 +18,8 @@
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
             </argument>
+            <argument name="feedOffsetLimit" xsi:type="number">1000</argument>
+            <argument name="truncateFeedOnFullReindex" xsi:type="boolean">false</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
@@ -33,7 +35,6 @@
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceDataSerializer</argument>
-            <argument name="processor" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexProcessorCreateUpdateDelete</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\ProductPriceDataExporter\Model\ProductPriceFeed" type="Magento\DataExporter\Model\Feed">
@@ -48,14 +49,8 @@
             </argument>
         </arguments>
     </type>
-    <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceMarkRemovedEntities" type="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
-        <arguments>
-            <argument name="markRemovedEntitiesQuery" xsi:type="object">Magento\ProductPriceDataExporter\Model\Query\MarkRemovedEntitiesQuery</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexProcessorCreateUpdateDelete" type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
-        <arguments>
-            <argument name="markRemovedEntities" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceMarkRemovedEntities</argument>
-        </arguments>
-    </virtualType>
+
+    <type name="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
+        <plugin name="exporter-delete-feed-items-when-product-deleted" type="Magento\ProductPriceDataExporter\Plugin\DeleteFeedItems"/>
+    </type>
 </config>

@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\ProductPriceDataExporter\Model\Query;
 
-use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\EntityManager\MetadataPool;
@@ -40,8 +39,8 @@ class CustomerGroupPricesQuery
     }
 
     /**
-     * @inheritDoc
-     * @throws UnableRetrieveData
+     * @param array $productIds
+     * @return Select
      */
     public function getQuery(array $productIds): Select
     {

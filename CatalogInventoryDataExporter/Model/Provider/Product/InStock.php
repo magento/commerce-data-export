@@ -7,9 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\CatalogInventoryDataExporter\Model\Provider\Product;
 
-use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
-use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
@@ -17,49 +15,20 @@ use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as Logg
  */
 class InStock
 {
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
+    private LoggerInterface $logger;
+
+    private InventoryDataProvider $inventoryDataProvider;
 
     /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var CatalogInventoryQuery
-     */
-    private $catalogInventoryQuery;
-
-    /**
-     * @param ResourceConnection $resourceConnection
-     * @param CatalogInventoryQuery $catalogInventoryQuery
      * @param LoggerInterface $logger
+     * @param InventoryDataProvider $cachedInventoryDataProvider
      */
     public function __construct(
-        ResourceConnection $resourceConnection,
-        CatalogInventoryQuery $catalogInventoryQuery,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        InventoryDataProvider $cachedInventoryDataProvider
     ) {
-        $this->resourceConnection = $resourceConnection;
-        $this->catalogInventoryQuery = $catalogInventoryQuery;
         $this->logger = $logger;
-    }
-
-    /**
-     * Format output
-     *
-     * @param array $row
-     * @return array
-     */
-    private function format(array $row) : array
-    {
-        return [
-            'productId' => $row['product_id'],
-            'storeViewCode' => $row['storeViewCode'],
-            'inStock' => $row['is_in_stock'],
-        ];
+        $this->inventoryDataProvider = $cachedInventoryDataProvider;
     }
 
     /**
@@ -71,18 +40,10 @@ class InStock
      */
     public function get(array $values) : array
     {
-        $connection = $this->resourceConnection->getConnection();
-        $queryArguments = [];
         try {
             $output = [];
-            foreach ($values as $value) {
-                $queryArguments['productId'][$value['productId']] = $value['productId'];
-                $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
-            }
-            $select = $this->catalogInventoryQuery->getInStock($queryArguments);
-            $cursor = $connection->query($select);
-            while ($row = $cursor->fetch()) {
-                $output[] = $this->format($row);
+            foreach ($this->inventoryDataProvider->get($values) as $stockItem) {
+                $output[] = $stockItem;
             }
         } catch (\Exception $exception) {
             $this->logger->error($exception->getMessage(), ['exception' => $exception]);

@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\ProductPriceDataExporter\Model\Query;
 
-use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\EntityManager\MetadataPool;
@@ -40,16 +39,14 @@ class CatalogRulePricesQuery
     }
 
     /**
-     * @inheritDoc
-     * @throws UnableRetrieveData
+     * @param array $productIds
+     * @return Select
      */
     public function getQuery(array $productIds): Select
     {
         $connection = $this->resourceConnection->getConnection();
         /** @var \Magento\Framework\EntityManager\EntityMetadataInterface $metadata */
         $metadata = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class);
-
-        $linkField = $metadata->getLinkField();
 
         return $connection->select()
             ->joinInner(
@@ -64,7 +61,7 @@ class CatalogRulePricesQuery
             )
             ->joinInner(
                 ['rule' => $this->resourceConnection->getTableName('catalogrule_product_price')],
-                \sprintf('product.%1$s = rule.product_id', $linkField) .
+                'product.entity_id = rule.product_id' .
                 ' AND rule.website_id = product_website.website_id AND rule.rule_date = pwi.website_date',
                 [
                     'rule_price AS value',

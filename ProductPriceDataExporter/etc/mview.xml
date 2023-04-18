@@ -16,6 +16,8 @@
             <!--Seems that catalogrule mviews do not work as we are using index tables which seems to be recreated each reindex-->
             <table name="catalogrule_product_price" entity_column="product_id" />
             <table name="catalogrule_product_price_replica" entity_column="product_id" />
+            <!-- temporary solution to get parent/child relationship -->
+            <table name="catalog_product_relation" entity_column="child_id" />
         </subscriptions>
     </view>
 </config>

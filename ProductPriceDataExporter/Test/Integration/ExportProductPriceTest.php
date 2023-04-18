@@ -7,21 +7,25 @@ declare(strict_types=1);
 
 namespace Magento\ProductPriceDataExporter\Test\Integration;
 
+use DateTime;
+use DateTimeInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\Indexer\Model\Indexer;
 use Magento\DataExporter\Export\Processor;
-use Magento\ProductPriceDataExporter\Model\Provider\ProductPrice;
 use Magento\TestFramework\Helper\Bootstrap;
+use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
+use Zend_Db_Statement_Exception;
 
 /**
  * @magentoDbIsolation disabled
  * @magentoAppIsolation enabled
  */
-class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
+class ExportProductPriceTest extends TestCase
 {
     private const PRODUCT_PRICE_FEED_INDEXER = 'catalog_data_exporter_product_prices';
 
@@ -45,22 +49,23 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
      */
     private $productRepository;
 
-    /**
-     * Setup tests
-     */
-    protected function setUp(): void
+
+    public function __construct(?string $name = null, array $data = [], $dataName = '')
     {
-        parent::setUp();
+        parent::__construct($name, $data, $dataName);
         $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
         $this->processor = Bootstrap::getObjectManager()->create(Processor::class);
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
         $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('productPrices');
+
     }
 
     /**
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/products.php
+     * @throws NoSuchEntityException
+     * @throws Zend_Db_Statement_Exception
      */
-    public function testExportProductPricesForSimpleProducts()
+    public function testExportProductPricesForSimpleVirtualGroupedDownloadableProducts(): void
     {
         $productPricesForSimpleProducts = $this->getExpectedProductPricesForSimpleProducts();
 
@@ -79,6 +84,7 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
                 'regular' => 10,
                 'deleted' => false,
                 'discounts' => null,
+                'type' => 'SIMPLE'
             ],
             [
                 'sku' => 'simple_product_with_special_price',
@@ -86,6 +92,7 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
                 'regular' => 20,
                 'deleted' => false,
                 'discounts' => [0 => ['code' => 'special_price', 'price' => 5]],
+                'type' => 'SIMPLE'
             ],
             [
                 'sku' => 'virtual_product_with_special_price',
@@ -93,6 +100,7 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
                 'regular' => 200,
                 'deleted' => false,
                 'discounts' => [0 => ['code' => 'special_price', 'price' => 50]],
+                'type' => 'SIMPLE'
             ],
             [
                 'sku' => 'grouped_product',
@@ -100,6 +108,7 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
                 'regular' => 0,
                 'deleted' => false,
                 'discounts' => null,
+                'type' => 'GROUPED'
             ],
             [
                 'sku' => 'simple_product_with_special_price_for_cg',
@@ -107,6 +116,7 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
                 'regular' => 30,
                 'deleted' => false,
                 'discounts' => null,
+                'type' => 'SIMPLE'
             ],
             [
                 'sku' => 'simple_product_with_special_price_for_cg',
@@ -114,15 +124,26 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
                 'regular' => 30,
                 'deleted' => false,
                 'discounts' => [0 => ['code' => 'group', 'price' => 15]],
+                'type' => 'SIMPLE'
+            ],
+            [
+                'sku' => 'downloadable_product_with_regular_price',
+                'customerGroupCode' => '0',
+                'regular' => 15,
+                'deleted' => false,
+                'discounts' => null,
+                'type' => 'DOWNLOADABLE'
             ],
         ];
     }
 
     /**
      * @magentoDataFixture Magento/ConfigurableProduct/_files/product_configurable.php
-     * @depends testExportProductPricesForSimpleProducts
+     * @depends testExportProductPricesForSimpleVirtualGroupedDownloadableProducts
+     * @throws NoSuchEntityException
+     * @throws Zend_Db_Statement_Exception
      */
-    public function testExportProductPricesForConfigurableProducts()
+    public function testExportProductPricesForConfigurableProducts(): void
     {
         $productPricesForConfigurableProducts = $this->getExpectedProductPricesForConfigurableProducts();
 
@@ -137,19 +158,21 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
         return [
             [
                 'sku' => 'simple_10',
-                'parents' => [0 => ['sku' => 'configurable', 'type' => ProductPrice::PRODUCT_TYPE_CONFIGURABLE]],
+                'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                 'customerGroupCode' => '0',
                 'regular' => 10,
                 'deleted' => false,
                 'discounts' => null,
+                'type' => 'SIMPLE'
             ],
             [
                 'sku' => 'simple_20',
-                'parents' => [0 => ['sku' => 'configurable', 'type' => ProductPrice::PRODUCT_TYPE_CONFIGURABLE]],
+                'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                 'customerGroupCode' => '0',
                 'regular' => 20,
                 'deleted' => false,
                 'discounts' => null,
+                'type' => 'SIMPLE'
             ],
         ];
     }
@@ -157,8 +180,10 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
     /**
      * @magentoDataFixture Magento/Bundle/_files/product.php
      * @depends testExportProductPricesForConfigurableProducts
+     * @throws NoSuchEntityException
+     * @throws Zend_Db_Statement_Exception
      */
-    public function testExportProductPricesForBundleProducts()
+    public function testExportProductPricesForBundleProducts(): void
     {
         $productPricesForBundleProducts = $this->getExpectedProductPricesForBundleProducts();
 
@@ -173,11 +198,12 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
         return [
             [
                 'sku' => 'simple',
-                'parents' => [0 => ['sku' => 'bundle-product', 'type' => ProductPrice::PRODUCT_TYPE_BUNDLE]],
+                'parents' => [0 => ['sku' => 'bundle-product', 'type' => 'BUNDLE']],
                 'customerGroupCode' => '0',
                 'regular' => 10,
                 'deleted' => false,
                 'discounts' => null,
+                'type' => 'SIMPLE'
             ],
             // this sku comes from the fixture inside Magento/Bundle/_files/product.php and is not related to the bundle
             [
@@ -186,12 +212,16 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
                 'regular' => 10,
                 'deleted' => false,
                 'discounts' => null,
+                'type' => 'SIMPLE'
             ],
         ];
     }
 
     /**
+     * @param array $expectedItems
      * @return void
+     * @throws NoSuchEntityException
+     * @throws Zend_Db_Statement_Exception
      */
     private function checkExpectedItemsAreExportedInFeed(array $expectedItems): void
     {
@@ -199,9 +229,9 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
         foreach ($expectedItems as $expectedItem) {
             $ids[] = $this->productRepository->get($expectedItem['sku'])->getId();
         }
-        $timestamp = new \DateTime('Now - 1 second');
+        $timestamp = new DateTime('Now - 1 second');
         $this->runIndexer($ids);
-        $actualProductPricesFeed = $this->productPricesFeed->getFeedSince($timestamp->format(\DateTime::W3C));
+        $actualProductPricesFeed = $this->productPricesFeed->getFeedSince($timestamp->format(DateTimeInterface::W3C));
 
         self::assertNotEmpty($actualProductPricesFeed['feed'], 'Product Price Feed should not be empty');
         self::assertCount(
@@ -227,12 +257,12 @@ class ExportProductPriceTest extends \PHPUnit\Framework\TestCase
      * @param $ids
      * @return void
      */
-    private function runIndexer($ids) : void
+    private function runIndexer($ids): void
     {
         try {
             $this->indexer->load(self::PRODUCT_PRICE_FEED_INDEXER);
             $this->indexer->reindexList($ids);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             throw new RuntimeException('Could not reindex product prices data');
         }
     }

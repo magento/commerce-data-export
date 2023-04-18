@@ -25,22 +25,22 @@ class ProductPricesQuery
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
 
     /**
      * @var MetadataPool
      */
-    private $metadataPool;
+    private MetadataPool $metadataPool;
 
     /**
      * @var Config
      */
-    private $eavConfig;
+    private Config $eavConfig;
 
     /**
-     * @var array
+     * @var array|null
      */
-    private $priceAttributes;
+    private ?array $priceAttributes = null;
 
     private const IGNORED_TYPES = [Configurable::TYPE_CODE, Type::TYPE_BUNDLE];
 
@@ -100,6 +100,7 @@ class ProductPricesQuery
                 [
                     'sku',
                     'entity_id',
+                    'type_id'
                 ]
             )
             ->joinInner(
@@ -121,7 +122,8 @@ class ProductPricesQuery
             ->joinLeft(
                 ['eav' => $eavAttributeTable],
                 \sprintf('product.%1$s = eav.%1$s', $linkField) .
-                $connection->quoteInto(' AND eav.attribute_id IN (?)', \array_values($this->priceAttributes)),
+                $connection->quoteInto(' AND eav.attribute_id IN (?)', \array_values($this->priceAttributes)) .
+                ' AND eav.store_id = 0',
                 ['attribute_id']
             )
             ->joinLeft(

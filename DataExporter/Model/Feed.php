@@ -19,41 +19,34 @@ use Magento\Framework\Serialize\SerializerInterface;
 class Feed implements FeedInterface
 {
     /**
-     * Offset
-     *
-     * @var int
-     */
-    protected const OFFSET = 100;
-
-    /**
      * @var ResourceConnection
      */
-    protected $resourceConnection;
+    protected ResourceConnection $resourceConnection;
 
     /**
      * @var SerializerInterface
      */
-    protected $serializer;
+    protected SerializerInterface $serializer;
 
     /**
      * @var FeedIndexMetadata
      */
-    protected $feedIndexMetadata;
+    protected FeedIndexMetadata $feedIndexMetadata;
 
     /**
      * @var FeedQuery
      */
-    private $feedQuery;
+    private FeedQuery $feedQuery;
 
     /**
      * @var string|null
      */
-    private $dateTimeFormat;
+    private ?string $dateTimeFormat;
 
     /**
      * @var CommerceDataExportLoggerInterface
      */
-    private $logger;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -88,7 +81,7 @@ class Feed implements FeedInterface
             $this->feedQuery->getLimitSelect(
                 $this->feedIndexMetadata,
                 $timestamp,
-                $this::OFFSET
+                $this->feedIndexMetadata->getFeedOffsetLimit()
             )
         );
         return $this->fetchData(
@@ -141,5 +134,13 @@ class Feed implements FeedInterface
             'recentTimestamp' => $recentTimestamp,
             'feed' => $output,
         ];
+    }
+
+    /**
+     * @return FeedIndexMetadata
+     */
+    public function getFeedMetadata(): FeedIndexMetadata
+    {
+        return $this->feedIndexMetadata;
     }
 }
