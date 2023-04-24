@@ -27,4 +27,14 @@ return [
     'app/code/Magento/CatalogExport/Model/GenerateDTOs.php' => [
         'Magento\DataExporter',
     ],
+    'app/code/Magento/CatalogInventoryDataExporter/Model/Provider/Product/InventoryDataProvider.php' => [
+        'Magento\InventoryIndexer',
+    ],
+    'app/code/Magento/CatalogInventoryDataExporter/Model/Query/InventoryData.php' => [
+        'Magento\InventorySales',
+    ],
+    'app/code/Magento/CatalogInventoryDataExporter/Model/Plugin/StockStatusUpdater.php' => [
+        'Magento\InventoryApi',
+        'Magento\InventoryMultiDimensionalIndexerApi',
+    ],
 ];

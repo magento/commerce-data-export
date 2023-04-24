@@ -9,33 +9,25 @@ namespace Magento\ProductPriceDataExporter\Model\Query;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
-use Magento\Framework\EntityManager\MetadataPool;
 
 /**
  * Get catalog rule prices
  */
 class CatalogRulePricesQuery
 {
-    /**
-     * @var MetadataPool
-     */
-    private $metadataPool;
+    private ResourceConnection $resourceConnection;
 
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
+    private DateWebsiteProvider $dateWebsiteProvider;
 
     /**
      * @param ResourceConnection $resourceConnection
-     * @param MetadataPool $metadataPool
      */
     public function __construct(
         ResourceConnection $resourceConnection,
-        MetadataPool $metadataPool
+        DateWebsiteProvider $dateWebsiteProvider
     ) {
         $this->resourceConnection = $resourceConnection;
-        $this->metadataPool = $metadataPool;
+        $this->dateWebsiteProvider = $dateWebsiteProvider;
     }
 
     /**
@@ -45,8 +37,6 @@ class CatalogRulePricesQuery
     public function getQuery(array $productIds): Select
     {
         $connection = $this->resourceConnection->getConnection();
-        /** @var \Magento\Framework\EntityManager\EntityMetadataInterface $metadata */
-        $metadata = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class);
 
         return $connection->select()
             ->joinInner(
@@ -55,14 +45,9 @@ class CatalogRulePricesQuery
                 ['website_id']
             )
             ->joinInner(
-                ['pwi' => $this->resourceConnection->getTableName('catalog_product_index_website')],
-                'pwi.website_id = product_website.website_id',
-                []
-            )
-            ->joinInner(
                 ['rule' => $this->resourceConnection->getTableName('catalogrule_product_price')],
                 'product.entity_id = rule.product_id' .
-                ' AND rule.website_id = product_website.website_id AND rule.rule_date = pwi.website_date',
+                ' AND rule.website_id = product_website.website_id AND rule.rule_date = ' . $this->getWebsiteDate(),
                 [
                     'rule_price AS value',
                     'customer_group_id',
@@ -77,5 +62,18 @@ class CatalogRulePricesQuery
                 ]
             )
             ->where('product.entity_id IN (?)', $productIds);
+    }
+
+    private function getWebsiteDate(): \Zend_Db_Expr
+    {
+        $caseResults = [];
+        foreach ($this->dateWebsiteProvider->getWebsitesDate() as $websiteId => $date) {
+            $caseResults["product_website.website_id = '$websiteId'"] = "'$date'";
+        }
+        return $this->resourceConnection->getConnection()->getCaseSql(
+            '',
+            $caseResults,
+            'CURRENT_DATE'
+        );
     }
 }

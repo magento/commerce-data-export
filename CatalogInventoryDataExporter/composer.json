@@ -17,7 +17,6 @@
     "suggest": {
         "magento/module-inventory-indexer": "*",
         "magento/module-inventory-api": ">=1.2.3",
-        "magento/module-indexer": ">=100.4.4",
         "magento/module-inventory-multi-dimensional-indexer-api": ">=1.2.1",
         "magento/module-inventory-sales": ">=1.3.0"
     },
@@ -25,9 +24,11 @@
         "php": "~8.1.0||~8.2.0",
         "magento/framework": ">=103.0.4",
         "magento/module-catalog-inventory": ">=100.4.4",
+        "magento/module-indexer": ">=100.4.4",
         "magento/module-store": ">=101.1.4",
         "magento/module-catalog": ">=104.0.4",
         "magento/module-data-exporter": "self.version",
         "magento/module-catalog-data-exporter": "self.version"
-    }
+    },
+    "version": "102.2.100"
 }
