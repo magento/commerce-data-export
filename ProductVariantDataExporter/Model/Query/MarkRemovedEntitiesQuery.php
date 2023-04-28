@@ -71,8 +71,13 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
                 ['is_deleted' => new \Zend_Db_Expr('1')]
             )
             ->joinLeft(
+                ['parent' => $catalogProductTable],
+                'f.parent_id = parent.entity_id',
+                []
+            )
+            ->joinLeft(
                 ['link' => $this->resourceConnection->getTableName('catalog_product_super_link')],
-                'link.product_id = f.product_id AND link.parent_id = f.parent_id',
+                \sprintf('link.product_id = f.product_id AND link.parent_id = parent.%s', $productEntityJoinField),
                 []
             )
             ->joinLeft(
