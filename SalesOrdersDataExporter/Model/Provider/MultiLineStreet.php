@@ -13,7 +13,8 @@ class MultiLineStreet
 
     /**
      * Splits the 'street' field (only when present) using newline char as separator.
-     * @param array $values containing 'street' field
+     *
+     * @param  array $values containing 'street' field
      * @return array containing 'multi_line_street' field
      */
     public function get(array $values): array
@@ -24,6 +25,7 @@ class MultiLineStreet
                 foreach ((explode("\n", $value['street'])) as $streetLine) {
                     $output[] = [
                         'commerceOrderId' => $value['commerceOrderId'],
+                        'addressType' => $value['addressType'],
                         'multiLineStreet' => $streetLine
                     ];
                 }

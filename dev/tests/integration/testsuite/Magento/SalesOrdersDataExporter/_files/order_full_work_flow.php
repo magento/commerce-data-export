@@ -49,7 +49,7 @@ $orderItems = $order->getItems();
 /** @var \Magento\Sales\Api\Data\OrderItemInterface $orderItem */
 $orderItem = array_values($orderItems)[0];
 
-/** @var \Magento\Sales\Api\Data\ShipmentItemCreationInterface $shipmentItem */
+/** @var \Magento\Sales\Api\Data\InvoiceItemCreationInterface $invoiceItem */
 $invoiceItem = $objectManager->create(\Magento\Sales\Api\Data\InvoiceItemCreationInterface::class);
 $invoiceItem->setOrderItemId($orderItem->getItemId());
 $invoiceItem->setQty($orderItem->getQtyOrdered());

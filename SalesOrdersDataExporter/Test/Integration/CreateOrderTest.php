@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\SalesOrdersDataExporter\Tests\Integration;
+namespace Magento\SalesOrdersDataExporter\Test\Integration;
 
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderInterfaceFactory;
@@ -20,7 +20,7 @@ use Magento\TestFramework\Helper\Bootstrap;
 use Magento\Sales\Model\Order\Payment\Transaction\Repository as TransactionRepository;
 
 /**
- * Tests for orders data exporter functionality
+ * Test for orders data exporter functionality
  *
  * @magentoDbIsolation enabled
  */
@@ -280,8 +280,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
                     'order_data',
                     'items',
                     'shipments',
-                    'invoice',
-                    'creditmemo'
+                    'invoice'
                 ]
             ]
         ];
@@ -373,6 +372,9 @@ class CreateOrderTest extends AbstractOrderFeedTest
     /**
      * @param array $expectedOrderData
      * @param array $feedData
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     private function checkFields(array $expectedOrderData, array $feedData): void
     {
@@ -401,9 +403,11 @@ class CreateOrderTest extends AbstractOrderFeedTest
             }
             if ($expectedField === 'invoices') {
                 $uncheckedIds = \array_flip(array_keys($expectedData));
-                foreach ($feedData[$expectedField] as $itemData) {
-                    $this->checkFields($expectedData[$itemData['entityId']], $itemData);
-                    unset($uncheckedIds[$itemData['entityId']]);
+                foreach ($feedData['invoices'] as $itemData) {
+                    $invoiceId = $itemData['entityId'];
+                    $expectedInvoiceData = $expectedData[$invoiceId];
+                    $this->checkFields($expectedInvoiceData, $itemData);
+                    unset($uncheckedIds[$invoiceId]);
                 }
                 self::assertEmpty($uncheckedIds, "Some invoice items are missed in feed");
                 continue;
@@ -442,7 +446,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
                         )
                     );
                 } else {
-                    $this->checkFields($expectedOrderData[$expectedField], $feedData[$expectedField]);
+                    $this->checkFields($expectedData, $feedData[$expectedField]);
                 }
             }
         }
@@ -661,16 +665,28 @@ class CreateOrderTest extends AbstractOrderFeedTest
     private function getExpectedInvoicesData(OrderInterface $order): array
     {
         $invoices = [];
-        /** @var Invoice $invoiceItem */
-        foreach ($order->getInvoiceCollection() as $invoiceItem) {
-            $invoiceId = $invoiceItem->getId();
+
+        /** @var Invoice $invoice */
+        foreach ($order->getInvoiceCollection() as $invoice) {
+            $invoiceId = $invoice->getId();
+            $invoiceItems = [];
+            /** @var Invoice\Item $invoiceItem */
+            foreach ($invoice->getItems() as $invoiceItem) {
+                $orderItemId = $invoiceItem->getOrderItemId();
+                $itemUuid = $this->uuidResource->getAssignedIds([$orderItemId], 'order_item')[$orderItemId];
+                $invoiceItems[$orderItemId] = [
+                    'orderItemId' => ['id' => $itemUuid],
+                    'qtyInvoiced' => $invoiceItem->getQty()
+                ];
+            }
             $invoices[$invoiceId] = [
                 'entityId' => $invoiceId,
                 'isUsedForRefund' => false,
-                'grandTotal' => $invoiceItem->getBaseGrandTotal()
+                'grandTotal' => $invoice->getBaseGrandTotal(),
+                'createdAt' => $this->convertDate($invoice->getCreatedAt()),
+                'invoiceItems' => $invoiceItems
             ];
         }
-
         return $invoices;
     }
 
@@ -737,7 +753,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
 
             $shipmentId = $orderShipment->getId();
             $shipmentUuid = $this->uuidResource->getAssignedIds([$shipmentId], 'order_shipment')[$shipmentId];
-            $expectedOrderData['shipments'][$shipmentUuid] = [
+            $shipments[$shipmentUuid] = [
                 'shipmentId' => ['id' => $shipmentUuid],
                 'createdAt' => $this->convertDate($orderShipment->getCreatedAt()),
                 'updatedAt' => $this->convertDate($orderShipment->getUpdatedAt())

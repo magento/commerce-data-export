@@ -164,6 +164,7 @@
         <field name="multiLineStreet" type="String" repeated="true"
             provider="Magento\SalesOrdersDataExporter\Model\Provider\MultiLineStreet">
             <using field="commerceOrderId" />
+            <using field="addressType" />
         </field>
         <field name="city" type="String" />
         <field name="country" type="String" />
@@ -178,6 +179,21 @@
         <field name="entityId" type="ID" />
         <field name="isUsedForRefund" type="Boolean" />
         <field name="grandTotal" type="Float" />
+        <field name="createdAt" type="String"
+               provider="Magento\DataExporter\Model\Provider\DateConverter">
+            <using field="entityId" />
+        </field>
+        <field name="invoiceItems" type="InvoiceItem" repeated="true"
+               provider="Magento\SalesOrdersDataExporter\Model\Provider\InvoiceItem">
+            <using field="invoiceId" />
+        </field>
+    </record>
+    <record name="InvoiceItem">
+        <field name="orderItemId" type="UUID"
+               provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\OrderItem">
+            <using field="order_item_id" />
+        </field>
+        <field name="qtyInvoiced" type="Float" />
     </record>
     <record name="CreditMemoV2">
         <field name="creditMemoId" type="UUID"
@@ -269,7 +285,7 @@
     </record>
     <record name="ShipmentItem">
         <field name="orderItemId" type="UUID"
-            provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\CreditMemoItem"> <!--UUID
+            provider="Magento\SalesOrdersDataExporter\Model\Provider\Uuid\ShipmentItem"> <!--UUID
             of original order item -->
             <using field="order_item_id" />
         </field>

@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace Magento\SalesOrdersDataExporter\Tests\Integration;
+namespace Magento\SalesOrdersDataExporter\Test\Integration;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\DataExporter\Model\FeedInterface;

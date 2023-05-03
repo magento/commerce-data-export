@@ -30,7 +30,9 @@ class OrderItemAdjustment
     }
 
     /**
-     * @param array $values
+     * Retrieves and processes order items.
+     *
+     * @param  array $values
      * @return array
      */
     public function get(array $values): array
@@ -46,18 +48,20 @@ class OrderItemAdjustment
     }
 
     /**
-     * @param array $row
+     * Processes a single row of order item data.
+     *
+     * @param  array $row
      * @return bool
      */
     private function processRow(array $row) : bool
     {
-        if (!isset($row['productType'], $row['product_options'])) {
+        if (!isset($row['productType'], $row['productOptions'])) {
             return false;
         }
 
         $result = false;
         if ($row['productType'] === self::PRODUCT_TYPE_BUNDLE) {
-            $productOptions = $this->serializer->unserialize($row['product_options']);
+            $productOptions = $this->serializer->unserialize($row['productOptions']);
             $result = isset($productOptions['shipment_type'])
                 && ((int)$productOptions['shipment_type'] === 0);
         }

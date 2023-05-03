@@ -65,6 +65,11 @@
             <argument name="queryName" xsi:type="string">salesInvoicesV2</argument>
         </arguments>
     </virtualType>
+    <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\InvoiceItem" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
+        <arguments>
+            <argument name="queryName" xsi:type="string">salesInvoiceItemV2</argument>
+        </arguments>
+    </virtualType>
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Provider\CreditMemos" type="Magento\DataExporter\Model\Provider\QueryDataProvider">
         <arguments>
             <argument name="queryName" xsi:type="string">salesCreditMemosV2</argument>

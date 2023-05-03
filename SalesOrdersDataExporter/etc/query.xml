@@ -122,12 +122,31 @@
     <query name="salesInvoicesV2">
         <source name="sales_invoice">
             <attribute name="entity_id" alias="entityId" />
+            <attribute name="entity_id" alias="invoiceId" />
             <attribute name="order_id" alias="commerceOrderId" />
             <attribute name="is_used_for_refund" alias="isUsedForRefund" />
             <attribute name="base_grand_total" alias="grandTotal" />
+            <attribute name="created_at" alias="createdAt" />
             <filter glue="and">
                 <condition attribute="order_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
+        </source>
+    </query>
+    <query name="salesInvoiceItemV2">
+        <source name="sales_invoice_item">
+            <attribute name="qty" alias="qtyInvoiced" />
+            <attribute name="parent_id" alias="invoiceId" />
+            <attribute name="order_item_id" />
+            <filter glue="and">
+                <condition attribute="parent_id" operator="in" type="placeholder">invoiceId</condition>
+            </filter>
+            <link-source name="data_exporter_uuid" link-type="left">
+                <attribute name="uuid" />
+                <using glue="and">
+                    <condition attribute="entity_id" operator="eq" type="identifier">order_item_id</condition>
+                    <condition attribute="type" operator="eq" type="value">order_item</condition>
+                </using>
+            </link-source>
         </source>
     </query>
     <query name="salesShipmentV2">
@@ -200,9 +219,10 @@
             <attribute name="country_id" alias="country" />
             <attribute name="firstname" />
             <attribute name="lastname" />
+            <attribute name="address_type" alias="addressType" />
             <filter glue="and">
-                <condition attribute="address_type" operator="eq" type="placeholder">addressType</condition>
                 <condition attribute="parent_id" operator="in" type="placeholder">commerceOrderId</condition>
+                <condition attribute="address_type" operator="eq" type="placeholder">addressType</condition>
             </filter>
         </source>
     </query>

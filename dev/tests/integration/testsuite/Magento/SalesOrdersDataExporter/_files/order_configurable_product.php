@@ -44,6 +44,7 @@ $payment->setMethod('checkmo')
     );
 
 $qtyOrdered = 2;
+$productOptions = array('color' => 'red', 'size' => 'medium');
 /** @var \Magento\Sales\Model\Order\Item $orderItem */
 $orderConfigurableItem = $objectManager->create(\Magento\Sales\Model\Order\Item::class);
 $orderConfigurableItem->setProductId($configurableProduct->getId())->setQtyOrdered($qtyOrdered);
@@ -52,6 +53,7 @@ $orderConfigurableItem->setPrice($configurableProduct->getPrice());
 $orderConfigurableItem->setRowTotal($configurableProduct->getPrice());
 $orderConfigurableItem->setParentItemId(null);
 $orderConfigurableItem->setProductType('configurable');
+$orderConfigurableItem->setProductOptions($productOptions);
 
 if ($configurableProduct->getExtensionAttributes()
     && (array)$configurableProduct->getExtensionAttributes()->getConfigurableProductLinks()
@@ -64,6 +66,7 @@ if ($configurableProduct->getExtensionAttributes()
     $orderItem->setPrice($simpleProduct->getPrice());
     $orderItem->setRowTotal($simpleProduct->getPrice());
     $orderItem->setProductType('simple');
+    $orderItem->setProductOptions($productOptions);
     // duplicate behavior with simple product associated with configurable one that happens during order process.
     $orderItem->setProductId($simpleProduct->getId())->setQtyOrdered($qtyOrdered);
     $orderItem->setParentItemId($orderConfigurableItem->getId());
