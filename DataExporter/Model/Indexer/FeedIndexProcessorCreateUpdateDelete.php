@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Magento\DataExporter\Model\Indexer;
 
 use Magento\DataExporter\Export\Processor as ExportProcessor;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\App\ResourceConnection;
 
 /**
@@ -19,19 +20,23 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
      * @var MarkRemovedEntitiesInterface
      */
     private $markRemovedEntities;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param ExportProcessor $exportProcessor
      * @param MarkRemovedEntitiesInterface $markRemovedEntities
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         ExportProcessor $exportProcessor,
-        MarkRemovedEntitiesInterface $markRemovedEntities
+        MarkRemovedEntitiesInterface $markRemovedEntities,
+        CommerceDataExportLoggerInterface $logger
     ) {
         parent::__construct($resourceConnection, $exportProcessor);
         $this->markRemovedEntities = $markRemovedEntities;
+        $this->logger = $logger;
     }
 
     /**
@@ -45,6 +50,14 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
     public function partialReindex(FeedIndexMetadata $metadata, DataSerializerInterface $serializer, EntityIdsProviderInterface $idsProvider, array $ids = []): void
     {
         parent::partialReindex($metadata, $serializer, $idsProvider, $ids);
-        $this->markRemovedEntities->execute($ids, $metadata);
+
+        try {
+            $this->markRemovedEntities->execute($ids, $metadata);
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                sprintf("Cannot delete feed items. product ids: %s", implode(', ', $ids)),
+                ['exception' => $e]
+            );
+        }
     }
 }

@@ -5,8 +5,10 @@
  */
 declare(strict_types=1);
 
-namespace Magento\DataExporter\Model\Indexer;
+namespace Magento\ProductPriceDataExporter\Model\Indexer;
 
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\DataExporter\Model\Indexer\MarkRemovedEntitiesInterface;
 use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery;
 use Magento\Framework\App\ResourceConnection;
 
@@ -36,14 +38,10 @@ class MarkRemovedEntities implements MarkRemovedEntitiesInterface
     public function execute(array $ids, FeedIndexMetadata $metadata): void
     {
         $select = $this->markRemovedEntitiesQuery->getQuery($ids, $metadata);
+        $connection = $this->resourceConnection->getConnection();
 
-        // convert select-object to sql-string with staging future
-        $sqlSelect = $select->assemble();
-
-        // make "update from select" statement
-        $sqlUpdate = preg_replace('/SELECT .*? FROM/', 'UPDATE', $sqlSelect);
-        $sqlUpdate = str_replace("WHERE", 'SET `f`.`is_deleted` = 1 WHERE', $sqlUpdate);
-
-        $this->resourceConnection->getConnection()->query($sqlUpdate);
+        $connection->query(
+            $connection->deleteFromSelect($select, 'feed')
+        );
     }
 }

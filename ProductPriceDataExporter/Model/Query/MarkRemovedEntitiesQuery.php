@@ -13,6 +13,8 @@ use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\EntityManager\MetadataPool;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery as DefaultMarkRemovedEntitiesQuery;
 
 /**
  * Select price feed items that should be removed when product:
@@ -23,7 +25,7 @@ use Magento\Framework\EntityManager\MetadataPool;
  * Remove price for specific customer group handled in provider:
  * @see \Magento\ProductPriceDataExporter\Model\Provider\DeleteFeedItems
  */
-class MarkRemovedEntitiesQuery
+class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
 {
     private const STATUS_ATTRIBUTE_CODE = "status";
 
@@ -57,6 +59,7 @@ class MarkRemovedEntitiesQuery
         $this->resourceConnection = $resourceConnection;
         $this->eavConfig = $eavConfig;
         $this->metadataPool = $metadataPool;
+        parent::__construct($resourceConnection);
     }
 
     /**
@@ -66,7 +69,7 @@ class MarkRemovedEntitiesQuery
      * @param FeedIndexMetadata $metadata
      *
      * @return Select
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     public function getQuery(array $ids, FeedIndexMetadata $metadata): Select
     {
@@ -75,13 +78,13 @@ class MarkRemovedEntitiesQuery
         $catalogProductTable = $this->resourceConnection->getTableName($metadata->getSourceTableName());
         $productEntityJoinField = $connection->getAutoIncrementField($catalogProductTable);
         return $connection->select()
-            ->from(['feed' => $this->resourceConnection->getTableName($metadata->getFeedTableName())])
+            ->from(
+                ['feed' => $this->resourceConnection->getTableName($metadata->getFeedTableName())]
+            )
             ->joinLeft(
                 ['p' => $catalogProductTable],
                 \sprintf('feed.%s = p.%s', $metadata->getFeedTableField(), $metadata->getSourceTableField()),
-                [
-                    'is_deleted' => new \Zend_Db_Expr('1')
-                ]
+                []
             )
             ->joinLeft(
                 ['w' => $this->resourceConnection->getTableName('store_website')],

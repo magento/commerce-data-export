@@ -33,6 +33,17 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\MarkRemovedEntities" type="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
+        <arguments>
+            <argument name="markRemovedEntitiesQuery" xsi:type="object">Magento\ProductReviewDataExporter\Model\Query\MarkRemovedEntitiesQuery</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete" type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
+        <arguments>
+            <argument name="markRemovedEntities" xsi:type="object">Magento\ProductReviewDataExporter\Model\Indexer\MarkRemovedEntities</argument>
+        </arguments>
+    </virtualType>
+
     <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexer"
                  type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
@@ -41,6 +52,9 @@
             </argument>
             <argument name="serializer" xsi:type="object">
                 Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsDataSerializer
+            </argument>
+            <argument name="processor" xsi:type="object">
+                Magento\ProductReviewDataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete
             </argument>
         </arguments>
     </virtualType>
@@ -89,6 +103,9 @@
             <argument name="serializer" xsi:type="object">
                 Magento\ProductReviewDataExporter\Model\Indexer\RatingDataSerializer
             </argument>
+            <argument name="processor" xsi:type="object">
+                Magento\ProductReviewDataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete
+            </argument>
         </arguments>
     </virtualType>
 
@@ -115,10 +132,6 @@
     </type>
 
     <!-- Plugins -->
-    <type name="Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery">
-        <plugin name="mark_inactive_entities"
-                type="Magento\ProductReviewDataExporter\Plugin\MarkRemovedEntitiesQueryPlugin"/>
-    </type>
     <type name="Magento\Review\Model\Rating">
         <plugin name="reindex_rating_metadata_feed"
                 type="Magento\ProductReviewDataExporter\Plugin\ReindexRatingMetadataFeed"/>

@@ -16,10 +16,7 @@ use Magento\Framework\DB\Select;
  */
 class MarkRemovedEntitiesQuery
 {
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -40,15 +37,16 @@ class MarkRemovedEntitiesQuery
     public function getQuery(array $ids, FeedIndexMetadata $metadata): Select
     {
         $connection = $this->resourceConnection->getConnection();
-        $select = $connection->select()
+        return $connection->select()
+            ->from(
+                ['f' => $this->resourceConnection->getTableName($metadata->getFeedTableName())]
+            )
             ->joinLeft(
                 ['s' => $this->resourceConnection->getTableName($metadata->getSourceTableName())],
                 \sprintf('f.%s = s.%s', $metadata->getFeedTableField(), $metadata->getSourceTableField()),
-                ['is_deleted' => new \Zend_Db_Expr('1')]
+                []
             )
             ->where(\sprintf('f.%s IN (?)', $metadata->getFeedTableField()), $ids)
             ->where(\sprintf('s.%s IS NULL', $metadata->getSourceTableField()));
-
-        return $select;
     }
 }

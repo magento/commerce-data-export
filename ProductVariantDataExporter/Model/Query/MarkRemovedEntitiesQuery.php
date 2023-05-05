@@ -13,6 +13,7 @@ use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery as DefaultMarkRemovedEntitiesQuery;
+use Magento\Framework\Exception\LocalizedException;
 
 /**
  * Mark removed entities select query provider
@@ -52,6 +53,7 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
      * @param FeedIndexMetadata $metadata
      *
      * @return Select
+     * @throws LocalizedException
      */
     public function getQuery(array $ids, FeedIndexMetadata $metadata): Select
     {
@@ -62,13 +64,16 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
         $productEntityJoinField = $connection->getAutoIncrementField($catalogProductTable);
 
         $statusAttribute = $this->eavConfig->getAttribute('catalog_product', self::STATUS_ATTRIBUTE_CODE);
-        $statusAttributeId = $statusAttribute ? $statusAttribute->getId() : null;
+        $statusAttributeId = $statusAttribute?->getId();
 
         return $connection->select()
+            ->from(
+                ['f' => $this->resourceConnection->getTableName($metadata->getFeedTableName())]
+            )
             ->joinLeft(
                 ['removed_product' => $catalogProductTable],
                 \sprintf('f.product_id = removed_product.%s', $fieldName),
-                ['is_deleted' => new \Zend_Db_Expr('1')]
+                []
             )
             ->joinLeft(
                 ['parent' => $catalogProductTable],

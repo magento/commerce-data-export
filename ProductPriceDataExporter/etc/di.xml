@@ -31,10 +31,21 @@
             </argument>
         </arguments>
     </virtualType>
+    <type name="Magento\ProductPriceDataExporter\Model\Indexer\MarkRemovedEntities">
+        <arguments>
+            <argument name="markRemovedEntitiesQuery" xsi:type="object">Magento\ProductPriceDataExporter\Model\Query\MarkRemovedEntitiesQuery</argument>
+        </arguments>
+    </type>
+    <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete" type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
+        <arguments>
+            <argument name="markRemovedEntities" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\MarkRemovedEntities</argument>
+        </arguments>
+    </virtualType>
     <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceDataSerializer</argument>
+            <argument name="processor" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\ProductPriceDataExporter\Model\ProductPriceFeed" type="Magento\DataExporter\Model\Feed">
@@ -48,9 +59,5 @@
                 <item name="productPrices" xsi:type="string">Magento\ProductPriceDataExporter\Model\ProductPriceFeed</item>
             </argument>
         </arguments>
-    </type>
-
-    <type name="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
-        <plugin name="exporter-delete-feed-items-when-product-deleted" type="Magento\ProductPriceDataExporter\Plugin\DeleteFeedItems"/>
     </type>
 </config>
