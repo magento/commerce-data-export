@@ -5,6 +5,7 @@
  */
 namespace Magento\InventoryDataExporter\Plugin;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Inventory\Model\ResourceModel\SourceItem\DeleteMultiple;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryDataExporter\Model\Provider\StockStatusIdBuilder;
@@ -15,18 +16,19 @@ use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
  */
 class MarkItemsAsDeleted
 {
-    /**
-     * @var StockStatusDeleteQuery
-     */
-    private $stockStatusDeleteQuery;
+    private StockStatusDeleteQuery $stockStatusDeleteQuery;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param StockStatusDeleteQuery $stockStatusDeleteQuery
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
-        StockStatusDeleteQuery $stockStatusDeleteQuery
+        StockStatusDeleteQuery $stockStatusDeleteQuery,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->stockStatusDeleteQuery = $stockStatusDeleteQuery;
+        $this->logger = $logger;
     }
 
     /**
@@ -42,18 +44,22 @@ class MarkItemsAsDeleted
         DeleteMultiple $subject,
         array $sourceItems
     ): void {
-        $deletedSourceItems = [];
-        foreach ($sourceItems as $sourceItem) {
-            $deletedSourceItems[$sourceItem->getSku()][] = $sourceItem->getSourceCode();
-        }
+        try {
+            $deletedSourceItems = [];
+            foreach ($sourceItems as $sourceItem) {
+                $deletedSourceItems[$sourceItem->getSku()][] = $sourceItem->getSourceCode();
+            }
 
-        $fetchedSourceItems = $this->stockStatusDeleteQuery->getStocksAssignedToSkus(array_keys($deletedSourceItems));
+            $fetchedSourceItems = $this->stockStatusDeleteQuery->getStocksAssignedToSkus(array_keys($deletedSourceItems));
 
-        if (!empty($fetchedSourceItems)) {
-            $stocksToDelete = $this->getStocksToDelete($deletedSourceItems, $fetchedSourceItems);
-        }
-        if (!empty($stocksToDelete)) {
-            $this->stockStatusDeleteQuery->markStockStatusesAsDeleted($stocksToDelete);
+            if (!empty($fetchedSourceItems)) {
+                $stocksToDelete = $this->getStocksToDelete($deletedSourceItems, $fetchedSourceItems);
+            }
+            if (!empty($stocksToDelete)) {
+                $this->stockStatusDeleteQuery->markStockStatusesAsDeleted($stocksToDelete);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->warning('Multiple source delete error', ['exception' => $e]);
         }
     }
 
@@ -68,6 +74,9 @@ class MarkItemsAsDeleted
     {
         $stocksToDelete = [];
         foreach ($deletedSourceItems as $deletedItemSku => $deletedItemSources) {
+            if (!isset($fetchedSourceItems[$deletedItemSku])) {
+                continue ;
+            }
             foreach ($fetchedSourceItems[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
                 if ($this->isContainsAllKeys($fetchedItemSources, $deletedItemSources)) {
                     $stockStatusId = StockStatusIdBuilder::build(

@@ -5,6 +5,7 @@
  */
 namespace Magento\InventoryDataExporter\Plugin;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface;
 use Magento\InventoryDataExporter\Model\Provider\StockStatusIdBuilder;
 use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
@@ -14,18 +15,20 @@ use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
  */
 class BulkSourceUnassign
 {
-    /**
-     * @var StockStatusDeleteQuery
-     */
-    private $stockStatusDeleteQuery;
+    private StockStatusDeleteQuery $stockStatusDeleteQuery;
+
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param StockStatusDeleteQuery $stockStatusDeleteQuery
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
-        StockStatusDeleteQuery $stockStatusDeleteQuery
+        StockStatusDeleteQuery $stockStatusDeleteQuery,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->stockStatusDeleteQuery = $stockStatusDeleteQuery;
+        $this->logger = $logger;
     }
 
     /**
@@ -45,12 +48,16 @@ class BulkSourceUnassign
         array $skus,
         array $sourceCodes
     ): int {
-        $sourcesAssignedToProducts = $this->stockStatusDeleteQuery->getStocksAssignedToSkus($skus);
-        $sourcesByStocks = $this->stockStatusDeleteQuery->getStocksWithSources($sourceCodes);
-        $stocksToDelete = $this->getStocksToDelete($skus, $sourcesByStocks, $sourcesAssignedToProducts);
+        try {
+            $sourcesAssignedToProducts = $this->stockStatusDeleteQuery->getStocksAssignedToSkus($skus);
+            $sourcesByStocks = $this->stockStatusDeleteQuery->getStocksWithSources($sourceCodes);
+            $stocksToDelete = $this->getStocksToDelete($skus, $sourcesByStocks, $sourcesAssignedToProducts);
 
-        if (!empty($stocksToDelete)) {
-            $this->stockStatusDeleteQuery->markStockStatusesAsDeleted($stocksToDelete);
+            if (!empty($stocksToDelete)) {
+                $this->stockStatusDeleteQuery->markStockStatusesAsDeleted($stocksToDelete);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->warning('Bulk source unassign error', ['exception' => $e]);
         }
 
         return $result;
