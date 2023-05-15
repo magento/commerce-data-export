@@ -10,6 +10,7 @@ namespace Magento\CatalogDataExporter\Plugin\Category;
 
 use Magento\Catalog\Model\Category;
 use Magento\CatalogDataExporter\Model\Query\Category\ChildCategoriesQuery;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\Indexer\IndexerRegistry;
 
 /**
@@ -22,26 +23,23 @@ class ReindexCategoryFeedOnSave
      */
     private const CATEGORY_FEED_INDEXER = 'catalog_data_exporter_categories';
 
-    /**
-     * @var ChildCategoriesQuery
-     */
-    private $childCategoriesQuery;
-
-    /**
-     * @var IndexerRegistry
-     */
-    private $indexerRegistry;
+    private ChildCategoriesQuery $childCategoriesQuery;
+    private IndexerRegistry $indexerRegistry;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param IndexerRegistry $indexerRegistry
      * @param ChildCategoriesQuery $childCategoriesQuery
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         IndexerRegistry $indexerRegistry,
-        ChildCategoriesQuery $childCategoriesQuery
+        ChildCategoriesQuery $childCategoriesQuery,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->indexerRegistry = $indexerRegistry;
         $this->childCategoriesQuery = $childCategoriesQuery;
+        $this->logger = $logger;
     }
 
     /**
@@ -53,11 +51,18 @@ class ReindexCategoryFeedOnSave
      */
     public function afterReindex(Category $subject) : void
     {
-        $categoryFeedIndexer = $this->indexerRegistry->get(self::CATEGORY_FEED_INDEXER);
-        if (!$categoryFeedIndexer->isScheduled()) {
-            $children = $this->childCategoriesQuery->getAllChildrenIds($subject);
-            $idsList = array_unique(array_merge([$subject->getId()], $children, $subject->getParentIds()));
-            $categoryFeedIndexer->reindexList($idsList);
+        try {
+            $categoryFeedIndexer = $this->indexerRegistry->get(self::CATEGORY_FEED_INDEXER);
+            if (!$categoryFeedIndexer->isScheduled()) {
+                $children = $this->childCategoriesQuery->getAllChildrenIds($subject);
+                $idsList = array_unique(array_merge([$subject->getId()], $children, $subject->getParentIds()));
+                $categoryFeedIndexer->reindexList($idsList);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
         }
     }
 }

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace Magento\CatalogDataExporter\Plugin\DDLTrigger;
+namespace Magento\CatalogDataExporter\Model;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Sql\Expression;
@@ -22,7 +22,7 @@ class MigrateDataFromJSON implements DDLTriggerInterface
     /**
      * Pattern with which we can match whether we can apply and use this trigger or not.
      */
-    const MATCH_PATTERN = '/migrateDataFromJSON\((.+)\)/';
+    private const MATCH_PATTERN = '/migrateDataFromJSON\((.+)\)/';
 
     /**
      * @var ResourceConnection

@@ -45,7 +45,7 @@
     <preference for="Magento\DataExporter\Model\Indexer\EntityIdsProviderInterface"
                 type="Magento\DataExporter\Model\Indexer\EntityIdsProvider" />
     <preference for="Magento\DataExporter\Model\Indexer\FeedIndexProcessorInterface"
-                type="\Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete" />
+                type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete" />
 
     <!-- Logger -->
     <virtualType name="CommerceDataExportLogger" type="Magento\DataExporter\Model\Logging\Monolog">

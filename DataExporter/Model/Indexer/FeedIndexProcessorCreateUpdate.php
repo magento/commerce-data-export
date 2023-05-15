@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\App\ResourceConnection;
 use \Magento\DataExporter\Export\Processor as ExportProcessor;
 
@@ -15,26 +16,23 @@ use \Magento\DataExporter\Export\Processor as ExportProcessor;
  */
 class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
 {
-    /**
-     * @var ResourceConnection
-     */
     private ResourceConnection $resourceConnection;
-
-    /**
-     * @var ExportProcessor
-     */
     private ExportProcessor $exportProcessor;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param ExportProcessor $exportProcessor
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
-        ExportProcessor $exportProcessor
+        ExportProcessor $exportProcessor,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->exportProcessor = $exportProcessor;
+        $this->logger = $logger;
     }
 
     /**
@@ -81,10 +79,17 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         DataSerializerInterface $serializer,
         EntityIdsProviderInterface $idsProvider
     ): void {
-        $this->truncateIndexTable($metadata);
-        foreach ($idsProvider->getAllIds($metadata) as $batch) {
-            $ids = \array_column($batch, $metadata->getFeedIdentity());
-            $this->partialReindex($metadata, $serializer, $idsProvider, $ids);
+        try {
+            $this->truncateIndexTable($metadata);
+            foreach ($idsProvider->getAllIds($metadata) as $batch) {
+                $ids = \array_column($batch, $metadata->getFeedIdentity());
+                $this->partialReindex($metadata, $serializer, $idsProvider, $ids);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
         }
     }
 

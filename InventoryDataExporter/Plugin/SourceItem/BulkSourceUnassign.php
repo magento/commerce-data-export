@@ -5,6 +5,8 @@
  */
 namespace Magento\InventoryDataExporter\Plugin\SourceItem;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface;
 
 /**
@@ -14,18 +16,19 @@ class BulkSourceUnassign
 {
     private const STOCK_STATUS_FEED_INDEXER = 'inventory_data_exporter_stock_status';
 
-    /**
-     * @var \Magento\Framework\Indexer\IndexerRegistry
-     */
-    private $indexerRegistry;
+    private IndexerRegistry $indexerRegistry;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
-     * @param \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry
+     * @param IndexerRegistry $indexerRegistry
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
-        \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry
+        IndexerRegistry                   $indexerRegistry,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->indexerRegistry = $indexerRegistry;
+        $this->logger = $logger;
     }
 
     /**
@@ -43,11 +46,17 @@ class BulkSourceUnassign
         array $skus,
         array $sourceCodes
     ): int {
-        $stockStatusIndexer = $this->indexerRegistry->get(self::STOCK_STATUS_FEED_INDEXER);
-        if (!$stockStatusIndexer->isScheduled()) {
-            $stockStatusIndexer->reindexList($skus);
+        try {
+            $stockStatusIndexer = $this->indexerRegistry->get(self::STOCK_STATUS_FEED_INDEXER);
+            if (!$stockStatusIndexer->isScheduled()) {
+                $stockStatusIndexer->reindexList($skus);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
         }
-
         return $result;
     }
 }

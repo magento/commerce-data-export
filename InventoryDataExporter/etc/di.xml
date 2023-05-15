@@ -55,29 +55,26 @@
         </arguments>
     </virtualType>
 
-    <type name="\Magento\Framework\Mview\View\Changelog">
-        <plugin name="create_stock_item_changelog_table" type="\Magento\InventoryDataExporter\Plugin\Mview\StockStatusChangelog"/>
+    <type name="Magento\Framework\Mview\View\Changelog">
+        <plugin name="create_stock_item_changelog_table" type="Magento\InventoryDataExporter\Plugin\Mview\StockStatusChangelog"/>
     </type>
 
     <type name="Magento\Inventory\Model\ResourceModel\SourceItem\DeleteMultiple">
-        <plugin name="mark-stock-status-items-as-deleted"
-                type="Magento\InventoryDataExporter\Plugin\MarkItemsAsDeleted"/>
+        <plugin name="mark-stock-status-items-as-deleted" type="Magento\InventoryDataExporter\Plugin\MarkItemsAsDeleted"/>
     </type>
     <type name="Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery">
         <arguments>
-            <argument name="metadata" xsi:type="object">
-                Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata
-            </argument>
+            <argument name="metadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
         </arguments>
     </type>
 
     <!-- Plugins to cover on-save indexer mode  -->
     <type name="Magento\InventoryApi\Api\SourceItemsSaveInterface">
         <!-- sort order guarantee it will be executed after Inventory Index plugin -->
-        <plugin name="reindex-stock-status-exporter-indexer-on-source-item-update" type="\Magento\InventoryDataExporter\Plugin\SourceItem\SourceItemUpdate" sortOrder="10"/>
+        <plugin name="reindex-stock-status-exporter-indexer-on-source-item-update" type="Magento\InventoryDataExporter\Plugin\SourceItem\SourceItemUpdate" sortOrder="10"/>
     </type>
     <type name="Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface">
-        <plugin name="reindex-stock-status-exporter-indexer-on-bulk-source-unassign" type="\Magento\InventoryDataExporter\Plugin\SourceItem\BulkSourceUnassign" sortOrder="100"/>
+        <plugin name="reindex-stock-status-exporter-indexer-on-bulk-source-unassign" type="Magento\InventoryDataExporter\Plugin\SourceItem\BulkSourceUnassign" sortOrder="100"/>
         <plugin name="mark-stock-status-items-unassigned-on-bulk-unassign" type="Magento\InventoryDataExporter\Plugin\BulkSourceUnassign" sortOrder="200"/>
     </type>
 </config>

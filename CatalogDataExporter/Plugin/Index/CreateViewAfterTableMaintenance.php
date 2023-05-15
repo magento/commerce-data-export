@@ -11,6 +11,7 @@ use Magento\Catalog\Model\Indexer\Product\Price\DimensionModeConfiguration;
 use Magento\Catalog\Model\Indexer\Product\Price\ModeSwitcherConfiguration;
 use Magento\Catalog\Model\Indexer\Product\Price\TableMaintainer;
 use Magento\CatalogDataExporter\Model\CreatePriceReadTable;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\App\Config\MutableScopeConfigInterface;
 
 /**
@@ -18,24 +19,23 @@ use Magento\Framework\App\Config\MutableScopeConfigInterface;
  */
 class CreateViewAfterTableMaintenance
 {
-    /**
-     * @var MutableScopeConfigInterface
-     */
-    private $scopeConfig;
-
-    /**
-     * @var CreatePriceReadTable
-     */
-    private $createDbView;
+    private MutableScopeConfigInterface $scopeConfig;
+    private CreatePriceReadTable $createDbView;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param MutableScopeConfigInterface $scopeConfig
      * @param CreatePriceReadTable $createDbView
+     * @param CommerceDataExportLoggerInterface $logger
      */
-    public function __construct(MutableScopeConfigInterface $scopeConfig, CreatePriceReadTable $createDbView)
-    {
+    public function __construct(
+        MutableScopeConfigInterface $scopeConfig,
+        CreatePriceReadTable $createDbView,
+        CommerceDataExportLoggerInterface $logger
+    ) {
         $this->scopeConfig = $scopeConfig;
         $this->createDbView = $createDbView;
+        $this->logger = $logger;
     }
 
     /**
@@ -43,19 +43,25 @@ class CreateViewAfterTableMaintenance
      * @param TableMaintainer $subject
      * @param null $result
      * @param array $dimensions
-     * @return null
+     * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterCreateTablesForDimensions(
         TableMaintainer $subject,
         $result,
         array $dimensions
-    ) {
-        $mode = $this->scopeConfig->getValue(ModeSwitcherConfiguration::XML_PATH_PRICE_DIMENSIONS_MODE);
-        if ($mode !== DimensionModeConfiguration::DIMENSION_NONE) {
-            $this->createDbView->createView($mode);
+    ): void {
+        try {
+            $mode = $this->scopeConfig->getValue(ModeSwitcherConfiguration::XML_PATH_PRICE_DIMENSIONS_MODE);
+            if ($mode !== DimensionModeConfiguration::DIMENSION_NONE) {
+                $this->createDbView->createView($mode);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
         }
-        return $result;
     }
 
     /**
@@ -63,18 +69,24 @@ class CreateViewAfterTableMaintenance
      * @param TableMaintainer $subject
      * @param null $result
      * @param array $dimensions
-     * @return null
+     * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterDropTablesForDimensions(
         TableMaintainer $subject,
         $result,
         array $dimensions
-    ) {
-        $mode = $this->scopeConfig->getValue(ModeSwitcherConfiguration::XML_PATH_PRICE_DIMENSIONS_MODE);
-        if ($mode !== DimensionModeConfiguration::DIMENSION_NONE) {
-            $this->createDbView->createView($mode);
+    ): void {
+        try {
+            $mode = $this->scopeConfig->getValue(ModeSwitcherConfiguration::XML_PATH_PRICE_DIMENSIONS_MODE);
+            if ($mode !== DimensionModeConfiguration::DIMENSION_NONE) {
+                $this->createDbView->createView($mode);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
         }
-        return $result;
     }
 }

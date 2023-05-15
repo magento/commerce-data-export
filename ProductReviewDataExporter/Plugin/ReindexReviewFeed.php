@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductReviewDataExporter\Plugin;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\ProductReviewDataExporter\Model\Indexer\ReindexOnSaveAction;
 use Magento\Review\Model\Review;
 
@@ -16,18 +17,19 @@ use Magento\Review\Model\Review;
  */
 class ReindexReviewFeed
 {
-    /**
-     * @var ReindexOnSaveAction
-     */
-    private $reindexOnSaveAction;
+    private ReindexOnSaveAction $reindexOnSaveAction;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param ReindexOnSaveAction $reindexOnSaveAction
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
-        ReindexOnSaveAction $reindexOnSaveAction
+        ReindexOnSaveAction $reindexOnSaveAction,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->reindexOnSaveAction = $reindexOnSaveAction;
+        $this->logger = $logger;
     }
 
     /**
@@ -39,7 +41,14 @@ class ReindexReviewFeed
      */
     public function beforeAfterDeleteCommit(Review $subject): Review
     {
-        $this->reindexOnSaveAction->execute(ReindexOnSaveAction::REVIEW_FEED_INDEXER, [$subject->getId()]);
+        try {
+            $this->reindexOnSaveAction->execute(ReindexOnSaveAction::REVIEW_FEED_INDEXER, [$subject->getId()]);
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
+        }
 
         return $subject;
     }
@@ -53,7 +62,14 @@ class ReindexReviewFeed
      */
     public function beforeAfterCommitCallback(Review $subject): Review
     {
-        $this->reindexOnSaveAction->execute(ReindexOnSaveAction::REVIEW_FEED_INDEXER, [$subject->getId()]);
+        try {
+            $this->reindexOnSaveAction->execute(ReindexOnSaveAction::REVIEW_FEED_INDEXER, [$subject->getId()]);
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
+        }
 
         return $subject;
     }

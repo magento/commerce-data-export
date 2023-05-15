@@ -16,7 +16,6 @@ use Magento\InventoryDataExporter\Model\Query\StockStatusDeleteQuery;
 class BulkSourceUnassign
 {
     private StockStatusDeleteQuery $stockStatusDeleteQuery;
-
     private CommerceDataExportLoggerInterface $logger;
 
     /**
@@ -34,7 +33,7 @@ class BulkSourceUnassign
     /**
      * Check which stocks will be unassigned from products and mark them as deleted in feed table
      *
-     * * @param BulkSourceUnassignInterface $subject
+     * @param BulkSourceUnassignInterface $subject
      * @param int $result
      * @param array $skus
      * @param array $sourceCodes
@@ -91,7 +90,7 @@ class BulkSourceUnassign
 
             foreach ($sourcesAssignedToProducts[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
                 if (isset($sourcesByStocks[$fetchedItemStockId])
-                    && $this->getContainsAllKeys($fetchedItemSources, $sourcesByStocks[$fetchedItemStockId])) {
+                    && $this->isContainsAllKeys($fetchedItemSources, $sourcesByStocks[$fetchedItemStockId])) {
                     $stockStatusId = StockStatusIdBuilder::build(
                         ['stockId' => (string)$fetchedItemStockId, 'sku' => $deletedItemSku]
                     );
@@ -108,7 +107,7 @@ class BulkSourceUnassign
      * @param array $deletedSources
      * @return bool
      */
-    private function getContainsAllKeys(array $fetchedSources, array $deletedSources): bool
+    private function isContainsAllKeys(array $fetchedSources, array $deletedSources): bool
     {
         return empty(\array_diff($fetchedSources, $deletedSources));
     }

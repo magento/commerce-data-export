@@ -7,12 +7,13 @@
 namespace Magento\CatalogDataExporter\Plugin\Eav\Attribute;
 
 use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
 use Magento\CatalogDataExporter\Model\Indexer\IndexInvalidationManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\EntityManager\MetadataPool;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Store\Model\Store;
-use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 
 /**
  * MySQL trigger does not call in case of cascade deleting (by FK), as a result product not re-indexed when product
@@ -27,42 +28,19 @@ class ProductAttributeDelete
 {
     private const MAX_PRODUCTS_FOR_INSERT = 10000;
 
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
-
-    /**
-     * @var MetadataPool
-     */
-    private $metadataPool;
-
-    /**
-     * @var IndexInvalidationManager
-     */
-    private $invalidationManager;
-
-    /**
-     * @var IndexerRegistry
-     */
-    private $indexerRegistry;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var int
-     */
-    private $maxProductsPerInsert;
+    private ResourceConnection $resourceConnection;
+    private MetadataPool $metadataPool;
+    private IndexInvalidationManager $invalidationManager;
+    private IndexerRegistry $indexerRegistry;
+    private CommerceDataExportLoggerInterface $logger;
+    private int $maxProductsPerInsert;
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param MetadataPool $metadataPool
      * @param IndexInvalidationManager $invalidationManager
      * @param IndexerRegistry $indexerRegistry
-     * @param LoggerInterface $logger
+     * @param CommerceDataExportLoggerInterface $logger
      * @param int $maxProductsPerInsert
      */
     public function __construct(
@@ -70,8 +48,8 @@ class ProductAttributeDelete
         MetadataPool $metadataPool,
         IndexInvalidationManager $invalidationManager,
         IndexerRegistry $indexerRegistry,
-        LoggerInterface $logger,
-        $maxProductsPerInsert = self::MAX_PRODUCTS_FOR_INSERT
+        CommerceDataExportLoggerInterface $logger,
+        int $maxProductsPerInsert = self::MAX_PRODUCTS_FOR_INSERT
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->metadataPool = $metadataPool;
@@ -82,10 +60,10 @@ class ProductAttributeDelete
     }
 
     /**
-     * @param \Magento\Catalog\Model\ResourceModel\Eav\Attribute $attribute
+     * @param Attribute $attribute
      */
     public function beforeDelete(
-        \Magento\Catalog\Model\ResourceModel\Eav\Attribute $attribute
+        Attribute $attribute
     ) {
         $indexer = $this->indexerRegistry->get('catalog_data_exporter_products');
         if (!$indexer->isScheduled()) {

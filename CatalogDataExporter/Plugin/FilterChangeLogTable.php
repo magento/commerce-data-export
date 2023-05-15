@@ -6,6 +6,7 @@
 
 namespace Magento\CatalogDataExporter\Plugin;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Setup\Model\FixtureGenerator\SqlCollector;
 
 /**
@@ -14,6 +15,16 @@ use Magento\Setup\Model\FixtureGenerator\SqlCollector;
  */
 class FilterChangeLogTable
 {
+    private CommerceDataExportLoggerInterface $logger;
+
+    /**
+     * @param CommerceDataExportLoggerInterface $logger
+     */
+    public function __construct(
+        CommerceDataExportLoggerInterface $logger
+    ) {
+        $this->logger = $logger;
+    }
     /**
      * Filter out changelog tables by pattern {*_cl}
      *
@@ -24,8 +35,16 @@ class FilterChangeLogTable
      */
     public function afterGetSql(SqlCollector $subject, array $result): array
     {
-        return array_filter($result, static function ($item) {
-            return !str_ends_with($item[1], '_cl');
-        });
+        try {
+            return array_filter($result, static function ($item) {
+                return !str_ends_with($item[1], '_cl');
+            });
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
+            return $result;
+        }
     }
 }

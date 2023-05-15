@@ -20,15 +20,8 @@ class AssignUuidForCreditMemo
 {
     private const TYPE = 'credit_memo';
 
-    /**
-     * @var UuidManager
-     */
-    private $uidManager;
-
-    /**
-     * @var CommerceDataExportLoggerInterface
-     */
-    private $logger;
+    private UuidManager $uidManager;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param UuidManager $uidManager
@@ -48,13 +41,14 @@ class AssignUuidForCreditMemo
      * @param Creditmemo $entity
      * @return OrderResource
      * @throws \Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterSave(OrderResource $subject, OrderResource $result, Creditmemo $entity): OrderResource
     {
         try {
             $entityId = (int) $entity->getId();
             $this->uidManager->assign($entityId, self::TYPE);
-        } catch (UuidSaveException $e) {
+        } catch (UuidSaveException) {
             // do nothing, error logged in assign method
         } catch (\Throwable $e) {
             $this->logger->error('Cannot assign UUID to ' . self::TYPE . ' ' . $entity->getId(), ['exception' => $e]);

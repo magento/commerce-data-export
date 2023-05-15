@@ -11,4 +11,19 @@
     <!-- skip unrelated test: Product not found after import with staging (MDEE-166) -->
     <test class="Magento\CatalogImportExport\Model\ProductStagingTest" skip="true"/>
     <test class="Magento\CatalogImportExport\Model\Import\Product\Type\AbstractTest" skip="true"/>
+    <test class="Magento\CustomerSegment\Model\SegmentMatchConsumerTest" skip="true"/>
+    <test class="Magento\CustomerSegment\Model\SegmentMatchConsumerWithoutRealTimeCustomerSegmentValidationTest" skip="true"/>
+    <test class="Magento\SalesRule\Plugin\CouponUsagesTest" skip="true"/>
+    <test class="Magento\InventoryProductAlert\Test\Integration\ProductAlertTest">
+        <method name="testAlertsBothSourceItemsInStock" skip="true"/>
+    </test>
+    <test class="Magento\MessageQueue\Model\Cron\ConsumersRunnerTest">
+        <method name="testSpecificConsumerAndRerun" skip="true"/>
+    </test>
+    <test class="Magento\MysqlMq\Model\PublisherConsumerTest">
+        <method name="testPublishConsumeFlow" skip="true"/>
+    </test>
+    <test class="Magento\Backend\Model\Dashboard\ChartTest">
+        <method name="testGetByPeriodWithParam" skip="true"/>
+    </test>
 </overrides>

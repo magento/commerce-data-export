@@ -8,9 +8,10 @@ declare(strict_types=1);
 
 namespace Magento\InventoryDataExporter\Plugin\Mview;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
-use Magento\Framework\DB\Adapter\ConnectionException;
+use Magento\Framework\DB\Ddl\Table;
 use Magento\Framework\Mview\View\Changelog;
 use Magento\Framework\Mview\View\ChangelogTableNotExistsException;
 use Magento\Framework\Phrase;
@@ -21,28 +22,26 @@ use Magento\Framework\Phrase;
  */
 class StockStatusChangelog
 {
-    /**
-     * @var ResourceConnection
-     */
-    private ResourceConnection $resource;
-
     private const SKU_FIELD_SIZE = 64;
     private const STOCK_STATUS_CHANGELOG_NAME = 'inventory_data_exporter_stock_status_' . Changelog::NAME_SUFFIX;
 
-    /**
-     * @var AdapterInterface
-     */
+    private ResourceConnection $resource;
     private AdapterInterface $connection;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * Constructor for class StockStatusChangelog
      *
      * @param ResourceConnection $resource
+     * @param CommerceDataExportLoggerInterface $logger
      */
-    public function __construct(ResourceConnection $resource)
-    {
+    public function __construct(
+        ResourceConnection $resource,
+        CommerceDataExportLoggerInterface $logger
+    ) {
         $this->connection = $resource->getConnection();
         $this->resource = $resource;
+        $this->logger = $logger;
     }
 
     /**
@@ -54,12 +53,20 @@ class StockStatusChangelog
      * @throws \Zend_Db_Exception
      */
     public function aroundCreate(
-        \Magento\Framework\Mview\View\Changelog $subject,
-        callable $proceed
+        Changelog $subject,
+        callable  $proceed
     ): void {
-        if ($this->isStockStatusChangelog($subject)) {
-            $this->createChangelogTable($subject);
-        } else {
+        try {
+            if ($this->isStockStatusChangelog($subject)) {
+                $this->createChangelogTable($subject);
+            } else {
+                $proceed();
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
             $proceed();
         }
     }
@@ -78,13 +85,13 @@ class StockStatusChangelog
                 $changelogTableName
             )->addColumn(
                 'version_id',
-                \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                Table::TYPE_INTEGER,
                 null,
                 ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true],
                 'Version ID'
             )->addColumn(
                 $subject->getColumnName(),
-                \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                Table::TYPE_TEXT,
                 self::SKU_FIELD_SIZE,
                 ['nullable' => false],
                 'Entity SKU'
@@ -118,32 +125,41 @@ class StockStatusChangelog
      * @throws ChangelogTableNotExistsException
      */
     public function aroundGetList(
-        \Magento\Framework\Mview\View\Changelog $subject,
+        Changelog $subject,
         callable $proceed,
         $fromVersionId,
         $toVersionId
     ) {
-        if (!$this->isStockStatusChangelog($subject)) {
+        try {
+            if (!$this->isStockStatusChangelog($subject)) {
+                return $proceed($fromVersionId, $toVersionId);
+            }
+            $changelogTableName = $this->resource->getTableName($subject->getName());
+            if (!$this->connection->isTableExists($changelogTableName)) {
+                throw new ChangelogTableNotExistsException(new Phrase("Table %1 does not exist", [$changelogTableName]));
+            }
+
+            $select = $this->connection->select()->distinct(
+                true
+            )->from(
+                $changelogTableName,
+                [$subject->getColumnName()]
+            )->where(
+                'version_id > ?',
+                (int)$fromVersionId
+            )->where(
+                'version_id <= ?',
+                (int)$toVersionId
+            );
+
+            return $this->connection->fetchCol($select);
+
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
             return $proceed($fromVersionId, $toVersionId);
         }
-        $changelogTableName = $this->resource->getTableName($subject->getName());
-        if (!$this->connection->isTableExists($changelogTableName)) {
-            throw new ChangelogTableNotExistsException(new Phrase("Table %1 does not exist", [$changelogTableName]));
-        }
-
-        $select = $this->connection->select()->distinct(
-            true
-        )->from(
-            $changelogTableName,
-            [$subject->getColumnName()]
-        )->where(
-            'version_id > ?',
-            (int)$fromVersionId
-        )->where(
-            'version_id <= ?',
-            (int)$toVersionId
-        );
-
-        return $this->connection->fetchCol($select);
     }
 }

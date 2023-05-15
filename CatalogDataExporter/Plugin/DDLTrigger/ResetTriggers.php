@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Magento\CatalogDataExporter\Plugin\DDLTrigger;
 
 use Magento\Catalog\Model\ResourceModel\Indexer\ActiveTableSwitcher as Subject;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Mview\View\CollectionFactory;
@@ -20,26 +21,23 @@ use Magento\Framework\Mview\View\StateInterface;
  */
 class ResetTriggers
 {
-    /**
-     * @var ResourceConnection
-     */
-    private $resource;
-
-    /**
-     * @var CollectionInterface
-     */
-    private $viewCollection;
+    private ResourceConnection $resource;
+    private CollectionInterface $viewCollection;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param CollectionFactory $viewCollectionFactory
      * @param ResourceConnection $resource
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         CollectionFactory $viewCollectionFactory,
-        ResourceConnection $resource
+        ResourceConnection $resource,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->resource = $resource;
         $this->viewCollection = $viewCollectionFactory->create();
+        $this->logger = $logger;
     }
 
     /**
@@ -59,19 +57,28 @@ class ResetTriggers
         AdapterInterface $connection,
         array $tableNames
     ) {
-        $viewList = $this->getViewsForTables($tableNames);
-        foreach ($viewList as $view) {
-            $view->unsubscribe();
+        try {
+            $viewList = $this->getViewsForTables($tableNames);
+            foreach ($viewList as $view) {
+                $view->unsubscribe();
+            }
+            $result = $proceed($connection, $tableNames);
+            foreach ($viewList as $view) {
+                $view->subscribe();
+            }
+            return $result;
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
+            return $proceed($connection, $tableNames);
         }
-        $result = $proceed($connection, $tableNames);
-        foreach ($viewList as $view) {
-            $view->subscribe();
-        }
-        return $result;
     }
 
     /**
      * Get list of views that are enabled for particular tables
+     *
      * @param $tableNames
      * @return array
      */

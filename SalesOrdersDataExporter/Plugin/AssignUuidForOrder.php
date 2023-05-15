@@ -21,15 +21,8 @@ class AssignUuidForOrder
     private const ORDER_TYPE = 'order';
     private const ORDER_ITEM_TYPE = 'order_item';
 
-    /**
-     * @var UuidManager
-     */
-    private $uidManager;
-
-    /**
-     * @var CommerceDataExportLoggerInterface
-     */
-    private $logger;
+    private UuidManager $uidManager;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param UuidManager $uidManager
@@ -48,8 +41,8 @@ class AssignUuidForOrder
      * @param OrderResource $result
      * @param Order $order
      * @return OrderResource
-     *
      * @throws \Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterSave(OrderResource $subject, OrderResource $result, Order $order): OrderResource
     {
@@ -66,7 +59,7 @@ class AssignUuidForOrder
                 );
                 $this->uidManager->assignBulk($itemIds, self::ORDER_ITEM_TYPE);
             }
-        } catch (UuidSaveException $e) {
+        } catch (UuidSaveException) {
             // do nothing, error logged in assign method
         } catch (\Throwable $e) {
             $this->logger->error('Cannot assign UUID to order ' . $order->getId(), ['exception' => $e]);

@@ -16,10 +16,7 @@ use Magento\Framework\App\ResourceConnection;
  */
 class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
 {
-    /**
-     * @var MarkRemovedEntitiesInterface
-     */
-    private $markRemovedEntities;
+    private MarkRemovedEntitiesInterface $markRemovedEntities;
     private CommerceDataExportLoggerInterface $logger;
 
     /**
@@ -34,7 +31,7 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
         MarkRemovedEntitiesInterface $markRemovedEntities,
         CommerceDataExportLoggerInterface $logger
     ) {
-        parent::__construct($resourceConnection, $exportProcessor);
+        parent::__construct($resourceConnection, $exportProcessor, $logger);
         $this->markRemovedEntities = $markRemovedEntities;
         $this->logger = $logger;
     }

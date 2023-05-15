@@ -9,6 +9,7 @@ namespace Magento\ProductVariantDataExporter\Plugin;
 
 use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\ResourceModel\Product as ResourceProduct;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\ProductVariantDataExporter\Model\Query\LinkedAttributesQuery;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Indexer\IndexerRegistry;
@@ -20,34 +21,27 @@ use Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer;
  */
 class ReindexVariantsAfterSave
 {
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
-
-    /**
-     * @var LinkedAttributesQuery
-     */
-    private $linkedAttributesQuery;
-
-    /**
-     * @var IndexerRegistry
-     */
-    private $indexerRegistry;
+    private ResourceConnection $resourceConnection;
+    private LinkedAttributesQuery $linkedAttributesQuery;
+    private IndexerRegistry $indexerRegistry;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param LinkedAttributesQuery $linkedAttributesQuery
      * @param IndexerRegistry $indexerRegistry
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         LinkedAttributesQuery $linkedAttributesQuery,
-        IndexerRegistry $indexerRegistry
+        IndexerRegistry $indexerRegistry,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->linkedAttributesQuery = $linkedAttributesQuery;
         $this->indexerRegistry = $indexerRegistry;
+        $this->logger = $logger;
     }
 
     /**
@@ -65,16 +59,24 @@ class ReindexVariantsAfterSave
         ResourceProduct $result,
         AbstractModel $product
     ): ResourceProduct {
-        if (\in_array($product->getTypeId(), [Type::TYPE_SIMPLE, Type::TYPE_VIRTUAL], true)) {
-            $select = $this->linkedAttributesQuery->getQuery((int)$product->getId());
-            $linkedAttributes = $this->resourceConnection->getConnection()->fetchCol($select);
-            foreach ($linkedAttributes as $linkAttribute) {
-                if ($product->getOrigData($linkAttribute) !== $product->getData($linkAttribute)) {
-                    $this->reindexVariant((int)$product->getId());
-                    break;
+        try {
+            if (\in_array($product->getTypeId(), [Type::TYPE_SIMPLE, Type::TYPE_VIRTUAL], true)) {
+                $select = $this->linkedAttributesQuery->getQuery((int)$product->getId());
+                $linkedAttributes = $this->resourceConnection->getConnection()->fetchCol($select);
+                foreach ($linkedAttributes as $linkAttribute) {
+                    if ($product->getOrigData($linkAttribute) !== $product->getData($linkAttribute)) {
+                        $this->reindexVariant((int)$product->getId());
+                        break;
+                    }
                 }
             }
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
         }
+
         return $result;
     }
 

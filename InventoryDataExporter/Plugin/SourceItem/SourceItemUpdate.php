@@ -6,6 +6,7 @@
 
 namespace Magento\InventoryDataExporter\Plugin\SourceItem;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
@@ -17,18 +18,19 @@ class SourceItemUpdate
 {
     private const STOCK_STATUS_FEED_INDEXER = 'inventory_data_exporter_stock_status';
 
-    /**
-     * @var IndexerRegistry
-     */
-    private $indexerRegistry;
+    private IndexerRegistry $indexerRegistry;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param IndexerRegistry $indexerRegistry
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
-        IndexerRegistry $indexerRegistry
+        IndexerRegistry $indexerRegistry,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->indexerRegistry = $indexerRegistry;
+        $this->logger = $logger;
     }
 
     /**
@@ -44,15 +46,22 @@ class SourceItemUpdate
         $result,
         array $sourceItems
     ): void {
-        $stockStatusIndexer = $this->indexerRegistry->get(self::STOCK_STATUS_FEED_INDEXER);
-        if (!$stockStatusIndexer->isScheduled()) {
-            $skus = \array_map(
-                static function (SourceItemInterface $sourceItem) {
-                    return $sourceItem->getSku();
-                },
-                $sourceItems
+        try {
+            $stockStatusIndexer = $this->indexerRegistry->get(self::STOCK_STATUS_FEED_INDEXER);
+            if (!$stockStatusIndexer->isScheduled()) {
+                $skus = \array_map(
+                    static function (SourceItemInterface $sourceItem) {
+                        return $sourceItem->getSku();
+                    },
+                    $sourceItems
+                );
+                $stockStatusIndexer->reindexList($skus);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
             );
-            $stockStatusIndexer->reindexList($skus);
         }
     }
 }

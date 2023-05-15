@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductReviewDataExporter\Plugin;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\ProductReviewDataExporter\Model\Indexer\ReindexOnSaveAction;
 use Magento\Review\Model\Rating\Option;
 use Magento\Review\Model\ResourceModel\Rating\Option as RatingOptionResource;
@@ -21,14 +22,18 @@ class ReindexReviewFeedOnVoteAdd
      * @var ReindexOnSaveAction
      */
     private $reindexOnSaveAction;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param ReindexOnSaveAction $reindexOnSaveAction
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
-        ReindexOnSaveAction $reindexOnSaveAction
+        ReindexOnSaveAction $reindexOnSaveAction,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->reindexOnSaveAction = $reindexOnSaveAction;
+        $this->logger = $logger;
     }
 
     /**
@@ -47,7 +52,14 @@ class ReindexReviewFeedOnVoteAdd
         RatingOptionResource $result,
         Option $option
     ): RatingOptionResource {
-        $this->reindexOnSaveAction->execute(ReindexOnSaveAction::REVIEW_FEED_INDEXER, [$option->getReviewId()]);
+        try {
+            $this->reindexOnSaveAction->execute(ReindexOnSaveAction::REVIEW_FEED_INDEXER, [$option->getReviewId()]);
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
+        }
 
         return $result;
     }

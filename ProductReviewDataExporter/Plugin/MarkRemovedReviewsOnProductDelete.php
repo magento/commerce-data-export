@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Magento\ProductReviewDataExporter\Plugin;
 
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\ProductReviewDataExporter\Model\Indexer\ReindexOnSaveAction;
 use Magento\Review\Model\ResourceModel\Review as ReviewResource;
@@ -18,34 +19,27 @@ use Magento\Review\Model\ResourceModel\Review as ReviewResource;
  */
 class MarkRemovedReviewsOnProductDelete
 {
-    /**
-     * @var ReindexOnSaveAction
-     */
-    private $reindexOnSaveAction;
-
-    /**
-     * @var FeedIndexMetadata
-     */
-    private $feedIndexMetadata;
-
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
+    private ReindexOnSaveAction $reindexOnSaveAction;
+    private FeedIndexMetadata $feedIndexMetadata;
+    private ResourceConnection $resourceConnection;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param ReindexOnSaveAction $reindexOnSaveAction
      * @param FeedIndexMetadata $feedIndexMetadata
      * @param ResourceConnection $resourceConnection
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         ReindexOnSaveAction $reindexOnSaveAction,
         FeedIndexMetadata $feedIndexMetadata,
-        ResourceConnection $resourceConnection
+        ResourceConnection $resourceConnection,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->reindexOnSaveAction = $reindexOnSaveAction;
         $this->feedIndexMetadata = $feedIndexMetadata;
         $this->resourceConnection = $resourceConnection;
+        $this->logger = $logger;
     }
 
     /**
@@ -64,11 +58,17 @@ class MarkRemovedReviewsOnProductDelete
         ReviewResource $result,
         int $productId
     ): ReviewResource {
-        $this->reindexOnSaveAction->execute(
-            ReindexOnSaveAction::REVIEW_FEED_INDEXER,
-            $this->fetchReviewIdsByProductId($productId)
-        );
-
+        try {
+            $this->reindexOnSaveAction->execute(
+                ReindexOnSaveAction::REVIEW_FEED_INDEXER,
+                $this->fetchReviewIdsByProductId($productId)
+            );
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
+        }
         return $result;
     }
 

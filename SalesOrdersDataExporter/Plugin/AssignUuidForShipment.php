@@ -20,15 +20,8 @@ class AssignUuidForShipment
 {
     private const TYPE = 'order_shipment';
 
-    /**
-     * @var UuidManager
-     */
-    private $uidManager;
-
-    /**
-     * @var CommerceDataExportLoggerInterface
-     */
-    private $logger;
+    private UuidManager $uidManager;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param UuidManager $uidManager
@@ -48,13 +41,14 @@ class AssignUuidForShipment
      * @param Shipment $entity
      * @return OrderResource
      * @throws \Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterSave(OrderResource $subject, OrderResource $result, Shipment $entity): OrderResource
     {
         $entityId = (int) $entity->getId();
         try {
             $this->uidManager->assign($entityId, self::TYPE);
-        } catch (UuidSaveException $e) {
+        } catch (UuidSaveException) {
             // do nothing, error logged in assign method
         } catch (\Throwable $e) {
             $this->logger->error('Cannot assign UUID to ' . self::TYPE . ' ' . $entityId, ['exception' => $e]);
