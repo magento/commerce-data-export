@@ -8,10 +8,12 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Plugin;
 
+use Magento\DataExporter\Model\Indexer\FeedIndexer;
 use Magento\Framework\Exception\BulkException;
 use Magento\Framework\Mview\Processor;
 use Magento\Framework\Mview\View\CollectionFactory;
 use Magento\Framework\Mview\ViewInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Phrase;
 use Magento\Framework\Exception\RuntimeException;
 
@@ -26,7 +28,7 @@ class CoverExceptionMview
      * @param CollectionFactory $viewsFactory
      */
     public function __construct(
-        CollectionFactory $viewsFactory,
+        CollectionFactory $viewsFactory
     ) {
         $this->viewsFactory = $viewsFactory;
     }
@@ -40,6 +42,7 @@ class CoverExceptionMview
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @throws BulkException
+     * @throws \Throwable
      */
     public function aroundUpdate(Processor $subject, callable $proceed, $group = ''): void
     {
@@ -49,9 +52,13 @@ class CoverExceptionMview
             try {
                 $view->update();
             } catch (\Throwable $e) {
-                $exception->addException(
-                    new RuntimeException(new Phrase('Mview fail %1', [$view->getId()]), $e)
-                );
+                if ($this->isDataExporterIndexer($view)) {
+                    $exception->addException(
+                        new RuntimeException(new Phrase('Mview fail %1', [$view->getId()]), $e)
+                    );
+                } else {
+                    throw $e; // keep original behavior for core indexers
+                }
             }
         }
 
@@ -70,5 +77,10 @@ class CoverExceptionMview
     {
         $collection = $this->viewsFactory->create();
         return $group ? $collection->getItemsByColumnValue('group', $group) : $collection->getItems();
+    }
+
+    private function isDataExporterIndexer(ViewInterface $view): bool
+    {
+        return is_subclass_of(ObjectManager::getInstance()->get($view->getActionClass()), FeedIndexer::class);
     }
 }
