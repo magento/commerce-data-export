@@ -7,11 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\ProductPriceDataExporter\Model\Query;
 
-use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Magento\DataExporter\Exception\UnableRetrieveData;
-use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\DB\Sql\Expression;
@@ -32,67 +29,33 @@ class ProductPricesQuery
      */
     private MetadataPool $metadataPool;
 
-    /**
-     * @var Config
-     */
-    private Config $eavConfig;
-
-    /**
-     * @var array|null
-     */
-    private ?array $priceAttributes = null;
-
     private const IGNORED_TYPES = [Configurable::TYPE_CODE, Type::TYPE_BUNDLE];
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param MetadataPool $metadataPool
-     * @param Config $eavConfig
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         MetadataPool $metadataPool,
-        Config $eavConfig
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->metadataPool = $metadataPool;
-        $this->eavConfig = $eavConfig;
     }
 
     /**
-     * @inheritDoc
-     * @throws UnableRetrieveData
+     * @param array $productIds
+     * @param array $priceAttributes
+     * @return Select
+     * @throws \Exception
      */
-    public function getQuery(array $productIds): Select
+    public function getQuery(array $productIds, array $priceAttributes = []): Select
     {
         /** @var \Magento\Framework\EntityManager\EntityMetadataInterface $metadata */
         $metadata = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class);
         $connection = $this->resourceConnection->getConnection();
-
-
         $eavAttributeTable = $this->resourceConnection->getTableName('catalog_product_entity_decimal');
         $linkField = $metadata->getLinkField();
-
-        if ($this->priceAttributes === null) {
-            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, 'price');
-            if ($attribute) {
-                $this->priceAttributes['price'] = $attribute->getId();
-            }
-            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, 'special_price');
-            if ($attribute) {
-                $this->priceAttributes['special_price'] = $attribute->getId();
-            }
-        }
-        if (!$this->priceAttributes) {
-            throw new UnableRetrieveData('Price attributes not found');
-        }
-
-        $priceAttributeCondition = \sprintf(
-            "CASE WHEN eav.attribute_id = %s THEN 'price'
-            WHEN eav.attribute_id = %s THEN 'special_price' ELSE 'price' END",
-            $this->priceAttributes['price'],
-            $this->priceAttributes['special_price']
-        );
 
         return $connection->select()
             ->from(
@@ -122,18 +85,23 @@ class ProductPricesQuery
             ->joinLeft(
                 ['eav' => $eavAttributeTable],
                 \sprintf('product.%1$s = eav.%1$s', $linkField) .
-                $connection->quoteInto(' AND eav.attribute_id IN (?)', \array_values($this->priceAttributes)) .
+                $connection->quoteInto(' AND eav.attribute_id IN (?)', $priceAttributes) .
                 ' AND eav.store_id = 0',
-                ['attribute_id']
+                []
             )
             ->joinLeft(
                 ['eav_store' => $eavAttributeTable],
                 \sprintf('product.%1$s = eav_store.%1$s', $linkField) .
-                ' AND eav_store.store_id = sg.default_store_id AND eav_store.attribute_id = eav.attribute_id',
-                ['price' => new Expression(
-                    'CASE WHEN eav_store.value_id IS NOT NULL THEN eav_store.value WHEN eav.value '
-                    . 'IS NOT NULL THEN eav.value ELSE 0 END'
-                )]
+                $connection->quoteInto(' AND eav_store.attribute_id IN (?)', $priceAttributes) .
+                ' AND eav_store.store_id = sg.default_store_id',
+                [
+                    'price' => new Expression(
+                        'IF (eav_store.value_id, eav_store.value, eav.value)'
+                    ),
+                    'attributeId' => new Expression(
+                        'IF(eav_store.value_id, eav_store.attribute_id, eav.attribute_id)'
+                    )
+                ]
             )
             // get parent skus
             ->joinLeft(
@@ -157,15 +125,14 @@ class ProductPricesQuery
                 'parent_sku.entity_id = parent_website.product_id',
                 [
                     'parent_skus' => new Expression(
-                    "GROUP_CONCAT(DISTINCT parent_sku.type_id,':',parent_sku.sku separator ', ')"
+                        "GROUP_CONCAT(DISTINCT parent_sku.type_id,':',parent_sku.sku separator ', ')"
                     )
                 ]
             )
-            ->columns(['price_attribute' => new Expression($priceAttributeCondition)])
             ->where('product.entity_id IN (?)', $productIds)
             ->where('product.type_id NOT IN (?)', self::IGNORED_TYPES)
             ->group('product.entity_id')
             ->group('product_website.website_id')
-            ->group('eav.attribute_id');
+            ->group('attributeId');
     }
 }

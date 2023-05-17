@@ -8,7 +8,9 @@ declare(strict_types=1);
 use Magento\TestFramework\Workaround\Override\Fixture\Resolver;
 
 Resolver::getInstance()->requireDataFixture('Magento/Catalog/_files/products_rollback.php');
-
+Resolver::getInstance()->requireDataFixture(
+    'Magento/CatalogDataExporter/_files/second_website_with_store_and_store_view_rollback.php'
+);
 /** @var \Magento\Framework\Registry $registry */
 $registry = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()->get(\Magento\Framework\Registry::class);
 $registry->unregister('isSecureArea');
@@ -18,14 +20,9 @@ $productRepository = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()
     ->get(\Magento\Catalog\Api\ProductRepositoryInterface::class);
 
 $skus = [
-    'simple_product_with_regular_price',
-    'simple_product_with_special_price',
-    'virtual_product_with_special_price',
-    'configurable_product',
-    'grouped_product',
-    'bundle_product',
-    'simple_product_with_special_price_for_cg',
-    'simple_product_with_special_price_for_cg',
+    'downloadable_product_with_regular_price',
+    'downloadable_product_with_special_price',
+    'downloadable_product_with_tier_price',
 ];
 
 foreach ($skus as $sku) {

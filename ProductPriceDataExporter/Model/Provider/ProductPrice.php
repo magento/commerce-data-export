@@ -7,11 +7,15 @@ declare(strict_types=1);
 
 namespace Magento\ProductPriceDataExporter\Model\Provider;
 
+use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Downloadable\Model\Product\Type as Downloadable;
+use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\ProductPriceDataExporter\Model\Query\CustomerGroupPricesQuery;
@@ -30,6 +34,7 @@ class ProductPrice
     private const FALLBACK_CUSTOMER_GROUP = "0";
     private const PRICE_SCOPE_KEY_PART = 0;
     private const REGULAR_PRICE = 'price';
+    private const UNKNOWN_PRICE_CODE = 'unknown';
 
     /**
      * mapping for ProductPriceAggregate.type
@@ -75,6 +80,13 @@ class ProductPrice
 
     private CommerceDataExportLoggerInterface $logger;
 
+    private Config $eavConfig;
+
+    /**
+     * @var array|null
+     */
+    private ?array $priceAttributes = null;
+
     /**
      * @param ProductPricesQuery $pricesQuery
      * @param CustomerGroupPricesQuery $customerGroupPricesQuery
@@ -82,6 +94,8 @@ class ProductPrice
      * @param ResourceConnection $resourceConnection
      * @param DeleteFeedItems $deleteFeedItems
      * @param DateTime $dateTime
+     * @param Config $eavConfig
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         ProductPricesQuery       $pricesQuery,
@@ -90,6 +104,7 @@ class ProductPrice
         ResourceConnection       $resourceConnection,
         DeleteFeedItems          $deleteFeedItems,
         DateTime                 $dateTime,
+        Config $eavConfig,
         CommerceDataExportLoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
@@ -99,6 +114,7 @@ class ProductPrice
         $this->catalogRulePricesQuery = $catalogRulePricesQuery;
         $this->deleteFeedItems = $deleteFeedItems;
         $this->logger = $logger;
+        $this->eavConfig = $eavConfig;
     }
 
     /**
@@ -106,21 +122,26 @@ class ProductPrice
      *
      * @param array $values
      * @return array
+     * @throws UnableRetrieveData
+     * @throws LocalizedException
      */
     public function get(array $values): array
     {
         $ids = array_column($values, 'productId');
-        $cursor = $this->resourceConnection->getConnection()->query($this->pricesQuery->getQuery($ids));
+        $cursor = $this->resourceConnection->getConnection()->query(
+            $this->pricesQuery->getQuery($ids, \array_keys($this->getPriceAttributes()))
+        );
         $output = [];
         while ($row = $cursor->fetch()) {
             $key = $this->buildKey($row['entity_id'], $row['website_id'], self::FALLBACK_CUSTOMER_GROUP);
             if (!isset($output[$key])) {
                 $output[$key] = $this->fillOutput($row, $key);
             }
-            if ($row['price_attribute'] === self::REGULAR_PRICE) {
+            $priceAttributeCode = $this->resolvePriceCode($row);
+            if ($priceAttributeCode === self::REGULAR_PRICE) {
                 $output[$key]['regular'] = $row['price'];
             } else {
-                $this->addDiscountPrice($output[$key], $row['price_attribute'], (float)$row['price']);
+                $this->addDiscountPrice($output[$key], $priceAttributeCode, (float)$row['price']);
             }
         }
         $filteredIds = array_unique(array_column($output, 'productId'));
@@ -131,6 +152,38 @@ class ProductPrice
         return $output;
     }
 
+    /**
+     * @return array
+     * @throws UnableRetrieveData
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    private function getPriceAttributes(): array
+    {
+        if ($this->priceAttributes === null) {
+            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, 'price');
+            if ($attribute) {
+                $this->priceAttributes[$attribute->getId()] = 'price';
+            }
+            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, 'special_price');
+            if ($attribute) {
+                $this->priceAttributes[$attribute->getId()] = 'special_price';
+            }
+        }
+        if (!$this->priceAttributes) {
+            throw new UnableRetrieveData('Price attributes not found');
+        }
+        return $this->priceAttributes;
+    }
+
+    /**
+     * @param array $row
+     * @return mixed|string
+     * @throws UnableRetrieveData|LocalizedException
+     */
+    private function resolvePriceCode(array $row)
+    {
+        return $this->getPriceAttributes()[$row['attributeId']] ?? self::UNKNOWN_PRICE_CODE;
+    }
     /**
      * Add Customer Group Prices
      *
