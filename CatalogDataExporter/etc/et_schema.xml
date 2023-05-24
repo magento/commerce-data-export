@@ -142,15 +142,14 @@
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
-        <!-- Disabling links as no service is using it right now, and some information might be missing -->
-        <!--
+
         <field name="links" type="Link" repeated="true"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\Links"
         >
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
-        -->
+
     </record>
 
     <record name="Attribute">
@@ -319,10 +318,8 @@
         <field name="videoMetadata" type="String"/>
     </record>
     <record name="Link">
-        <field name="productId" type="ID" />
-        <field name="position" type="Int" />
+        <field name="sku" type="String" />
         <field name="type" type="String" />
-        <field name="qty" type="Float" />
     </record>
 
 

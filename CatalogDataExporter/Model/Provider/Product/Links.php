@@ -110,10 +110,8 @@ class Links
     private function formatLinkRow(array $row, array $linkTypes) : array
     {
         return [
-            'productId' => $row['productId'],
-            'position' => $row['position'],
-            'qty' => $row['qty'],
-            'type' => $linkTypes[$row['link_type_id']] ?? null,
+            'sku' => $row['sku'],
+            'type' => $linkTypes[$row['link_type_id']] ?? null
         ];
     }
 }

@@ -11,6 +11,7 @@ namespace Magento\CatalogDataExporter\Model\Query;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\DB\Sql\Expression;
+use Magento\GroupedProduct\Model\ResourceModel\Product\Link as GroupedProductLink;
 
 /**
  * Product links query for catalog data exporter
@@ -130,24 +131,26 @@ class ProductLinksQuery
             ->where('cpe_parent.entity_id IN (?)', $productIds)
             ->where('links.link_type_id IN (?)', $linkTypeId != null ? $linkTypeId : $this->linkTypes);
 
-        foreach ($this->getProductLinkAttributesData($linkTypeId) as $attributeData) {
-            $tableAlias = \sprintf('attribute_%s', $attributeData['code']);
+        if ($linkTypeId === GroupedProductLink::LINK_TYPE_GROUPED) {
+            foreach ($this->getProductLinkAttributesData($linkTypeId) as $attributeData) {
+                $tableAlias = \sprintf('attribute_%s', $attributeData['code']);
 
-            $select->joinLeft(
-                [
-                    $tableAlias => $this->resourceConnection->getTableName(
-                        ['catalog_product_link_attribute', $attributeData['data_type']]
+                $select->joinLeft(
+                    [
+                        $tableAlias => $this->resourceConnection->getTableName(
+                            ['catalog_product_link_attribute', $attributeData['data_type']]
+                        ),
+                    ],
+                    \sprintf(
+                        '%1$s.link_id = links.link_id AND %1$s.product_link_attribute_id IN (%2$s)',
+                        $tableAlias,
+                        $attributeData['attribute_ids']
                     ),
-                ],
-                \sprintf(
-                    '%1$s.link_id = links.link_id AND %1$s.product_link_attribute_id IN (%2$s)',
-                    $tableAlias,
-                    $attributeData['attribute_ids']
-                ),
-                [
-                    $attributeData['code'] => \sprintf('%s.value', $tableAlias),
-                ]
-            );
+                    [
+                        $attributeData['code'] => \sprintf('%s.value', $tableAlias),
+                    ]
+                );
+            }
         }
 
         return $select;
