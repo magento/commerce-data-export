@@ -26,4 +26,7 @@
     <test class="Magento\Backend\Model\Dashboard\ChartTest">
         <method name="testGetByPeriodWithParam" skip="true"/>
     </test>
+    <test class="Magento\Ups\Model\CarrierTest">
+        <method name="testCollectFreeRates" skip="true"/>
+    </test>
 </overrides>

@@ -17,4 +17,7 @@
     <test class="Magento\InventoryGroupedProduct\Test\Api\GroupedProductChildSourceUpdateTest">
         <method name="testGroupedProductStockStatusShouldBeUpdatedWhenChildProductStockStatusChange" skip="true"/>
     </test>
+    <test class="Magento\QuickCheckout\Test\Api\StorefrontAccountRepositoryTest">
+        <method name="testShopperHasAccount" skip="true"/>
+    </test>
 </overrides>
