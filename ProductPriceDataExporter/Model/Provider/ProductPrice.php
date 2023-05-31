@@ -140,8 +140,13 @@ class ProductPrice
             $priceAttributeCode = $this->resolvePriceCode($row);
             if ($priceAttributeCode === self::REGULAR_PRICE) {
                 $output[$key]['regular'] = $row['price'];
-            } else {
+            } elseif ($priceAttributeCode !== self::UNKNOWN_PRICE_CODE) {
                 $this->addDiscountPrice($output[$key], $priceAttributeCode, (float)$row['price']);
+            }
+
+            // cover case when _this_ product type doesn't have regular price, but this field is required in schema
+            if (!isset($output[$key]['regular'])) {
+                $output[$key]['regular'] = 0;
             }
         }
         $filteredIds = array_unique(array_column($output, 'productId'));
@@ -184,6 +189,7 @@ class ProductPrice
     {
         return $this->getPriceAttributes()[$row['attributeId']] ?? self::UNKNOWN_PRICE_CODE;
     }
+
     /**
      * Add Customer Group Prices
      *
