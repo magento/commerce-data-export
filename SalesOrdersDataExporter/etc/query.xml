@@ -18,7 +18,9 @@
             <attribute name="base_total_invoiced" alias="totalInvoiced" />
             <attribute name="total_qty_ordered" alias="totalQtyOrdered" />
             <attribute name="is_virtual" alias="isVirtual" />
-            <attribute name="subtotal" alias="grandTotal" />
+            <attribute name="base_subtotal" alias="subtotal" />
+            <attribute name="base_grand_total" alias="grandTotal" />
+            <attribute name="base_discount_amount" alias="discountAmount" />
             <attribute name="order_currency_code" alias="currency" />
             <attribute name="store_id" alias="storeId" />
             <attribute name="customer_email" alias="customerEmail" />

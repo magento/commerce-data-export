@@ -40,7 +40,9 @@
         <field name="totalInvoiced" type="Float" />
         <field name="totalQtyOrdered" type="Float" />
         <field name="isVirtual" type="Boolean" />
+        <field name="subtotal" type="Float" />
         <field name="grandTotal" type="Float" />
+        <field name="discountAmount" type="Float" />
         <field name="currency" type="String" />
         <field name="amountCapturedOnline" type="Float" />
         <field name="amountRefundedOnline" type="Float" />
