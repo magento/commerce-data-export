@@ -8,7 +8,7 @@ declare(strict_types=1);
 use Magento\TestFramework\Workaround\Override\Fixture\Resolver;
 
 Resolver::getInstance()->requireDataFixture(
-    'Magento/CatalogDataExporter/_files/second_website_with_store_and_store_view_rollback.php'
+    'Magento_CatalogDataExporter::Test/_files/second_website_with_store_and_store_view_rollback.php'
 );
 
 /** @var \Magento\Framework\Registry $registry */

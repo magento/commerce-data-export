@@ -23,7 +23,7 @@ class DownloadableProductsTest extends AbstractProductTestHelper
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento/CatalogDataExporter/_files/downloadable_product_with_files_and_sample_url.php
+     * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/downloadable_product_with_files_and_sample_url.php
      *
      * @return void
      * @throws NoSuchEntityException

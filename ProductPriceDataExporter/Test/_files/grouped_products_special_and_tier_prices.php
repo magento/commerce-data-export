@@ -28,7 +28,7 @@ $tierPriceFactory = $objectManager->get(ProductTierPriceInterfaceFactory::class)
 /** @var ProductTierPriceExtensionFactory $tierPriceExtensionAttributesFactory */
 $tierPriceExtensionAttributesFactory = $objectManager->get(ProductTierPriceExtensionFactory::class);
 Resolver::getInstance()->requireDataFixture(
-    'Magento/CatalogDataExporter/_files/second_website_with_store_and_store_view.php'
+    'Magento_CatalogDataExporter::Test/_files/second_website_with_store_and_store_view.php'
 );
 Resolver::getInstance()->requireDataFixture('Magento/GroupedProduct/_files/product_grouped_in_multiple_websites.php');
 

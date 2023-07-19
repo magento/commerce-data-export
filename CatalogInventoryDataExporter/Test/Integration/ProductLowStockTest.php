@@ -20,7 +20,7 @@ class ProductLowStockTest extends AbstractProductTestHelper
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento/CatalogInventoryDataExporter/_files/setup_is_low_stock.php
+     * @magentoDataFixture Magento_CatalogInventoryDataExporter::Test/_files/setup_is_low_stock.php
      * @magentoConfigFixture current_store cataloginventory/options/stock_threshold_qty 20
      * @return void
      * @throws NoSuchEntityException

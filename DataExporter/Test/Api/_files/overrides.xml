@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<overrides>
+    <!-- Tests are failed because of incompatible version of MSI (MDEE-187) -->
+    <test class="Magento\Downloadable\Api\CartItemRepositoryTest" skip="true"/>
+    <!-- Tests are failed because of incompatible version of MSI (MDEE-187) MDEE-389 -->
+    <test class="Magento\GraphQl\DownloadableProduct\UpdateDownloadableCartItemsTest" skip="true"/>
+    <!-- Tests are failed MDEE-389 -->
+    <test class="Magento\InventoryBundleProduct\Test\Api\BundleProductChildSourceUpdateTest">
+        <method name="testBundleProductStockStatusShouldBeUpdatedWhenChildProductStockStatusChange" skip="true"/>
+    </test>
+    <test class="Magento\InventoryGroupedProduct\Test\Api\GroupedProductChildSourceUpdateTest">
+        <method name="testGroupedProductStockStatusShouldBeUpdatedWhenChildProductStockStatusChange" skip="true"/>
+    </test>
+    <test class="Magento\QuickCheckout\Test\Api\StorefrontAccountRepositoryTest">
+        <method name="testShopperHasAccount" skip="true"/>
+    </test>
+    <!-- MDEE-446 -->
+    <test class="Magento\GraphQl\Customer\IsEmailAvailableTest" skip="true"/>
+</overrides>

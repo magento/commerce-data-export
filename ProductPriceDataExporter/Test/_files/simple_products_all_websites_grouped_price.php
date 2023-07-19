@@ -32,7 +32,7 @@ $tierPriceFactory = $objectManager->get(ProductTierPriceInterfaceFactory::class)
 $tierPriceExtensionAttributesFactory = $objectManager->get(ProductTierPriceExtensionFactory::class);
 
 Resolver::getInstance()->requireDataFixture(
-    'Magento/CatalogDataExporter/_files/second_website_with_store_and_store_view.php'
+    'Magento_CatalogDataExporter::Test/_files/second_website_with_store_and_store_view.php'
 );
 
 /** @var WebsiteRepositoryInterface $websiteRepository */

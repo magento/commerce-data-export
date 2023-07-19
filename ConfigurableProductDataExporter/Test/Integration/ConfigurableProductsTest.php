@@ -46,8 +46,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
 
     /**
      * Validate configurable product data
-     *
-     * @magentoDataFixture Magento/ConfigurableProductDataExporter/_files/setup_configurable_products.php
+     * @magentoDataFixture Magento_ConfigurableProductDataExporter::Test/_files/setup_configurable_products.php
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
      * @return void
@@ -82,7 +81,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     /**
      * Validate parent product data
      *
-     * @magentoDataFixture Magento/ConfigurableProductDataExporter/_files/setup_configurable_products.php
+     * @magentoDataFixture Magento_ConfigurableProductDataExporter::Test/_files/setup_configurable_products.php
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
      * @return void
@@ -112,7 +111,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     /**
      * Validate parent product data assigned to different websites
      *
-     * @magentoDataFixture Magento/ConfigurableProductDataExporter/_files/setup_configurable_products_on_different_websites.php
+     * @magentoDataFixture Magento_ConfigurableProductDataExporter::Test/_files/setup_configurable_products_on_different_websites.php
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
      * @return void
@@ -169,6 +168,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
      *
      * @param ProductInterface $product
      * @param array $extractedProduct
+     * @param bool $isParentAssigned
      * @return void
      * @throws NoSuchEntityException
      */

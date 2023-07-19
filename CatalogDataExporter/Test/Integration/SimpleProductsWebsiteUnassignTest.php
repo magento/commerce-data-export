@@ -40,7 +40,7 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento/CatalogDataExporter/_files/setup_simple_products_with_multiple_websites.php
+     * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/setup_simple_products_with_multiple_websites.php
      *
      * @param array $testData
      * @return void
@@ -75,7 +75,7 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento/CatalogDataExporter/_files/setup_simple_products_with_multiple_websites.php
+     * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/setup_simple_products_with_multiple_websites.php
      *
      * @param array $skus
      * @param array $websitesToUnassign

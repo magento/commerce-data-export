@@ -87,7 +87,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
      * @param string[] $dataToVerify
      *
      * @dataProvider orderFullWorkflowDataProvider
-     * @magentoDataFixture Magento/SalesOrdersDataExporter/_files/order_full_work_flow.php
+     * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/order_full_work_flow.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
@@ -153,7 +153,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
      * @param string[] $dataToVerify
      *
      * @dataProvider orderWithCreditMemoDataProvider
-     * @magentoDataFixture Magento/SalesOrdersDataExporter/_files/order_with_invoice_shipment_creditmemo.php
+     * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/order_with_invoice_shipment_creditmemo.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
@@ -175,7 +175,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
      * @param string[] $dataToVerify
      *
      * @dataProvider orderWithConfigurableProductDataProvider
-     * @magentoDataFixture Magento/SalesOrdersDataExporter/_files/order_configurable_product.php
+     * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/order_configurable_product.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
@@ -197,7 +197,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
      * @param string[] $dataToVerify
      *
      * @dataProvider orderWithTransactionsDataProvider
-     * @magentoDataFixture Magento/SalesOrdersDataExporter/_files/transactions_detailed.php
+     * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/transactions_detailed.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
@@ -219,7 +219,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
      * @param string[] $dataToVerify
      *
      * @dataProvider orderWithAdditionalInformationDataProvider
-     * @magentoDataFixture Magento/SalesOrdersDataExporter/_files/order_with_additional_information.php
+     * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/order_with_additional_information.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception

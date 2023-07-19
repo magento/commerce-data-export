@@ -21,7 +21,7 @@ class CategoryRemovalTest extends AbstractCategoryTest
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento/CatalogDataExporter/_files/setup_category_removal.php
+     * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/setup_category_removal.php
      *
      * @return void
      */
