@@ -11,12 +11,20 @@ namespace Magento\CatalogDataExporter\Model\Provider\Category\Formatter;
 use Magento\Catalog\Helper\Output as OutputFormatter;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
+use Magento\Framework\App\Area as AppArea;
+use Magento\Framework\App\State as AppState;
 
 /**
  * Prepare category attribute html output
  */
 class Output implements FormatterInterface
 {
+
+    /**
+     * @var AppState
+     */
+    private $appState;
+
     /**
      * @var OutputFormatter
      */
@@ -33,15 +41,18 @@ class Output implements FormatterInterface
     private $attributes;
 
     /**
+     * @param AppState $appState
      * @param OutputFormatter $outputFormatter
      * @param LoggerInterface $logger
      * @param array $attributes
      */
     public function __construct(
+        AppState $appState,
         OutputFormatter $outputFormatter,
         LoggerInterface $logger,
         array $attributes = []
     ) {
+        $this->appState = $appState;
         $this->outputFormatter = $outputFormatter;
         $this->logger = $logger;
         $this->attributes = $attributes;
@@ -61,10 +72,16 @@ class Output implements FormatterInterface
         try {
             foreach ($this->attributes as $attributeKey => $attributeCode) {
                 if (isset($row[$attributeKey])) {
-                    $row[$attributeKey] = $this->outputFormatter->categoryAttribute(
-                        null,
-                        $row[$attributeKey],
-                        $attributeCode
+                    $outputFormatter = $this->outputFormatter;
+                    $row[$attributeKey] = $this->appState->emulateAreaCode(
+                        AppArea::AREA_FRONTEND,
+                        function () use ($outputFormatter, $row, $attributeCode, $attributeKey) {
+                            return $outputFormatter->categoryAttribute(
+                                null,
+                                $row[$attributeKey],
+                                $attributeCode
+                            );
+                        }
                     );
                 }
             }
