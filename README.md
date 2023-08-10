@@ -21,31 +21,34 @@ This project is licensed under the OSL-3.0 License. See [LICENSE](./LICENSE.md) 
 This extension allows to collect and export entity (called "feed") to consumer immediately after feed items have been collected.
 Consumer must implement interface `Magento\DataExporter\Model\ExportFeedInterface::export` (see default implementation in [magento-commerce/saas-export](https://github.com/magento-commerce/saas-export))
 
-Implementation of `ExportFeedInterface::export` must return status of operation `Magento\DataExporter\Model\FeedExportStatus` with the following statuses:
-- `SUCCESS` - exported successfully
-- `CLIENT_ERROR` - client can't process request
-- `APPLICATION_ERROR` - something happened in side of Adobe Commerce configuration or processing
-- `SERVER_ERROR` - happens when server can't process request
-
+Implementation of `ExportFeedInterface::export` must return status of operation `Magento\DataExporter\Model\FeedExportStatus` with response status code `Magento\DataExporter\Status\ExportStatusCode`:
+- Can be HTTP status code
+  -- `200` - exported successfully
+  -- `4xx` - client can't process request
+  -- `5xx` - server side error
+- Or custom codes:
+  -- `Magento\DataExporter\Status\ExportStatusCodeProvider::APPLICATION_ERROR` - something happened in side of Adobe Commerce configuration or processing
+  -- `Magento\DataExporter\Status\ExportStatusCodeProvider::FAILED_ITEM_ERROR` - happens when some of the items in request were not processed successfully
+These codes will be saved in the "status" field of the feed table, to keep information about item status and resend items if they have "retryable" status (everything which is not 200 or 400 is retryable): https://github.com/magento-commerce/commerce-data-export/blob/7d225940ea9714f18130ef8bbb5a32027aea94bc/DataExporter/Status/ExportStatusCodeProvider.php#L15
 
 ### Immediate export flow:
 - collect entities during reindex or save action
 - get entities that have to be deleted from feed (instead updating feed table with is_deleted=true)
-- filter entities with identical hash (only if "export status in [SUCCESS, APPLICATION_ERROR])
+- filter entities with identical hash (only if "export status NOT IN [Magento\DataExporter\Status\ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE])
 - submit entities to consumer via `ExportFeedInterface::export` and return status of submitted entities
 - persist to feed table state of exported entities
 - save record state status according to exporting result
 
 ### Retry Logic for failed entities (only server error code):
-- by cron check is any entities with status `SERVER_ERROR` or `APPLICATION_ERROR` in the feed table
-- select entities with filter by modified_at && status = `SERVER_ERROR`, `APPLICATION_ERROR`
+- by cron check is any entities with status different from [200, 400] (`Magento\DataExporter\Status\ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE`) in the feed table
+- select entities with filter by modified_at && NOT IN status = `200`, `400`
 - partial reindex
 
 ### Migration to immediate export approach:
 - Add new columns (required for immediate feed processing) to db_schema of the feed table:
    ```xml
         <column
-            xsi:type="tinyint"
+            xsi:type="smallint"
             name="status"
             nullable="false"
             default="0"
