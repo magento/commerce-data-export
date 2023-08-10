@@ -18,7 +18,7 @@ interface MarkRemovedEntitiesInterface
      * @param int[] $ids
      * @param FeedIndexMetadata $metadata
      *
-     * @return void
+     * @return ?array
      */
-    public function execute(array $ids, FeedIndexMetadata $metadata): void;
+    public function execute(array $ids, FeedIndexMetadata $metadata): ?array;
 }

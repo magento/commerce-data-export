@@ -53,7 +53,8 @@ class Feed implements FeedInterface
      * @param SerializerInterface $serializer
      * @param FeedIndexMetadata $feedIndexMetadata
      * @param FeedQuery $feedQuery
-     * @param null $dateTimeFormat
+     * @param CommerceDataExportLoggerInterface $logger
+     * @param ?string $dateTimeFormat
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -61,7 +62,7 @@ class Feed implements FeedInterface
         FeedIndexMetadata $feedIndexMetadata,
         FeedQuery $feedQuery,
         CommerceDataExportLoggerInterface $logger,
-        $dateTimeFormat = null
+        ?string $dateTimeFormat = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->serializer = $serializer;
@@ -74,21 +75,23 @@ class Feed implements FeedInterface
     /**
      * @inheritDoc
      */
-    public function getFeedSince(string $timestamp): array
+    public function getFeedSince(string $timestamp, array $ignoredExportStatus = null): array
     {
         $connection = $this->resourceConnection->getConnection();
         $limit = $connection->fetchOne(
             $this->feedQuery->getLimitSelect(
                 $this->feedIndexMetadata,
                 $timestamp,
-                $this->feedIndexMetadata->getFeedOffsetLimit()
+                $this->feedIndexMetadata->getFeedOffsetLimit(),
+                $ignoredExportStatus
             )
         );
         return $this->fetchData(
             $this->feedQuery->getDataSelect(
                 $this->feedIndexMetadata,
                 $timestamp,
-                !$limit ? null : $limit
+                !$limit ? null : $limit,
+                $ignoredExportStatus
             )
         );
     }
@@ -137,6 +140,8 @@ class Feed implements FeedInterface
     }
 
     /**
+     * @inheirtDoc
+     *
      * @return FeedIndexMetadata
      */
     public function getFeedMetadata(): FeedIndexMetadata

@@ -10,6 +10,10 @@ namespace Magento\ProductPriceDataExporter\Test\Integration;
 use DateTime;
 use DateTimeInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\CatalogRule\Api\CatalogRuleRepositoryInterface;
+use Magento\CatalogRule\Api\Data\RuleInterface;
+use Magento\CatalogRule\Model\Indexer\Rule\RuleProductProcessor;
+use Magento\CatalogRule\Model\ResourceModel\RuleFactory as ResourceRuleFactory;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\DataExporter\Model\FeedInterface;
@@ -40,6 +44,8 @@ class ExportSingleProductPriceTest extends TestCase
 
     private ResourceConnection $resourceConnection;
 
+    private CatalogRuleRepositoryInterface $catalogRuleRepository;
+
     /**
      * @param string|null $name
      * @param array $data
@@ -53,8 +59,9 @@ class ExportSingleProductPriceTest extends TestCase
         parent::__construct($name, $data, $dataName);
         $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
-        $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('productPrices');
+        $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('prices');
         $this->resourceConnection = Bootstrap::getObjectManager()->create(ResourceConnection::class);
+        $this->catalogRuleRepository = Bootstrap::getObjectManager()->get(CatalogRuleRepositoryInterface::class);
     }
 
     /**
@@ -65,6 +72,35 @@ class ExportSingleProductPriceTest extends TestCase
      */
     public function testExportSimpleProductsPrices(array $expectedSimpleProductPrices): void
     {
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
+    }
+
+    /**
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products.php
+     * @magentoDataFixture Magento/CatalogRule/_files/catalog_rule_25_customer_group_all.php
+     * @dataProvider expectedSimpleProductPricesWithCatalogRuleDataProvider
+     * @throws NoSuchEntityException
+     * @throws Zend_Db_Statement_Exception
+     */
+    public function testExportSimpleProductsWithCatalogPriceRulePrices(array $expectedSimpleProductPrices): void
+    {
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
+    }
+
+    /**
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products.php
+     * @magentoDataFixture Magento/CatalogRule/_files/catalog_rule_25_customer_group_all.php
+     * @dataProvider expectedSimpleProductPricesWithCatalogRuleDisabledDataProvider
+     * @throws NoSuchEntityException
+     * @throws Zend_Db_Statement_Exception
+     */
+    public function testExportSimpleProductsWithDisabledCatalogPriceRulePrices(array $expectedSimpleProductPrices): void
+    {
+        $ruleProductProcessor = Bootstrap::getObjectManager()->get(RuleProductProcessor::class);
+        $rule = $this->getRuleByName('Test Catalog Rule With 25 Percent Off');
+        $rule->setIsActive(0);
+        $this->catalogRuleRepository->save($rule);
+        $ruleProductProcessor->getIndexer()->reindexAll();
         $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
     }
 
@@ -147,7 +183,7 @@ class ExportSingleProductPriceTest extends TestCase
                         'websiteCode' => 'base',
                         'regular' => 100.1,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
                         'type' => 'SIMPLE'
                     ],
                     [
@@ -177,6 +213,283 @@ class ExportSingleProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
                         'type' => 'SIMPLE'
                     ],
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @return \array[][]
+     */
+    private function expectedSimpleProductPricesWithCatalogRuleDataProvider(): array
+    {
+        return [
+            [
+                [
+                    [
+                        'sku' => 'simple_product_with_regular_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 55.55,
+                        'deleted' => false,
+                        'discounts' => null,
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_regular_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 55.55,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'catalog_rule', 'price' => 41.66]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_regular_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 55.55,
+                        'deleted' => false,
+                        'discounts' => null,
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_special_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_special_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [
+                            0 => ['code' => 'special_price', 'price' => 55.55],
+                            1 => ['code' => 'catalog_rule', 'price' => 75.08]
+                        ],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_special_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'virtual_product_with_special_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'virtual_product_with_special_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [
+                            0 => ['code' => 'special_price', 'price' => 55.55],
+                            1 => ['code' => 'catalog_rule', 'price' => 75.08]
+                        ],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'virtual_product_with_special_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [
+                            0 => ['code' => 'group', 'price' => 15.15],
+                            1 => ['code' => 'catalog_rule', 'price' => 75.08]
+                        ],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
+                        'type' => 'SIMPLE'
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @return \array[][]
+     */
+    private function expectedSimpleProductPricesWithCatalogRuleDisabledDataProvider(): array
+    {
+        return [
+            [
+                [
+                    [
+                        'sku' => 'simple_product_with_regular_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 55.55,
+                        'deleted' => false,
+                        'discounts' => null,
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_regular_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 55.55,
+                        'deleted' => true,
+                        'discounts' => [0 => ['code' => 'catalog_rule', 'price' => 41.66]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_regular_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 55.55,
+                        'deleted' => false,
+                        'discounts' => null,
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_special_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_special_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => true,
+                        'discounts' => [
+                            0 => ['code' => 'special_price', 'price' => 55.55],
+                            1 => ['code' => 'catalog_rule', 'price' => 75.08]
+                        ],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_special_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'virtual_product_with_special_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'virtual_product_with_special_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => true,
+                        'discounts' => [
+                            0 => ['code' => 'special_price', 'price' => 55.55],
+                            1 => ['code' => 'catalog_rule', 'price' => 75.08]
+                        ],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'virtual_product_with_special_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [
+                            0 => ['code' => 'group', 'price' => 15.15]
+                        ],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
+                        'type' => 'SIMPLE'
+                    ],
+                    [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
+                        'type' => 'SIMPLE'
+                    ]
                 ]
             ]
         ];
@@ -293,7 +606,11 @@ class ExportSingleProductPriceTest extends TestCase
             if (!isset($actualProductPricesFeed['feed'][$index])) {
                 self::fail("Cannot find product price feed");
             }
-
+            self::assertNotEmpty($actualProductPricesFeed['feed'][$index]['modifiedAt']);
+            self::assertEquals(
+                strtotime($actualProductPricesFeed['feed'][$index]['modifiedAt']),
+                strtotime($actualProductPricesFeed['feed'][$index]['updatedAt'])
+            );
             // unset fields from feed that we don't care about for test
             $actualFeed = $this->unsetNotImportantField($actualProductPricesFeed['feed'][$index]);
             self::assertEquals($product, $actualFeed, "Some items are missing in product price feed $index");
@@ -350,5 +667,22 @@ class ExportSingleProductPriceTest extends TestCase
         $connection = $this->resourceConnection->getConnection();
         $feedTable = $this->resourceConnection->getTableName('catalog_data_exporter_product_prices');
         $connection->truncateTable($feedTable);
+    }
+
+    /**
+     * Retrieve catalog rule by name from db.
+     *
+     * @param string $name
+     * @return RuleInterface
+     */
+    private function getRuleByName(string $name): RuleInterface
+    {
+        $catalogRuleResource = Bootstrap::getObjectManager()->get(ResourceRuleFactory::class)->create();
+        $select = $catalogRuleResource->getConnection()->select();
+        $select->from($catalogRuleResource->getMainTable(), RuleInterface::RULE_ID);
+        $select->where(RuleInterface::NAME . ' = ?', $name);
+        $ruleId = $catalogRuleResource->getConnection()->fetchOne($select);
+
+        return $this->catalogRuleRepository->get((int)$ruleId);
     }
 }

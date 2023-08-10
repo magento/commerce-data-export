@@ -17,11 +17,5 @@
     <!-- TODO: delete deprecated "Variant" type. https://github.com/magento/catalog-storefront/issues/419-->
     <record name="Variant">
         <field name="sku" type="String"/>
-        <field name="minimumPrice" type="ProductPrice"/>
-        <field name="selections" type="SingleValueAttribute" repeated="true"/>
-    </record>
-    <record name="SingleValueAttribute">
-        <field name="name" type="String"/>
-        <field name="value" type="String"/>
     </record>
 </config>

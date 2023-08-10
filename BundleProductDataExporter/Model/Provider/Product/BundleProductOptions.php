@@ -162,6 +162,8 @@ class BundleProductOptions implements OptionProviderInterface
             'sku' => $row['sku'],
             'label' => $row['label'],
             'qty' => $row['qty'],
+            'priceType' => $row['price_type'] ? 'percent' : 'fixed',
+            'price' => $row['price_value'],
             'sortOrder' => $row['sort_order'],
             'isDefault' => $row['default'],
             'qtyMutability' => (bool)$row['qty_mutability'],

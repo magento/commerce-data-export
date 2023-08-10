@@ -44,7 +44,7 @@ class DownloadableProductsTest extends AbstractProductTestHelper
 
                 $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
                 $this->validateBaseProductData($product, $extractedProduct, $storeViewCode);
-                $this->validatePricingData($product, $extractedProduct);
+                $this->validatePricingData($extractedProduct);
                 $this->validateImageUrls($product, $extractedProduct);
                 $this->validateAttributeData($product, $extractedProduct);
                 $this->validateMediaGallery($product, $extractedProduct);

@@ -10,6 +10,11 @@ namespace Magento\ProductVariantDataExporter\Test\Integration;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId;
 use RuntimeException;
 use Throwable;
+use Magento\Catalog\Api\Data\ProductAttributeInterface;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product\Action;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\TestFramework\Helper\Bootstrap;
 
 /**
  * Test class for configurable product variants export
@@ -146,15 +151,15 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
     }
 
     /**
-     * Test that deleted flag is true when one of the children is disabled
+     * Test that product variant can be disabled and re-enabled
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     * @magentoDataFixture Magento/ConfigurableProduct/_files/product_configurable_disable_first_child.php
+     * @magentoDataFixture Magento/ConfigurableProduct/_files/product_configurable_sku.php
      *
      * @return void
      */
-    public function testWithDisabledChildFromConfigurableProductVariants(): void
+    public function testDisabledAndReanableChildFromConfigurableProductVariants(): void
     {
         try {
             $configurable = $this->productRepository->get('configurable');
@@ -171,6 +176,11 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
                 ConfigurableId::CHILD_SKU_KEY => 'simple_20'
             ]);
 
+            // initiate feed state
+            $this->runIndexer([$configurableId, $simple10->getId()]);
+
+            // disable variant && verify "deleted" is set to true
+            $this->changeProductStatusProduct('simple_10', Status::STATUS_DISABLED);
             $this->runIndexer([$configurableId, $simple10->getId()]);
 
             $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
@@ -180,9 +190,40 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
 
             $this->assertEquals('simple_20', $variantsData[1]['productSku']);
             $this->assertFalse($variantsData[1]['deleted'], "simple_20 should not have been flag as deleted");
+
+            // enable variant && verify "deleted" is set to false
+            // verify enabling child product back works
+            $this->changeProductStatusProduct('simple_10', Status::STATUS_ENABLED);
+            $this->runIndexer([$configurableId, $simple10->getId()]);
+
+            $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
+            $this->assertCount(2, $variantsData); //id20, id10 (re-enabled)
+            $this->assertEquals('simple_10', $variantsData[0]['productSku']);
+            $this->assertFalse($variantsData[0]['deleted'], "simple_10 should not have flag 'deleted'");
+
         } catch (Throwable $e) {
             $this->fail($e->getMessage());
         }
+    }
+
+    /**
+     * @param $childSku
+     * @param $status
+     * @return void
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    private function changeProductStatusProduct($childSku, $status)
+    {
+        $objectManager = Bootstrap::getObjectManager();
+        /** @var ProductRepositoryInterface $productRepository */
+        $productRepository = $objectManager->create(ProductRepositoryInterface::class);
+        $childProduct = $productRepository->get($childSku);
+        $productAction = Bootstrap::getObjectManager()->get(Action::class);
+        $productAction->updateAttributes(
+            [$childProduct->getEntityId()],
+            [ProductAttributeInterface::CODE_STATUS => $status],
+            $childProduct->getStoreId()
+        );
     }
 
     /**
@@ -203,7 +244,6 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
         }
         return $output;
     }
-
 
     /**
      * Delete product variant
@@ -275,5 +315,24 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
             ],
         ];
         return array_values(array_intersect_key($variants, array_flip($simples)));
+    }
+
+    /**
+     * @return void
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $this->truncateIndexTable();
+    }
+
+    /**
+     * Truncates index table
+     */
+    private function truncateIndexTable(): void
+    {
+        $connection = $this->resource->getConnection();
+        $feedTable = $this->resource->getTableName($this->productVariantsFeed->getFeedMetadata()->getFeedTableName());
+        $connection->truncateTable($feedTable);
     }
 }

@@ -12,14 +12,13 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 
 /**
- * Mark removed entities select query provider
+ * Mark product feed item as removed when:
+ * - product deleted
+ * - product unassigned from website
  */
-class MarkRemovedEntitiesQuery
+class MarkRemovedEntitiesQuery extends \Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery
 {
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -27,38 +26,35 @@ class MarkRemovedEntitiesQuery
     public function __construct(ResourceConnection $resourceConnection)
     {
         $this->resourceConnection = $resourceConnection;
+        parent::__construct($resourceConnection);
     }
 
     /**
-     * Get select query for marking removed entities
+     * @inheirtDoc
      *
      * @param array $ids
-     * @param string $storeCode
-     * @param FeedIndexMetadata $feedIndexMetadata
-     * @throws \InvalidArgumentException
-     *
+     * @param FeedIndexMetadata $metadata
      * @return Select
      */
-    public function getQuery(array $ids, string $storeCode, FeedIndexMetadata $feedIndexMetadata): Select
+    public function getQuery(array $ids, FeedIndexMetadata $metadata): Select
     {
-        $connection = $this->resourceConnection->getConnection();
-        $feedTableField = $feedIndexMetadata->getFeedTableField();
-        if (empty($ids)) {
-            throw new \InvalidArgumentException(
-                'Ids list can not be empty'
-            );
-        }
-        return $connection->select()
-            ->joinInner(
-                ['feed' => $this->resourceConnection->getTableName($feedIndexMetadata->getFeedTableName())],
-                \sprintf(
-                    'feed.%s = f.%s',
-                    $feedTableField,
-                    $feedTableField
-                ),
-                ['is_deleted' => new \Zend_Db_Expr('1')]
-            )
-            ->where(\sprintf('f.%s IN (?)', $feedTableField), $ids)
-            ->where(\sprintf('f.%s = ?', 'store_view_code'), $storeCode);
+        $select = parent::getQuery($ids, $metadata);
+        $select->reset(\Magento\Framework\DB\Select::WHERE);
+        $select->joinLeft(
+            ['store' => $this->resourceConnection->getTableName('store')],
+            'f.store_view_code = store.code',
+            []
+        )->joinLeft(
+            ['w' => $this->resourceConnection->getTableName('store_website')],
+            'store.website_id = w.website_id',
+            []
+        )->joinLeft(
+            ['pw' => $this->resourceConnection->getTableName('catalog_product_website')],
+            'f.id = pw.product_id AND pw.website_id = w.website_id',
+            []
+        )->where(\sprintf('f.%s IN (?)', $metadata->getFeedTableField()), $ids)
+            ->where(\sprintf('s.%s IS NULL OR pw.website_id is NULL', $metadata->getSourceTableField()));
+
+        return $select;
     }
 }

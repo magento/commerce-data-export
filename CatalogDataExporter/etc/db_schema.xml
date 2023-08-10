@@ -49,6 +49,26 @@
             default="0"
             comment="Product Deleted"
         />
+        <column
+            xsi:type="smallint"
+            name="status"
+            nullable="false"
+            default="0"
+            comment="Status"
+        />
+        <column
+            xsi:type="varchar"
+            name="feed_hash"
+            nullable="false"
+            length="64"
+            comment="Feed Hash"
+        />
+        <column
+            xsi:type="text"
+            name="errors"
+            nullable="true"
+            comment="Errors"
+        />
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
             <column name="store_view_code"/>

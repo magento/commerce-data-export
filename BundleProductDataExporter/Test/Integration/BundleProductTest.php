@@ -38,16 +38,41 @@ class BundleProductTest extends AbstractProductTestHelper
      * @param array $bundleProductOptionsDataProvider
      *
      * @magentoDataFixture Magento/Bundle/_files/product_1.php
-     * @dataProvider getBundleProductOptionsDataProvider
+     * @dataProvider getBundleFixedProductOptionsDataProvider
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
      *
      * @return void
      */
-    public function testBundleProductOptions(array $bundleProductOptionsDataProvider) : void
+    public function testBundleFixedProductOptions(array $bundleProductOptionsDataProvider) : void
     {
         $extractedProduct = $this->getExtractedProduct('bundle-product', 'default');
+        $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
+
+        foreach ($bundleProductOptionsDataProvider as $key => $expectedData) {
+            $diff = $this->arrayUtils->recursiveDiff($expectedData, $extractedProduct[$key]);
+            self::assertEquals([], $diff, 'Actual feed data doesn\'t equal to expected data');
+        }
+    }
+
+    /**
+     * Validate bundle product options data
+     *
+     * @param array $bundleProductOptionsDataProvider
+     *
+     * @return void
+     * @throws \Zend_Db_Statement_Exception
+     * @magentoDataFixture Magento/Bundle/_files/dynamic_bundle_product_with_special_price.php
+     * @dataProvider getBundleDynamicProductOptionsDataProvider
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     *
+     */
+    public function testBundleDynamicProductOptions(array $bundleProductOptionsDataProvider) : void
+    {
+        $extractedProduct = $this->getExtractedProduct('dynamic_bundle_product_with_special_price', 'default');
         $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
         foreach ($bundleProductOptionsDataProvider as $key => $expectedData) {
@@ -61,7 +86,7 @@ class BundleProductTest extends AbstractProductTestHelper
      *
      * @return array
      */
-    public function getBundleProductOptionsDataProvider() : array
+    public function getBundleFixedProductOptionsDataProvider() : array
     {
         return [
             'bundleProduct' => [
@@ -86,6 +111,60 @@ class BundleProductTest extends AbstractProductTestHelper
                                         'isDefault' => false,
                                         'qtyMutability' => true,
                                         'sku' => 'simple',
+                                        'price' => 2.75,
+                                        'priceType' => 'fixed'
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Get bundle product options data provider
+     *
+     * @return array
+     */
+    public function getBundleDynamicProductOptionsDataProvider() : array
+    {
+        return [
+            'bundleProduct' => [
+                'item' => [
+                    'feedData' => [
+                        'sku' => 'dynamic_bundle_product_with_special_price',
+                        'storeViewCode' => 'default',
+                        'name' => 'Bundle Product',
+                        'type' => 'bundle',
+                        'optionsV2' => [
+                            [
+                                'type' => 'bundle',
+                                'renderType' => 'select',
+                                'required' => true,
+                                'label' => 'Option 1',
+                                'sortOrder' => 0,
+                                'values' => [
+                                    [
+                                        'sortOrder' => 0,
+                                        'label' => 'Simple Product With Price 10',
+                                        'qty' => 1,
+                                        'isDefault' => false,
+                                        'qtyMutability' => false,
+                                        'sku' => 'simple1000',
+                                        'price' => 0,
+                                        'priceType' => 'fixed'
+                                    ],
+                                    [
+                                        'sortOrder' => 0,
+                                        'label' => 'Simple Product With Price 20',
+                                        'qty' => 1,
+                                        'isDefault' => false,
+                                        'qtyMutability' => false,
+                                        'sku' => 'simple1001',
+                                        'price' => 0,
+                                        'priceType' => 'fixed'
                                     ],
                                 ],
                             ],

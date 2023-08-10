@@ -45,7 +45,7 @@ class SimpleProductsTest extends AbstractProductTestHelper
                 $this->validateBaseProductData($product, $extractedProduct, $storeViewCode);
                 $this->validateRealProductData($product, $extractedProduct);
                 $this->validateCategoryData($product, $extractedProduct, $storeViewCode);
-                $this->validatePricingData($product, $extractedProduct);
+                $this->validatePricingData($extractedProduct);
                 $this->validateImageUrls($product, $extractedProduct);
                 $this->validateAttributeData($product, $extractedProduct);
                 $this->validateMediaGallery($product, $extractedProduct);
@@ -63,8 +63,6 @@ class SimpleProductsTest extends AbstractProductTestHelper
      * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/setup_simple_products_without_date.php
      *
      * @return void
-     * @throws NoSuchEntityException
-     * @throws LocalizedException
      * @throws \Zend_Db_Statement_Exception
      * @throws \Throwable
      */
@@ -72,10 +70,6 @@ class SimpleProductsTest extends AbstractProductTestHelper
     {
         $sku = 'simple1';
         $storeViewCode = 'default';
-        $store = $this->storeManager->getStore($storeViewCode);
-
-        $product = $this->productRepository->get($sku, false, $store->getId());
-        //$product->setTypeInstance(Bootstrap::getObjectManager()->create(Simple::class));
 
         $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
 

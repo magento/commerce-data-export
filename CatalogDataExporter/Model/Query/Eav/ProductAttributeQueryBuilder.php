@@ -25,8 +25,6 @@ class ProductAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
         'small_image' => ['small_image_label', 'name'],
         'image' => ['image_label', 'name'],
         'thumbnail' => ['thumbnail_label', 'name'],
-        'price' => null,
-        'tier_price' => null,
     ];
 
     /**

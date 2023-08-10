@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\ProductPriceDataExporter\Model\Provider;
 
+use Magento\Bundle\Model\Product\Price as BundlePrice;
+use Magento\Catalog\Api\Data\ProductAttributeInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
@@ -28,6 +30,8 @@ use Magento\ProductPriceDataExporter\Model\Query\ProductPricesQuery;
  * Fallback price - price used as fallback if price for given scope (<website>, <customer group>) not found
  * Fallback price scope - <product website, ProductPrice::FALLBACK_CUSTOMER_GROUP>
  * If Customer Group "All Groups" selected with qty=1, group price will be added to fallback price
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class ProductPrice
 {
@@ -35,51 +39,30 @@ class ProductPrice
     private const PRICE_SCOPE_KEY_PART = 0;
     private const REGULAR_PRICE = 'price';
     private const UNKNOWN_PRICE_CODE = 'unknown';
+    private const BUNDLE_FIXED = 'BUNDLE_FIXED';
+    private const BUNDLE_DYNAMIC = 'BUNDLE_DYNAMIC';
 
     /**
      * mapping for ProductPriceAggregate.type
      */
     private const PRODUCT_TYPE = [
+        self::BUNDLE_FIXED,
+        self::BUNDLE_DYNAMIC,
         Type::TYPE_SIMPLE,
         Configurable::TYPE_CODE,
-        Type::TYPE_BUNDLE,
         Downloadable::TYPE_DOWNLOADABLE,
         Grouped::TYPE_CODE,
-        'giftcard', // represet giftcard product type
+        Type::TYPE_BUNDLE,
+        'giftcard', // represent giftcard product type
     ];
 
-    /**
-     * @var ResourceConnection
-     */
     private ResourceConnection $resourceConnection;
-
-    /**
-     * @var ProductPricesQuery
-     */
     private ProductPricesQuery $pricesQuery;
-
-    /**
-     * @var CustomerGroupPricesQuery
-     */
     private CustomerGroupPricesQuery $customerGroupPricesQuery;
-
-    /**
-     * @var DateTime
-     */
     private DateTime $dateTime;
-
-    /**
-     * @var CatalogRulePricesQuery
-     */
     private CatalogRulePricesQuery $catalogRulePricesQuery;
-
-    /**
-     * @var DeleteFeedItems
-     */
     private DeleteFeedItems $deleteFeedItems;
-
     private CommerceDataExportLoggerInterface $logger;
-
     private Config $eavConfig;
 
     /**
@@ -98,12 +81,12 @@ class ProductPrice
      * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
-        ProductPricesQuery       $pricesQuery,
+        ProductPricesQuery $pricesQuery,
         CustomerGroupPricesQuery $customerGroupPricesQuery,
-        CatalogRulePricesQuery   $catalogRulePricesQuery,
-        ResourceConnection       $resourceConnection,
-        DeleteFeedItems          $deleteFeedItems,
-        DateTime                 $dateTime,
+        CatalogRulePricesQuery $catalogRulePricesQuery,
+        ResourceConnection $resourceConnection,
+        DeleteFeedItems $deleteFeedItems,
+        DateTime $dateTime,
         Config $eavConfig,
         CommerceDataExportLoggerInterface $logger
     ) {
@@ -122,8 +105,9 @@ class ProductPrice
      *
      * @param array $values
      * @return array
-     * @throws UnableRetrieveData
-     * @throws LocalizedException
+     * @throws UnableRetrieveData|LocalizedException
+     * @throws \Zend_Db_Statement_Exception
+     * @throws \Exception
      */
     public function get(array $values): array
     {
@@ -133,34 +117,45 @@ class ProductPrice
         );
         $output = [];
         while ($row = $cursor->fetch()) {
+            $percentageDiscount = null;
+            $priceAttributeCode = $this->resolvePriceCode($row);
+            if ($row['type_id'] === Type::TYPE_BUNDLE) {
+                $row['type_id'] = (int)$row['price_type'] === BundlePrice::PRICE_TYPE_FIXED
+                    ? self::BUNDLE_FIXED
+                    : self::BUNDLE_DYNAMIC;
+                if ($priceAttributeCode === ProductAttributeInterface::CODE_SPECIAL_PRICE) {
+                    $percentageDiscount = $row['price'];
+                }
+            }
             $key = $this->buildKey($row['entity_id'], $row['website_id'], self::FALLBACK_CUSTOMER_GROUP);
             if (!isset($output[$key])) {
                 $output[$key] = $this->fillOutput($row, $key);
             }
-            $priceAttributeCode = $this->resolvePriceCode($row);
             if ($priceAttributeCode === self::REGULAR_PRICE) {
-                $output[$key]['regular'] = $row['price'];
+                $output[$key]['regular'] = (float)$row['price'];
             } elseif ($priceAttributeCode !== self::UNKNOWN_PRICE_CODE) {
-                $this->addDiscountPrice($output[$key], $priceAttributeCode, (float)$row['price']);
+                $this->addDiscountPrice($output[$key], $priceAttributeCode, $row['price'], $percentageDiscount);
             }
 
             // cover case when _this_ product type doesn't have regular price, but this field is required in schema
             if (!isset($output[$key]['regular'])) {
-                $output[$key]['regular'] = 0;
+                $output[$key]['regular'] = 0.;
             }
         }
         $filteredIds = array_unique(array_column($output, 'productId'));
         $this->addCustomerGroupPrices($output, $filteredIds);
         $this->addCatalogRulePrices($output, $filteredIds);
 
-        $this->deleteFeedItems->execute($output);
+        $this->setItemsToDelete($output);
+
         return $output;
     }
 
     /**
+     * Get price attributes
+     *
      * @return array
-     * @throws UnableRetrieveData
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws UnableRetrieveData|LocalizedException
      */
     private function getPriceAttributes(): array
     {
@@ -173,6 +168,10 @@ class ProductPrice
             if ($attribute) {
                 $this->priceAttributes[$attribute->getId()] = 'special_price';
             }
+            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, 'price_type');
+            if ($attribute) {
+                $this->priceAttributes[$attribute->getId()] = 'price_type';
+            }
         }
         if (!$this->priceAttributes) {
             throw new UnableRetrieveData('Price attributes not found');
@@ -181,11 +180,13 @@ class ProductPrice
     }
 
     /**
+     * Resolve price code
+     *
      * @param array $row
-     * @return mixed|string
+     * @return string
      * @throws UnableRetrieveData|LocalizedException
      */
-    private function resolvePriceCode(array $row)
+    private function resolvePriceCode(array $row): string
     {
         return $this->getPriceAttributes()[$row['attributeId']] ?? self::UNKNOWN_PRICE_CODE;
     }
@@ -196,6 +197,7 @@ class ProductPrice
      * @param array $prices
      * @param array $productIds
      * @return void
+     * @throws \Zend_Db_Statement_Exception
      */
     private function addCustomerGroupPrices(array &$prices, array $productIds): void
     {
@@ -208,25 +210,22 @@ class ProductPrice
             $fallbackPrice = $prices[$keyFallback] ?? null;
             if (!$fallbackPrice) {
                 $this->logger->error('Fallback price not found when adding customer group' . var_export($row, true));
-                continue ;
+                continue;
             }
 
-            $priceValue = (float)$row['value'];
-            //calculate percentage discount if so
-            if (empty($priceValue) && !empty($row['percentage_value'])) {
-                $priceValue = $this->calculatePercentDiscountValue($fallbackPrice['regular'], $row['percentage_value']);
-            }
+            $priceValue = $row['value'] ?? null;
+            $pricePercentage = $row['percentage_value'] ?? null;
 
             // add "group" price to fallback price
             if ((int)$row['all_groups'] === 1) {
-                $this->addDiscountPrice($prices[$keyFallback], 'group', $priceValue);
+                $this->addDiscountPrice($prices[$keyFallback], 'group', $priceValue, $pricePercentage);
                 continue;
             }
             // copy feed data from fallbackPrice for each row of customer group price
             $prices[$key] = $fallbackPrice;
 
             // override customer group specific fields
-            $this->addDiscountPrice($prices[$key], 'group', $priceValue, true);
+            $this->addDiscountPrice($prices[$key], 'group', $priceValue, $pricePercentage, true);
             $prices[$key]['customerGroupCode'] = $this->buildCustomerGroupCode($customerGroupId);
             $prices[$key]['productPriceId'] = $key;
         }
@@ -238,6 +237,7 @@ class ProductPrice
      * @param array $prices
      * @param array $productIds
      * @return void
+     * @throws \Zend_Db_Statement_Exception
      */
     private function addCatalogRulePrices(array &$prices, array $productIds): void
     {
@@ -255,7 +255,7 @@ class ProductPrice
             $fallbackPrice = $prices[$keyFallback] ?? null;
             if (!$fallbackPrice) {
                 $this->logger->error('Fallback price not found when adding catalog rule' . var_export($row, true));
-                continue ;
+                continue;
             }
 
             // copy feed data from fallbackPrice for each row of customer group price
@@ -263,8 +263,7 @@ class ProductPrice
                 $prices[$key] = $fallbackPrice;
             }
 
-            // override customer group specific fields
-            $this->addDiscountPrice($prices[$key], 'catalog_rule', (float)$row['value'], true);
+            $this->addDiscountPrice($prices[$key], 'catalog_rule', $row['value']);
             $prices[$key]['customerGroupCode'] = sha1($customerGroupId);
             $prices[$key]['productPriceId'] = $key;
         }
@@ -273,12 +272,12 @@ class ProductPrice
     /**
      * Build Key
      *
-     * @param string $productId
-     * @param string $websiteId
-     * @param string $customerGroup
+     * @param int|string $productId
+     * @param int|string $websiteId
+     * @param int|string $customerGroup
      * @return string
      */
-    private function buildKey(string $productId, string $websiteId, string $customerGroup): string
+    private function buildKey(int|string $productId, int|string $websiteId, int|string $customerGroup): string
     {
         return implode('-', [$productId, $websiteId, $customerGroup]);
     }
@@ -288,24 +287,35 @@ class ProductPrice
      *
      * @param array $prices
      * @param string $code
-     * @param float $price
+     * @param ?string $price
+     * @param ?string $percentage
      * @param bool $override
      * @return void
      */
-    private function addDiscountPrice(array &$prices, string $code, float $price, bool $override = false): void
-    {
+    private function addDiscountPrice(
+        array &$prices,
+        string $code,
+        string $price = null,
+        string $percentage = null,
+        bool $override = false
+    ): void {
         if ($override) {
             foreach ($prices['discounts'] as &$discount) {
                 if ($discount['code'] === $code) {
-                    $discount['price'] = $price;
+                    $this->setPriceOrPercentageDiscount($discount, $price, $percentage);
                     return;
                 }
             }
         }
-        $prices['discounts'][] = [
-            'code' => $code,
-            'price' => $price
-        ];
+        unset($discount);
+
+        if (null === $price && null === $percentage) {
+            return;
+        }
+
+        $priceDiscount['code'] = $code;
+        $this->setPriceOrPercentageDiscount($priceDiscount, $price, $percentage);
+        $prices['discounts'][] = $priceDiscount;
     }
 
     /**
@@ -324,7 +334,7 @@ class ProductPrice
             [$parentType, $parentSku] = explode(':', $parent);
             $parents[] = [
                 'type' => $this->convertProductType(trim($parentType)),
-                'sku' => $parentSku
+                'sku' => $parentSku,
             ];
         }
 
@@ -342,21 +352,8 @@ class ProductPrice
             'parents' => !empty($parents) ? $parents : null,
             'discounts' => [],
             'deleted' => false,
-            'productPriceId' => $key
+            'productPriceId' => $key,
         ];
-    }
-
-    /**
-     * Calculate Percent DiscountValue
-     *
-     * @param string $price
-     * @param string $percent
-     * @return float
-     */
-    private function calculatePercentDiscountValue(string $price, string $percent): float
-    {
-        $groupDiscountValue = ((float)$percent / 100) * (float)$price;
-        return round((float)$price - $groupDiscountValue, 2);
     }
 
     /**
@@ -381,5 +378,40 @@ class ProductPrice
     private function buildCustomerGroupCode(string $customerGroupId): string
     {
         return sha1($customerGroupId);
+    }
+
+    /**
+     * Check if fixed price or percentage discount should be applied
+     *
+     * @param array $discount
+     * @param ?string $price
+     * @param ?string $percent
+     * @return void
+     */
+    private function setPriceOrPercentageDiscount(array &$discount, string $price = null, string $percent = null): void
+    {
+        if (null !== $percent) {
+            $discount['percentage'] = (float)$percent;
+            unset($discount['price']);
+        } elseif (null !== $price) {
+            $discount['price'] = (float)$price;
+            unset($discount['percentage']);
+        }
+    }
+
+    /**
+     * Delete items from the feed
+     *
+     * @param array $output
+     * @return void
+     */
+    private function setItemsToDelete(array &$output): void
+    {
+        $feedItemsToDelete = $this->deleteFeedItems->execute($output);
+        foreach ($feedItemsToDelete as $item) {
+            $key = $this->buildKey($item['productId'], $item['websiteId'], $item['customerGroupCode']);
+            $item['productPriceId'] = $key;
+            $output[$key] = $item;
+        }
     }
 }

@@ -69,7 +69,7 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                 $this->validateBaseProductData($product, $extractedProduct, $storeViewCode);
                 $this->validateRealProductData($product, $extractedProduct);
                 $this->validateCategoryData($product, $extractedProduct, $storeViewCode);
-                $this->validatePricingData($product, $extractedProduct);
+                $this->validatePricingData($extractedProduct);
                 $this->validateImageUrls($product, $extractedProduct);
                 $this->validateAttributeData($product, $extractedProduct);
                 $this->validateOptionsData($product, $extractedProduct);
@@ -123,7 +123,6 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     public function testParentProductsOnDifferentWebsites() : void
     {
         $this->runIndexer([40, 50, 60, 70, 55, 59, 65]);
-
 
         $skus = [
             'simple_option_50' => [
@@ -249,14 +248,8 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
         $variants = [];
         foreach ($childIds as $childId) {
             $childProduct = $this->productRepository->getById($childId);
-            $childProductPricing = $this->getPricingData($childProduct);
             $variants[] = [
                 'sku' => $childProduct->getSku(),
-                'minimumPrice' => [
-                    'regularPrice' => $childProductPricing['price'],
-                    'finalPrice' => $childProductPricing['final_price']
-                ],
-                'selections' => null,
             ];
         }
         $actualVariants = $extract['feedData']['variants'];

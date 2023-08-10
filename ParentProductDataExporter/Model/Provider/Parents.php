@@ -33,8 +33,6 @@ class Parents
     private $logger;
 
     /**
-     * Prices constructor.
-     *
      * @param ResourceConnection $resourceConnection
      * @param ProductParentQuery $productParentQuery
      * @param LoggerInterface $logger

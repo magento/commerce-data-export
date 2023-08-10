@@ -33,9 +33,12 @@ class MarkRemovedEntities implements MarkRemovedEntitiesInterface
     /**
      * @inheritdoc
      */
-    public function execute(array $ids, FeedIndexMetadata $metadata): void
+    public function execute(array $ids, FeedIndexMetadata $metadata): ?array
     {
         $select = $this->markRemovedEntitiesQuery->getQuery($ids, $metadata);
+        if ($metadata->isExportImmediately()) {
+            return $this->resourceConnection->getConnection()->fetchAll($select);
+        }
 
         // convert select-object to sql-string with staging future
         $sqlSelect = $select->assemble();
@@ -45,5 +48,7 @@ class MarkRemovedEntities implements MarkRemovedEntitiesInterface
         $sqlUpdate = str_replace("WHERE", 'SET `f`.`is_deleted` = 1 WHERE', $sqlUpdate);
 
         $this->resourceConnection->getConnection()->query($sqlUpdate);
+
+        return null;
     }
 }

@@ -17,6 +17,7 @@ use Magento\DataExporter\Model\FeedPool;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Indexer\Model\Indexer;
 use Magento\Indexer\Model\Processor;
+use Magento\Store\Api\StoreRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -60,7 +61,7 @@ class ExportSingleProductPriceUpdateOperationsTest extends TestCase
         $this->objectManager = Bootstrap::getObjectManager();
         $this->indexer = $this->objectManager->create(Indexer::class);
         $this->productRepository = $this->objectManager->create(ProductRepositoryInterface::class);
-        $this->productPricesFeed = $this->objectManager->get(FeedPool::class)->getFeed('productPrices');
+        $this->productPricesFeed = $this->objectManager->get(FeedPool::class)->getFeed('prices');
         $this->resourceConnection = $this->objectManager->create(ResourceConnection::class);
     }
 
@@ -84,8 +85,68 @@ class ExportSingleProductPriceUpdateOperationsTest extends TestCase
         $websiteRepository = $this->objectManager->get(WebsiteRepositoryInterface::class);
         $secondWebsiteId = $websiteRepository->get('test')->getId();
         $product->setWebsiteIds([$secondWebsiteId]);
+        sleep(1);  // Make sure that more than one second passed after previous save
         $this->productRepository->save($product);
-        self::markTestSkipped("System uses DELETE logic instead of UPDATE. Should be changed in MDEE-442");
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices, $expectedIds);
+    }
+
+    /**
+     * @magentoConfigFixture current_store catalog/price/scope 1
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/configure_website_scope_price.php
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/catalog_data_exporter_product_prices_indexer_update_on_schedule.php
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products_all_websites_grouped_price.php
+     * @dataProvider expectedSimpleProductDisabledGlobalDataProvider
+     * @throws NoSuchEntityException
+     * @throws Zend_Db_Statement_Exception
+     */
+    public function testDisableProductGlobally(array $expectedSimpleProductPrices): void
+    {
+        $expectedIds = [];
+        foreach ($expectedSimpleProductPrices as $expectedItem) {
+            $expectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
+        }
+        $this->runIndexer($expectedIds);
+        //Get product for edit in general scope (all websites)
+        $product = $this->productRepository->get('simple_product_with_tier_price', true, 0);
+        //Disable it on general level
+        $product->setStatus(2);
+        $this->productRepository->save($product);
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices, $expectedIds);
+    }
+
+    /**
+     * @magentoConfigFixture current_store catalog/price/scope 1
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/configure_website_scope_price.php
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/catalog_data_exporter_product_prices_indexer_update_on_schedule.php
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products_all_websites_grouped_price.php
+     * @dataProvider expectedSimpleProductEnabledOneStoreDataProvider
+     * @throws NoSuchEntityException
+     * @throws Zend_Db_Statement_Exception
+     */
+    public function testEnableProductOnWebsite(array $expectedSimpleProductPrices): void
+    {
+        $expectedIds = [];
+        foreach ($expectedSimpleProductPrices as $expectedItem) {
+            $expectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
+        }
+        $this->runIndexer($expectedIds);
+        //Get product for edit in general scope (all websites)
+        $product = $this->productRepository->get('simple_product_with_tier_price', true, 0);
+        //Disable it on general level
+        $product->setStatus(2);
+        $this->productRepository->save($product);
+        $storeRepository = $this->objectManager->get(StoreRepositoryInterface::class);
+        $store = $storeRepository->getActiveStoreByCode('fixture_second_store');
+        $secondWebsiteStoreId = $store->getId();
+        //Get product for edit in general scope (all websites)
+        $secondStoreProduct = $this->productRepository->get(
+            'simple_product_with_tier_price',
+            true,
+            $secondWebsiteStoreId
+        );
+        //Enable for second store
+        $secondStoreProduct->setStatus(1);
+        $this->productRepository->save($secondStoreProduct);
         $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices, $expectedIds);
     }
 
@@ -150,12 +211,43 @@ class ExportSingleProductPriceUpdateOperationsTest extends TestCase
         return [
             [
                 [
+                    'simple_product_with_tier_price_test_0' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'type' => 'SIMPLE'
+                    ],
+                    'simple_product_with_tier_price_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
+                        'type' => 'SIMPLE'
+                    ],
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @return array[]
+     */
+    private function expectedSimpleProductDisabledGlobalDataProvider(): array
+    {
+        return [
+            [
+                [
                     'simple_product_with_tier_price_base_0' => [
                         'sku' => 'simple_product_with_tier_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 100.1,
-                        'deleted' => true,
+                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
                         'type' => 'SIMPLE'
                     ],
@@ -164,7 +256,56 @@ class ExportSingleProductPriceUpdateOperationsTest extends TestCase
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
                         'regular' => 100.1,
-                        'deleted' => true,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
+                        'type' => 'SIMPLE'
+                    ],
+                    'simple_product_with_tier_price_test_0' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'type' => 'SIMPLE'
+                    ],
+                    'simple_product_with_tier_price_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
+                        'type' => 'SIMPLE'
+                    ],
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @return array[]
+     */
+    private function expectedSimpleProductEnabledOneStoreDataProvider(): array
+    {
+        return [
+            [
+                [
+                    'simple_product_with_tier_price_base_0' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'type' => 'SIMPLE'
+                    ],
+                    'simple_product_with_tier_price_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
                         'type' => 'SIMPLE'
                     ],

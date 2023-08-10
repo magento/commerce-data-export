@@ -70,7 +70,6 @@
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
-        <field name="tierPrice" type="TierPrice" repeated="true"/>
         <field name="deletedAt" type="String"/>
         <field name="displayable" type="Boolean"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\Displayable"
@@ -100,10 +99,6 @@
         <field name="categoryData" type="CategoryData" repeated="true"
                provider="Magento\CatalogDataExporter\Model\Provider\Product\CategoryData"
         >
-            <using field="productId" />
-            <using field="storeViewCode" />
-        </field>
-        <field name="prices" type="PriceRange" provider="Magento\CatalogDataExporter\Model\Provider\Product\Prices">
             <using field="productId" />
             <using field="storeViewCode" />
         </field>
@@ -163,14 +158,6 @@
         <field name="categoryPath" type="String"/>
         <field name="productPosition" type="Int"/>
     </record>
-    <record name="PriceRange">
-        <field name="minimumPrice" type="ProductPrice"/>
-        <field name="maximumPrice" type="ProductPrice"/>
-    </record>
-    <record name="ProductPrice">
-        <field name="regularPrice" type="Float"/>
-        <field name="finalPrice" type="Float"/>
-    </record>
     <record name="InventorySettings">
         <field name="status" type="Boolean"/>
         <field name="manageStock" type="Boolean"/>
@@ -180,15 +167,6 @@
     <record name="Inventory">
         <field name="qty" type="Int"/>
         <field name="configuration" type="InventorySettings" />
-    </record>
-    <record name="TierPrice">
-        <field name="qty" type="Float"/>
-        <field name="price" type="Float"/>
-    </record>
-    <record name="Price">
-        <field name="regularPrice" type="Float"/>
-        <field name="finalPrice" type="Float"/>
-        <field name="scope" type="String" />
     </record>
     <record name="ProductOption">
         <field name="id" type="ID" />

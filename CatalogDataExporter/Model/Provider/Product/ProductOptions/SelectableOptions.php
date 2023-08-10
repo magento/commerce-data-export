@@ -121,8 +121,8 @@ class SelectableOptions implements ProductOptionProviderInterface
                 'qty' => null,
                 'infoUrl' => null,
                 'sku' => $value['sku'],
-                //TODO: calculate price depend on price type: fixed/percent
-                'price' => $value['price']
+                'price' => $value['price'],
+                'priceType' => $value['price_type'],
             ];
         }
         return $resultValues;

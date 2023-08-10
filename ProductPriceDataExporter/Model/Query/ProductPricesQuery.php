@@ -7,11 +7,13 @@ declare(strict_types=1);
 
 namespace Magento\ProductPriceDataExporter\Model\Query;
 
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\DB\Sql\Expression;
+use Magento\Framework\EntityManager\EntityMetadataInterface;
 use Magento\Framework\EntityManager\MetadataPool;
 
 /**
@@ -29,7 +31,7 @@ class ProductPricesQuery
      */
     private MetadataPool $metadataPool;
 
-    private const IGNORED_TYPES = [Configurable::TYPE_CODE, Type::TYPE_BUNDLE];
+    private const IGNORED_TYPES = [Configurable::TYPE_CODE, 'giftcard'];
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -44,6 +46,8 @@ class ProductPricesQuery
     }
 
     /**
+     * Get query for product price
+     *
      * @param array $productIds
      * @param array $priceAttributes
      * @return Select
@@ -51,8 +55,8 @@ class ProductPricesQuery
      */
     public function getQuery(array $productIds, array $priceAttributes = []): Select
     {
-        /** @var \Magento\Framework\EntityManager\EntityMetadataInterface $metadata */
-        $metadata = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class);
+        /** @var EntityMetadataInterface $metadata */
+        $metadata = $this->metadataPool->getMetadata(ProductInterface::class);
         $connection = $this->resourceConnection->getConnection();
         $eavAttributeTable = $this->resourceConnection->getTableName('catalog_product_entity_decimal');
         $linkField = $metadata->getLinkField();
@@ -78,29 +82,25 @@ class ProductPricesQuery
                 ['websiteCode' => 'code']
             )
             ->joinInner(
-                ['sg' => $this->resourceConnection->getTableName('store_group')],
-                'sg.website_id = store_website.website_id',
+                ['store_group' => $this->resourceConnection->getTableName('store_group')],
+                'store_group.website_id = store_website.website_id',
                 []
             )
             ->joinLeft(
-                ['eav' => $eavAttributeTable],
-                \sprintf('product.%1$s = eav.%1$s', $linkField) .
-                $connection->quoteInto(' AND eav.attribute_id IN (?)', $priceAttributes) .
-                ' AND eav.store_id = 0',
-                []
+                ['eavi' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
+                \sprintf('product.%1$s = eavi.%1$s', $linkField) .
+                $connection->quoteInto(' AND eavi.attribute_id IN (?)', $priceAttributes) .
+                ' AND eavi.store_id = 0',
+                ['price_type' => 'value']
             )
             ->joinLeft(
                 ['eav_store' => $eavAttributeTable],
                 \sprintf('product.%1$s = eav_store.%1$s', $linkField) .
                 $connection->quoteInto(' AND eav_store.attribute_id IN (?)', $priceAttributes) .
-                ' AND eav_store.store_id = sg.default_store_id',
+                ' AND eav_store.store_id IN (store_group.default_store_id, 0)',
                 [
-                    'price' => new Expression(
-                        'IF (eav_store.value_id, eav_store.value, eav.value)'
-                    ),
-                    'attributeId' => new Expression(
-                        'IF(eav_store.value_id, eav_store.attribute_id, eav.attribute_id)'
-                    )
+                    'price' => 'eav_store.value',
+                    'attributeId' => 'attribute_id'
                 ]
             )
             // get parent skus
@@ -131,8 +131,13 @@ class ProductPricesQuery
             )
             ->where('product.entity_id IN (?)', $productIds)
             ->where('product.type_id NOT IN (?)', self::IGNORED_TYPES)
+            ->order('product.entity_id')
+            ->order('product_website.website_id')
+            ->order('eav_store.attribute_id')
+            ->order('eav_store.store_id')
             ->group('product.entity_id')
             ->group('product_website.website_id')
-            ->group('attributeId');
+            ->group('eav_store.attribute_id')
+            ->group('eav_store.store_id');
     }
 }

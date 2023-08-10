@@ -18,8 +18,6 @@
             <table name="cataloginventory_stock_item" entity_column="product_id" />
             <table name="catalog_product_entity_datetime" entity_column="entity_id" />
             <table name="catalog_product_entity_decimal" entity_column="entity_id" />
-            <table name="catalog_product_entity_tier_price" entity_column="entity_id" />
-            <table name="catalogrule_product_price" entity_column="product_id" />
             <table name="catalog_category_product" entity_column="product_id" />
             <!-- parent/child relationship. Trigger update for child product only -->
             <table name="catalog_product_relation" entity_column="child_id" />

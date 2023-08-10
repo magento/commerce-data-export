@@ -63,4 +63,6 @@
             <argument name="profiler" xsi:type="init_parameter">Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface::EXPORTER_PROFILER</argument>
         </arguments>
     </type>
+
+    <preference for="Magento\DataExporter\Model\ExportFeedInterface" type="Magento\DataExporter\Model\ExportFeedDummy"/>
 </config>

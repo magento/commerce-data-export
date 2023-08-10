@@ -65,7 +65,7 @@ class Variants
             $output = [];
             foreach ($values as $value) {
                 if (!isset($value['productId'], $value['type'], $value['storeViewCode'])
-                    || $value['type'] !== Configurable::TYPE_CODE ) {
+                    || $value['type'] !== Configurable::TYPE_CODE) {
                     continue;
                 }
                 $queryArguments['productId'][$value['productId']] = $value['productId'];
@@ -82,10 +82,6 @@ class Variants
                 $output[$key]['variants']['sku'] = $row['sku'];
                 $output[$key]['productId'] = $row['productId'];
                 $output[$key]['storeViewCode'] = $row['storeViewCode'];
-                $output[$key]['variants']['minimumPrice']['regularPrice'] = $row['price'];
-                $output[$key]['variants']['minimumPrice']['finalPrice'] = $row['finalPrice'];
-                // Product.Variants are deprecated. Variant.Selections not used anymore
-                $output[$key]['variants']['selections'] = [];
             }
         } catch (\Exception $exception) {
             $this->logger->error($exception->getMessage(), ['exception' => $exception]);

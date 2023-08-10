@@ -91,18 +91,24 @@ $createBundleProduct = static function (
                     [
                         'sku' => $product->getSku(),
                         'selection_qty' => 1,
+                        'selection_price_value' => 10,
+                        'selection_price_type' => 0,
                         'selection_can_change_qty' => 1,
                         'delete' => '',
                     ],
                     [
                         'sku' => $product2->getSku(),
                         'selection_qty' => 1,
+                        'selection_price_value' => 25,
+                        'selection_price_type' => 1,
                         'selection_can_change_qty' => 1,
                         'delete' => '',
                     ],
                     [
                         'sku' => $product3->getSku(),
                         'selection_qty' => 1,
+                        'selection_price_value' => 50,
+                        'selection_price_type' => 1,
                         'selection_can_change_qty' => 1,
                         'delete' => '',
                     ],
@@ -202,6 +208,7 @@ $bundleFixedTierPrice = $createBundleProduct(
 // Create TierPrice
 $tierPriceExtensionAttributesFirstWs = $tierPriceExtensionAttributesFactory->create()->setWebsiteId($firstWebsiteId);
 $tierPriceExtensionAttributesSecondWs = $tierPriceExtensionAttributesFactory->create()->setWebsiteId($secondWebsiteId);
+$tierPriceExtensionAttributesSecondWs->setPercentageValue(10);
 
 /** First website tier prices */
 $productTierPrices[] = $tierPriceFactory->create([
@@ -225,7 +232,6 @@ $productTierPrices[] = $tierPriceFactory->create([
 $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => \Magento\Customer\Model\Group::CUST_GROUP_ALL,
-        'percentage_value'=> null,
         'qty'=> 1,
         'value'=> 14.14
     ]
@@ -233,7 +239,6 @@ $productTierPrices[] = $tierPriceFactory->create([
 $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => \Magento\Customer\Model\Group::NOT_LOGGED_IN_ID,
-        'percentage_value'=> null,
         'qty'=> 1,
         'value'=> 13.13
     ]

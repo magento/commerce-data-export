@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Magento\ProductReviewDataExporter\Model\Indexer;
 
+use Magento\DataExporter\Model\FeedExportStatus;
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\DataExporter\Model\Indexer\DataSerializerInterface;
 
@@ -50,12 +52,13 @@ class RatingDataSerializer implements DataSerializerInterface
      * Serialize feed data
      *
      * @param array $data
-     *
+     * @param ?FeedExportStatus $exportStatus
+     * @param FeedIndexMetadata $metadata
      * @return array
      *
-     * @throws \InvalidArgumentException
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function serialize(array $data): array
+    public function serialize(array $data, ?FeedExportStatus $exportStatus, FeedIndexMetadata $metadata): array
     {
         $output = [];
         foreach ($data as $row) {

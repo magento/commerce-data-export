@@ -53,7 +53,7 @@ class ExportComplexProductPriceTest extends TestCase
         parent::__construct($name, $data, $dataName);
         $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
-        $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('productPrices');
+        $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('prices');
         $this->resourceConnection = Bootstrap::getObjectManager()->create(ResourceConnection::class);
     }
 
@@ -65,7 +65,6 @@ class ExportComplexProductPriceTest extends TestCase
      */
     public function testExportBundleFixedProductsPrices(array $expectedBundleFixedProductPricesDataProvider): void
     {
-        self::markTestSkipped('Will be implemented in https://jira.corp.adobe.com/browse/DCAT-640');
         $this->checkExpectedItemsAreExportedInFeed($expectedBundleFixedProductPricesDataProvider);
     }
 
@@ -136,10 +135,10 @@ class ExportComplexProductPriceTest extends TestCase
                         'sku' => 'bundle_fixed_product_with_regular_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
-                        'regular' => 100.1,
+                        'regular' => 105.1,
                         'deleted' => false,
                         'discounts' => null,
-                        'type' => 'BUNDLE'
+                        'type' => 'BUNDLE_FIXED'
                     ],
                     [
                         'sku' => 'bundle_fixed_product_with_regular_price',
@@ -148,61 +147,61 @@ class ExportComplexProductPriceTest extends TestCase
                         'regular' => 105.1,
                         'deleted' => false,
                         'discounts' => null,
-                        'type' => 'BUNDLE'
+                        'type' => 'BUNDLE_FIXED'
                     ],
                     [
                         'sku' => 'bundle_fixed_product_with_special_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
-                        'regular' => 150.15,
+                        'regular' => 155.15,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'special_price', 'price' => 50.5]],
-                        'type' => 'BUNDLE'
+                        'discounts' => [0 => ['code' => 'special_price', 'percentage' => 55.55]],
+                        'type' => 'BUNDLE_FIXED'
                     ],
                     [
                         'sku' => 'bundle_fixed_product_with_special_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
-                        'regular' => 150.15,
+                        'regular' => 155.15,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
-                        'type' => 'BUNDLE'
+                        'discounts' => [0 => ['code' => 'special_price', 'percentage' => 55.55]],
+                        'type' => 'BUNDLE_FIXED'
                     ],
                     [
                         'sku' => 'bundle_fixed_product_with_tier_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
-                        'regular' => 150.15,
+                        'regular' => 100.1,
                         'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
-                        'type' => 'BUNDLE'
+                        'type' => 'BUNDLE_FIXED'
                     ],
                     [
                         'sku' => 'bundle_fixed_product_with_tier_price',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
-                        'regular' => 150.15,
+                        'regular' => 100.1,
                         'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
-                        'type' => 'BUNDLE'
+                        'type' => 'BUNDLE_FIXED'
                     ],
                     [
                         'sku' => 'bundle_fixed_product_with_tier_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
-                        'regular' => 150.15,
+                        'regular' => 100.1,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
-                        'type' => 'BUNDLE'
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
+                        'type' => 'BUNDLE_FIXED'
                     ],
                     [
                         'sku' => 'bundle_fixed_product_with_tier_price',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'test',
-                        'regular' => 150.15,
+                        'regular' => 100.1,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
-                        'type' => 'BUNDLE'
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
+                        'type' => 'BUNDLE_FIXED'
                     ],
                 ]
             ]

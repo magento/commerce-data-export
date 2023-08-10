@@ -25,12 +25,13 @@
         <field name="type" type="String"/>
         <field name="sku" type="String"/>
     </record>
-    <record name="DiscountPrice">
+    <record name="DiscountPrice" skipNull="true">
         <field name="code" type="String"/>
-        <field name="price" type="Float"/>
+        <field name="price" type="Float" />
+        <field name="percentage" type="Float" />
     </record>
     <record name="Export">
-        <field name="productPrices" type="ProductPriceV2" repeated="true"
+        <field name="prices" type="ProductPriceV2" repeated="true"
                provider="Magento\ProductPriceDataExporter\Model\Provider\ProductPrice">
             <using field="productPriceId"/>
         </field>

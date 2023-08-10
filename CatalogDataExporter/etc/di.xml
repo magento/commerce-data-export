@@ -227,6 +227,22 @@
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
                 <item name="sku" xsi:type="string">sku</item>
             </argument>
+            <argument name="exportImmediately" xsi:type="boolean">true</argument>
+            <argument name="persistExportedFeed" xsi:type="init_parameter">Magento\DataExporter\Model\ExportFeedInterface::PERSIST_EXPORTED_FEED</argument>
+
+            <argument name="minimalPayload" xsi:type="array">
+                <item name="productId" xsi:type="string">productId</item>
+                <item name="sku" xsi:type="string">sku</item>
+                <item name="storeViewCode" xsi:type="string">storeViewCode</item>
+                <item name="storeCode" xsi:type="string">storeCode</item>
+                <item name="websiteCode" xsi:type="string">websiteCode</item>
+            </argument>
+
+            <argument name="feedIdentifierMapping" xsi:type="array">
+                <item name="id" xsi:type="string">productId</item>
+                <item name="store_view_code" xsi:type="string">storeViewCode</item>
+            </argument>
+
         </arguments>
     </virtualType>
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
@@ -239,10 +255,21 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedMarkRemovedEntities" type="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
+        <arguments>
+            <argument name="markRemovedEntitiesQuery" xsi:type="object">Magento\CatalogDataExporter\Model\Query\MarkRemovedEntitiesQuery</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexProcessorCreateUpdateDelete" type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
+        <arguments>
+            <argument name="markRemovedEntities" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedMarkRemovedEntities</argument>
+        </arguments>
+    </virtualType>
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductDataSerializer</argument>
+            <argument name="processor" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexProcessorCreateUpdateDelete</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\CatalogDataExporter\Model\ProductFeed" type="Magento\DataExporter\Model\Feed">
@@ -462,22 +489,6 @@
     <type name="Magento\Config\Model\Config">
         <plugin name="invalidate_feed_index_on_config_change" type="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnConfigChange" />
     </type>
-    <type name="Magento\Catalog\Model\ResourceModel\Product\Website\Link">
-        <plugin name="set_products_as_deleted_for_unassigned_websites" type="Magento\CatalogDataExporter\Plugin\Product\WebsiteUnassign" />
-    </type>
-    <type name="Magento\Catalog\Model\Product\Action">
-        <plugin name="set_products_as_deleted_for_bulk_unassigned_websites" type="Magento\CatalogDataExporter\Plugin\Product\BulkWebsiteUnassign" />
-    </type>
-    <type name="Magento\CatalogDataExporter\Plugin\Product\WebsiteUnassign">
-        <arguments>
-            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
-        </arguments>
-    </type>
-    <type name="Magento\CatalogDataExporter\Plugin\Product\BulkWebsiteUnassign">
-        <arguments>
-            <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
-        </arguments>
-    </type>
     <type name="Magento\CatalogDataExporter\Model\Query\ProductExporterFeedQuery">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
@@ -511,17 +522,18 @@
         <plugin name="data-exporter-reset-triggers" type="Magento\CatalogDataExporter\Plugin\DDLTrigger\ResetTriggers" />
     </type>
 
-    <!-- Solution for command indexer:set-dimensions-mode -->
-    <type name="Magento\Catalog\Model\Indexer\Product\Price\TableMaintainer">
-        <plugin name="data-exporter-create-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreateViewAfterTableMaintenance" />
-    </type>
-    <type name="Magento\Catalog\Model\Indexer\Product\Price\ModeSwitcher">
-        <plugin name="data-exporter-mode-price-view" type="Magento\CatalogDataExporter\Plugin\Index\CreateViewAfterSwitchDimensionMode" />
-    </type>
-    <type name="Magento\Catalog\Model\Indexer\Product\Price\ModeSwitcherConfiguration">
-        <plugin name="data-exporter-config-price-view" type="Magento\CatalogDataExporter\Plugin\Index\SaveNewPriceIndexerMode" />
-    </type>
     <type name="Magento\Setup\Model\FixtureGenerator\SqlCollector">
         <plugin name="exporter-filter-changelog-table" type="Magento\CatalogDataExporter\Plugin\FilterChangeLogTable"/>
     </type>
+
+    <type name="Magento\DataExporter\Model\FeedMetadataPool">
+        <arguments>
+            <argument name="classMap" xsi:type="array">
+                <item name="products" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</item>
+                <item name="productAttributes" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndexMetadata</item>
+                <item name="categories" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata</item>
+            </argument>
+        </arguments>
+    </type>
+
 </config>

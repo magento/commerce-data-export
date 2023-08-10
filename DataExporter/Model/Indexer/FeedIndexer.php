@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
+use Magento\DataExporter\Model\ExportFeedInterface;
 use Magento\Framework\Indexer\ActionInterface as IndexerActionInterface;
 use Magento\Framework\Mview\ActionInterface as MviewActionInterface;
 

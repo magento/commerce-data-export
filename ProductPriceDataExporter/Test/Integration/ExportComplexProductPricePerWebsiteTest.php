@@ -53,7 +53,7 @@ class ExportComplexProductPricePerWebsiteTest extends TestCase
         parent::__construct($name, $data, $dataName);
         $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
-        $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('productPrices');
+        $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('prices');
         $this->resourceConnection = Bootstrap::getObjectManager()->create(ResourceConnection::class);
     }
 
@@ -151,15 +151,6 @@ class ExportComplexProductPricePerWebsiteTest extends TestCase
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 100.1,
-                        'deleted' => false,
-                        'discounts' => null,
-                        'type' => 'BUNDLE'
-                    ],
-                    [
-                        'sku' => 'bundle_fixed_product_with_regular_price',
-                        'customerGroupCode' => '0',
-                        'websiteCode' => 'test',
-                        'regular' => 105.1,
                         'deleted' => false,
                         'discounts' => null,
                         'type' => 'BUNDLE'

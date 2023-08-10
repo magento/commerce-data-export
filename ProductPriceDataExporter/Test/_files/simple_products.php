@@ -107,21 +107,22 @@ $productRepository->save(
 
 // Create TierPrice
 $tierPriceExtensionAttributesFirstWs = $tierPriceExtensionAttributesFactory->create()->setWebsiteId($firstWebsiteId);
+$tierPriceExtensionAttributesFirstWsFirstGroup = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($firstWebsiteId);
+$tierPriceExtensionAttributesFirstWsFirstGroup->setPercentageValue(10);
 $tierPriceExtensionAttributesSecondWs = $tierPriceExtensionAttributesFactory->create()->setWebsiteId($secondWebsiteId);
 
 /** First website tier prices */
 $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => Group::CUST_GROUP_ALL,
-        'percentage_value'=> null,
         'qty'=> 1,
-        'value'=> 16.16
     ]
-])->setExtensionAttributes($tierPriceExtensionAttributesFirstWs);
+])->setExtensionAttributes($tierPriceExtensionAttributesFirstWsFirstGroup);
+
 $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => Group::NOT_LOGGED_IN_ID,
-        'percentage_value'=> null,
         'qty'=> 1,
         'value'=> 15.15
     ]

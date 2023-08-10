@@ -9,48 +9,76 @@ namespace Magento\DataExporter\Model\Indexer;
 
 /**
  * Feed indexer metadata provider
+ *
+ * @SuppressWarnings(PHPMD.TooManyFields)
  */
 class FeedIndexMetadata
 {
+    public const FEED_TABLE_FIELD_IS_DELETED = 'is_deleted';
+    public const FEED_TABLE_FIELD_MODIFIED_AT = 'modified_at';
+    public const FEED_TABLE_FIELD_FEED_HASH = 'feed_hash';
+    public const FEED_TABLE_FIELD_FEED_DATA = 'feed_data';
+    public const FEED_TABLE_FIELD_STATUS = 'status';
+    public const FEED_TABLE_FIELD_ERRORS = 'errors';
     /**
-     * @var string
+     * Default columns that must be updated each time when feed persisted to storage
      */
-    protected $feedName;
+    private const FEED_TABLE_MUTABLE_COLUMNS_DEFAULT = [
+        self::FEED_TABLE_FIELD_FEED_DATA => self::FEED_TABLE_FIELD_FEED_DATA,
+        self::FEED_TABLE_FIELD_IS_DELETED => self::FEED_TABLE_FIELD_IS_DELETED,
+        self::FEED_TABLE_FIELD_FEED_HASH => self::FEED_TABLE_FIELD_FEED_HASH,
+        self::FEED_TABLE_FIELD_STATUS => self::FEED_TABLE_FIELD_STATUS,
+        self::FEED_TABLE_FIELD_ERRORS => self::FEED_TABLE_FIELD_ERRORS,
+        self::FEED_TABLE_FIELD_MODIFIED_AT => self::FEED_TABLE_FIELD_MODIFIED_AT
+    ];
+
+    /**
+     * Default feed fields that have to be excluded from hash calculation
+     */
+    private const EXCLUDE_FROM_HASH_FIELDS_DEFAULT = [
+        'modifiedAt',
+        'updatedAt'
+    ];
 
     /**
      * @var string
      */
-    protected $sourceTableName;
+    private $feedName;
 
     /**
      * @var string
      */
-    protected $sourceTableField;
+    private $sourceTableName;
 
     /**
      * @var string
      */
-    protected $feedIdentity;
+    private $sourceTableField;
 
     /**
      * @var string
      */
-    protected $feedTableName;
+    private $feedIdentity;
 
     /**
      * @var string
      */
-    protected $feedTableField;
+    private $feedTableName;
+
+    /**
+     * @var string
+     */
+    private $feedTableField;
 
     /**
      * @var string[]
      */
-    protected $feedTableMutableColumns;
+    private $feedTableMutableColumns;
 
     /**
      * @var int
      */
-    protected $batchSize;
+    private $batchSize;
 
     /**
      * Field used in WHERE & ORDER statement during select IDs from source table
@@ -80,6 +108,25 @@ class FeedIndexMetadata
     private bool $truncateFeedOnFullReindex;
 
     /**
+     * @var bool
+     */
+    private bool $exportImmediately;
+
+    /**
+     * @var bool
+     */
+    private bool $persistExportedFeed;
+
+    /**
+     * @var array
+     */
+    private array $minimalPayload;
+
+    private array $excludeFromHashFields;
+
+    private array $feedIdentifierMapping;
+
+    /**
      * @param string $feedName
      * @param string $sourceTableName
      * @param string $sourceTableField
@@ -88,9 +135,18 @@ class FeedIndexMetadata
      * @param string $feedTableField
      * @param array $feedTableMutableColumns
      * @param int $batchSize
+     * @param int $feedOffsetLimit
      * @param string|null $sourceTableIdentityField
      * @param int $fullReIndexSecondsLimit
      * @param string $sourceTableFieldOnFullReIndexLimit
+     * @param bool $truncateFeedOnFullReindex
+     * @param array $feedIdentifierMapping
+     * @param array $minimalPayload
+     * @param array $excludeFromHashFields
+     * @param bool $exportImmediately
+     * @param bool $persistExportedFeed
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         string $feedName,
@@ -99,13 +155,18 @@ class FeedIndexMetadata
         string $feedIdentity,
         string $feedTableName,
         string $feedTableField,
-        array $feedTableMutableColumns,
+        array $feedTableMutableColumns = [],
         int $batchSize = 100,
         int $feedOffsetLimit = 100,
         string $sourceTableIdentityField = null,
         int $fullReIndexSecondsLimit = 0,
         string $sourceTableFieldOnFullReIndexLimit = 'updated_at',
-        bool $truncateFeedOnFullReindex = true
+        bool $truncateFeedOnFullReindex = true,
+        array $feedIdentifierMapping = [],
+        array $minimalPayload = [],
+        array $excludeFromHashFields = [],
+        bool $exportImmediately = false,
+        bool $persistExportedFeed = false
     ) {
         $this->feedName = $feedName;
         $this->sourceTableName = $sourceTableName;
@@ -113,13 +174,25 @@ class FeedIndexMetadata
         $this->feedIdentity = $feedIdentity;
         $this->feedTableName = $feedTableName;
         $this->feedTableField = $feedTableField;
-        $this->feedTableMutableColumns = $feedTableMutableColumns;
+        $this->feedTableMutableColumns = array_unique(array_merge(
+            $feedTableMutableColumns,
+            self::FEED_TABLE_MUTABLE_COLUMNS_DEFAULT
+        ));
         $this->batchSize = $batchSize;
         $this->sourceTableIdentityField = $sourceTableIdentityField ?? $sourceTableField;
         $this->fullReindexSecondsLimit = $fullReIndexSecondsLimit;
         $this->sourceTableFieldOnFullReIndexLimit = $sourceTableFieldOnFullReIndexLimit;
         $this->feedOffsetLimit = $feedOffsetLimit;
         $this->truncateFeedOnFullReindex = $truncateFeedOnFullReindex;
+        $this->exportImmediately = $exportImmediately;
+        $this->persistExportedFeed = $persistExportedFeed;
+        $this->minimalPayload = $minimalPayload;
+        $this->excludeFromHashFields = array_unique(array_merge(
+            $excludeFromHashFields,
+            self::EXCLUDE_FROM_HASH_FIELDS_DEFAULT
+        ));
+
+        $this->feedIdentifierMapping = $feedIdentifierMapping;
     }
 
     /**
@@ -214,6 +287,7 @@ class FeedIndexMetadata
 
     /**
      * Determines the amount of seconds back in time when triggering a full reindex
+     *
      * @return int the amount in seconds, 0 means no limit
      */
     public function getFullReIndexSecondsLimit(): int
@@ -223,6 +297,7 @@ class FeedIndexMetadata
 
     /**
      * Table field name to use when full reindex is limited (see fullReindexSecondsLimit)
+     *
      * @return string the field name
      */
     public function getSourceTableFieldOnFullReIndexLimit(): string
@@ -248,5 +323,55 @@ class FeedIndexMetadata
     public function isTruncateFeedOnFullReindex(): bool
     {
         return $this->truncateFeedOnFullReindex;
+    }
+
+    /**
+     * Check is export immediately
+     *
+     * @return bool
+     */
+    public function isExportImmediately(): bool
+    {
+        return $this->exportImmediately;
+    }
+
+    /**
+     * Check is persist exported feed
+     *
+     * @return bool
+     */
+    public function isPersistExportedFeed(): bool
+    {
+        return $this->persistExportedFeed;
+    }
+
+    /**
+     * Bare minimum list of fields. Used to send request with deleted entity
+     *
+     * @return array
+     */
+    public function getMinimalPayloadFieldsList(): array
+    {
+        return $this->minimalPayload;
+    }
+
+    /**
+     * Get feed identifier mapping fields
+     *
+     * @return array
+     */
+    public function getFeedIdentifierMappingFields(): array
+    {
+        return $this->feedIdentifierMapping;
+    }
+
+    /**
+     * Get exclude from hash fields
+     *
+     * @return array
+     */
+    public function getExcludeFromHashFields(): array
+    {
+        return $this->excludeFromHashFields;
     }
 }

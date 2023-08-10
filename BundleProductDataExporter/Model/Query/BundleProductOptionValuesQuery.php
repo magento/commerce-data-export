@@ -114,6 +114,8 @@ class BundleProductOptionValuesQuery
                 'id' => 'main_table.selection_id',
                 'sort_order' => 'main_table.position',
                 'default' => 'main_table.is_default',
+                'price_type' => 'main_table.selection_price_type',
+                'price_value' => 'main_table.selection_price_value',
                 'attribute_id' => 'name_default.attribute_id',
                 'qty' => 'main_table.selection_qty',
                 'qty_mutability' => 'main_table.selection_can_change_qty',

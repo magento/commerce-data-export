@@ -24,6 +24,7 @@
         "magento/module-downloadable": ">=100.4.4",
         "magento/module-catalog-rule": ">=101.2.4",
         "magento/module-catalog": ">=104.0.4",
+        "magento/module-bundle": ">=101.0.4",
         "magento/module-data-exporter": "self.version"
     }
 }

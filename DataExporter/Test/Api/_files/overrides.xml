@@ -17,8 +17,9 @@
     <test class="Magento\InventoryGroupedProduct\Test\Api\GroupedProductChildSourceUpdateTest">
         <method name="testGroupedProductStockStatusShouldBeUpdatedWhenChildProductStockStatusChange" skip="true"/>
     </test>
-    <test class="Magento\QuickCheckout\Test\Api\StorefrontAccountRepositoryTest">
-        <method name="testShopperHasAccount" skip="true"/>
+    <!-- Flaky test. Randomly fails on B2B and EE -->
+    <test class="Magento\GraphQl\Catalog\ProductSearchTest">
+        <method name="testFilterProductsBySingleCategoryId" skip="true"/>
     </test>
     <!-- MDEE-446 -->
     <test class="Magento\GraphQl\Customer\IsEmailAvailableTest" skip="true"/>

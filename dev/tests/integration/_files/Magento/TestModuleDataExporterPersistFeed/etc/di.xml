@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!--Override DI configuration for DataExporter modules which are supposed to send feeds immediately (instead of collecting them in the data exporter tables)-->
+    <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="persistExportedFeed" xsi:type="boolean">true</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="persistExportedFeed" xsi:type="boolean">true</argument>
+        </arguments>
+    </virtualType>
+</config>

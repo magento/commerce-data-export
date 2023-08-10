@@ -53,7 +53,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
         parent::__construct($name, $data, $dataName);
         $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
-        $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('productPrices');
+        $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('prices');
         $this->resourceConnection = Bootstrap::getObjectManager()->create(ResourceConnection::class);
     }
 
@@ -151,7 +151,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'websiteCode' => 'base',
                         'regular' => 100.1,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
                         'type' => 'SIMPLE'
                     ],
                     [

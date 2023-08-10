@@ -26,6 +26,7 @@ use Magento\Store\Api\WebsiteRepositoryInterface;
 use Magento\Store\Api\GroupRepositoryInterface;
 use Magento\Tax\Model\TaxClass\Source\Product as TaxClassSource;
 use Magento\TestFramework\Helper\Bootstrap;
+use function PHPUnit\Framework\assertEmpty;
 
 /**
  * Abstract Class AbstractProductTestHelper
@@ -166,56 +167,19 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Get the pricing data for product and website
-     *
-     * @param ProductInterface $product
-     * @return array
-     * @throws LocalizedException
-     * @throws \Zend_Db_Statement_Exception
-     */
-    protected function getPricingData(ProductInterface $product) : array
-    {
-        $query = $this->connection->select()
-            ->from(['p' => 'catalog_product_index_price'])
-            ->where('p.entity_id = ?', $product->getId())
-            ->where('p.customer_group_id = 0')
-            ->where('p.website_id = ?', $this->storeManager->getWebsite()->getId());
-        $cursor = $this->connection->query($query);
-        $data = [];
-        while ($row = $cursor->fetch()) {
-            $data['price'] = $row['price'];
-            $data['final_price'] = $row['final_price'];
-            $data['min_price'] = $row['min_price'];
-            $data['max_price'] = $row['max_price'];
-        }
-        return $data;
-    }
-
-    /**
      * Validate pricing data in extracted product data
      *
-     * @param ProductInterface $product
      * @param array $extractedProduct
      * @return void
      * @throws NoSuchEntityException
      * @throws LocalizedException
      * @throws \Zend_Db_Statement_Exception
      */
-    protected function validatePricingData(ProductInterface $product, array $extractedProduct) : void
+    protected function validatePricingData(array $extractedProduct) : void
     {
-        $pricingData = $this->getPricingData($product);
         $currencyCode = $this->storeManager->getStore()->getCurrentCurrency()->getCode();
 
         $this->assertEquals($currencyCode, $extractedProduct['feedData']['currency']);
-        if ($product->getStatus() == 1) {
-            $extractedPricingData = $extractedProduct['feedData']['prices'];
-            $this->assertEquals($pricingData['price'], $extractedPricingData['minimumPrice']['regularPrice']);
-            $this->assertEquals($pricingData['final_price'], $extractedPricingData['minimumPrice']['finalPrice']);
-            $this->assertEquals($pricingData['max_price'], $extractedPricingData['maximumPrice']['regularPrice']);
-            $this->assertEquals($pricingData['max_price'], $extractedPricingData['maximumPrice']['finalPrice']);
-        } else {
-            $this->assertEquals(null, $extractedProduct['feedData']['prices']);
-        }
     }
 
     /**
