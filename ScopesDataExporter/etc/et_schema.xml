@@ -55,14 +55,9 @@
         <field name="customerGroupId" type="ID"/>
         <field name="customerGroupCode" type="String"/>
         <field name="websites"
-               type="CustomerGroupWebsite"
+               type="String"
                repeated="true"
                provider="Magento\ScopesDataExporter\Model\Provider\ScopesCustomerGroupWebsitesProvider">
         </field>
-    </record>
-
-    <record name="CustomerGroupWebsite">
-        <field name="websiteId" type="ID"/>
-        <field name="websiteCode" type="String"/>
     </record>
 </config>

@@ -66,12 +66,13 @@ class ScopesCustomerGroupWebsitesProvider
     {
         $result = [];
         $field = $node->getField()['name'];
+        $indexField = $this->queryBuilder->getIndexField();
         $dbStatement = $this->queryBuilder->getDbStatement($values);
         while ($row = $dbStatement->fetch()) {
             $this->changeRecordKeysToCamelCase($row);
             $index = [];
-            $index[$this->queryBuilder->getIndexField()] = $row[$this->queryBuilder->getIndexField()] ?? null;
-            $result[] = array_merge($index, [$field => $row]);
+            $index[$indexField] = $row[$indexField] ?? null;
+            $result[] = array_merge($index, [$field => $row['websiteCode']]);
         }
         return $result;
     }

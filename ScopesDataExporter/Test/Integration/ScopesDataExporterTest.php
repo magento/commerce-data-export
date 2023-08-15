@@ -33,16 +33,12 @@ final class ScopesDataExporterTest extends TestCase
         [
             "customerGroupId" => "0",
             "customerGroupCode" => "b6589fc6ab0dc82cf12099d1c2d40ab994e8410c",
-            "websites" => [
-                ["websiteId" => "1", "websiteCode" => "base"]
-            ]
+            "websites" => ["base"]
         ],
         [
             "customerGroupId" => "1",
             "customerGroupCode" => "356a192b7913b04c54574d18c28d46e6395428ab",
-            "websites" => [
-                ["websiteId" => 1, "websiteCode" => "base"]
-            ]
+            "websites" => ["base"]
         ]
     ];
 

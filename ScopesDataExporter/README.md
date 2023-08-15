@@ -67,16 +67,7 @@ there's a change in the observed tables.
 ```javascript
 {
     "customerGroupId": "0",
-    "customerGroupCode": "customer-group-0",
-    "websites": [
-        {
-            "websiteId": "1",
-            "websiteCode": "site-1"
-        },
-        {
-            "websiteId": "2",
-            "websiteCode": "site-2"
-        }
-    ]
+    "customerGroupCode": "customer-group-0", // sha1(customerGroupId)
+    "websites": ["site-1", "site-2"]
 }
 ```

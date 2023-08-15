@@ -33,7 +33,6 @@ class ScopesCustomerGroupWebsitesQuery
         )
         select
             scg.customer_group_id,
-            sws.website_id,
             sws.website_code
         from
             scope_websites_v sws
