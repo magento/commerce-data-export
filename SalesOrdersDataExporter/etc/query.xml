@@ -21,7 +21,7 @@
             <attribute name="base_subtotal" alias="subtotal" />
             <attribute name="base_grand_total" alias="grandTotal" />
             <attribute name="base_discount_amount" alias="discountAmount" />
-            <attribute name="order_currency_code" alias="currency" />
+            <attribute name="base_currency_code" alias="currency" />
             <attribute name="store_id" alias="storeId" />
             <attribute name="customer_email" alias="customerEmail" />
             <attribute name="customer_note" alias="customerNote" />
@@ -50,8 +50,8 @@
             <!-- for Shipping type start -->
             <attribute name="shipping_method" alias="shippingMethodCode" />
             <attribute name="shipping_description" alias="shippingMethodName" />
-            <attribute name="shipping_amount" alias="shippingAmount" />
-            <attribute name="shipping_tax_amount" alias="shippingTax" />
+            <attribute name="base_shipping_amount" alias="shippingAmount" />
+            <attribute name="base_shipping_tax_amount" alias="shippingTax" />
             <!-- for Shipping type end -->
 
             <!-- select orders only with assigned UUID. DO NOT change inner to left! -->
@@ -103,9 +103,9 @@
             <attribute name="qty_ordered" alias="qty" />
             <attribute name="base_price" alias="unitPrice" />
             <attribute name="base_row_total" alias="itemPrice" />
-            <attribute name="discount_amount" alias="discountAmount" />
-            <attribute name="tax_amount" alias="taxAmount" />
-            <attribute name="row_total_incl_tax" alias="totalAmount" />
+            <attribute name="base_discount_amount" alias="discountAmount" />
+            <attribute name="base_tax_amount" alias="taxAmount" />
+            <attribute name="base_row_total_incl_tax" alias="totalAmount" />
             <attribute name="weight" />
             <attribute name="additional_data" alias="additionalInformation" />
             <attribute name="updated_at" alias="updatedAt" />
@@ -264,14 +264,11 @@
     <query name="salesRefundItemV2">
         <source name="sales_creditmemo_item">
             <attribute name="parent_id" alias="linkCreditMemoId" />
-            <attribute name="qty" />
-            <attribute name="base_price" />
-            <attribute name="base_row_total" />
-            <attribute name="discount_amount" />
+            <attribute name="qty" alias="qtyRefunded" />
+            <attribute name="base_price" alias="basePrice" />
+            <attribute name="base_discount_amount" alias="baseDiscountAmount" />
             <attribute name="order_item_id" />
             <attribute name="entity_id" alias="entityId" />
-            <attribute name="qty" alias="qtyRefunded" />
-            <attribute name="price" alias="basePrice" />
             <filter glue="and">
                 <!-- parent_id => sales_creditmemo.entity_id -->
                 <condition attribute="parent_id" operator="in" type="placeholder">linkCreditMemoId</condition>
@@ -290,7 +287,7 @@
             <attribute name="order_id" />
             <attribute name="tax_id" alias="taxId" />
             <attribute name="title" alias="taxName" />
-            <attribute name="amount" alias="taxAmount" />
+            <attribute name="base_amount" alias="taxAmount" />
             <link-source name="sales_order_tax_item" link-type="inner">
                 <attribute name="taxable_item_type" alias="taxType" group="true" />
                 <using glue="and">

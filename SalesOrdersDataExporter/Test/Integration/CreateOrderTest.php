@@ -552,7 +552,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
             'subtotal' => $order->getBaseSubtotal(),
             'grandTotal' => $order->getBaseGrandTotal(),
             'discountAmount' => $order->getBaseDiscountAmount(),
-            'currency' => $order->getOrderCurrencyCode(),
+            'currency' => $order->getBaseCurrencyCode(),
             'amountPaid' => $order->getPayment()->getBaseAmountPaid(),
             'storeViewCode' => $order->getStore()->getCode(),
             'websiteCode' => $order->getStore()->getWebsite()->getCode(),
@@ -590,8 +590,8 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 ],
                 'shippingMethodName' => $order->getShippingDescription(),
                 'shippingMethodCode' => $order->getShippingMethod(),
-                'shippingAmount'      => $order->getShippingAmount(),
-                'shippingTax'         => $order->getShippingTaxAmount(),
+                'shippingAmount'     => $order->getBaseShippingAmount(),
+                'shippingTax'        => $order->getBaseShippingTaxAmount(),
             ]
         ];
     }
@@ -650,9 +650,9 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 'qty' => $orderItem->getQtyOrdered(),
                 'unitPrice' => $orderItem->getBasePrice(),
                 'itemPrice' => $orderItem->getBaseRowTotal(),
-                'discountAmount' => $orderItem->getDiscountAmount(),
-                'taxAmount' => $orderItem->getTaxAmount(),
-                'totalAmount' => $orderItem->getRowTotalInclTax(),
+                'discountAmount' => $orderItem->getBaseDiscountAmount(),
+                'taxAmount' => $orderItem->getBaseTaxAmount(),
+                'totalAmount' => $orderItem->getBaseRowTotalInclTax(),
                 'weight' => $orderItem->getWeight(),
                 'additionalInformation' => $this->getExpectedItemAdditionalInformationData($orderItem)
             ];

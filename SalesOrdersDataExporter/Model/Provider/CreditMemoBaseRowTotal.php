@@ -8,9 +8,6 @@ declare(strict_types=1);
 
 namespace Magento\SalesOrdersDataExporter\Model\Provider;
 
-use Magento\Framework\Url\Encoder;
-use Magento\Framework\UrlInterface;
-
 /**
  * Class for getting credit memo base row total
  */
@@ -29,7 +26,7 @@ class CreditMemoBaseRowTotal
         foreach ($values as $group) {
             foreach ($group as $refundItem) {
                 $output[$refundItem['entityId']]['baseRowTotal']
-                    = $refundItem['qty'] * $refundItem['base_price'] - $refundItem['discount_amount'];
+                    = $refundItem['qtyRefunded'] * $refundItem['basePrice'] - $refundItem['baseDiscountAmount'];
                 $output[$refundItem['entityId']]['entityId'] = $refundItem['entityId'];
             }
         }
