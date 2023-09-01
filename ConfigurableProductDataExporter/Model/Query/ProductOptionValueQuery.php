@@ -47,7 +47,8 @@ class ProductOptionValueQuery
                 ['eao' => $this->resourceConnection->getTableName('eav_attribute_option')],
                 [
                     'attribute_id' => 'eao.attribute_id',
-                    'optionId' => 'eao.option_id'
+                    'optionId' => 'eao.option_id',
+                    'sortOrder' => 'eao.sort_order'
                 ]
             )
             ->join(

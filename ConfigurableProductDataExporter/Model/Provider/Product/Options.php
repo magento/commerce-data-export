@@ -153,6 +153,7 @@ class Options implements OptionProviderInterface
             $data[$row['attribute_id']][$row['storeViewCode']][$row['optionId']] = [
                 'id' => $this->optionValueUid->resolve($row['attribute_id'], $row['optionId']),
                 'label' => $row['label'],
+                'sortOrder' => $row['sortOrder'],
                 'colorHex' => $row['swatchType'] == Swatch::SWATCH_TYPE_VISUAL_COLOR
                     ? $row['swatchValue'] : null,
                 'imageUrl' => $row['swatchType'] == Swatch::SWATCH_TYPE_VISUAL_IMAGE
