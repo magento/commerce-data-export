@@ -92,22 +92,24 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             $arguments[] = [$feedIdentity => $id];
         }
         $this->modifiedAtTimeInDBFormat = (new \DateTime())->format(self::MODIFIED_AT_FORMAT);
-        $data = $this->exportProcessor->process($metadata->getFeedName(), $arguments);
+        foreach (\array_chunk($arguments, $metadata->getBatchSize()) as $chunk) {
+            $data = $this->exportProcessor->process($metadata->getFeedName(), $chunk);
 
-        $exportStatus = null;
-        if ($metadata->isExportImmediately()) {
-            $feedItemsToDelete = $callback !== null ? $callback() : [];
-            $data = $this->prepareFeedBeforeSubmit($data, $feedItemsToDelete, $metadata);
-            if (empty($data)) {
-                return;
+            $exportStatus = null;
+            if ($metadata->isExportImmediately()) {
+                $feedItemsToDelete = $callback !== null ? $callback() : [];
+                $data = $this->prepareFeedBeforeSubmit($data, $feedItemsToDelete, $metadata);
+                if (empty($data)) {
+                    return;
+                }
+                $exportStatus = $this->exportFeedProcessor->export(
+                    array_column($data, 'feed'),
+                    $metadata
+                );
             }
-            $exportStatus = $this->exportFeedProcessor->export(
-                array_column($data, 'feed'),
-                $metadata
-            );
-        }
 
-        $this->feedUpdater->execute($data, $exportStatus, $metadata, $serializer);
+            $this->feedUpdater->execute($data, $exportStatus, $metadata, $serializer);
+        }
 
         if ($callback !== null && !$metadata->isExportImmediately()) {
             $callback();

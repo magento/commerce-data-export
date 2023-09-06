@@ -54,15 +54,14 @@ class FeedUpdater
             $connection = $this->resourceConnection->getConnection();
 
             $dataForInsert = $serializer->serialize($feedData, $exportStatus, $metadata);
-            $chunks = array_chunk($dataForInsert, $metadata->getBatchSize());
-            foreach ($chunks as $chunk) {
+            if (!empty($dataForInsert)) {
                 $fieldsToUpdateOnDuplicate = array_intersect_key(
                     $metadata->getFeedTableMutableColumns(),
                     $this->getFeedTableColumns($metadata)
                 );
                 $connection->insertOnDuplicate(
                     $this->resourceConnection->getTableName($metadata->getFeedTableName()),
-                    $chunk,
+                    $dataForInsert,
                     $fieldsToUpdateOnDuplicate
                 );
             }
