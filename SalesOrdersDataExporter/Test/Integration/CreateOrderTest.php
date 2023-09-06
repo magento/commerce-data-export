@@ -646,6 +646,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 'productType' => $orderItem->getProductType(),
                 'itemsShippedTogether' => $orderItem->getProductType() === 'configurable',
                 'sku' => $orderItem->getSku(),
+                'productSku' => $orderItem->getProduct()->getSku(),
                 'name' => $orderItem->getName(),
                 'qty' => $orderItem->getQtyOrdered(),
                 'unitPrice' => $orderItem->getBasePrice(),

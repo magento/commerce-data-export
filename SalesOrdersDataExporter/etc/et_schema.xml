@@ -120,6 +120,10 @@
             <using field="entityId" />
         </field>
         <field name="sku" type="String" />
+        <field name="productSku" type="String"
+               provider="Magento\SalesOrdersDataExporter\Model\Provider\Items\OrderItemProductSku">
+            <using field="entityId" />
+        </field>
         <field name="name" type="String" />
         <field name="qty" type="Int" />
         <field name="unitPrice" type="Float" />
