@@ -79,6 +79,52 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     }
 
     /**
+     * Validate configurable product data
+     * @magentoDataFixture Magento_ConfigurableProductDataExporter::Test/_files/setup_configurable_products.php
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @dataProvider outOfStockProducts
+     * @param array $outOfStockSkus
+     * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     * @throws Zend_Db_Statement_Exception
+     */
+    public function testConfigurableProductsWithOutOfStockChilds(array $outOfStockSkus) : void
+    {
+        foreach ($outOfStockSkus as $sku) {
+            $outOfStockProduct = $this->productRepository->get($sku);
+            $extendedAttributes = $outOfStockProduct->getExtensionAttributes();
+            $stockItem = $extendedAttributes->getStockItem();
+            $stockItem->setQty(0);
+            $stockItem->setIsInStock(false);
+            $extendedAttributes->setStockItem($stockItem);
+            $outOfStockProduct->setExtensionAttributes($extendedAttributes);
+            $outOfStockProduct->save();
+        }
+
+        $skus = ['configurable1'];
+        $storeViewCodes = ['default', 'fixture_second_store'];
+
+        foreach ($skus as $sku) {
+            $product = $this->productRepository->get($sku);
+            $product->setTypeInstance(Bootstrap::getObjectManager()->create(Configurable::class));
+
+            foreach ($storeViewCodes as $storeViewCode) {
+                $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
+                $this->validateBaseProductData($product, $extractedProduct, $storeViewCode);
+                $this->validateRealProductData($product, $extractedProduct);
+                $this->validateCategoryData($product, $extractedProduct, $storeViewCode);
+                $this->validatePricingData($extractedProduct);
+                $this->validateImageUrls($product, $extractedProduct);
+                $this->validateAttributeData($product, $extractedProduct);
+                $this->validateOptionsData($product, $extractedProduct);
+                $this->validateVariantsData($product, $extractedProduct);
+            }
+        }
+    }
+
+    /**
      * Validate parent product data
      *
      * @magentoDataFixture Magento_ConfigurableProductDataExporter::Test/_files/setup_configurable_products.php
@@ -160,6 +206,40 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                 $this->validateParentData($product, $extractedProduct, $parentAssignedToStore);
             }
         }
+    }
+
+    /**
+     * @return array[]
+     */
+    public function outOfStockProducts(): array
+    {
+        return [
+            [
+                'all_products_out_of_stock' => [
+                    'simple_option_50',
+                    'simple_option_60',
+                    'simple_option_70',
+                    'simple_option_55',
+                    'simple_option_59',
+                    'simple_option_65'
+                ]
+            ],
+            [
+                'one_option_products_out_of_stock' => [
+                    'simple_option_55',
+                    'simple_option_59',
+                    'simple_option_65'
+                ]
+            ],
+            [
+                'one_product_from_option_out_of_stock' => [
+                    'simple_option_50',
+                    'simple_option_70',
+                    'simple_option_55',
+                    'simple_option_65'
+                ]
+            ]
+        ];
     }
 
     /**

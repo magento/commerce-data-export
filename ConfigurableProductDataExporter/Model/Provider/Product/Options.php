@@ -109,11 +109,6 @@ class Options implements OptionProviderInterface
                 []
             )
             ->join(
-                ['iss' => $this->getTable('cataloginventory_stock_status')],
-                'iss.product_id = psl.product_id AND iss.stock_status = 1',
-                []
-            )
-            ->join(
                 ['cpc' => $this->getTable('catalog_product_entity')],
                 'cpc.entity_id = psl.product_id',
                 []
