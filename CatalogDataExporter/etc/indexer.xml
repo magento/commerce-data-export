@@ -14,7 +14,6 @@
         <title translate="true">Product Feed</title>
         <description translate="true">Collects data for a Product Feed</description>
         <dependencies>
-            <indexer id="catalog_product_price" />
             <indexer id="catalog_category_product" />
             <indexer id="catalog_product_category" />
         </dependencies>

@@ -327,13 +327,22 @@ class ProductPrice
      */
     private function fillOutput(array $row, string $key): array
     {
-        $parentsRaw = !empty($row['parent_skus']) ? explode(',', $row['parent_skus']) : [];
+        $parentsRaw = !empty($row['parent_skus']) ? explode("{\0}", $row['parent_skus']) : [];
         $parents = [];
         foreach ($parentsRaw as $parent) {
-            // TODO: split by "<type1|type2>:.*>" to handle case when sku contains ":"
-            [$parentType, $parentSku] = explode(':', $parent);
+            $parentTypeWithSkuPair = explode("*\0*", $parent, 2);
+            if (!isset($parentTypeWithSkuPair[0], $parentTypeWithSkuPair[1])) {
+                $this->logger->error(
+                    'Parent SKU has illegal NUL symbol and cannot be exported',
+                    ['parentSku' => $parent, 'row' => $row]
+                );
+                continue;
+            } else {
+                $parentType = $parentTypeWithSkuPair[0];
+                $parentSku = $parentTypeWithSkuPair[1];
+            }
             $parents[] = [
-                'type' => $this->convertProductType(trim($parentType)),
+                'type' => $this->convertProductType($parentType),
                 'sku' => $parentSku,
             ];
         }

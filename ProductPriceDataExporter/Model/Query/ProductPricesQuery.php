@@ -125,7 +125,7 @@ class ProductPricesQuery
                 'parent_sku.entity_id = parent_website.product_id',
                 [
                     'parent_skus' => new Expression(
-                        "GROUP_CONCAT(DISTINCT parent_sku.type_id,':',parent_sku.sku separator ', ')"
+                        "GROUP_CONCAT(DISTINCT parent_sku.type_id,'*\0*',parent_sku.sku separator '{\0}')"
                     )
                 ]
             )
