@@ -189,6 +189,7 @@
                provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="entityId" />
         </field>
+        <field name="commerceInvoiceNumber" type="String"/>
         <field name="invoiceItems" type="InvoiceItem" repeated="true"
                provider="Magento\SalesOrdersDataExporter\Model\Provider\InvoiceItem">
             <using field="invoiceId" />
@@ -227,6 +228,8 @@
         subtotal can be calculated using shipping_price + items_price-->
         <field name="productsTaxAmount" type="Float" /> <!--base_tax_amount. Not sure that we need
         that as products_tax also can be calculated-->
+        <field name="grandTotal" type="Float" />
+        <field name="commerceCreditMemoNumber" type="String" />
         <field name="refundItems" type="RefundItem" repeated="true"
             provider="Magento\SalesOrdersDataExporter\Model\Provider\RefundItem">
             <using field="linkCreditMemoId" />
@@ -284,6 +287,7 @@
             provider="Magento\SalesOrdersDataExporter\Model\Provider\TrackingInfo">
             <using field="shipment_id" />
         </field>
+        <field name="commerceShipmentNumber" type="String"/>
         <field name="items" type="ShipmentItem" repeated="true"
             provider="Magento\SalesOrdersDataExporter\Model\Provider\ShipmentItem">
             <using field="shipment_id" />

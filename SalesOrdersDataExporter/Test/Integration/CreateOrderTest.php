@@ -687,6 +687,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 'isUsedForRefund' => false,
                 'grandTotal' => $invoice->getBaseGrandTotal(),
                 'createdAt' => $this->convertDate($invoice->getCreatedAt()),
+                'commerceInvoiceNumber' => $invoice->getIncrementId(),
                 'invoiceItems' => $invoiceItems
             ];
         }
@@ -717,7 +718,9 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 //TODO: Need to be implemented
                 //'refundTaxes' => $creditMemo->getTaxAmount()
                 'subtotal' => $creditMemo->getBaseSubtotal(),
-                'productsTaxAmount' => $creditMemo->getBaseTaxAmount()
+                'productsTaxAmount' => $creditMemo->getBaseTaxAmount(),
+                'commerceCreditMemoNumber' => $creditMemo->getIncrementId(),
+                'grandTotal' => $creditMemo->getBaseGrandTotal()
             ];
             foreach ($creditMemo->getItems() as $creditmemoItem) {
                 $creditMemoItemId = $creditmemoItem->getOrderItemId();
@@ -759,7 +762,8 @@ class CreateOrderTest extends AbstractOrderFeedTest
             $shipments[$shipmentUuid] = [
                 'shipmentId' => ['id' => $shipmentUuid],
                 'createdAt' => $this->convertDate($orderShipment->getCreatedAt()),
-                'updatedAt' => $this->convertDate($orderShipment->getUpdatedAt())
+                'updatedAt' => $this->convertDate($orderShipment->getUpdatedAt()),
+                'commerceShipmentNumber' => $orderShipment->getIncrementId()
             ];
             foreach ($orderShipment->getItems() as $shipmentItem) {
                 $shippingOrderItemId = $shipmentItem->getOrderItemId();

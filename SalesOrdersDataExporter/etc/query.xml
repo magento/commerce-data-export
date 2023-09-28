@@ -130,6 +130,7 @@
             <attribute name="is_used_for_refund" alias="isUsedForRefund" />
             <attribute name="base_grand_total" alias="grandTotal" />
             <attribute name="created_at" alias="createdAt" />
+            <attribute name="increment_id" alias="commerceInvoiceNumber" />
             <filter glue="and">
                 <condition attribute="order_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
@@ -158,6 +159,7 @@
             <attribute name="updated_at" alias="updatedAt" />
             <attribute name="order_id" alias="commerceOrderId" />
             <attribute name="entity_id" alias="shipment_id" />
+            <attribute name="increment_id" alias="commerceShipmentNumber" />
             <filter glue="and">
                 <condition attribute="order_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
@@ -244,6 +246,8 @@
             <attribute name="base_subtotal" alias="subtotal" />
             <attribute name="base_tax_amount" alias="productsTaxAmount" />
             <attribute name="adjustment" />
+            <attribute name="increment_id" alias="commerceCreditMemoNumber" />
+            <attribute name="base_grand_total" alias="grandTotal" />
             <filter glue="and">
                 <condition attribute="order_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
