@@ -95,7 +95,7 @@ class BundleProductTest extends AbstractProductTestHelper
                         'sku' => 'bundle-product',
                         'storeViewCode' => 'default',
                         'name' => 'Bundle Product',
-                        'type' => 'bundle',
+                        'type' => 'bundle_fixed',
                         'optionsV2' => [
                             [
                                 'type' => 'bundle',

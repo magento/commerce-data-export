@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
+    <query name="bundleFixedProductType">
+        <source name="catalog_product_entity">
+            <attribute name="sku"/>
+            <filter glue="and">
+                <condition attribute="entity_id" operator="in" type="placeholder">ids</condition>
+            </filter>
+            <link-source name="eav_entity_type" alias="entity_type">
+                <using glue="and">
+                    <condition attribute="entity_type_code" operator="eq" type="value">catalog_product</condition>
+                </using>
+            </link-source>
+            <link-source name="eav_attribute">
+                <using glue="and">
+                    <condition attribute="entity_type_id" operator="eq" type="identifier">entity_type.entity_type_id</condition>
+                    <condition attribute="attribute_code" operator="eq" type="value">price_type</condition>
+                </using>
+            </link-source>
+            <link-source name="catalog_product_entity_int" link-type="inner">
+                <using glue="and">
+                    <condition attribute="Magento\Catalog\Api\Data\ProductInterface:LinkField" operator="eq" type="identifier">catalog_product_entity.Primary Key</condition>
+                    <condition attribute="attribute_id" operator="eq" type="identifier">eav_attribute.attribute_id</condition>
+                    <condition attribute="value" operator="eq" type="value">1</condition>
+                </using>
+            </link-source>
+        </source>
+    </query>
+</config>

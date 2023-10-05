@@ -8,12 +8,14 @@ namespace Magento\QueryXml\Model\DB;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Sql\Expression;
+use Magento\Framework\EntityManager\MetadataPool;
 
 /**
  * Mapper for WHERE conditions
  */
 class ConditionResolver
 {
+    private const LINK_FIELD_PATTERN = '/^([\w\\\]+):LinkField$/';
     /**
      * @var array
      */
@@ -42,16 +44,20 @@ class ConditionResolver
      * @var ResourceConnection
      */
     private $resourceConnection;
+    private MetadataPool $metadataPool;
 
     /**
      * ConditionResolver constructor.
      *
      * @param ResourceConnection $resourceConnection
+     * @param MetadataPool $metadataPool
      */
     public function __construct(
-        ResourceConnection $resourceConnection
+        ResourceConnection $resourceConnection,
+        MetadataPool $metadataPool
     ) {
         $this->resourceConnection = $resourceConnection;
+        $this->metadataPool = $metadataPool;
     }
 
     /**
@@ -119,6 +125,7 @@ class ConditionResolver
      * @param string $identifier
      * @param string $tableName
      * @return string
+     * @throws \Exception
      */
     private function resolveIdentifier(
         SelectBuilder $selectBuilder,
@@ -129,8 +136,13 @@ class ConditionResolver
         $tableName = isset($queryConfig['map'][$tableName])
             ? $this->resourceConnection->getTableName($queryConfig['map'][$tableName])
             : $tableName;
+        if (preg_match(self::LINK_FIELD_PATTERN, $identifier, $matches)) {
+            $classPath = $matches[1];
+            $metadata = $this->metadataPool->getMetadata($classPath);
+            $identifier = $metadata->getLinkField();
+        }
 
-        return ($identifier != 'Primary Key') ? $identifier : $this->getConnection()->getAutoIncrementField(
+        return ($identifier !== 'Primary Key') ? $identifier : $this->getConnection()->getAutoIncrementField(
             $tableName
         );
     }

@@ -9,4 +9,9 @@
     <record name="ProductOptionValue">
         <field name="priceType" type="String" />
     </record>
+    <record name="Product">
+        <field name="type" type="String"
+               provider="Magento\BundleProductDataExporter\Model\Provider\Product\Type">
+        </field>
+    </record>
 </config>
