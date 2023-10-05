@@ -13,4 +13,8 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\ParentProductDataExporter\Model\Query\ProductParentQuery">
+        <plugin name="extend_product_parent_query"
+                type="Magento\BundleProductDataExporter\Plugin\ExtendProductParentQuery"/>
+    </type>
 </config>

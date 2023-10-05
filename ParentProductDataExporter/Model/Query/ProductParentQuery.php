@@ -52,10 +52,15 @@ class ProductParentQuery
     {
         $productIds = $arguments['productId'] ?? [];
         $storeViewCodes = $arguments['storeViewCode'] ?? [];
+
         $connection = $this->resourceConnection->getConnection();
         $joinField = $connection->getAutoIncrementField($this->getTable('catalog_product_entity'));
+
         $select = $connection->select()
-            ->from(['cpsl' => $this->getTable('catalog_product_super_link')])
+            ->from(
+                ['cpr' => $this->getTable('catalog_product_relation')],
+                []
+            )
             ->joinInner(
                 ['s' => $this->getTable('store')],
                 '',
@@ -63,12 +68,12 @@ class ProductParentQuery
             )
             ->joinInner(
                 ['product_cpw' => $this->getTable('catalog_product_website')],
-                'product_cpw.website_id = s.website_id AND product_cpw.product_id = cpsl.product_id',
+                'product_cpw.website_id = s.website_id AND product_cpw.product_id = cpr.child_id',
                 []
             )
             ->joinInner(
                 ['parent_cpe' => $this->getTable('catalog_product_entity')],
-                sprintf('parent_cpe.%1$s = cpsl.parent_id', $joinField),
+                sprintf('parent_cpe.%1$s = cpr.parent_id', $joinField),
                 []
             )
             ->joinInner(
@@ -79,10 +84,17 @@ class ProductParentQuery
             )
             ->joinInner(
                 ['cpe' => $this->getTable('catalog_product_entity')],
-                sprintf('cpe.%1$s = cpsl.parent_id', $joinField)
+                sprintf('cpe.%1$s = cpr.parent_id', $joinField),
+                []
             )
-            ->columns(['productId' => 'cpsl.product_id', 'sku' => 'cpe.sku', 'productType' => 'cpe.type_id'])
-            ->where('cpsl.product_id IN (?)', $productIds);
+            ->columns(
+                [
+                    'productId' => 'cpr.child_id',
+                    'sku' => 'cpe.sku',
+                    'productType' => 'cpe.type_id'
+                ]
+            )
+            ->where('cpr.child_id IN (?)', $productIds);
         if (!empty($storeViewCodes)) {
             $select->where('s.code IN (?)', $storeViewCodes);
         }
