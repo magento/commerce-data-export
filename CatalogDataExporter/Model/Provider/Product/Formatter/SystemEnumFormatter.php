@@ -38,7 +38,7 @@ class SystemEnumFormatter implements FormatterInterface
     {
         foreach ($this->systemEnums as $enumName => $enumMap) {
             if (isset($row[$enumName])) {
-                $row[$enumName] = isset($enumMap[$row[$enumName]]) ? $enumMap[$row[$enumName]] : null;
+                $row[$enumName] = $enumMap[$row[$enumName]] ?? $enumMap['_'] ?? null;
             }
         }
         return $row;

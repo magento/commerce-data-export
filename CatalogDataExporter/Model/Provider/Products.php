@@ -21,30 +21,16 @@ use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as Logg
  */
 class Products
 {
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
+    private ProductMainQuery $productMainQuery;
+    private FormatterInterface $formatter;
+    private LoggerInterface $logger;
+    private EntityEavAttributesResolver $entityEavAttributesResolver;
 
     /**
-     * @var ProductMainQuery
+     * @var array required attributes for product export
      */
-    private $productMainQuery;
-
-    /**
-     * @var FormatterInterface
-     */
-    private $formatter;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var EntityEavAttributesResolver
-     */
-    private $entityEavAttributesResolver;
+    private array $requiredAttributes;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -52,19 +38,22 @@ class Products
      * @param FormatterInterface $formatter
      * @param LoggerInterface $logger
      * @param EntityEavAttributesResolver $entityEavAttributesResolver
+     * @param array $requiredAttributes
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         ProductMainQuery $productMainQuery,
         FormatterInterface $formatter,
         LoggerInterface $logger,
-        EntityEavAttributesResolver $entityEavAttributesResolver
+        EntityEavAttributesResolver $entityEavAttributesResolver,
+        array $requiredAttributes = []
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->productMainQuery = $productMainQuery;
         $this->formatter = $formatter;
         $this->logger = $logger;
         $this->entityEavAttributesResolver = $entityEavAttributesResolver;
+        $this->requiredAttributes = $requiredAttributes;
     }
 
     /**
@@ -114,6 +103,23 @@ class Products
                 $this->entityEavAttributesResolver->resolve($attributesData[$storeCode], $storeCode)
             ));
         }
+
+        $errorEntityIds = [];
+        foreach ($output as $part) {
+            foreach ($part as $entityId => $attributes) {
+                if (array_diff($this->requiredAttributes, array_keys(array_filter($attributes)))) {
+                    $errorEntityIds[] = $entityId;
+                }
+            }
+        }
+        if (!empty($errorEntityIds)) {
+            $this->logger->warning(
+                'One or more required EAV attributes ('
+                . implode(',', $this->requiredAttributes)
+                . ') are not set for products: ' . implode(',', $errorEntityIds)
+            );
+        }
+
         /** @phpstan-ignore-next-line */
         return !empty($output) ? \array_merge(...$output) : [];
     }

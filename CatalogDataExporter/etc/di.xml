@@ -70,6 +70,7 @@
                 <item name="status" xsi:type="array">
                     <item name="1" xsi:type="string">Enabled</item>
                     <item name="2" xsi:type="string">Disabled</item>
+                    <item name="_" xsi:type="string">Disabled</item> <!--default value-->
                 </item>
                 <item name="priceView" xsi:type="array">
                     <item name="0" xsi:type="string">price_range</item>
@@ -124,7 +125,7 @@
             <argument name="requiredAttributes" xsi:type="array">
                 <item name="status" xsi:type="string">status</item>
                 <item name="visibility" xsi:type="string">visibility</item>
-                <item name="links_title" xsi:type="string">links_title</item>
+                <item name="links_title" xsi:type="string">linksTitle</item>
             </argument>
         </arguments>
     </virtualType>
@@ -133,6 +134,9 @@
         <arguments>
             <argument name="entityEavAttributesResolver" xsi:type="object">
                 Magento\CatalogDataExporter\Model\Provider\EavAttributes\ProductEavAttributesResolver
+            </argument>
+            <argument name="requiredAttributes" xsi:type="array">
+                <item name="status" xsi:type="string">status</item>
             </argument>
         </arguments>
     </type>

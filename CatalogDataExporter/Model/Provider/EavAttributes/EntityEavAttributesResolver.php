@@ -86,6 +86,7 @@ class EntityEavAttributesResolver
         if (empty($attributes)) {
             throw new UnableRetrieveData('Empty list of EAV attributes for products: ' . implode(',', $entityIds));
         }
+
         return $attributes;
     }
 }
