@@ -259,21 +259,10 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedMarkRemovedEntities" type="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
-        <arguments>
-            <argument name="markRemovedEntitiesQuery" xsi:type="object">Magento\CatalogDataExporter\Model\Query\MarkRemovedEntitiesQuery</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexProcessorCreateUpdateDelete" type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
-        <arguments>
-            <argument name="markRemovedEntities" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedMarkRemovedEntities</argument>
-        </arguments>
-    </virtualType>
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductDataSerializer</argument>
-            <argument name="processor" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexProcessorCreateUpdateDelete</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\CatalogDataExporter\Model\ProductFeed" type="Magento\DataExporter\Model\Feed">

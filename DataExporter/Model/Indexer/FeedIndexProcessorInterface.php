@@ -28,7 +28,7 @@ interface FeedIndexProcessorInterface
         DataSerializerInterface $serializer,
         EntityIdsProviderInterface $idsProvider,
         array $ids = [],
-        callable $callback = null
+        ?callable $callback = null
     ): void;
 
     /**

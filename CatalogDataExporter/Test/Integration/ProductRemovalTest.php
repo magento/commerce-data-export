@@ -37,18 +37,15 @@ class ProductRemovalTest extends AbstractProductTestHelper
      * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/setup_product_removal.php
      *
      * @return void
-     * @throws NoSuchEntityException
-     * @throws StateException
-     * @throws \Throwable
+     * @throws \Zend_Db_Statement_Exception
      */
     public function testProductRemoval() : void
     {
         $sku = 'simple4';
         $this->deleteProduct($sku);
-        $output = $this->productFeed->getFeedSince('1');
-        foreach ($output['feed'] as $extractedProduct) {
-            $this->validateProductRemoval($extractedProduct);
-        }
+        $output = $this->getExtractedProduct($sku, 'default');
+        self::assertNotEmpty($output, "Empty feed received for sku: " . $sku);
+        $this->validateProductRemoval($output['feedData']);
     }
 
     /**
@@ -66,8 +63,11 @@ class ProductRemovalTest extends AbstractProductTestHelper
 
         try {
             $product = $this->productRepository->get($sku);
-            if ($product->getId()) {
+            $productId = $product->getId();
+            if ($productId) {
                 $this->productRepository->delete($product);
+                $this->emulateCustomersBehaviorAfterDeleteAction();
+                $this->runIndexer([$productId]);
             }
         } catch (\Exception $e) {
             //Nothing to delete

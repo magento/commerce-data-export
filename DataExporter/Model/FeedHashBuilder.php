@@ -71,7 +71,7 @@ class FeedHashBuilder
     {
         $identifier = [];
         foreach ($metadata->getFeedIdentifierMappingFields() as $field) {
-            $this->addValue($identifier, $feedItem[$field] ? (string)$feedItem[$field] : '');
+            $this->addValue($identifier, array_key_exists($field, $feedItem) ? (string)$feedItem[$field] : '');
         }
         return $this->convertToString($identifier);
     }
@@ -87,7 +87,7 @@ class FeedHashBuilder
     {
         $identifier = [];
         foreach (array_keys($metadata->getFeedIdentifierMappingFields()) as $columnName) {
-            $this->addValue($identifier, $row[$columnName] ? (string)$row[$columnName] : '');
+            $this->addValue($identifier, array_key_exists($columnName, $row) ? (string)$row[$columnName] : '');
         }
         return $this->convertToString($identifier);
     }

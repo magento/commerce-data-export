@@ -7,18 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductPriceDataExporter\Test\Integration;
 
-use DateTime;
-use DateTimeInterface;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\DataExporter\Model\FeedInterface;
-use Magento\DataExporter\Model\FeedPool;
-use Magento\Indexer\Model\Indexer;
-use Magento\TestFramework\Helper\Bootstrap;
-use PHPUnit\Framework\TestCase;
-use RuntimeException;
-use Throwable;
 use Zend_Db_Statement_Exception;
 
 /**
@@ -28,35 +17,8 @@ use Zend_Db_Statement_Exception;
  * @magentoAppIsolation enabled
  * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
  */
-class ExportComplexProductPriceTest extends TestCase
+class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
 {
-    private const PRODUCT_PRICE_FEED_INDEXER = 'catalog_data_exporter_product_prices';
-
-    private Indexer $indexer;
-
-    private FeedInterface $productPricesFeed;
-
-    private ProductRepositoryInterface $productRepository;
-
-    private ResourceConnection $resourceConnection;
-
-    /**
-     * @param string|null $name
-     * @param array $data
-     * @param $dataName
-     */
-    public function __construct(
-        ?string $name = null,
-        array $data = [],
-        $dataName = ''
-    ) {
-        parent::__construct($name, $data, $dataName);
-        $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
-        $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
-        $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('prices');
-        $this->resourceConnection = Bootstrap::getObjectManager()->create(ResourceConnection::class);
-    }
-
     /**
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/bundle_fixed_products.php
      * @dataProvider expectedBundleFixedProductPricesDataProvider
@@ -131,7 +93,7 @@ class ExportComplexProductPriceTest extends TestCase
         return [
             [
                 [
-                    [
+                    'bundle_fixed_product_with_regular_price_base_0' => [
                         'sku' => 'bundle_fixed_product_with_regular_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -140,7 +102,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => null,
                         'type' => 'BUNDLE_FIXED'
                     ],
-                    [
+                    'bundle_fixed_product_with_regular_price_test_0' => [
                         'sku' => 'bundle_fixed_product_with_regular_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -149,7 +111,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => null,
                         'type' => 'BUNDLE_FIXED'
                     ],
-                    [
+                    'bundle_fixed_product_with_special_price_base_0' => [
                         'sku' => 'bundle_fixed_product_with_special_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -158,7 +120,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'percentage' => 55.55]],
                         'type' => 'BUNDLE_FIXED'
                     ],
-                    [
+                    'bundle_fixed_product_with_special_price_test_0' => [
                         'sku' => 'bundle_fixed_product_with_special_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -167,7 +129,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'percentage' => 55.55]],
                         'type' => 'BUNDLE_FIXED'
                     ],
-                    [
+                    'bundle_fixed_product_with_tier_price_base_0' => [
                         'sku' => 'bundle_fixed_product_with_tier_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -176,7 +138,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
                         'type' => 'BUNDLE_FIXED'
                     ],
-                    [
+                    'bundle_fixed_product_with_tier_price_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'bundle_fixed_product_with_tier_price',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
@@ -185,7 +147,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
                         'type' => 'BUNDLE_FIXED'
                     ],
-                    [
+                    'bundle_fixed_product_with_tier_price_test_0' => [
                         'sku' => 'bundle_fixed_product_with_tier_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -194,7 +156,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
                         'type' => 'BUNDLE_FIXED'
                     ],
-                    [
+                    'bundle_fixed_product_with_tier_price_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'bundle_fixed_product_with_tier_price',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'test',
@@ -217,7 +179,7 @@ class ExportComplexProductPriceTest extends TestCase
         return [
             [
                 [
-                    [
+                    'simple_option_1_base_0' => [
                         'sku' => 'simple_option_1',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -232,7 +194,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_1_test_0' => [
                         'sku' => 'simple_option_1',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -247,7 +209,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_2_base_0' => [
                         'sku' => 'simple_option_2',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -262,7 +224,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_2_test_0' => [
                         'sku' => 'simple_option_2',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -277,7 +239,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_3_base_0' => [
                         'sku' => 'simple_option_3',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -292,7 +254,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_3_test_0' => [
                         'sku' => 'simple_option_3',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -307,7 +269,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_4_base_0' => [
                         'sku' => 'simple_option_4',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -322,7 +284,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_4_test_0' => [
                         'sku' => 'simple_option_4',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -337,7 +299,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_5_base_0' => [
                         'sku' => 'simple_option_5',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -352,7 +314,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_5_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'simple_option_5',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
@@ -367,7 +329,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_5_test_0' => [
                         'sku' => 'simple_option_5',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -382,7 +344,7 @@ class ExportComplexProductPriceTest extends TestCase
                         ],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_5_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'simple_option_5',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'test',
@@ -410,7 +372,7 @@ class ExportComplexProductPriceTest extends TestCase
         return [
             [
                 [
-                    [
+                    'simple_option_1_base_0' => [
                         'sku' => 'simple_option_1',
                         'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                         'customerGroupCode' => '0',
@@ -420,7 +382,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 15.15]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_1_test_0' => [
                         'sku' => 'simple_option_1',
                         'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                         'customerGroupCode' => '0',
@@ -430,7 +392,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 15.15]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_2_base_0' => [
                         'sku' => 'simple_option_2',
                         'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                         'customerGroupCode' => '0',
@@ -440,7 +402,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_2_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'simple_option_2',
                         'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
@@ -450,7 +412,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_2_test_0' => [
                         'sku' => 'simple_option_2',
                         'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                         'customerGroupCode' => '0',
@@ -460,7 +422,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_2_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'simple_option_2',
                         'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
@@ -483,7 +445,7 @@ class ExportComplexProductPriceTest extends TestCase
         return [
             [
                 [
-                    [
+                    'simple_option_1_base_0' => [
                         'sku' => 'simple_option_1',
                         'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                         'customerGroupCode' => '0',
@@ -493,7 +455,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => null,
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_1_test_0' => [
                         'sku' => 'simple_option_1',
                         'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                         'customerGroupCode' => '0',
@@ -503,7 +465,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => null,
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_2_base_0' => [
                         'sku' => 'simple_option_2',
                         'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                         'customerGroupCode' => '0',
@@ -513,7 +475,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => null,
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_option_2_test_0' => [
                         'sku' => 'simple_option_2',
                         'parents' => [0 => ['sku' => 'configurable', 'type' => 'CONFIGURABLE']],
                         'customerGroupCode' => '0',
@@ -536,7 +498,7 @@ class ExportComplexProductPriceTest extends TestCase
         return [
             [
                 [
-                    [
+                    'simple_base_0' => [
                         'sku' => 'simple',
                         'parents' => [0 => ['sku' => 'grouped-product', 'type' => 'GROUPED']],
                         'customerGroupCode' => '0',
@@ -546,7 +508,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => null,
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_test_0' => [
                         'sku' => 'simple',
                         'parents' => [0 => ['sku' => 'grouped-product', 'type' => 'GROUPED']],
                         'customerGroupCode' => '0',
@@ -556,7 +518,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => null,
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'virtual-product_base_0' => [
                         'sku' => 'virtual-product',
                         'parents' => [0 => ['sku' => 'grouped-product', 'type' => 'GROUPED']],
                         'customerGroupCode' => '0',
@@ -566,7 +528,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => null,
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'virtual-product_test_0' => [
                         'sku' => 'virtual-product',
                         'parents' => [0 => ['sku' => 'grouped-product', 'type' => 'GROUPED']],
                         'customerGroupCode' => '0',
@@ -589,7 +551,7 @@ class ExportComplexProductPriceTest extends TestCase
         return [
             [
                 [
-                    [
+                    'simple_base_0' => [
                         'sku' => 'simple',
                         'parents' => [0 => ['sku' => 'grouped-product', 'type' => 'GROUPED']],
                         'customerGroupCode' => '0',
@@ -599,7 +561,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 15.15]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_test_0' => [
                         'sku' => 'simple',
                         'parents' => [0 => ['sku' => 'grouped-product', 'type' => 'GROUPED']],
                         'customerGroupCode' => '0',
@@ -609,7 +571,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 15.15]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'virtual-product_base_0' => [
                         'sku' => 'virtual-product',
                         'parents' => [0 => ['sku' => 'grouped-product', 'type' => 'GROUPED']],
                         'customerGroupCode' => '0',
@@ -619,7 +581,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'virtual-product_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'virtual-product',
                         'parents' => [0 => ['sku' => 'grouped-product', 'type' => 'GROUPED']],
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
@@ -629,7 +591,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'virtual-product_test_0' => [
                         'sku' => 'virtual-product',
                         'parents' => [0 => ['sku' => 'grouped-product', 'type' => 'GROUPED']],
                         'customerGroupCode' => '0',
@@ -639,7 +601,7 @@ class ExportComplexProductPriceTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'virtual-product_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'virtual-product',
                         'parents' => [0 => ['sku' => 'grouped-product', 'type' => 'GROUPED']],
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
@@ -652,90 +614,5 @@ class ExportComplexProductPriceTest extends TestCase
                 ]
             ]
         ];
-    }
-
-    /**
-     * @param array $expectedItems
-     * @return void
-     * @throws NoSuchEntityException
-     * @throws Zend_Db_Statement_Exception
-     */
-    private function checkExpectedItemsAreExportedInFeed(array $expectedItems): void
-    {
-        $ids = [];
-        foreach ($expectedItems as $expectedItem) {
-            $ids[] = $this->productRepository->get($expectedItem['sku'])->getId();
-        }
-        $timestamp = new DateTime('Now - 1 second');
-        $this->runIndexer($ids);
-        $actualProductPricesFeed = $this->productPricesFeed->getFeedSince($timestamp->format(DateTimeInterface::W3C));
-        self::assertNotEmpty($actualProductPricesFeed['feed'], 'Product Price Feed should not be empty');
-        self::assertCount(
-            count($expectedItems),
-            $actualProductPricesFeed['feed'],
-            'Product Price Feeds does not contain all expected items'
-        );
-
-        foreach ($expectedItems as $index => $product) {
-            if (!isset($actualProductPricesFeed['feed'][$index])) {
-                self::fail("Cannot find product price feed");
-            }
-
-            // unset fields from feed that we don't care about for test
-            $actualFeed = $this->unsetNotImportantField($actualProductPricesFeed['feed'][$index]);
-            self::assertEquals($product, $actualFeed, "Some items are missing in product price feed $index");
-        }
-    }
-
-    /**
-     * Run the indexer to extract product prices data
-     * @param $ids
-     * @return void
-     */
-    private function runIndexer($ids): void
-    {
-        try {
-            $this->indexer->load(self::PRODUCT_PRICE_FEED_INDEXER);
-            $this->indexer->reindexList($ids);
-        } catch (Throwable) {
-            throw new RuntimeException('Could not reindex product prices data');
-        }
-    }
-
-    /**
-     * @param array $actualProductPricesFeed
-     * @return array
-     */
-    private function unsetNotImportantField(array $actualProductPricesFeed): array
-    {
-        $actualFeed = $actualProductPricesFeed;
-
-        unset(
-            $actualFeed['modifiedAt'],
-            $actualFeed['updatedAt'],
-            $actualFeed['productId'],
-            $actualFeed['websiteId']
-        );
-
-        return $actualFeed;
-    }
-
-    /**
-     * @return void
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->truncateIndexTable();
-    }
-
-    /**
-     * Truncates index table
-     */
-    private function truncateIndexTable(): void
-    {
-        $connection = $this->resourceConnection->getConnection();
-        $feedTable = $this->resourceConnection->getTableName('catalog_data_exporter_product_prices');
-        $connection->truncateTable($feedTable);
     }
 }

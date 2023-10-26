@@ -12,20 +12,41 @@ use Magento\CatalogDataExporter\Model\Provider\EavAttributes\EntityEavAttributes
 use Magento\CatalogDataExporter\Model\Provider\Product\Formatter\FormatterInterface;
 use Magento\CatalogDataExporter\Model\Query\ProductMainQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
-use Magento\Framework\App\ResourceConnection;
+use Magento\DataExporter\Export\DataProcessorInterface;
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Store\Model\Store;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
+use Magento\Framework\App\ResourceConnection;
 
 /**
  * Products data provider
  */
-class Products
+class Products implements DataProcessorInterface
 {
-    private ResourceConnection $resourceConnection;
-    private ProductMainQuery $productMainQuery;
-    private FormatterInterface $formatter;
-    private LoggerInterface $logger;
-    private EntityEavAttributesResolver $entityEavAttributesResolver;
+    /**
+     * @var ResourceConnection
+     */
+    private $resourceConnection;
+
+    /**
+     * @var ProductMainQuery
+     */
+    private $productMainQuery;
+
+    /**
+     * @var FormatterInterface
+     */
+    private $formatter;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * @var EntityEavAttributesResolver
+     */
+    private $entityEavAttributesResolver;
 
     /**
      * @var array required attributes for product export
@@ -59,42 +80,87 @@ class Products
     /**
      * Get provider data
      *
-     * @param array $values
-     *
-     * @return array
+     * @param array $arguments
+     * @param callable $dataProcessorCallback
+     * @param FeedIndexMetadata $metadata
+     * @param ? $node
+     * @param ? $info
+     * @return void
      * @throws UnableRetrieveData
+     * @throws \Zend_Db_Statement_Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function get(array $values) : array
-    {
-        $output = [];
+    public function execute(
+        array $arguments,
+        callable $dataProcessorCallback,
+        FeedIndexMetadata $metadata,
+        $node = null,
+        $info = null
+    ): void {
         $queryArguments = [];
         $mappedProducts = [];
         $attributesData = [];
 
-        foreach ($values as $value) {
+        foreach ($arguments as $value) {
             $scope = $value['scopeId'] ?? Store::DEFAULT_STORE_ID;
             $queryArguments[$scope][$value['productId']] = $value['attribute_ids'] ?? [];
         }
 
         $connection = $this->resourceConnection->getConnection();
+        $itemN = 0;
         foreach ($queryArguments as $scopeId => $productData) {
             $cursor = $connection->query(
                 $this->productMainQuery->getQuery(\array_keys($productData), $scopeId ?: null)
             );
 
             while ($row = $cursor->fetch()) {
+                $itemN++;
                 $mappedProducts[$row['storeViewCode']][$row['productId']] = $row;
                 $attributesData[$row['storeViewCode']][$row['productId']] = $productData[$row['productId']];
+                if ($itemN % $metadata->getBatchSize() == 0) {
+                    $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback);
+                    $mappedProducts = [];
+                    $attributesData = [];
+                }
             }
         }
-        if (!$mappedProducts) {
-            $productsIds = \implode(',', \array_unique(\array_column($values, 'productId')));
-            $scopes = \implode(',', \array_unique(\array_column($values, 'scopeId')));
+        if ($itemN === 0) {
+            $productsIds = \implode(',', \array_unique(\array_column($arguments, 'productId')));
+            $scopes = \implode(',', \array_unique(\array_column($arguments, 'scopeId')));
             $this->logger->info(
-                \sprintf('Cannot collect product data for ids %s in scopes %s', $productsIds, $scopes)
+                \sprintf('Product exporter: no product data found for ids %s in scopes %s', $productsIds, $scopes)
             );
+        } else {
+            $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback);
         }
+    }
 
+    /**
+     * For backward compatibility - to allow 3rd party plugins work
+     *
+     * @param array $values
+     * @return array
+     */
+    public function get(array $values) : array
+    {
+        return $values;
+    }
+
+    /**
+     * Process products data
+     *
+     * @param array $mappedProducts
+     * @param array $attributesData
+     * @param callable $dataProcessorCallback
+     * @return void
+     * @throws UnableRetrieveData
+     */
+    private function processProducts(
+        array $mappedProducts,
+        array $attributesData,
+        callable $dataProcessorCallback
+    ): void {
+        $output = [];
         foreach ($mappedProducts as $storeCode => $products) {
             $output[] = \array_map(function ($row) {
                 return $this->formatter->format($row);
@@ -120,7 +186,6 @@ class Products
             );
         }
 
-        /** @phpstan-ignore-next-line */
-        return !empty($output) ? \array_merge(...$output) : [];
+        $dataProcessorCallback($this->get(\array_merge(...$output)));
     }
 }

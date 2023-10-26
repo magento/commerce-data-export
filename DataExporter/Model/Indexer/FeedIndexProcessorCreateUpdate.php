@@ -9,6 +9,7 @@ namespace Magento\DataExporter\Model\Indexer;
 
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\DataExporter\Status\ExportStatusCodeProvider;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use \Magento\DataExporter\Export\Processor as ExportProcessor;
 use Magento\Framework\Serialize\SerializerInterface;
@@ -41,7 +42,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
 
     private $feedTablePrimaryKey;
 
-    private string $modifiedAtTimeInDBFormat;
+    private DeletedEntitiesProviderInterface $deletedEntitiesProvider;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -59,7 +60,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         FeedUpdater $feedUpdater,
         FeedHashBuilder $hashBuilder,
         SerializerInterface $serializer,
-        CommerceDataExportLoggerInterface $logger
+        CommerceDataExportLoggerInterface $logger,
+        DeletedEntitiesProviderInterface $deletedEntitiesProvider = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->exportProcessor = $exportProcessor;
@@ -68,16 +70,12 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         $this->hashBuilder = $hashBuilder;
         $this->serializer = $serializer;
         $this->logger = $logger;
+        $this->deletedEntitiesProvider = $deletedEntitiesProvider ??
+            ObjectManager::getInstance()->get(DeletedEntitiesProviderInterface::class);
     }
 
     /**
      * @inerhitDoc
-     *
-     * @param FeedIndexMetadata $metadata
-     * @param DataSerializerInterface $serializer
-     * @param EntityIdsProviderInterface $idsProvider
-     * @param array $ids
-     * @param callable|null $callback
      */
     public function partialReindex(
         FeedIndexMetadata $metadata,
@@ -91,28 +89,50 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         foreach ($idsProvider->getAffectedIds($metadata, $ids) as $id) {
             $arguments[] = [$feedIdentity => $id];
         }
-        $this->modifiedAtTimeInDBFormat = (new \DateTime())->format(self::MODIFIED_AT_FORMAT);
         foreach (\array_chunk($arguments, $metadata->getBatchSize()) as $chunk) {
-            $data = $this->exportProcessor->process($metadata->getFeedName(), $chunk);
-
+            $metadata->setCurrentModifiedAtTimeInDBFormat((new \DateTime())->format(self::MODIFIED_AT_FORMAT));
             $exportStatus = null;
             if ($metadata->isExportImmediately()) {
-                $feedItemsToDelete = $callback !== null ? $callback() : [];
-                $data = $this->prepareFeedBeforeSubmit($data, $feedItemsToDelete, $metadata);
-                if (empty($data)) {
-                    return;
-                }
-                $exportStatus = $this->exportFeedProcessor->export(
-                    array_column($data, 'feed'),
-                    $metadata
+                $processedHashes = [];
+                $dataProcessorCallback = function ($feedItems) use (
+                    $exportStatus,
+                    $metadata,
+                    $serializer,
+                    $chunk,
+                    &$processedHashes
+                ) {
+                    //for backward compatibility:
+                    //allows to execute plugins on Process method when callbacks are in place
+                    $feedItems = $this->exportProcessor->process($metadata->getFeedName(), $chunk, $feedItems);
+                    $feedItems = $this->addHashes($feedItems, $metadata);
+                    $data = $this->filterFeedItems($feedItems, $metadata, $processedHashes);
+
+                    if (empty($data)) {
+                        return;
+                    }
+                    $exportStatus = $this->exportFeedProcessor->export(
+                        array_column($data, 'feed'),
+                        $metadata
+                    );
+                    $this->feedUpdater->execute($data, $exportStatus, $metadata, $serializer);
+                };
+                $this->exportProcessor->processWithCallback($metadata, $chunk, $dataProcessorCallback);
+
+                $this->handleDeletedItems(
+                    array_column($chunk, $feedIdentity),
+                    $processedHashes,
+                    $metadata,
+                    $serializer
+                );
+                unset($processedHashes);
+            } else {
+                $this->feedUpdater->execute(
+                    $this->exportProcessor->process($metadata->getFeedName(), $chunk),
+                    $exportStatus,
+                    $metadata,
+                    $serializer
                 );
             }
-
-            $this->feedUpdater->execute($data, $exportStatus, $metadata, $serializer);
-        }
-
-        if ($callback !== null && !$metadata->isExportImmediately()) {
-            $callback();
         }
     }
 
@@ -122,7 +142,6 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * @param FeedIndexMetadata $metadata
      * @param DataSerializerInterface $serializer
      * @param EntityIdsProviderInterface $idsProvider
-     * @throws \Zend_Db_Statement_Exception
      */
     public function fullReindex(
         FeedIndexMetadata $metadata,
@@ -159,41 +178,17 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     }
 
     /**
-     * Prepare feed data before submit:
-     * - calculate feed identifier and feed hash
-     * - remove unchanged feed items (items with the same hash)
-     *
-     * @param array $feedItems
-     * @param array|null $feedItemsToDelete
-     * @param FeedIndexMetadata $metadata
-     * @return array
-     * @throws \Zend_Db_Statement_Exception
-     */
-    private function prepareFeedBeforeSubmit(
-        array $feedItems,
-        ?array $feedItemsToDelete,
-        FeedIndexMetadata $metadata
-    ) : array {
-        $feedItemsToDelete = !empty($feedItemsToDelete) ? $this->addHashes($feedItemsToDelete, $metadata, true) : [];
-        $feedItems = $this->addHashes($feedItems, $metadata);
-        $feedItems = array_merge($feedItems, $feedItemsToDelete);
-        if (empty($feedItems)) {
-            return [];
-        }
-        return $this->filterFeedItems($feedItems, $metadata);
-    }
-
-    /**
      * Remove feed items from further processing if all true:
      * - item hash didn't change
      * - previous export status is non-retryable
      *
      * @param array $feedItems
      * @param FeedIndexMetadata $metadata
+     * @param null $processedHashes
      * @return array
      * @throws \Zend_Db_Statement_Exception
      */
-    private function filterFeedItems(array $feedItems, FeedIndexMetadata $metadata) : array
+    private function filterFeedItems(array $feedItems, FeedIndexMetadata $metadata, &$processedHashes = null) : array
     {
         $connection = $this->resourceConnection->getConnection();
         $primaryKeyFields = $this->getFeedTablePrimaryKey($metadata);
@@ -218,6 +213,9 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 && isset($feedItems[$identifier]['hash'])
                 && $feedHash == $feedItems[$identifier]['hash']) {
                 unset($feedItems[$identifier]);
+                if ($processedHashes !== null) {
+                    $processedHashes[$feedHash] = true;
+                }
             }
         }
         return $feedItems;
@@ -243,12 +241,15 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 $row = $this->serializer->unserialize($row['feed_data']);
                 $row['deleted'] = true;
             } else {
+                if (!\array_key_exists('deleted', $row)) {
+                    $row['deleted'] = false;
+                }
                 $identifier = $this->hashBuilder->buildIdentifierFromFeedItem($row, $metadata);
             }
             unset($data[$key]);
 
             $hash = $this->hashBuilder->buildHash($row, $metadata);
-            $this->addModifiedAtField($row);
+            $this->addModifiedAtField($row, $metadata);
             $data[$identifier] = [
                 'hash' => $hash,
                 'feed' => $row,
@@ -281,10 +282,44 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * Add modified at field to each row
      *
      * @param array $dataRow
+     * @param FeedIndexMetadata $metadata
      * @return void
      */
-    private function addModifiedAtField(&$dataRow): void
+    private function addModifiedAtField(&$dataRow, FeedIndexMetadata $metadata): void
     {
-        $dataRow['modifiedAt'] = $this->modifiedAtTimeInDBFormat;
+        $dataRow['modifiedAt'] = $metadata->getCurrentModifiedAtTimeInDBFormat();
+    }
+
+    /**
+     * Algorithm to mark feed items deleted:
+     * - select all feed items for <$ids> where modifiedAt < "currentModifiedAt" - e.g. product
+     * - remove hashes that were already processed
+     * - mark entity as "deleted"
+     *
+     * @param array $ids
+     * @param array $processedHashes
+     * @param FeedIndexMetadata $metadata
+     * @param DataSerializerInterface $serializer
+     * @throws \Zend_Db_Statement_Exception
+     */
+    public function handleDeletedItems(
+        array                   $ids,
+        array                   $processedHashes,
+        FeedIndexMetadata       $metadata,
+        DataSerializerInterface $serializer
+    ): void {
+        foreach ($this->deletedEntitiesProvider->get($ids, $processedHashes, $metadata) as $feedItems) {
+            $feedItems = $this->addHashes($feedItems, $metadata, true);
+            $data = $this->filterFeedItems($feedItems, $metadata);
+
+            if (empty($data)) {
+                continue;
+            }
+            $exportStatus = $this->exportFeedProcessor->export(
+                array_column($data, 'feed'),
+                $metadata
+            );
+            $this->feedUpdater->execute($data, $exportStatus, $metadata, $serializer);
+        }
     }
 }

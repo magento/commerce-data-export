@@ -33,6 +33,7 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
         $this->objectManager = Bootstrap::getObjectManager();
         $this->action = $this->objectManager->create(Action::class);
         parent::setUp();
+        $this->emulateCustomersBehaviorAfterDeleteAction();
     }
 
     /**

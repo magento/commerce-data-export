@@ -13,6 +13,8 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\DataExporter\Exception\UnableRetrieveData;
+use Magento\DataExporter\Export\DataProcessorInterface;
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Downloadable\Model\Product\Type as Downloadable;
 use Magento\Eav\Model\Config;
@@ -21,7 +23,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\ProductPriceDataExporter\Model\Query\CustomerGroupPricesQuery;
-use Magento\ProductPriceDataExporter\Model\Query\CatalogRulePricesQuery;
 use Magento\ProductPriceDataExporter\Model\Query\ProductPricesQuery;
 
 /**
@@ -33,10 +34,9 @@ use Magento\ProductPriceDataExporter\Model\Query\ProductPricesQuery;
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class ProductPrice
+class ProductPrice implements DataProcessorInterface
 {
     private const FALLBACK_CUSTOMER_GROUP = "0";
-    private const PRICE_SCOPE_KEY_PART = 0;
     private const REGULAR_PRICE = 'price';
     private const UNKNOWN_PRICE_CODE = 'unknown';
     private const BUNDLE_FIXED = 'BUNDLE_FIXED';
@@ -60,8 +60,6 @@ class ProductPrice
     private ProductPricesQuery $pricesQuery;
     private CustomerGroupPricesQuery $customerGroupPricesQuery;
     private DateTime $dateTime;
-    private CatalogRulePricesQuery $catalogRulePricesQuery;
-    private DeleteFeedItems $deleteFeedItems;
     private CommerceDataExportLoggerInterface $logger;
     private Config $eavConfig;
 
@@ -73,9 +71,7 @@ class ProductPrice
     /**
      * @param ProductPricesQuery $pricesQuery
      * @param CustomerGroupPricesQuery $customerGroupPricesQuery
-     * @param CatalogRulePricesQuery $catalogRulePricesQuery
      * @param ResourceConnection $resourceConnection
-     * @param DeleteFeedItems $deleteFeedItems
      * @param DateTime $dateTime
      * @param Config $eavConfig
      * @param CommerceDataExportLoggerInterface $logger
@@ -83,9 +79,7 @@ class ProductPrice
     public function __construct(
         ProductPricesQuery $pricesQuery,
         CustomerGroupPricesQuery $customerGroupPricesQuery,
-        CatalogRulePricesQuery $catalogRulePricesQuery,
         ResourceConnection $resourceConnection,
-        DeleteFeedItems $deleteFeedItems,
         DateTime $dateTime,
         Config $eavConfig,
         CommerceDataExportLoggerInterface $logger
@@ -94,28 +88,36 @@ class ProductPrice
         $this->pricesQuery = $pricesQuery;
         $this->customerGroupPricesQuery = $customerGroupPricesQuery;
         $this->dateTime = $dateTime;
-        $this->catalogRulePricesQuery = $catalogRulePricesQuery;
-        $this->deleteFeedItems = $deleteFeedItems;
         $this->logger = $logger;
         $this->eavConfig = $eavConfig;
     }
 
     /**
-     * Get ProductPrice
+     * Execute product prices collecting
      *
-     * @param array $values
-     * @return array
-     * @throws UnableRetrieveData|LocalizedException
+     * @param array $arguments
+     * @param callable $dataProcessorCallback
+     * @param FeedIndexMetadata $metadata
+     * @param ? $node
+     * @param ? $info
+     * @return void
+     * @throws LocalizedException
+     * @throws UnableRetrieveData
      * @throws \Zend_Db_Statement_Exception
-     * @throws \Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function get(array $values): array
-    {
-        $ids = array_column($values, 'productId');
+    public function execute(
+        array $arguments,
+        callable $dataProcessorCallback,
+        FeedIndexMetadata $metadata,
+        $node = null,
+        $info = null
+    ): void {
+        $ids = array_column($arguments, 'productId');
         $cursor = $this->resourceConnection->getConnection()->query(
             $this->pricesQuery->getQuery($ids, \array_keys($this->getPriceAttributes()))
         );
-        $output = [];
+        $fallbackPrices = [];
         while ($row = $cursor->fetch()) {
             $percentageDiscount = null;
             $priceAttributeCode = $this->resolvePriceCode($row);
@@ -128,27 +130,27 @@ class ProductPrice
                 }
             }
             $key = $this->buildKey($row['entity_id'], $row['website_id'], self::FALLBACK_CUSTOMER_GROUP);
-            if (!isset($output[$key])) {
-                $output[$key] = $this->fillOutput($row, $key);
+            if (!isset($fallbackPrices[$key])) {
+                $fallbackPrices[$key] = $this->fillOutput($row, $key);
             }
             if ($priceAttributeCode === self::REGULAR_PRICE) {
-                $output[$key]['regular'] = (float)$row['price'];
+                $fallbackPrices[$key]['regular'] = (float)$row['price'];
             } elseif ($priceAttributeCode !== self::UNKNOWN_PRICE_CODE) {
-                $this->addDiscountPrice($output[$key], $priceAttributeCode, $row['price'], $percentageDiscount);
+                $this->addDiscountPrice($fallbackPrices[$key], $priceAttributeCode, $row['price'], $percentageDiscount);
             }
 
             // cover case when _this_ product type doesn't have regular price, but this field is required in schema
-            if (!isset($output[$key]['regular'])) {
-                $output[$key]['regular'] = 0.;
+            if (!isset($fallbackPrices[$key]['regular'])) {
+                $fallbackPrices[$key]['regular'] = 0.;
             }
         }
-        $filteredIds = array_unique(array_column($output, 'productId'));
-        $this->addCustomerGroupPrices($output, $filteredIds);
-        $this->addCatalogRulePrices($output, $filteredIds);
+        $filteredIds = array_unique(array_column($fallbackPrices, 'productId'));
+        // Add customer group prices to fallback records before processing
+        $this->addFallbackCustomerGroupPrices($fallbackPrices, $filteredIds);
 
-        $this->setItemsToDelete($output);
+        $dataProcessorCallback($this->get($fallbackPrices));
 
-        return $output;
+        $this->addCustomerGroupPrices($fallbackPrices, $filteredIds, $dataProcessorCallback, $metadata);
     }
 
     /**
@@ -180,6 +182,17 @@ class ProductPrice
     }
 
     /**
+     * For backward compatibility - to allow 3rd party plugins work
+     *
+     * @param array $values
+     * @return array
+     */
+    public function get(array $values) : array
+    {
+        return $values;
+    }
+
+    /**
      * Resolve price code
      *
      * @param array $row
@@ -194,78 +207,91 @@ class ProductPrice
     /**
      * Add Customer Group Prices
      *
-     * @param array $prices
+     * Handle customer group and catalog rule prices
+     *
+     * @param array $fallbackPrices
      * @param array $productIds
+     * @param callable $dataProcessorCallback
+     * @param FeedIndexMetadata $metadata
      * @return void
      * @throws \Zend_Db_Statement_Exception
      */
-    private function addCustomerGroupPrices(array &$prices, array $productIds): void
-    {
+    private function addCustomerGroupPrices(
+        array $fallbackPrices,
+        array $productIds,
+        callable $dataProcessorCallback,
+        FeedIndexMetadata $metadata
+    ): void {
         $cursor = $this->resourceConnection->getConnection()
             ->query($this->customerGroupPricesQuery->getQuery($productIds));
+        $itemN = 0;
+        $prices = [];
         while ($row = $cursor->fetch()) {
+            $itemN++;
             $customerGroupId = $row['customer_group_id'];
             $key = $this->buildKey($row['entity_id'], $row['website_id'], $customerGroupId . $row['all_groups']);
             $keyFallback = $this->buildKey($row['entity_id'], $row['website_id'], self::FALLBACK_CUSTOMER_GROUP);
-            $fallbackPrice = $prices[$keyFallback] ?? null;
+            $fallbackPrice = $fallbackPrices[$keyFallback] ?? null;
             if (!$fallbackPrice) {
                 $this->logger->error('Fallback price not found when adding customer group' . var_export($row, true));
                 continue;
             }
+            // To handle only catalog rule prices
+            if ($row['all_groups'] !== null) {
+                $priceValue = $row['group_price'] ?? null;
+                $pricePercentage = $row['percentage_value'] ?? null;
 
-            $priceValue = $row['value'] ?? null;
-            $pricePercentage = $row['percentage_value'] ?? null;
+                // copy feed data from fallbackPrice for each row of customer group price
+                $prices[$key] = $fallbackPrice;
 
-            // add "group" price to fallback price
-            if ((int)$row['all_groups'] === 1) {
-                $this->addDiscountPrice($prices[$keyFallback], 'group', $priceValue, $pricePercentage);
-                continue;
+                // override customer group specific fields
+                $this->addDiscountPrice($prices[$key], 'group', $priceValue, $pricePercentage, true);
             }
-            // copy feed data from fallbackPrice for each row of customer group price
-            $prices[$key] = $fallbackPrice;
 
-            // override customer group specific fields
-            $this->addDiscountPrice($prices[$key], 'group', $priceValue, $pricePercentage, true);
+            if ($row['rule_price'] !== null) {
+                if (!isset($prices[$key])) {
+                    $prices[$key] = $fallbackPrice;
+                }
+                $this->addDiscountPrice($prices[$key], 'catalog_rule', $row['rule_price']);
+            }
+
             $prices[$key]['customerGroupCode'] = $this->buildCustomerGroupCode($customerGroupId);
             $prices[$key]['productPriceId'] = $key;
+
+            if ($itemN % $metadata->getBatchSize() === 0) {
+                $dataProcessorCallback($this->get($prices));
+                $prices = [];
+            }
+        }
+        if ($prices) {
+            $dataProcessorCallback($this->get($prices));
         }
     }
 
     /**
-     * Add Catalog Rule Prices
+     * Add Customer Group Prices to fallback price
      *
-     * @param array $prices
+     * @param array $fallbackPrices
      * @param array $productIds
      * @return void
      * @throws \Zend_Db_Statement_Exception
+     * @throws \Exception
      */
-    private function addCatalogRulePrices(array &$prices, array $productIds): void
-    {
+    private function addFallbackCustomerGroupPrices(
+        array &$fallbackPrices,
+        array $productIds
+    ): void {
         $cursor = $this->resourceConnection->getConnection()
-            ->query($this->catalogRulePricesQuery->getQuery($productIds));
+            ->query($this->customerGroupPricesQuery->getCustomerGroupFallbackQuery($productIds));
         while ($row = $cursor->fetch()) {
-            $customerGroupId = $row['customer_group_id'];
-            $key = $this->buildKey(
-                $row['entity_id'],
-                $row['website_id'],
-                $customerGroupId . self::PRICE_SCOPE_KEY_PART
-            );
-
             $keyFallback = $this->buildKey($row['entity_id'], $row['website_id'], self::FALLBACK_CUSTOMER_GROUP);
-            $fallbackPrice = $prices[$keyFallback] ?? null;
-            if (!$fallbackPrice) {
-                $this->logger->error('Fallback price not found when adding catalog rule' . var_export($row, true));
+            if (!$fallbackPrices[$keyFallback]) {
+                $this->logger->error('Fallback price not found when adding customer group' . var_export($row, true));
                 continue;
             }
-
-            // copy feed data from fallbackPrice for each row of customer group price
-            if (empty($prices[$key])) {
-                $prices[$key] = $fallbackPrice;
-            }
-
-            $this->addDiscountPrice($prices[$key], 'catalog_rule', $row['value']);
-            $prices[$key]['customerGroupCode'] = sha1($customerGroupId);
-            $prices[$key]['productPriceId'] = $key;
+            $priceValue = $row['group_price'] ?? null;
+            $pricePercentage = $row['percentage_value'] ?? null;
+            $this->addDiscountPrice($fallbackPrices[$keyFallback], 'group', $priceValue, $pricePercentage);
         }
     }
 
@@ -285,7 +311,7 @@ class ProductPrice
     /**
      * Add Discount Price
      *
-     * @param array $prices
+     * @param array $priceFeedItem
      * @param string $code
      * @param ?string $price
      * @param ?string $percentage
@@ -293,14 +319,14 @@ class ProductPrice
      * @return void
      */
     private function addDiscountPrice(
-        array &$prices,
+        array &$priceFeedItem,
         string $code,
         string $price = null,
         string $percentage = null,
         bool $override = false
     ): void {
         if ($override) {
-            foreach ($prices['discounts'] as &$discount) {
+            foreach ($priceFeedItem['discounts'] as &$discount) {
                 if ($discount['code'] === $code) {
                     $this->setPriceOrPercentageDiscount($discount, $price, $percentage);
                     return;
@@ -315,7 +341,7 @@ class ProductPrice
 
         $priceDiscount['code'] = $code;
         $this->setPriceOrPercentageDiscount($priceDiscount, $price, $percentage);
-        $prices['discounts'][] = $priceDiscount;
+        $priceFeedItem['discounts'][] = $priceDiscount;
     }
 
     /**
@@ -405,22 +431,6 @@ class ProductPrice
         } elseif (null !== $price) {
             $discount['price'] = (float)$price;
             unset($discount['percentage']);
-        }
-    }
-
-    /**
-     * Delete items from the feed
-     *
-     * @param array $output
-     * @return void
-     */
-    private function setItemsToDelete(array &$output): void
-    {
-        $feedItemsToDelete = $this->deleteFeedItems->execute($output);
-        foreach ($feedItemsToDelete as $item) {
-            $key = $this->buildKey($item['productId'], $item['websiteId'], $item['customerGroupCode']);
-            $item['productPriceId'] = $key;
-            $output[$key] = $item;
         }
     }
 }

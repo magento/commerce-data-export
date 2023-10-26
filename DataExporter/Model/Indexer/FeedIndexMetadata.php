@@ -124,7 +124,17 @@ class FeedIndexMetadata
 
     private array $excludeFromHashFields;
 
+    /**
+     * @var array
+     */
     private array $feedIdentifierMapping;
+
+    /**
+     * Mutable field: set during partial indexation
+     *
+     * @var null|string
+     */
+    private ?string $modifiedAtTimeInDBFormat;
 
     /**
      * @param string $feedName
@@ -373,5 +383,21 @@ class FeedIndexMetadata
     public function getExcludeFromHashFields(): array
     {
         return $this->excludeFromHashFields;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCurrentModifiedAtTimeInDBFormat(): ?string
+    {
+        return $this->modifiedAtTimeInDBFormat;
+    }
+
+    /**
+     * @param string $modifiedAtTimeInDBFormat
+     */
+    public function setCurrentModifiedAtTimeInDBFormat(string $modifiedAtTimeInDBFormat): void
+    {
+        $this->modifiedAtTimeInDBFormat = $modifiedAtTimeInDBFormat;
     }
 }

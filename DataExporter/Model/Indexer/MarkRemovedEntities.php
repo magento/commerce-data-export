@@ -36,9 +36,6 @@ class MarkRemovedEntities implements MarkRemovedEntitiesInterface
     public function execute(array $ids, FeedIndexMetadata $metadata): ?array
     {
         $select = $this->markRemovedEntitiesQuery->getQuery($ids, $metadata);
-        if ($metadata->isExportImmediately()) {
-            return $this->resourceConnection->getConnection()->fetchAll($select);
-        }
 
         // convert select-object to sql-string with staging future
         $sqlSelect = $select->assemble();

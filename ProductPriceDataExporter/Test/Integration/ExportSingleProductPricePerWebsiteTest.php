@@ -7,19 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductPriceDataExporter\Test\Integration;
 
-use DateTime;
-use DateTimeInterface;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\DataExporter\Model\FeedInterface;
-use Magento\DataExporter\Model\FeedPool;
-use Magento\Indexer\Model\Indexer;
-use Magento\TestFramework\Helper\Bootstrap;
-use PHPUnit\Framework\TestCase;
-use RuntimeException;
-use Throwable;
-use Zend_Db_Statement_Exception;
 
 /**
  * Check prices for single (non-complex) products
@@ -28,42 +16,15 @@ use Zend_Db_Statement_Exception;
  * @magentoAppIsolation enabled
  * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
  */
-class ExportSingleProductPricePerWebsiteTest extends TestCase
+class ExportSingleProductPricePerWebsiteTest extends AbstractProductPriceTestHelper
 {
-    private const PRODUCT_PRICE_FEED_INDEXER = 'catalog_data_exporter_product_prices';
-
-    private Indexer $indexer;
-
-    private FeedInterface $productPricesFeed;
-
-    private ProductRepositoryInterface $productRepository;
-
-    private ResourceConnection $resourceConnection;
-
-    /**
-     * @param string|null $name
-     * @param array $data
-     * @param $dataName
-     */
-    public function __construct(
-        ?string $name = null,
-        array $data = [],
-        $dataName = ''
-    ) {
-        parent::__construct($name, $data, $dataName);
-        $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
-        $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
-        $this->productPricesFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('prices');
-        $this->resourceConnection = Bootstrap::getObjectManager()->create(ResourceConnection::class);
-    }
-
     /**
      * @magentoConfigFixture current_store catalog/price/scope 1
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/configure_website_scope_price.php
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products.php
      * @dataProvider expectedSimpleProductPricesDataProvider
+     * @param array $expectedSimpleProductPrices
      * @throws NoSuchEntityException
-     * @throws Zend_Db_Statement_Exception
      */
     public function testExportSimpleProductsPrices(array $expectedSimpleProductPrices): void
     {
@@ -75,8 +36,8 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/configure_website_scope_price.php
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/downloadable_products.php
      * @dataProvider expectedDownloadableProductPricesDataProvider
+     * @param array $expectedDownloadableProductPricesDataProvider
      * @throws NoSuchEntityException
-     * @throws Zend_Db_Statement_Exception
      */
     public function testExportDownloadableProductsPrices(array $expectedDownloadableProductPricesDataProvider): void
     {
@@ -91,7 +52,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
         return [
             [
                 [
-                    [
+                    'simple_product_with_regular_price_base_0' => [
                         'sku' => 'simple_product_with_regular_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -100,7 +61,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => null,
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_product_with_regular_price_test_0' => [
                         'sku' => 'simple_product_with_regular_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -109,7 +70,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => null,
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_product_with_special_price_base_0' => [
                         'sku' => 'simple_product_with_special_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -118,7 +79,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 50.5]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_product_with_special_price_test_0' => [
                         'sku' => 'simple_product_with_special_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -127,7 +88,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'virtual_product_with_special_price_base_0' => [
                         'sku' => 'virtual_product_with_special_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -136,7 +97,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 50.5]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'virtual_product_with_special_price_test_0' => [
                         'sku' => 'virtual_product_with_special_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -145,7 +106,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_product_with_tier_price_base_0' => [
                         'sku' => 'simple_product_with_tier_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -154,7 +115,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_product_with_tier_price_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'simple_product_with_tier_price',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
@@ -163,7 +124,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_product_with_tier_price_test_0' => [
                         'sku' => 'simple_product_with_tier_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -172,7 +133,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
                         'type' => 'SIMPLE'
                     ],
-                    [
+                    'simple_product_with_tier_price_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'simple_product_with_tier_price',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'test',
@@ -194,7 +155,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
         return [
             [
                 [
-                    [
+                    'downloadable_product_with_regular_price_base_0' => [
                         'sku' => 'downloadable_product_with_regular_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -203,7 +164,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => null,
                         'type' => 'DOWNLOADABLE'
                     ],
-                    [
+                    'downloadable_product_with_regular_price_test_0' => [
                         'sku' => 'downloadable_product_with_regular_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -212,7 +173,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => null,
                         'type' => 'DOWNLOADABLE'
                     ],
-                    [
+                    'downloadable_product_with_special_price_base_0' => [
                         'sku' => 'downloadable_product_with_special_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -221,7 +182,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 50.5]],
                         'type' => 'DOWNLOADABLE'
                     ],
-                    [
+                    'downloadable_product_with_special_price_test_0' => [
                         'sku' => 'downloadable_product_with_special_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -230,7 +191,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
                         'type' => 'DOWNLOADABLE'
                     ],
-                    [
+                    'downloadable_product_with_tier_price_base_0' => [
                         'sku' => 'downloadable_product_with_tier_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
@@ -239,7 +200,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
                         'type' => 'DOWNLOADABLE'
                     ],
-                    [
+                    'downloadable_product_with_tier_price_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'downloadable_product_with_tier_price',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
@@ -248,7 +209,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
                         'type' => 'DOWNLOADABLE'
                     ],
-                    [
+                    'downloadable_product_with_tier_price_test_0' => [
                         'sku' => 'downloadable_product_with_tier_price',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
@@ -257,7 +218,7 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                         'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
                         'type' => 'DOWNLOADABLE'
                     ],
-                    [
+                    'downloadable_product_with_tier_price_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'downloadable_product_with_tier_price',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'test',
@@ -269,90 +230,5 @@ class ExportSingleProductPricePerWebsiteTest extends TestCase
                 ]
             ]
         ];
-    }
-
-    /**
-     * @param array $expectedItems
-     * @return void
-     * @throws NoSuchEntityException
-     * @throws Zend_Db_Statement_Exception
-     */
-    private function checkExpectedItemsAreExportedInFeed(array $expectedItems): void
-    {
-        $ids = [];
-        foreach ($expectedItems as $expectedItem) {
-            $ids[] = $this->productRepository->get($expectedItem['sku'])->getId();
-        }
-        $timestamp = new DateTime('Now - 1 second');
-        $this->runIndexer($ids);
-        $actualProductPricesFeed = $this->productPricesFeed->getFeedSince($timestamp->format(DateTimeInterface::W3C));
-        self::assertNotEmpty($actualProductPricesFeed['feed'], 'Product Price Feed should not be empty');
-        self::assertCount(
-            count($expectedItems),
-            $actualProductPricesFeed['feed'],
-            'Product Price Feeds does not contain all expected items'
-        );
-
-        foreach ($expectedItems as $index => $product) {
-            if (!isset($actualProductPricesFeed['feed'][$index])) {
-                self::fail("Cannot find product price feed");
-            }
-
-            // unset fields from feed that we don't care about for test
-            $actualFeed = $this->unsetNotImportantField($actualProductPricesFeed['feed'][$index]);
-            self::assertEquals($product, $actualFeed, "Some items are missing in product price feed $index");
-        }
-    }
-
-    /**
-     * Run the indexer to extract product prices data
-     * @param $ids
-     * @return void
-     */
-    private function runIndexer($ids): void
-    {
-        try {
-            $this->indexer->load(self::PRODUCT_PRICE_FEED_INDEXER);
-            $this->indexer->reindexList($ids);
-        } catch (Throwable) {
-            throw new RuntimeException('Could not reindex product prices data');
-        }
-    }
-
-    /**
-     * @param array $actualProductPricesFeed
-     * @return array
-     */
-    private function unsetNotImportantField(array $actualProductPricesFeed): array
-    {
-        $actualFeed = $actualProductPricesFeed;
-
-        unset(
-            $actualFeed['modifiedAt'],
-            $actualFeed['updatedAt'],
-            $actualFeed['productId'],
-            $actualFeed['websiteId']
-        );
-
-        return $actualFeed;
-    }
-
-    /**
-     * @return void
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->truncateIndexTable();
-    }
-
-    /**
-     * Truncates index table
-     */
-    private function truncateIndexTable(): void
-    {
-        $connection = $this->resourceConnection->getConnection();
-        $feedTable = $this->resourceConnection->getTableName('catalog_data_exporter_product_prices');
-        $connection->truncateTable($feedTable);
     }
 }

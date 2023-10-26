@@ -27,15 +27,23 @@ class CustomerGroupPricesQuery
     private $metadataPool;
 
     /**
+     * @var DateWebsiteProvider
+     */
+    private DateWebsiteProvider $dateWebsiteProvider;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param MetadataPool $metadataPool
+     * @param DateWebsiteProvider $dateWebsiteProvider
      */
     public function __construct(
         ResourceConnection $resourceConnection,
-        MetadataPool $metadataPool
+        MetadataPool $metadataPool,
+        DateWebsiteProvider $dateWebsiteProvider
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->metadataPool = $metadataPool;
+        $this->dateWebsiteProvider = $dateWebsiteProvider;
     }
 
     /**
@@ -44,38 +52,152 @@ class CustomerGroupPricesQuery
      */
     public function getQuery(array $productIds): Select
     {
+        return $this->resourceConnection->getConnection()
+            ->select()
+            ->union([
+                $this->getCustomerGroupWithCatalogRulePricesSelect($productIds),
+                $this->getCatalogRulePricesSelect($productIds)
+            ], Select::SQL_UNION_ALL);
+    }
+
+    /**
+     * Get query to retrieve customer group prices for fallback items
+     *
+     * @param array $productIds
+     * @return Select
+     * @throws \Exception
+     */
+    public function getCustomerGroupFallbackQuery(array $productIds): Select
+    {
+        return $this->resourceConnection->getConnection()->select()
+                ->from(
+                    ['product' => $this->resourceConnection->getTableName('catalog_product_entity')],
+                    []
+                )
+                // select "website_id" since tier_price may have "all websites = 0" value
+                ->joinInner(
+                    ['product_website' => $this->resourceConnection->getTableName('catalog_product_website')],
+                    'product_website.product_id = product.entity_id',
+                    []
+                )
+                ->joinInner(
+                    ['tier' => $this->resourceConnection->getTableName('catalog_product_entity_tier_price')],
+                    \sprintf('product.%1$s = tier.%1$s', $this->getLinkField()) .
+                    ' AND tier.qty=1 AND tier.all_groups = 1 AND tier.website_id in (0, product_website.website_id)',
+                    []
+                )->columns([
+                    'product.sku',
+                    'product.entity_id',
+                    'product_website.website_id',
+                    'tier.value as group_price',
+                    'tier.percentage_value',
+                    'tier.customer_group_id'
+                ])
+                ->where('product.entity_id IN (?)', $productIds);
+    }
+
+    /**
+     * @return string
+     * @throws \Exception
+     */
+    private function getLinkField(): string
+    {
         /** @var \Magento\Framework\EntityManager\EntityMetadataInterface $metadata */
         $metadata = $this->metadataPool->getMetadata(\Magento\Catalog\Api\Data\ProductInterface::class);
-        $connection = $this->resourceConnection->getConnection();
+        return $metadata->getLinkField();
+    }
 
-        $linkField = $metadata->getLinkField();
+    private function getCustomerGroupWithCatalogRulePricesSelect(array $productIds): Select
+    {
+        $connection = $this->resourceConnection->getConnection();
 
         return $connection->select()
             ->from(
                 ['product' => $this->resourceConnection->getTableName('catalog_product_entity')],
-                [
-                    'sku',
-                    'entity_id',
-                    'type_id',
-                ]
+                []
             )
             // select "website_id" since tier_price may have "all websites = 0" value
             ->joinInner(
                 ['product_website' => $this->resourceConnection->getTableName('catalog_product_website')],
                 'product_website.product_id = product.entity_id',
-                ['website_id']
+                []
             )
             ->joinInner(
                 ['tier' => $this->resourceConnection->getTableName('catalog_product_entity_tier_price')],
-                \sprintf('product.%1$s = tier.%1$s', $linkField) .
-                ' AND tier.qty=1 AND tier.website_id in (0, product_website.website_id)',
-                [
-                    'all_groups',
-                    'value',
-                    'percentage_value',
-                    'customer_group_id',
-                ]
+                \sprintf('product.%1$s = tier.%1$s', $this->getLinkField()) .
+                ' AND tier.qty=1 AND tier.all_groups = 0 AND tier.website_id in (0, product_website.website_id)',
+                []
             )
+            ->joinLeft(
+                ['rule' => $this->resourceConnection->getTableName('catalogrule_product_price')],
+                'product.entity_id = rule.product_id' .
+                ' AND rule.website_id = product_website.website_id' .
+                ' AND rule.customer_group_id = tier.customer_group_id' .
+                ' AND rule.rule_date = ' . $this->getWebsiteDate(),
+                []
+            )->columns([
+                'product.sku',
+                'product.entity_id',
+                'product_website.website_id',
+                'tier.all_groups',
+                'tier.value as group_price',
+                'tier.percentage_value',
+                'tier.customer_group_id',
+                'rule.rule_price'
+            ])
             ->where('product.entity_id IN (?)', $productIds);
+    }
+
+    private function getCatalogRulePricesSelect(array $productIds): Select
+    {
+        $connection = $this->resourceConnection->getConnection();
+
+        return $connection->select()
+            ->from(
+                ['product' => $this->resourceConnection->getTableName('catalog_product_entity')],
+                []
+            )
+            ->joinInner(
+                ['product_website' => $this->resourceConnection->getTableName('catalog_product_website')],
+                'product_website.product_id = product.entity_id',
+                []
+            )
+            ->joinInner(
+                ['rule' => $this->resourceConnection->getTableName('catalogrule_product_price')],
+                'product.entity_id = rule.product_id' .
+                ' AND rule.website_id = product_website.website_id AND rule.rule_date = ' . $this->getWebsiteDate(),
+                []
+            )
+            ->joinLeft(
+                ['tier' => $this->resourceConnection->getTableName('catalog_product_entity_tier_price')],
+                \sprintf('product.%1$s = tier.%1$s', $this->getLinkField()) .
+                ' AND tier.qty=1 AND tier.website_id in (0, product_website.website_id)',
+                []
+            )
+            ->columns([
+                'product.sku',
+                'product.entity_id',
+                'product_website.website_id',
+                'tier.all_groups',
+                'tier.value as group_price',
+                'tier.percentage_value',
+                'rule.customer_group_id',
+                'rule.rule_price'
+            ])
+            ->where('product.entity_id IN (?)', $productIds)
+            ->where('tier.value_id is NULL');
+    }
+
+    private function getWebsiteDate(): \Zend_Db_Expr
+    {
+        $caseResults = [];
+        foreach ($this->dateWebsiteProvider->getWebsitesDate() as $websiteId => $date) {
+            $caseResults["product_website.website_id = '$websiteId'"] = "'$date'";
+        }
+        return $this->resourceConnection->getConnection()->getCaseSql(
+            '',
+            $caseResults,
+            'CURRENT_DATE'
+        );
     }
 }

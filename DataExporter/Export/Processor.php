@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Magento\DataExporter\Export;
 
 use Magento\DataExporter\Export\Request\InfoAssembler;
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
@@ -64,14 +65,53 @@ class Processor
     }
 
     /**
+     * Process data inside callback
+     *
+     * @param FeedIndexMetadata $metadata
+     * @param array $arguments
+     * @param callable $dataProcessorCallback
+     * @return void
+     */
+    public function processWithCallback(
+        FeedIndexMetadata $metadata,
+        array $arguments,
+        callable $dataProcessorCallback
+    ) : void {
+        try {
+            $info = $this->infoAssembler->assembleFieldInfo($metadata->getFeedName(), $this->rootProfileName);
+
+            $dataProcessorCallback = function ($snapshots) use ($dataProcessorCallback, $info) {
+
+                $dataProcessorCallback($this->transformer->transform($info, $snapshots));
+            };
+            $this->extractor->extractWithCallback($info, $arguments, $dataProcessorCallback, $metadata);
+        } catch (\Throwable $exception) {
+            $provider = empty($info) === false ? $info->getRootNode()->getField()['provider'] : '';
+            // if error happened during data collecting we skip entire process
+            $this->logger->error(
+                \sprintf(
+                    'Unable to collect data for provider %s, error: %s',
+                    $provider,
+                    $exception->getMessage()
+                ),
+                ['exception' => $exception]
+            );
+        }
+    }
+
+    /**
      * Process data
      *
      * @param string $fieldName
      * @param array $arguments
+     * @param null|array $proxyData - added for backward compatibility with originally `processWithCallback` is called
      * @return array
      */
-    public function process(string $fieldName, array $arguments = []) : array
+    public function process(string $fieldName, array $arguments = [], array $proxyData = null) : array
     {
+        if ($proxyData !== null) {
+            return $proxyData;
+        }
         try {
             $info = $this->infoAssembler->assembleFieldInfo($fieldName, $this->rootProfileName);
             $snapshots = $this->extractor->extract($info, $arguments);

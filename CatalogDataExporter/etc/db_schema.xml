@@ -75,6 +75,7 @@
         </constraint>
         <index referenceId="catalog_data_exporter_products_modified_at" indexType="btree">
             <column name="modified_at"/>
+            <column name="id"/>
         </index>
     </table>
 

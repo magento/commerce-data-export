@@ -11,11 +11,13 @@ use Magento\DataExporter\Export\Processor as ExportProcessor;
 use Magento\DataExporter\Model\FeedHashBuilder;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\DataExporter\Model\ExportFeedInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Serialize\SerializerInterface;
 
 /**
  * Feed indexer processor strategy, support creation, updates and deletion of an entity
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
 {
@@ -31,6 +33,7 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
      * @param FeedHashBuilder $hashBuilder
      * @param SerializerInterface $serializer
      * @param CommerceDataExportLoggerInterface $logger
+     * @param ?DeletedEntitiesProviderInterface $deletedEntitiesProvider
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -40,7 +43,8 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
         ExportFeedInterface $exportFeedProcessor,
         FeedHashBuilder $hashBuilder,
         SerializerInterface $serializer,
-        CommerceDataExportLoggerInterface $logger
+        CommerceDataExportLoggerInterface $logger,
+        DeletedEntitiesProviderInterface $deletedEntitiesProvider = null
     ) {
         parent::__construct(
             $resourceConnection,
@@ -49,7 +53,8 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
             $feedUpdater,
             $hashBuilder,
             $serializer,
-            $logger
+            $logger,
+            $deletedEntitiesProvider ?? ObjectManager::getInstance()->get(DeletedEntitiesProviderInterface::class)
         );
         $this->markRemovedEntities = $markRemovedEntities;
         $this->logger = $logger;
@@ -72,17 +77,16 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
         array $ids = [],
         callable $callback = null
     ): void {
-        $callback = function () use ($ids, $metadata) {
+        parent::partialReindex($metadata, $serializer, $idsProvider, $ids, $callback);
+        if (!$metadata->isExportImmediately()) {
             try {
-                return $this->markRemovedEntities->execute($ids, $metadata);
+                $this->markRemovedEntities->execute($ids, $metadata);
             } catch (\Throwable $e) {
                 $this->logger->error(
                     sprintf("Cannot delete feed items. product ids: %s", implode(', ', $ids)),
                     ['exception' => $e]
                 );
             }
-        };
-
-        parent::partialReindex($metadata, $serializer, $idsProvider, $ids, $callback);
+        }
     }
 }

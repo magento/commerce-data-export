@@ -15,7 +15,8 @@
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
             <argument name="feedTableName" xsi:type="string">catalog_data_exporter_product_prices</argument>
             <argument name="feedTableField" xsi:type="string">product_id</argument>
-            <argument name="feedOffsetLimit" xsi:type="number">1000</argument>
+            <argument name="feedOffsetLimit" xsi:type="number">500</argument>
+            <argument name="batchSize" xsi:type="number">500</argument>
             <argument name="truncateFeedOnFullReindex" xsi:type="boolean">false</argument>
             <argument name="exportImmediately" xsi:type="boolean">true</argument>
             <argument name="persistExportedFeed" xsi:type="init_parameter">Magento\DataExporter\Model\ExportFeedInterface::PERSIST_EXPORTED_FEED</argument>
@@ -49,9 +50,9 @@
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata</argument>
             <argument name="serializer" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceDataSerializer</argument>
-            <argument name="processor" xsi:type="object">Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdate</argument>
         </arguments>
     </virtualType>
+
     <virtualType name="Magento\ProductPriceDataExporter\Model\ProductPriceFeed" type="Magento\DataExporter\Model\Feed">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata</argument>
@@ -64,7 +65,6 @@
             </argument>
         </arguments>
     </type>
-
 
     <type name="Magento\DataExporter\Model\FeedMetadataPool">
         <arguments>

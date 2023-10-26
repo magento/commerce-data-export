@@ -7,23 +7,13 @@ declare(strict_types=1);
 
 namespace Magento\ProductPriceDataExporter\Test\Integration;
 
-use DateTime;
-use DateTimeInterface;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\DataExporter\Model\FeedInterface;
-use Magento\DataExporter\Model\FeedPool;
-use Magento\Framework\ObjectManagerInterface;
-use Magento\Indexer\Model\Indexer;
-use Magento\Indexer\Model\Processor;
+use Magento\Framework\Exception\StateException;
 use Magento\Store\Api\StoreRepositoryInterface;
-use Magento\TestFramework\Helper\Bootstrap;
-use PHPUnit\Framework\TestCase;
-use RuntimeException;
-use Throwable;
-use Zend_Db_Statement_Exception;
 use Magento\Store\Api\WebsiteRepositoryInterface;
+use Magento\Store\Model\StoreIsInactiveException;
 
 /**
  * Check prices for single (non-complex) products with update operations
@@ -33,61 +23,33 @@ use Magento\Store\Api\WebsiteRepositoryInterface;
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
  */
-class ExportSingleProductPriceUpdateOperationsTest extends TestCase
+class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceTestHelper
 {
-    private const PRODUCT_PRICE_FEED_INDEXER = 'catalog_data_exporter_product_prices';
-
-    private Indexer $indexer;
-
-    private FeedInterface $productPricesFeed;
-
-    private ProductRepositoryInterface $productRepository;
-
-    private ResourceConnection $resourceConnection;
-
-    private ObjectManagerInterface $objectManager;
-
-    /**
-     * @param string|null $name
-     * @param array $data
-     * @param $dataName
-     */
-    public function __construct(
-        ?string $name = null,
-        array $data = [],
-        $dataName = ''
-    ) {
-        parent::__construct($name, $data, $dataName);
-        $this->objectManager = Bootstrap::getObjectManager();
-        $this->indexer = $this->objectManager->create(Indexer::class);
-        $this->productRepository = $this->objectManager->create(ProductRepositoryInterface::class);
-        $this->productPricesFeed = $this->objectManager->get(FeedPool::class)->getFeed('prices');
-        $this->resourceConnection = $this->objectManager->create(ResourceConnection::class);
-    }
-
     /**
      * @magentoConfigFixture current_store catalog/price/scope 1
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/configure_website_scope_price.php
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/catalog_data_exporter_product_prices_indexer_update_on_schedule.php
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products_all_websites_grouped_price.php
      * @dataProvider expectedSimpleProductPricesUnassignedWebsiteDataProvider
+     * @param array $expectedSimpleProductPrices
      * @throws NoSuchEntityException
-     * @throws Zend_Db_Statement_Exception
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws StateException
      */
     public function testUnassignProductFromWebsite(array $expectedSimpleProductPrices): void
     {
-        $expectedIds = [];
+        $affectedIds = [];
         foreach ($expectedSimpleProductPrices as $expectedItem) {
-            $expectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
+            $affectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
         }
-        $this->runIndexer($expectedIds);
+        $this->runIndexer($affectedIds);
         $product = $this->productRepository->get('simple_product_with_tier_price');
         $websiteRepository = $this->objectManager->get(WebsiteRepositoryInterface::class);
         $secondWebsiteId = $websiteRepository->get('test')->getId();
         $product->setWebsiteIds([$secondWebsiteId]);
-        sleep(1);  // Make sure that more than one second passed after previous save
         $this->productRepository->save($product);
-        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices, $expectedIds);
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
     }
 
     /**
@@ -96,22 +58,25 @@ class ExportSingleProductPriceUpdateOperationsTest extends TestCase
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/catalog_data_exporter_product_prices_indexer_update_on_schedule.php
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products_all_websites_grouped_price.php
      * @dataProvider expectedSimpleProductDisabledGlobalDataProvider
+     * @param array $expectedSimpleProductPrices
+     * @throws CouldNotSaveException
+     * @throws InputException
      * @throws NoSuchEntityException
-     * @throws Zend_Db_Statement_Exception
+     * @throws StateException
      */
     public function testDisableProductGlobally(array $expectedSimpleProductPrices): void
     {
-        $expectedIds = [];
+        $affectedIds = [];
         foreach ($expectedSimpleProductPrices as $expectedItem) {
-            $expectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
+            $affectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
         }
-        $this->runIndexer($expectedIds);
+        $this->runIndexer($affectedIds);
         //Get product for edit in general scope (all websites)
         $product = $this->productRepository->get('simple_product_with_tier_price', true, 0);
         //Disable it on general level
         $product->setStatus(2);
         $this->productRepository->save($product);
-        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices, $expectedIds);
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
     }
 
     /**
@@ -120,16 +85,20 @@ class ExportSingleProductPriceUpdateOperationsTest extends TestCase
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/catalog_data_exporter_product_prices_indexer_update_on_schedule.php
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products_all_websites_grouped_price.php
      * @dataProvider expectedSimpleProductEnabledOneStoreDataProvider
+     * @param array $expectedSimpleProductPrices
+     * @throws CouldNotSaveException
+     * @throws InputException
      * @throws NoSuchEntityException
-     * @throws Zend_Db_Statement_Exception
+     * @throws StateException
+     * @throws StoreIsInactiveException
      */
     public function testEnableProductOnWebsite(array $expectedSimpleProductPrices): void
     {
-        $expectedIds = [];
+        $affectedIds = [];
         foreach ($expectedSimpleProductPrices as $expectedItem) {
-            $expectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
+            $affectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
         }
-        $this->runIndexer($expectedIds);
+        $this->runIndexer($affectedIds);
         //Get product for edit in general scope (all websites)
         $product = $this->productRepository->get('simple_product_with_tier_price', true, 0);
         //Disable it on general level
@@ -147,7 +116,7 @@ class ExportSingleProductPriceUpdateOperationsTest extends TestCase
         //Enable for second store
         $secondStoreProduct->setStatus(1);
         $this->productRepository->save($secondStoreProduct);
-        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices, $expectedIds);
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
     }
 
     /**
@@ -156,27 +125,30 @@ class ExportSingleProductPriceUpdateOperationsTest extends TestCase
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/catalog_data_exporter_product_prices_indexer_update_on_schedule.php
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products_all_websites_grouped_price.php
      * @dataProvider expectedSimpleProductPricesReassignProductsToWebsiteDataProvider
+     * @param array $expectedSimpleProductPrices
+     * @throws CouldNotSaveException
+     * @throws InputException
      * @throws NoSuchEntityException
-     * @throws Zend_Db_Statement_Exception
+     * @throws StateException
      */
     public function testReassignProductToWebsite(array $expectedSimpleProductPrices): void
     {
-        $expectedIds = [];
+        $affectedIds = [];
         foreach ($expectedSimpleProductPrices as $expectedItem) {
-            $expectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
+            $affectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
         }
-        $this->runIndexer($expectedIds);
+        $this->runIndexer($affectedIds);
         $product = $this->productRepository->get('simple_product_with_tier_price');
         $websiteRepository = $this->objectManager->get(WebsiteRepositoryInterface::class);
         $firstWebsiteId = $websiteRepository->get('base')->getId();
         $secondWebsiteId = $websiteRepository->get('test')->getId();
         $product->setWebsiteIds([$secondWebsiteId]);
         $this->productRepository->save($product);
-        $this->runIndexer($expectedIds);
+        $this->runIndexer($affectedIds);
         $product->setWebsiteIds([$firstWebsiteId, $secondWebsiteId]);
         $this->productRepository->save($product);
 
-        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices, $expectedIds);
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
     }
 
     /**
@@ -226,6 +198,24 @@ class ExportSingleProductPriceUpdateOperationsTest extends TestCase
                         'websiteCode' => 'test',
                         'regular' => 100.1,
                         'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
+                        'type' => 'SIMPLE'
+                    ],
+                    'simple_product_with_tier_price_base_0' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => true,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'type' => 'SIMPLE'
+                    ],
+                    'simple_product_with_tier_price_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'deleted' => true,
                         'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
                         'type' => 'SIMPLE'
                     ],
@@ -477,101 +467,5 @@ class ExportSingleProductPriceUpdateOperationsTest extends TestCase
                 ]
             ]
         ];
-    }
-
-    /**
-     * @param array $expectedItems
-     * @param array $ids
-     * @return void
-     * @throws NoSuchEntityException
-     * @throws Zend_Db_Statement_Exception
-     */
-    private function checkExpectedItemsAreExportedInFeed(array $expectedItems, array $ids): void
-    {
-        $timestamp = new DateTime('Now - 1 second');
-        $processor = $this->objectManager->create(Processor::class);
-        $processor->updateMview();
-        $processor->reindexAllInvalid();
-        $actualProductPricesFeed = $this->productPricesFeed->getFeedSince($timestamp->format(DateTimeInterface::W3C));
-        self::assertNotEmpty($actualProductPricesFeed['feed'], 'Product Price Feed should not be empty');
-        $feedsToCheck = [];
-        foreach ($actualProductPricesFeed['feed'] as $product) {
-            if (array_contains($ids, (string)$product['productId'])) {
-                $itemKey = $product['sku'] . '_' . $product['websiteCode'] . '_' . $product['customerGroupCode'];
-                $feedsToCheck[$itemKey] = $this->unsetNotImportantField($product);
-            }
-        }
-        if (!empty($feedsToCheck)) {
-            self::assertCount(
-                count($ids),
-                $feedsToCheck,
-                'Product Price Feeds does not contain all expected items'
-            );
-        } else {
-            self::fail("There are no expected products in the feed");
-        }
-
-        foreach ($expectedItems as $expectedKey => $expectedItem) {
-            if (!isset($feedsToCheck[$expectedKey])) {
-                self::fail("Cannot find product price feed");
-            }
-            self::assertEquals(
-                $expectedItem,
-                $feedsToCheck[$expectedKey],
-                "Some items are missing in product price feed " . $expectedItem['sku']
-            );
-        }
-    }
-
-    /**
-     * Run the indexer to extract product prices data
-     * @param $ids
-     * @return void
-     */
-    private function runIndexer($ids): void
-    {
-        try {
-            $this->indexer->load(self::PRODUCT_PRICE_FEED_INDEXER);
-            $this->indexer->reindexList($ids);
-        } catch (Throwable) {
-            throw new RuntimeException('Could not reindex product prices data');
-        }
-    }
-
-    /**
-     * @param array $actualProductPricesFeed
-     * @return array
-     */
-    private function unsetNotImportantField(array $actualProductPricesFeed): array
-    {
-        $actualFeed = $actualProductPricesFeed;
-
-        unset(
-            $actualFeed['modifiedAt'],
-            $actualFeed['updatedAt'],
-            $actualFeed['productId'],
-            $actualFeed['websiteId']
-        );
-
-        return $actualFeed;
-    }
-
-    /**
-     * @return void
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->truncateIndexTable();
-    }
-
-    /**
-     * Truncates index table
-     */
-    private function truncateIndexTable(): void
-    {
-        $connection = $this->resourceConnection->getConnection();
-        $feedTable = $this->resourceConnection->getTableName('catalog_data_exporter_product_prices');
-        $connection->truncateTable($feedTable);
     }
 }
