@@ -26,7 +26,7 @@ $registry->register('isSecureArea', true);
 /** @var Collection $categoryCollection */
 $categoryCollection = $categoryCollectionFactory->create();
 $category = $categoryCollection
-    ->addAttributeToFilter(CategoryInterface::KEY_NAME, 'Third Root Category')
+    ->addAttributeToFilter(CategoryInterface::KEY_NAME, 'Second Root Category')
     ->setPageSize(1)
     ->getFirstItem();
 if ($category->getId()) {
