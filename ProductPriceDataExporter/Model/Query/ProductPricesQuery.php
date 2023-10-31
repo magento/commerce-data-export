@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace Magento\ProductPriceDataExporter\Model\Query;
 
 use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
@@ -131,6 +130,8 @@ class ProductPricesQuery
             )
             ->where('product.entity_id IN (?)', $productIds)
             ->where('product.type_id NOT IN (?)', self::IGNORED_TYPES)
+            // exclude "admin" website
+            ->where('store_website.website_id != ?', 0)
             ->order('product.entity_id')
             ->order('product_website.website_id')
             ->order('eav_store.attribute_id')

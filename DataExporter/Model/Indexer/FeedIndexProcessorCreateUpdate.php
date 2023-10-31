@@ -190,6 +190,9 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      */
     private function filterFeedItems(array $feedItems, FeedIndexMetadata $metadata, &$processedHashes = null) : array
     {
+        if (empty($feedItems)) {
+            return [];
+        }
         $connection = $this->resourceConnection->getConnection();
         $primaryKeyFields = $this->getFeedTablePrimaryKey($metadata);
         $primaryKeys = \array_keys($feedItems);
@@ -235,6 +238,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             if ($deleted) {
                 if (!isset($row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH])) {
                     $this->logger->error("Feed hash is not set for the product id: ". $row['productId']);
+                    unset($data[$key]);
                     continue ;
                 }
                 $identifier = $this->hashBuilder->buildIdentifierFromFeedTableRow($row, $metadata);
@@ -247,7 +251,16 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 $identifier = $this->hashBuilder->buildIdentifierFromFeedItem($row, $metadata);
             }
             unset($data[$key]);
-
+            if (empty($identifier)) {
+                $this->logger->error(
+                    'Identifier for feed item is empty. Skip sync for entity',
+                    [
+                        'feed' => $metadata->getFeedName(),
+                        'item' => var_export($row, true)
+                    ]
+                );
+                continue;
+            }
             $hash = $this->hashBuilder->buildHash($row, $metadata);
             $this->addModifiedAtField($row, $metadata);
             $data[$identifier] = [

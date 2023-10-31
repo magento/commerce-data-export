@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Magento\DataExporter\Model;
 
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Serialize\SerializerInterface;
 
@@ -18,17 +19,21 @@ class FeedHashBuilder
 {
     private SerializerInterface $serializer;
     private ResourceConnection $resourceConnection;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param SerializerInterface $serializer
      * @param ResourceConnection $resourceConnection
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         SerializerInterface $serializer,
-        ResourceConnection $resourceConnection
+        ResourceConnection $resourceConnection,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->serializer = $serializer;
         $this->resourceConnection = $resourceConnection;
+        $this->logger = $logger;
     }
 
     /**
@@ -71,7 +76,15 @@ class FeedHashBuilder
     {
         $identifier = [];
         foreach ($metadata->getFeedIdentifierMappingFields() as $field) {
-            $this->addValue($identifier, array_key_exists($field, $feedItem) ? (string)$feedItem[$field] : '');
+            $value = array_key_exists($field, $feedItem) ? (string)$feedItem[$field] : null;
+            if ($value === null) {
+                $this->logger->error(
+                    "Cannot build identifier for '$field' from feed item: " . var_export($feedItem, true)
+                );
+                continue;
+            }
+
+            $this->addValue($identifier, $value);
         }
         return $this->convertToString($identifier);
     }
@@ -87,7 +100,14 @@ class FeedHashBuilder
     {
         $identifier = [];
         foreach (array_keys($metadata->getFeedIdentifierMappingFields()) as $columnName) {
-            $this->addValue($identifier, array_key_exists($columnName, $row) ? (string)$row[$columnName] : '');
+            $value = array_key_exists($columnName, $row) ? (string)$row[$columnName] : null;
+            if ($value === null) {
+                $this->logger->error(
+                    "Cannot build identifier for '$columnName' from feed table: " . var_export($row, true)
+                );
+                continue;
+            }
+            $this->addValue($identifier, $value);
         }
         return $this->convertToString($identifier);
     }

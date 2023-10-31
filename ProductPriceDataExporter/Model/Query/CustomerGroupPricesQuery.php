@@ -171,7 +171,8 @@ class CustomerGroupPricesQuery
             ->joinLeft(
                 ['tier' => $this->resourceConnection->getTableName('catalog_product_entity_tier_price')],
                 \sprintf('product.%1$s = tier.%1$s', $this->getLinkField()) .
-                ' AND tier.qty=1 AND tier.website_id in (0, product_website.website_id)',
+                ' AND tier.qty=1 AND tier.all_groups = 0 AND tier.customer_group_id = rule.customer_group_id '
+                . 'AND tier.website_id in (0, product_website.website_id)',
                 []
             )
             ->columns([
