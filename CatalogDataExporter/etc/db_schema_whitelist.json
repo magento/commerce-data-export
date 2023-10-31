@@ -1,7 +1,8 @@
 {
     "catalog_data_exporter_products": {
         "index": {
-            "CATALOG_DATA_EXPORTER_PRODUCTS_MODIFIED_AT": true
+            "CATALOG_DATA_EXPORTER_PRODUCTS_MODIFIED_AT": true,
+            "CATALOG_DATA_EXPORTER_PRODUCTS_MODIFIED_AT_STATUS": true
         },
         "constraint": {
             "PRIMARY": true

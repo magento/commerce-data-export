@@ -78,5 +78,9 @@
             <column name="modified_at"/>
             <column name="product_id"/>
         </index>
+        <index referenceId="catalog_data_exporter_product_prices_modified_at_status" indexType="btree">
+            <column name="modified_at"/>
+            <column name="status"/>
+        </index>
     </table>
 </schema>

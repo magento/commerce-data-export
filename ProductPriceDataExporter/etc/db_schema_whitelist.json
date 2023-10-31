@@ -1,7 +1,8 @@
 {
     "catalog_data_exporter_product_prices": {
         "index": {
-            "CATALOG_DATA_EXPORTER_PRODUCT_PRICES_MODIFIED_AT": true
+            "CATALOG_DATA_EXPORTER_PRODUCT_PRICES_MODIFIED_AT": true,
+            "CATALOG_DATA_EXPORTER_PRODUCT_PRICES_MODIFIED_AT_STATUS": true
         },
         "constraint": {
             "PRIMARY": true

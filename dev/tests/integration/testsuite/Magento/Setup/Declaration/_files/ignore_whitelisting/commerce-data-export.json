@@ -1,0 +1,25 @@
+{
+  "catalog_data_exporter_products": {
+    "constraint": [
+      "PRIMARY"
+    ],
+    "index": [
+      "CATALOG_DATA_EXPORTER_PRODUCTS_MODIFIED_AT_ID",
+      "CATALOG_DATA_EXPORTER_PRODUCTS_MODIFIED_AT_STATUS"
+    ]
+  },
+  "catalog_data_exporter_product_prices": {
+    "constraint": [
+      "PRIMARY"
+    ],
+    "index": [
+      "CATALOG_DATA_EXPORTER_PRODUCT_PRICES_MODIFIED_AT_PRODUCT_ID",
+      "CATALOG_DATA_EXPORTER_PRODUCT_PRICES_MODIFIED_AT_STATUS"
+    ]
+  },
+  "catalog_data_submitted_hash": {
+    "constraint": [
+      "PRIMARY"
+    ]
+  }
+}

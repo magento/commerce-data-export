@@ -77,6 +77,10 @@
             <column name="modified_at"/>
             <column name="id"/>
         </index>
+        <index referenceId="catalog_data_exporter_products_modified_at_status" indexType="btree">
+            <column name="modified_at"/>
+            <column name="status"/>
+        </index>
     </table>
 
     <table name="catalog_data_exporter_categories" resource="default" engine="innodb" comment="Category Feed Storage">
