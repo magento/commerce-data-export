@@ -13,37 +13,20 @@ $objectManager = Bootstrap::getObjectManager();
 /** @var \Magento\Sales\Model\Order $order */
 $order = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()->create(\Magento\Sales\Model\Order::class);
 $order->loadByIncrementId('100000001');
-$order->setData(
-    'base_to_global_rate',
-    2.1
-)->setData(
-    'base_shipping_amount',
-    20.1
-)->setData(
-    'base_shipping_canceled',
-    2.1
-)->setData(
-    'base_shipping_invoiced',
-    20.1
-)->setData(
-    'base_shipping_refunded',
-    3.1
-)->setData(
-    'is_virtual',
-    0
-)->setData(
-    'shipping_method',
-    'flatrate_flatrate'
-)->setData(
-    'shipping_description',
-    'flatrate description'
-)->setData(
-    'shipping_amount',
-    1.5
-)->setData(
-    'shipping_tax_amount',
-    0.5
-)->save();
+$order->setData('base_to_global_rate', 2.1)
+    ->setData('base_shipping_amount', 20.1)
+    ->setData('base_shipping_canceled', 2.1)
+    ->setData('base_shipping_invoiced', 20.1)
+    ->setData('base_shipping_refunded', 3.1)
+    ->setData('is_virtual', 0)
+    ->setData('shipping_method', 'flatrate_flatrate')
+    ->setData('shipping_description', 'flatrate description')
+    ->setData('shipping_amount', 1.5)
+    ->setBaseShippingTaxAmount(2)
+    ->setBaseTaxAmount(3)
+    ->setBaseDiscountAmount(5)
+    ->setBaseTotalInvoiced(30)
+    ->save();
 
 $orderItems = $order->getItems();
 /** @var \Magento\Sales\Api\Data\OrderItemInterface $orderItem */
@@ -53,6 +36,7 @@ $orderItem = array_values($orderItems)[0];
 $invoiceItem = $objectManager->create(\Magento\Sales\Api\Data\InvoiceItemCreationInterface::class);
 $invoiceItem->setOrderItemId($orderItem->getItemId());
 $invoiceItem->setQty($orderItem->getQtyOrdered());
+
 /** @var \Magento\Sales\Api\InvoiceOrderInterface $invoiceOrder */
 $invoiceOrder = $objectManager->create(\Magento\Sales\Api\InvoiceOrderInterface::class);
 $invoiceOrder->execute($order->getEntityId(), false, [$invoiceItem]);
@@ -61,6 +45,7 @@ $invoiceOrder->execute($order->getEntityId(), false, [$invoiceItem]);
 $shipmentItem = $objectManager->create(\Magento\Sales\Api\Data\ShipmentItemCreationInterface::class);
 $shipmentItem->setOrderItemId($orderItem->getItemId());
 $shipmentItem->setQty($orderItem->getQtyOrdered());
+
 /** @var \Magento\Sales\Api\ShipOrderInterface $shipOrder */
 $shipOrder = $objectManager->create(\Magento\Sales\Api\ShipOrderInterface::class);
 $shipOrder->execute($order->getEntityId(), [$shipmentItem]);

@@ -7,17 +7,19 @@ declare(strict_types=1);
 
 namespace Magento\SalesOrdersDataExporter\Test\Integration;
 
+use Magento\DataExporter\Uuid\ResourceModel\UuidResource;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderInterfaceFactory;
-use Magento\DataExporter\Uuid\ResourceModel\UuidResource;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\Data\ShipmentTrackInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Creditmemo;
 use Magento\Sales\Model\Order\Invoice;
+use Magento\Sales\Model\Order\Payment\Transaction\Repository as TransactionRepository;
 use Magento\Sales\Model\Order\Shipment;
 use Magento\TestFramework\Helper\Bootstrap;
-use Magento\Sales\Model\Order\Payment\Transaction\Repository as TransactionRepository;
 
 /**
  * Test for orders data exporter functionality
@@ -60,425 +62,208 @@ class CreateOrderTest extends AbstractOrderFeedTest
     }
 
     /**
-     * @param string $orderNumber
-     * @param string[] $dataToVerify
-     *
-     * @dataProvider orderWithTwoItemsDataProvider
      * @magentoDataFixture Magento/Sales/_files/customer_order_with_two_items.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
-     * @throws \Magento\Framework\Exception\InputException
+     * @throws InputException|NoSuchEntityException
      */
-    public function testOrderWithTwoProductsInformation(string $orderNumber, array $dataToVerify): void
+    public function testOrderWithTwoProductsInformation(): void
     {
         /** @var OrderInterface $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
+        $order = $this->orderFactory->create()->loadByIncrementId('100000555');
         $orderId = $order->getEntityId();
         $this->runIndexer([$orderId]);
-        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
-        $expectedOrdersData = $this->getOrderDataToVerify($order, $dataToVerify);
 
-        $this->checkFields($expectedOrdersData, $orderFeed);
+        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
+        $expectedOrderData = $this->getOrderDataToVerify($order);
+
+        $this->checkFields($expectedOrderData, $orderFeed);
     }
 
     /**
-     * @param string $orderNumber
-     * @param string[] $dataToVerify
-     *
-     * @dataProvider orderFullWorkflowDataProvider
-     * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/order_full_work_flow.php
-     *
-     * @return void
-     * @throws \Zend_Db_Statement_Exception
-     */
-    public function testOrderFullWorkflowInformation(string $orderNumber, array $dataToVerify): void
-    {
-        /** @var OrderInterface $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
-        $orderId = $order->getEntityId();
-        $this->runIndexer([$orderId]);
-        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
-        $expectedOrdersData = $this->getOrderDataToVerify($order, $dataToVerify);
-
-        $this->checkFields($expectedOrdersData, $orderFeed);
-    }
-
-    /**
-     * @param string $orderNumber
-     * @param string[] $dataToVerify
-     *
-     * @dataProvider orderWithTaxableProductDataProvider
      * @magentoDataFixture Magento/Sales/_files/customer_order_with_taxable_product.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
      */
-    public function testOrderWithTaxableProductInformation(string $orderNumber, array $dataToVerify): void
+    public function testOrderWithTaxableProductInformation(): void
     {
         /** @var OrderInterface $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
+        $order = $this->orderFactory->create()->loadByIncrementId('test_order_with_taxable_product');
         $orderId = $order->getEntityId();
         $this->runIndexer([$orderId]);
-        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
-        $expectedOrdersData = $this->getOrderDataToVerify($order, $dataToVerify);
 
-        $this->checkFields($expectedOrdersData, $orderFeed);
+        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
+        $expectedOrderData = $this->getOrderDataToVerify($order);
+
+        $this->checkFields($expectedOrderData, $orderFeed);
     }
 
     /**
-     * @param string $orderNumber
-     * @param string[] $dataToVerify
-     *
-     * @dataProvider orderWithInvoiceAndCustomStatusDataProvider
      * @magentoDataFixture Magento/Sales/_files/order_with_invoice_and_custom_status.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
      */
-    public function testOrderWithInvoiceAndCustomStatus(string $orderNumber, array $dataToVerify): void
+    public function testOrderWithInvoiceAndCustomStatus(): void
     {
         /** @var OrderInterface $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
+        $order = $this->orderFactory->create()->loadByIncrementId('100000001');
         $orderId = $order->getEntityId();
         $this->runIndexer([$orderId]);
-        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
-        $expectedOrdersData = $this->getOrderDataToVerify($order, $dataToVerify);
 
-        $this->checkFields($expectedOrdersData, $orderFeed);
+        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
+        $expectedOrderData = $this->getOrderDataToVerify($order);
+
+        $this->checkFields($expectedOrderData, $orderFeed);
     }
 
     /**
-     * @param string $orderNumber
-     * @param string[] $dataToVerify
+     * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/order_full_work_flow.php
      *
-     * @dataProvider orderWithCreditMemoDataProvider
+     * @return void
+     * @throws \Zend_Db_Statement_Exception
+     */
+    public function testOrderFullWorkflowInformation(): void
+    {
+        /** @var OrderInterface $order */
+        $order = $this->orderFactory->create()->loadByIncrementId('100000001');
+        $orderId = $order->getEntityId();
+        $this->runIndexer([$orderId]);
+
+        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
+        $expectedOrderData = $this->getOrderDataToVerify($order);
+
+        $this->checkFields($expectedOrderData, $orderFeed);
+    }
+
+    /**
      * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/order_with_invoice_shipment_creditmemo.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
      */
-    public function testOrderWithCreditMemo(string $orderNumber, array $dataToVerify): void
+    public function testOrderWithCreditMemo(): void
     {
         /** @var OrderInterface $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
+        $order = $this->orderFactory->create()->loadByIncrementId('100000111');
         $orderId = $order->getEntityId();
         $this->runIndexer([$orderId]);
-        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
-        $expectedOrdersData = $this->getOrderDataToVerify($order, $dataToVerify);
 
-        $this->checkFields($expectedOrdersData, $orderFeed);
+        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
+        $expectedOrderData = $this->getOrderDataToVerify($order);
+
+        $this->checkFields($expectedOrderData, $orderFeed);
     }
 
     /**
-     * @param string $orderNumber
-     * @param string[] $dataToVerify
-     *
-     * @dataProvider orderWithConfigurableProductDataProvider
      * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/order_configurable_product.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
      */
-    public function testOrderWithConfigurableProduct(string $orderNumber, array $dataToVerify): void
+    public function testOrderWithConfigurableProduct(): void
     {
         /** @var OrderInterface $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
+        $order = $this->orderFactory->create()->loadByIncrementId('100000001');
         $orderId = $order->getEntityId();
         $this->runIndexer([$orderId]);
-        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
-        $expectedOrdersData = $this->getOrderDataToVerify($order, $dataToVerify);
 
-        $this->checkFields($expectedOrdersData, $orderFeed);
+        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
+        $expectedOrderData = $this->getOrderDataToVerify($order);
+
+        $this->checkFields($expectedOrderData, $orderFeed);
     }
 
     /**
-     * @param string $orderNumber
-     * @param string[] $dataToVerify
-     *
-     * @dataProvider orderWithTransactionsDataProvider
      * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/transactions_detailed.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
      */
-    public function testOrderWithTransactions(string $orderNumber, array $dataToVerify): void
+    public function testOrderWithTransactions(): void
     {
         /** @var OrderInterface $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
+        $order = $this->orderFactory->create()->loadByIncrementId('100000001');
         $orderId = $order->getEntityId();
         $this->runIndexer([$orderId]);
-        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
-        $expectedOrdersData = $this->getOrderDataToVerify($order, $dataToVerify);
 
-        $this->checkFields($expectedOrdersData, $orderFeed);
+        $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
+        $expectedOrderData = $this->getOrderDataToVerify($order);
+
+        $this->checkFields($expectedOrderData, $orderFeed);
     }
 
     /**
-     * @param string $orderNumber
-     * @param string[] $dataToVerify
-     *
-     * @dataProvider orderWithAdditionalInformationDataProvider
      * @magentoDataFixture Magento_SalesOrdersDataExporter::Test/_files/order_with_additional_information.php
      *
      * @return void
      * @throws \Zend_Db_Statement_Exception
      */
-    public function testOrderWithAdditionalData(string $orderNumber, array $dataToVerify): void
+    public function testOrderWithAdditionalData(): void
     {
         /** @var OrderInterface $order */
-        $order = $this->orderFactory->create()->loadByIncrementId($orderNumber);
+        $order = $this->orderFactory->create()->loadByIncrementId('100000001');
         $orderId = $order->getEntityId();
         $this->runIndexer([$orderId]);
+
         $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
-        $expectedOrdersData = $this->getOrderDataToVerify($order, $dataToVerify);
+        $expectedOrderData = $this->getOrderDataToVerify($order);
 
-        $this->checkFields($expectedOrdersData, $orderFeed);
+        $this->checkFields($expectedOrderData, $orderFeed);
     }
 
     /**
-     * @return array[]
-     */
-    public function orderWithTwoItemsDataProvider(): array
-    {
-        return [
-            [
-                'order_number' => '100000555', //customer_order_with_two_items
-                'entities_to_verify' => [
-                    'order_data',
-                    'items'
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * @return array[]
-     */
-    public function orderWithTaxableProductDataProvider(): array
-    {
-        return [
-            [
-                'order_number' => 'test_order_with_taxable_product', //customer_order_with_taxable_product
-                'entities_to_verify' => [
-                    'order_data',
-                    'items'
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * @return array[]
-     */
-    public function orderFullWorkflowDataProvider(): array
-    {
-        return [
-            [
-                'order_number' => '100000001', //order_full_work_flow
-                'entities_to_verify' => [
-                    'order_data',
-                    'items',
-                    'shipments',
-                    'invoice'
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * @return array[]
-     */
-    public function orderWithInvoiceAndCustomStatusDataProvider(): array
-    {
-        return [
-            [
-                'order_number' => '100000001', //order_with_invoice_and_custom_status
-                'entities_to_verify' => [
-                    'order_data',
-                    'items',
-                    'invoice'
-                ]
-            ],
-        ];
-    }
-
-    /**
-     * @return array[]
-     */
-    public function orderWithCreditMemoDataProvider(): array
-    {
-        return [
-            [
-                'order_number' => '100000111', //order_with_invoice_shipment_creditmemo
-                'entities_to_verify' => [
-                    'order_data',
-                    'items',
-                    'credit_memo'
-                ]
-            ],
-        ];
-    }
-
-    /**
-     * @return array[]
-     */
-    public function orderWithConfigurableProductDataProvider(): array
-    {
-        return [
-            [
-                'order_number' => '100000001', //order_configurable_product
-                'entities_to_verify' => [
-                    'order_data',
-                    'items'
-                ]
-            ],
-        ];
-    }
-
-    /**
-     * @return array[]
-     */
-    public function orderWithTransactionsDataProvider(): array
-    {
-        return [
-            [
-                'order_number' => '100000001', //transactions_detailed
-                'entities_to_verify' => [
-                    'order_data',
-                    'transactions'
-                ]
-            ],
-        ];
-    }
-
-    /**
-     * @return array[]
-     */
-    public function orderWithAdditionalInformationDataProvider(): array
-    {
-        return [
-            [
-                'order_number' => '100000001', //additional_information
-                'entities_to_verify' => [
-                    'order_data',
-                    'items',
-                    'additional_information'
-                ]
-            ],
-        ];
-    }
-
-    /**
-     * @param array $expectedOrderData
+     * @param array $expectedData
      * @param array $feedData
-     *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    private function checkFields(array $expectedOrderData, array $feedData): void
+    private function checkFields(array $expectedData, array $feedData): void
     {
-        foreach ($expectedOrderData as $expectedField => $expectedData) {
-            if ($expectedField === 'items') {
-                $uncheckedIds = \array_flip(array_keys($expectedData));
-                foreach ($feedData['items'] as $itemData) {
-                    $itemIdField = isset($itemData['itemId']) ? 'itemId' : 'orderItemId';
-                    $expectedDataId = $itemData[$itemIdField]['id'];
-                    if (isset($itemData[$itemIdField])) {
-                        $this->checkFields($expectedData[$expectedDataId], $itemData);
-                        unset($uncheckedIds[$expectedDataId]);
-                    }
-                }
-                self::assertEmpty($uncheckedIds, "Some items are missed in feed");
-                continue;
+        foreach ($expectedData as $field => $expectedValue) {
+            if (is_array($expectedValue)) {
+                $this->assertArrayHasKey($field, $feedData, sprintf('Field %s is not set in feed', $field));
+                $this->checkFields($expectedValue, $feedData[$field]);
+            } else {
+                $this->assertFieldEquals($field, $expectedValue, $feedData);
             }
-            if ($expectedField === 'shipments') {
-                $uncheckedIds = \array_flip(array_keys($expectedData));
-                foreach ($feedData['shipments'] as $itemData) {
-                    $this->checkFields($expectedData[$itemData['shipmentId']['id']], $itemData);
-                    unset($uncheckedIds[$itemData['shipmentId']['id']]);
-                }
-                self::assertEmpty($uncheckedIds, "Some shipment items are missed in feed");
-                continue;
-            }
-            if ($expectedField === 'invoices') {
-                $uncheckedIds = \array_flip(array_keys($expectedData));
-                foreach ($feedData['invoices'] as $itemData) {
-                    $invoiceId = $itemData['entityId'];
-                    $expectedInvoiceData = $expectedData[$invoiceId];
-                    $this->checkFields($expectedInvoiceData, $itemData);
-                    unset($uncheckedIds[$invoiceId]);
-                }
-                self::assertEmpty($uncheckedIds, "Some invoice items are missed in feed");
-                continue;
-            }
+        }
+    }
 
-            if ($expectedField === 'creditMemos') {
-                $uncheckedIds = \array_flip(array_keys($expectedData));
-                foreach ($feedData[$expectedField] as $itemData) {
-                    $this->checkFields($expectedData[$itemData['creditMemoId']['id']], $itemData);
-                    unset($uncheckedIds[$itemData['creditMemoId']['id']]);
-                }
-                self::assertEmpty($uncheckedIds, "Some credit memo items are missed in feed");
-                continue;
-            }
-
-            if ($expectedField === 'transactions') {
-                $uncheckedIds = \array_flip(array_keys($expectedData));
-                foreach ($feedData[$expectedField] as $itemData) {
-                    $this->checkFields($expectedData[$itemData['entityId']], $itemData);
-                    unset($uncheckedIds[$itemData['entityId']]);
-                }
-                self::assertEmpty($uncheckedIds, "Some transaction items are missed in feed");
-                continue;
-            }
-
-            if (isset($feedData[$expectedField])) {
-                if (!\is_array($feedData[$expectedField])) {
-                    self::assertEquals(
-                        $expectedData,
-                        $feedData[$expectedField],
-                        sprintf(
-                            "Expected data: %s doesn't equal to real field %s value: %s",
-                            $expectedData,
-                            $expectedField,
-                            $feedData[$expectedField]
-                        )
-                    );
-                } else {
-                    $this->checkFields($expectedData, $feedData[$expectedField]);
-                }
-            }
+    /**
+     * @param mixed $fieldName
+     * @param mixed $expectedValue
+     * @param array $actualData
+     */
+    private function assertFieldEquals(mixed $fieldName, mixed $expectedValue, array $actualData): void
+    {
+        if (array_key_exists($fieldName, $actualData)) {
+            self::assertEquals(
+                $expectedValue,
+                $actualData[$fieldName],
+                "Expected data: $expectedValue doesn't equal to real field $fieldName value: {$actualData[$fieldName]}"
+            );
+        } else {
+            self::assertNull(
+                $expectedValue,
+                "Field $fieldName is not set in feed but the expected value was $expectedValue"
+            );
         }
     }
 
     /**
      * @param OrderInterface $order
-     * @param array $dataToVerify
      * @return array
-     * @throws \Magento\Framework\Exception\InputException
+     * @throws InputException
      */
-    private function getOrderDataToVerify(OrderInterface $order, array $dataToVerify): array
+    private function getOrderDataToVerify(OrderInterface $order): array
     {
-        $expectedOrderData = [];
-        if (array_contains($dataToVerify, 'order_data')) {
-            $expectedOrderData = $this->getExpectedOrderData($order);
-        }
-        if (array_contains($dataToVerify, 'transactions')) {
-            $expectedOrderData['transactions'] = $this->getExpectedTransactionsData($order);
-        }
-        if (array_contains($dataToVerify, 'items')) {
-            $expectedOrderData['items'] = $this->getExpectedOrderItemsData($order);
-        }
-        if (array_contains($dataToVerify, 'invoice')) {
-            $expectedOrderData['invoices'] = $this->getExpectedInvoicesData($order);
-        }
-        if (array_contains($dataToVerify, 'credit_memo')) {
-            $expectedOrderData['creditMemos'] = $this->getExpectedCreditMemosData($order);
-        }
-        if (array_contains($dataToVerify, 'shipments')) {
-            $expectedOrderData['shipments'] = $this->getExpectedShipmentData($order);
-        }
+        $expectedOrderData = $this->getExpectedOrderData($order);
+        $expectedOrderData['transactions'] = $this->getExpectedTransactionsData($order);
+        $expectedOrderData['items'] = $this->getExpectedOrderItemsData($order);
+        $expectedOrderData['invoices'] = $this->getExpectedInvoicesData($order);
+        $expectedOrderData['creditMemos'] = $this->getExpectedCreditMemosData($order);
+        $expectedOrderData['shipments'] = $this->getExpectedShipmentData($order);
 
         return $expectedOrderData;
     }
@@ -493,13 +278,13 @@ class CreateOrderTest extends AbstractOrderFeedTest
      */
     private function getOrderFeedByIds(array $ids, bool $excludeDeleted = false): array
     {
-        $output = [];
-        foreach ($this->ordersFeed->getFeedSince('1')['feed'] as $item) {
-            if ((!$excludeDeleted || !$item['deleted']) && \in_array($item['commerceOrderId'], $ids)) {
-                $output[] = $item;
+        $filteredFeed = array_filter(
+            $this->ordersFeed->getFeedSince('1')['feed'],
+            function ($item) use ($ids, $excludeDeleted) {
+                return (!$excludeDeleted || !$item['deleted']) && in_array($item['commerceOrderId'], $ids);
             }
-        }
-        return $output;
+        );
+        return array_values($filteredFeed);
     }
 
     /**
@@ -540,7 +325,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
     {
         $orderId = $order->getEntityId();
         return [
-            'entityId' => $order->getEntityId(),
+            'commerceOrderId' => $order->getEntityId(),
             'commerceOrderNumber' => $order->getIncrementId(),
             'orderId' => ['id' => $this->uuidResource->getAssignedIds([$orderId], 'order')[$orderId]],
             'externalId' => ['id' => $orderId, 'salesChannel' => 'magento'],
@@ -549,15 +334,23 @@ class CreateOrderTest extends AbstractOrderFeedTest
             'state' => $this->mapOrderState($order->getState()),
             'status' => $order->getStatus(),
             'totalInvoiced' => $order->getBaseTotalInvoiced(),
+            'totalQtyOrdered' => $order->getTotalQtyOrdered(),
+            'isVirtual' => $this->convertIntToBool($order->getIsVirtual()),
+            'currency' => $order->getBaseCurrencyCode(),
             'subtotal' => $order->getBaseSubtotal(),
             'grandTotal' => $order->getBaseGrandTotal(),
             'discountAmount' => $order->getBaseDiscountAmount(),
-            'currency' => $order->getBaseCurrencyCode(),
+            'amountCapturedOnline' => $order->getPayment()->getBaseAmountPaidOnline(),
+            'amountRefundedOnline' => $order->getPayment()->getBaseAmountRefundedOnline(),
+            'amountAuthorized' => $order->getPayment()->getBaseAmountAuthorized(),
             'amountPaid' => $order->getPayment()->getBaseAmountPaid(),
+            'amountRefunded' => $order->getPayment()->getBaseAmountRefunded(),
+            'amountCanceled' => $order->getPayment()->getBaseAmountCanceled(),
             'storeViewCode' => $order->getStore()->getCode(),
             'websiteCode' => $order->getStore()->getWebsite()->getCode(),
             'storeCode' => $order->getStore()->getWebsite()->getDefaultGroup()->getCode(),
             'customerEmail' => $order->getCustomerEmail(),
+            'customerNote' => $order->getCustomerNote(),
             'additionalInformation' => $this->getExpectedOrderAdditionalInformationData($order),
             'payment' => [
                 'billingAddress' => [
@@ -570,8 +363,8 @@ class CreateOrderTest extends AbstractOrderFeedTest
                     'country' => $order->getBillingAddress()->getCountryId(),
                     'firstname' => $order->getBillingAddress()->getFirstname()
                 ],
-                'paymentMethodName' => $order->getPayment()->getAdditionalInformation()['method_title'] ?? '',
-                'paymentMethodCode' => $order->getPayment()->getMethod() ?? '',
+                'paymentMethodName' => $order->getPayment()->getAdditionalInformation()['method_title'] ?? null,
+                'paymentMethodCode' => $order->getPayment()->getMethod() ?? null,
                 'totalAmount' => $order->getBaseSubtotal(),
                 'taxAmount' => $order->getBaseTaxAmount(),
                 'currency' => $order->getOrderCurrencyCode()
@@ -598,10 +391,10 @@ class CreateOrderTest extends AbstractOrderFeedTest
 
     /**
      * @param OrderInterface $order
-     * @return array
-     * @throws \Magento\Framework\Exception\InputException
+     * @return array|null
+     * @throws InputException
      */
-    private function getExpectedTransactionsData(OrderInterface $order): array
+    private function getExpectedTransactionsData(OrderInterface $order): ?array
     {
         $transactions = [];
         foreach (self::TRANSACTION_TYPES as $transactionType) {
@@ -610,8 +403,8 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 $order->getPayment()->getEntityId()
             );
             if ($transaction) {
-                $transactions[$transaction->getId()] = [
-                    'id' => $transaction->getId(),
+                $transactions[] = [
+                    'entityId' => $transaction->getId(),
                     'txnId' => $transaction->getTxnId(),
                     'type' => $transaction->getTxnType(),
                     'createdAt' => $this->convertDate($transaction->getCreatedAt())
@@ -619,24 +412,24 @@ class CreateOrderTest extends AbstractOrderFeedTest
             }
         }
 
-        return $transactions;
+        return empty($transactions) ? null : $transactions;
     }
 
     /**
      * @param OrderInterface $order
-     * @return array
+     * @return array|null
      */
-    private function getExpectedOrderItemsData(OrderInterface $order): array
+    private function getExpectedOrderItemsData(OrderInterface $order): ?array
     {
         $items = [];
         foreach ($order->getItems() as $orderItem) {
             $itemId = $orderItem->getItemId();
             $itemUuid = $this->uuidResource->getAssignedIds([$itemId], 'order_item')[$itemId];
-            $items[$itemUuid] = [
+            $items[] = [
                 'itemId' => ['id' => $itemUuid],
                 'entityId' => $itemId,
                 'parentEntityId' => $orderItem->getParentItemId(),
-                'isVirtual' => (bool)$orderItem->getIsVirtual(),
+                'isVirtual' => $this->convertIntToBool($orderItem->getIsVirtual()),
                 'qtyInvoiced' => $orderItem->getQtyInvoiced(),
                 'qtyShipped' => $orderItem->getQtyShipped(),
                 'qtyBackordered' => $orderItem->getQtyBackordered(),
@@ -646,7 +439,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 'productType' => $orderItem->getProductType(),
                 'itemsShippedTogether' => $orderItem->getProductType() === 'configurable',
                 'sku' => $orderItem->getSku(),
-                'productSku' => $orderItem->getProduct()->getSku(),
+                'productSku' => $this->getExpectedOrderItemProductSku($orderItem),
                 'name' => $orderItem->getName(),
                 'qty' => $orderItem->getQtyOrdered(),
                 'unitPrice' => $orderItem->getBasePrice(),
@@ -658,17 +451,31 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 'additionalInformation' => $this->getExpectedItemAdditionalInformationData($orderItem)
             ];
         }
-        return $items;
+        return empty($items) ? null : $items;
+    }
+
+    /**
+     * Get the product SKU based on the product type.
+     *
+     * @param OrderItemInterface $orderItem
+     * @return string|null
+     */
+    private function getExpectedOrderItemProductSku(OrderItemInterface $orderItem): ?string
+    {
+        if (in_array($orderItem->getProductType(), ['configurable', 'bundle'], true)) {
+            return $orderItem->getProduct()->getSku();
+        }
+
+        return $orderItem->getSku();
     }
 
     /**
      * @param OrderInterface $order
-     * @return array
+     * @return array|null
      */
-    private function getExpectedInvoicesData(OrderInterface $order): array
+    private function getExpectedInvoicesData(OrderInterface $order): ?array
     {
         $invoices = [];
-
         /** @var Invoice $invoice */
         foreach ($order->getInvoiceCollection() as $invoice) {
             $invoiceId = $invoice->getId();
@@ -677,28 +484,29 @@ class CreateOrderTest extends AbstractOrderFeedTest
             foreach ($invoice->getItems() as $invoiceItem) {
                 $orderItemId = $invoiceItem->getOrderItemId();
                 $itemUuid = $this->uuidResource->getAssignedIds([$orderItemId], 'order_item')[$orderItemId];
-                $invoiceItems[$orderItemId] = [
+                $invoiceItems[] = [
                     'orderItemId' => ['id' => $itemUuid],
                     'qtyInvoiced' => $invoiceItem->getQty()
                 ];
             }
-            $invoices[$invoiceId] = [
+            $invoices[] = [
                 'entityId' => $invoiceId,
-                'isUsedForRefund' => false,
+                'isUsedForRefund' => $this->convertIntToBool($invoice->getIsUsedForRefund()),
                 'grandTotal' => $invoice->getBaseGrandTotal(),
                 'createdAt' => $this->convertDate($invoice->getCreatedAt()),
                 'commerceInvoiceNumber' => $invoice->getIncrementId(),
                 'invoiceItems' => $invoiceItems
             ];
         }
-        return $invoices;
+
+        return empty($invoices) ? null : $invoices;
     }
 
     /**
      * @param OrderInterface $order
-     * @return array
+     * @return array|null
      */
-    private function getExpectedCreditMemosData(OrderInterface $order): array
+    private function getExpectedCreditMemosData(OrderInterface $order): ?array
     {
         $creditMemos = [];
         /** @var Creditmemo $creditMemo */
@@ -706,7 +514,25 @@ class CreateOrderTest extends AbstractOrderFeedTest
             $creditMemoItems = null;
             $creditMemoId = $creditMemo->getId();
             $creditMemoUuid = $this->uuidResource->getAssignedIds([$creditMemoId], 'credit_memo')[$creditMemoId];
-            $creditMemos[$creditMemoUuid] = [
+
+            foreach ($creditMemo->getItems() as $creditmemoItem) {
+                $creditMemoItemId = $creditmemoItem->getOrderItemId();
+                $itemUuid = $this->uuidResource->getAssignedIds(
+                    [$creditMemoItemId],
+                    'order_item'
+                )[$creditMemoItemId];
+                $creditMemoItems[] = [
+                    'orderItemId' => ['id' => $itemUuid],
+                    'qtyRefunded' => $creditmemoItem->getQty(),
+                    'basePrice' => $creditmemoItem->getBasePrice(),
+                    //TODO: Need to be implement
+                    //'baseRowTotal' => $creditmemoItem->getBaseRowTotal(),
+                    //TODO: Need to be implemented
+                    //'productTaxes' => ''
+                ];
+            }
+
+            $creditMemos[] = [
                 'creditMemoId' => ['id' => $creditMemoUuid],
                 'entityId' => $creditMemoId,
                 'state' => $creditMemo->getState(),
@@ -720,35 +546,19 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 'subtotal' => $creditMemo->getBaseSubtotal(),
                 'productsTaxAmount' => $creditMemo->getBaseTaxAmount(),
                 'commerceCreditMemoNumber' => $creditMemo->getIncrementId(),
-                'grandTotal' => $creditMemo->getBaseGrandTotal()
+                'grandTotal' => $creditMemo->getBaseGrandTotal(),
+                'refundItems' => $creditMemoItems
             ];
-            foreach ($creditMemo->getItems() as $creditmemoItem) {
-                $creditMemoItemId = $creditmemoItem->getOrderItemId();
-                $itemUuid = $this->uuidResource->getAssignedIds(
-                    [$creditMemoItemId],
-                    'order_item'
-                )[$creditMemoItemId];
-                $creditMemoItems[$itemUuid] = [
-                    'orderItemId' => ['id' => $itemUuid],
-                    'qtyRefunded' => $creditmemoItem->getQty(),
-                    'basePrice' => $creditmemoItem->getBasePrice() . 1,
-                    //TODO: Need to be implement
-                    //'baseRowTotal' => $creditmemoItem->getBaseRowTotal(),
-                    //TODO: Need to be implemented
-                    //'productTaxes' => ''
-                ];
-            }
-            $creditMemos[$creditMemoUuid]['refundItems'] = $creditMemoItems;
         }
 
-        return $creditMemos;
+        return empty($creditMemos) ? null : $creditMemos;
     }
 
     /**
      * @param OrderInterface $order
-     * @return array
+     * @return array|null
      */
-    private function getExpectedShipmentData(OrderInterface $order): array
+    private function getExpectedShipmentData(OrderInterface $order): ?array
     {
         $shipments = [];
 
@@ -759,35 +569,34 @@ class CreateOrderTest extends AbstractOrderFeedTest
 
             $shipmentId = $orderShipment->getId();
             $shipmentUuid = $this->uuidResource->getAssignedIds([$shipmentId], 'order_shipment')[$shipmentId];
-            $shipments[$shipmentUuid] = [
-                'shipmentId' => ['id' => $shipmentUuid],
-                'createdAt' => $this->convertDate($orderShipment->getCreatedAt()),
-                'updatedAt' => $this->convertDate($orderShipment->getUpdatedAt()),
-                'commerceShipmentNumber' => $orderShipment->getIncrementId()
-            ];
+
             foreach ($orderShipment->getItems() as $shipmentItem) {
-                $shippingOrderItemId = $shipmentItem->getOrderItemId();
-                $itemUuid = $this->uuidResource->getAssignedIds(
-                    [$shippingOrderItemId],
-                    'order_item'
-                )[$shippingOrderItemId];
-                $shipmentItems[$itemUuid] = [
+                $itemId = $shipmentItem->getOrderItemId();
+                $itemUuid = $this->uuidResource->getAssignedIds([$itemId], 'order_item')[$itemId];
+                $shipmentItems[] = [
                     'orderItemId' => ['id' => $itemUuid],
                     'qtyShipped' => $shipmentItem->getQty()
                 ];
             }
+
             /** @var ShipmentTrackInterface $shipmentTrack */
             foreach ($orderShipment->getTracks() as $shipmentTrack) {
-                $shipmentTrackItems[$shipmentTrack->getEntityId()] = [
+                $shipmentTrackItems[] = [
                     'qty' => $shipmentTrack->getQty()
                 ];
             }
 
-            $shipments[$shipmentUuid]['trackingInfo'] = $shipmentTrackItems;
-            $shipments[$shipmentUuid]['items'] = $shipmentItems;
+            $shipments[] = [
+                'shipmentId' => ['id' => $shipmentUuid],
+                'createdAt' => $this->convertDate($orderShipment->getCreatedAt()),
+                'updatedAt' => $this->convertDate($orderShipment->getUpdatedAt()),
+                'commerceShipmentNumber' => $orderShipment->getIncrementId(),
+                'trackingInfo' => $shipmentTrackItems,
+                'items' => $shipmentItems
+            ];
         }
 
-        return $shipments;
+        return empty($shipments) ? null : $shipments;
     }
 
     /**
@@ -806,7 +615,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
             }
         }
 
-        return $additionalInformation;
+        return empty($additionalInformation) ? null : $additionalInformation;
     }
 
     /**
@@ -824,6 +633,11 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 ];
             }
         }
-        return $additionalInformation;
+        return empty($additionalInformation) ? null : $additionalInformation;
+    }
+
+    private function convertIntToBool($value): ?bool
+    {
+        return $value !== null ? (bool) $value : null;
     }
 }

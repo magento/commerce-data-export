@@ -7,8 +7,6 @@
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\Order\Address as OrderAddress;
-use Magento\Sales\Model\Order\Item as OrderItem;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\TestFramework\Workaround\Override\Fixture\Resolver;
@@ -44,7 +42,7 @@ $payment->setMethod('checkmo')
     );
 
 $qtyOrdered = 2;
-$productOptions = array('color' => 'red', 'size' => 'medium');
+$productOptions = ['color' => 'red', 'size' => 'medium'];
 /** @var \Magento\Sales\Model\Order\Item $orderItem */
 $orderConfigurableItem = $objectManager->create(\Magento\Sales\Model\Order\Item::class);
 $orderConfigurableItem->setProductId($configurableProduct->getId())->setQtyOrdered($qtyOrdered);
