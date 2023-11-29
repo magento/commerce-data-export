@@ -214,7 +214,10 @@
             provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="entityId" />
         </field>
-        <field name="creditMemoComments" type="String" repeated="true" />
+        <field name="creditMemoComments" type="String" repeated="true"
+               provider="Magento\SalesOrdersDataExporter\Model\Provider\CreditMemoComment">
+            <using field="entityId" />
+        </field>
         <field name="shippingAmount" type="Float" />
         <field name="shippingTaxAmount" type="Float" />
 

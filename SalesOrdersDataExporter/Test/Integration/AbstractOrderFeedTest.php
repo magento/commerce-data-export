@@ -118,7 +118,7 @@ abstract class AbstractOrderFeedTest extends TestCase
             $this->indexer->load(self::ORDER_FEED_INDEXER);
             $this->indexer->reindexList($ids);
         } catch (Throwable $e) {
-            throw new RuntimeException('Could not reindex orders data');
+            throw new RuntimeException('Could not reindex orders data', $e);
         }
     }
 }

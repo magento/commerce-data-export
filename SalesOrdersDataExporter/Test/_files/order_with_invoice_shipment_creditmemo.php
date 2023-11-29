@@ -142,12 +142,15 @@ foreach ($order->getItems() as $item) {
     $orderData['items'][$item->getId()] = $item;
 }
 $order->setItems($orderData['items']);
+
 $creditmemo = $creditmemoFactory->createByOrder($order, $orderData);
 $creditmemo->setBaseShippingAmount(3.14);
 $creditmemo->setBaseShippingTaxAmount(1.14);
 $creditmemo->setAdjustment(2.77);
 $creditmemo->setBaseTaxAmount(1.5);
 $creditmemo->setIncrementId($order->getIncrementId());
+$creditmemo->addComment("note");
+$creditmemo->addComment("note2");
 
 $creditItem = $creditmemoItemFactory->create();
 $creditItem->setCreditmemo($creditmemo)

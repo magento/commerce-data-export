@@ -245,14 +245,14 @@
             <attribute name="base_currency_code" alias="currency" />
             <attribute name="base_subtotal" alias="subtotal" />
             <attribute name="base_tax_amount" alias="productsTaxAmount" />
-            <attribute name="adjustment" />
+            <attribute name="base_adjustment" alias="adjustment" />
             <attribute name="increment_id" alias="commerceCreditMemoNumber" />
             <attribute name="base_grand_total" alias="grandTotal" />
             <filter glue="and">
                 <condition attribute="order_id" operator="in" type="placeholder">commerceOrderId</condition>
             </filter>
             <link-source name="sales_creditmemo_comment" link-type="left">
-                <attribute name="comment" alias="credit_memo_comments" />
+                <attribute name="comment" />
                 <using glue="and">
                     <condition attribute="parent_id" operator="eq" type="identifier">entity_id</condition>
                 </using>

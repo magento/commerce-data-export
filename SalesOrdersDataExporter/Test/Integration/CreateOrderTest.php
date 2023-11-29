@@ -525,8 +525,8 @@ class CreateOrderTest extends AbstractOrderFeedTest
                     'orderItemId' => ['id' => $itemUuid],
                     'qtyRefunded' => $creditmemoItem->getQty(),
                     'basePrice' => $creditmemoItem->getBasePrice(),
-                    //TODO: Need to be implement
-                    //'baseRowTotal' => $creditmemoItem->getBaseRowTotal(),
+                    'baseRowTotal' => $creditmemoItem->getQty() * $creditmemoItem->getBasePrice()
+                        - $creditmemoItem->getBaseDiscountAmount(),
                     //TODO: Need to be implemented
                     //'productTaxes' => ''
                 ];
@@ -539,7 +539,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 'createdAt' => $this->convertDate($creditMemo->getCreatedAt()),
                 'shippingAmount' => $creditMemo->getBaseShippingAmount(),
                 'shippingTaxAmount' => $creditMemo->getBaseShippingTaxAmount(),
-                'adjustment' => $creditMemo->getAdjustment(),
+                'adjustment' => $creditMemo->getBaseAdjustment(),
                 'currency' => $creditMemo->getOrderCurrencyCode(),
                 //TODO: Need to be implemented
                 //'refundTaxes' => $creditMemo->getTaxAmount()
@@ -547,11 +547,23 @@ class CreateOrderTest extends AbstractOrderFeedTest
                 'productsTaxAmount' => $creditMemo->getBaseTaxAmount(),
                 'commerceCreditMemoNumber' => $creditMemo->getIncrementId(),
                 'grandTotal' => $creditMemo->getBaseGrandTotal(),
-                'refundItems' => $creditMemoItems
+                'refundItems' => $creditMemoItems,
+                'creditMemoComments' => $this->extractComments($creditMemo->getComments())
             ];
         }
 
         return empty($creditMemos) ? null : $creditMemos;
+    }
+
+    private function extractComments(array $comments): ?array
+    {
+        $commentValues = array_map(
+            function ($comment) {
+                return $comment->getComment();
+            },
+            $comments
+        );
+        return $commentValues ? array_values($commentValues) : null;
     }
 
     /**
