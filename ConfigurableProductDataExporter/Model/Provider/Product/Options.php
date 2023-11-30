@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 
-use Exception;
 use Magento\CatalogDataExporter\Model\Provider\Product\OptionProviderInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionQuery;
@@ -91,7 +90,7 @@ class Options implements OptionProviderInterface
     }
 
     /**
-     * Returns possible attribute valies for a product
+     * Returns possible attribute values for a product
      *
      * @param int $entityId
      * @param int $attributeId
@@ -225,6 +224,8 @@ class Options implements OptionProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws UnableRetrieveData
      */
     public function get(array $values): array
     {
@@ -246,29 +247,12 @@ class Options implements OptionProviderInterface
         try {
             $options = [];
             $optionValuesData = $this->getOptionValuesData($queryArguments);
-
             $select = $this->productOptionQuery->getQuery($queryArguments);
-
             $cursor = $this->resourceConnection->getConnection()->query($select);
-
             while ($row = $cursor->fetch()) {
-                if (!isset($temp[$row['productId'] . '-' . $row['attribute_id']])) {
-                    $temp[$row['productId'] . '-' . $row['attribute_id']] =
-                        $this->getPossibleAttributeValues($row['productId'], $row['attribute_id']);
-                }
-                $filter = $temp[$row['productId'] . '-' . $row['attribute_id']];
-
-                $key = $this->getOptionKey($row);
-                $options[$key] = $options[$key] ?? $this->formatOptionsRow($row);
-
-                if (isset($optionValuesData[$row['attribute_id']][$row['storeViewCode']])) {
-                    $options[$key]['optionsV2']['values'] = $this->getAssignedAttributeValues(
-                        $optionValuesData[$row['attribute_id']][$row['storeViewCode']],
-                        $filter
-                    );
-                }
+                $options = $this->getOptions($row, $temp, $options, $optionValuesData);
             }
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve configurable product options data');
         }
@@ -287,5 +271,47 @@ class Options implements OptionProviderInterface
         $assignedAttributeValues = array_intersect_key($attributeValuesList, array_flip($assignedAttributeValuesId));
 
         return !empty($assignedAttributeValues) ? \array_values($assignedAttributeValues) : [];
+    }
+    
+    /**
+     * Get Options
+     *
+     * @param mixed $row
+     * @param array $temp
+     * @param array $options
+     * @param array $optionValuesData
+     * @return array
+     */
+    private function getOptions(mixed $row, array $temp, array $options, array $optionValuesData): array
+    {
+        try {
+            $key = $row['productId'] . '-' . $row['attribute_id'];
+            if (!isset($temp[$key])) {
+                $temp[$key] = $this->getPossibleAttributeValues($row['productId'], $row['attribute_id']);
+            }
+            $filter = $temp[$key];
+
+            $key = $this->getOptionKey($row);
+            $options[$key] = $options[$key] ?? $this->formatOptionsRow($row);
+
+            if (isset($optionValuesData[$row['attribute_id']][$row['storeViewCode']])) {
+                $options[$key]['optionsV2']['values'] = $this->getAssignedAttributeValues(
+                    $optionValuesData[$row['attribute_id']][$row['storeViewCode']],
+                    $filter
+                );
+            }
+        } catch (\Throwable $exception) {
+            $this->logger->error(
+                sprintf(
+                    'Unable to retrieve configurable product options data 
+                            (productId:%s, attributeId:%s, storeViewCode:%s)',
+                    $row['productId'],
+                    $row['attribute_id'],
+                    $row['storeViewCode']
+                ),
+                ['exception' => $exception]
+            );
+        }
+        return $options;
     }
 }
