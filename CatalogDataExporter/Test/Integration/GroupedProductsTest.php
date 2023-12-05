@@ -17,11 +17,12 @@ use Magento\TestFramework\Helper\Bootstrap;
  */
 class GroupedProductsTest extends AbstractProductTestHelper
 {
+    private const GROUPED_PRODUCT_SKU = 'grouped-product';
+
     /**
      * @var ArrayUtils
      */
     private $arrayUtils;
-
 
     /**
      * @inheritDoc
@@ -48,7 +49,7 @@ class GroupedProductsTest extends AbstractProductTestHelper
      */
     public function testGroupedProductOptions(array $groupedProductOptionsDataProvider) : void
     {
-        $extractedProduct = $this->getExtractedProduct('grouped-product', 'default');
+        $extractedProduct = $this->getExtractedProduct(self::GROUPED_PRODUCT_SKU, 'default');
         $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
         foreach ($groupedProductOptionsDataProvider as $key => $expectedData) {
@@ -76,7 +77,7 @@ class GroupedProductsTest extends AbstractProductTestHelper
         $storeViews = ['fixture_second_store','fixture_third_store'];
 
         foreach ($storeViews as $store) {
-            $extractedProduct = $this->getExtractedProduct('grouped-product', $store);
+            $extractedProduct = $this->getExtractedProduct(self::GROUPED_PRODUCT_SKU, $store);
             $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
             // Assert values are equal for fixture_second_store
@@ -99,7 +100,7 @@ class GroupedProductsTest extends AbstractProductTestHelper
             'groupedProduct' => [
                 'item' => [
                     'feedData' => [
-                        'sku' => 'grouped-product',
+                        'sku' => self::GROUPED_PRODUCT_SKU,
                         'storeViewCode' => 'default',
                         'name' => 'Grouped Product',
                         'type' => 'grouped',

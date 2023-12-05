@@ -32,19 +32,24 @@ class CategoryTest extends AbstractCategoryTest
         $storeCustomOne = $this->storeManager->getStore('custom_store_view_one');
         $storeCustomTwo = $this->storeManager->getStore('custom_store_view_two');
 
+        $categoryIdsInCustomStore = [400, 401, 402];
+        $categoryIdsInDefaultStore = [500, 501, 502];
+
         try {
-            foreach ([400, 401, 402] as $categoryId) {
+            foreach ($categoryIdsInCustomStore as $categoryId) {
                 foreach ([$storeCustomOne, $storeCustomTwo] as $store) {
                     $this->storeManager->setCurrentStore($store);
                     $category = $this->categoryRepository->get($categoryId, $store->getId());
+                    $this->emulatePartialReindexBehavior([$categoryId]);
                     $extractedCategoryData = $this->getCategoryById($categoryId, $store->getCode());
                     $this->assertBaseCategoryData($category, $extractedCategoryData, $store);
                 }
             }
 
-            foreach ([500, 501, 502] as $categoryId) {
+            foreach ($categoryIdsInDefaultStore as $categoryId) {
                 $this->storeManager->setCurrentStore($storeDefault);
                 $category = $this->categoryRepository->get($categoryId, $storeDefault->getId());
+                $this->emulatePartialReindexBehavior([$categoryId]);
                 $extractedCategoryData = $this->getCategoryById($categoryId, $storeDefault->getCode());
                 $this->assertBaseCategoryData($category, $extractedCategoryData, $storeDefault);
             }

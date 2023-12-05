@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Magento\ProductPriceDataExporter\Test\Integration;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\ObjectManagerInterface;
@@ -55,6 +56,9 @@ abstract class AbstractProductPriceTestHelper extends TestCase
         $this->productRepository = $this->objectManager->create(ProductRepositoryInterface::class);
         $this->indexer = $this->objectManager->create(Indexer::class);
         $this->resourceConnection = $this->objectManager->create(ResourceConnection::class);
+
+        $this->indexer->load(self::PRODUCT_PRICE_FEED_INDEXER);
+        $this->reindexProductPriceDataExporter();
     }
 
     /**
@@ -105,17 +109,20 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     }
 
     /**
-     * Run the indexer to extract product prices data
-     * @param $ids
+     * Reindex all the product price data exporter table for existing products
+     *
      * @return void
      */
-    protected function runIndexer($ids): void
+    private function reindexProductPriceDataExporter() : void
     {
-        try {
-            $this->indexer->load(self::PRODUCT_PRICE_FEED_INDEXER);
-            $this->indexer->reindexList($ids);
-        } catch (\Throwable) {
-            throw new \RuntimeException('Could not reindex product prices data');
+        $searchCriteria = Bootstrap::getObjectManager()->create(SearchCriteriaInterface::class);
+
+        $productIds = array_map(function ($product) {
+            return $product->getId();
+        }, $this->productRepository->getList($searchCriteria)->getItems());
+
+        if (!empty($productIds)) {
+            $this->indexer->reindexList($productIds);
         }
     }
 

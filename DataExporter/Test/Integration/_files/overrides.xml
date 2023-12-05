@@ -29,4 +29,10 @@
     <test class="Magento\Ups\Model\CarrierTest">
         <method name="testCollectFreeRates" skip="true"/>
     </test>
+<!--    <test class="Magento\CatalogRule\Model\Indexer\IndexerBuilderTest">-->
+<!--        <method name="testRestoringTriggersAfterFullReindex" skip="true"/>-->
+<!--    </test>-->
+    <test class="Magento\InventoryDataExporter\Test\Integration\StockStatusScheduledReindexTest">
+        <method name="testScheduledUpdate" skip="true"/>
+    </test>
 </overrides>

@@ -28,11 +28,16 @@ class CategoryRemovalTest extends AbstractCategoryTest
     public function testCategoryRemoval() : void
     {
         $categoryId = 600;
-        $extractedCategory = $this->getCategoryById(600, 'default');
+
+        $extractedCategory = $this->getCategoryById($categoryId, 'default');
+        $this->assertNotEmpty($extractedCategory, "Exported Category Data is empty");
         $this->assertEquals(false, $extractedCategory['deleted']);
+
         $this->deleteCategory($categoryId);
-        $extractedCategory = $this->getCategoryById(600, 'default');
-        $this->assertTrue($extractedCategory['deleted']);
+        $this->emulatePartialReindexBehavior([$categoryId]);
+
+        $extractedCategory = $this->getCategoryById($categoryId, 'default');
+        $this->assertTrue($extractedCategory['deleted'], "Category is not set as deleted");
     }
 
     /**

@@ -17,6 +17,9 @@ use Magento\TestFramework\Helper\Bootstrap;
  */
 class BundleProductTest extends AbstractProductTestHelper
 {
+    private const BUNDLE_SKU = 'bundle-product';
+    private const DYNAMIC_BUNDLE_SKU = 'dynamic_bundle_product_with_special_price';
+
     /**
      * @var ArrayUtils
      */
@@ -47,7 +50,7 @@ class BundleProductTest extends AbstractProductTestHelper
      */
     public function testBundleFixedProductOptions(array $bundleProductOptionsDataProvider) : void
     {
-        $extractedProduct = $this->getExtractedProduct('bundle-product', 'default');
+        $extractedProduct = $this->getExtractedProduct(self::BUNDLE_SKU, 'default');
         $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
         foreach ($bundleProductOptionsDataProvider as $key => $expectedData) {
@@ -72,7 +75,7 @@ class BundleProductTest extends AbstractProductTestHelper
      */
     public function testBundleDynamicProductOptions(array $bundleProductOptionsDataProvider) : void
     {
-        $extractedProduct = $this->getExtractedProduct('dynamic_bundle_product_with_special_price', 'default');
+        $extractedProduct = $this->getExtractedProduct(self::DYNAMIC_BUNDLE_SKU, 'default');
         $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
         foreach ($bundleProductOptionsDataProvider as $key => $expectedData) {
@@ -92,7 +95,7 @@ class BundleProductTest extends AbstractProductTestHelper
             'bundleProduct' => [
                 'item' => [
                     'feedData' => [
-                        'sku' => 'bundle-product',
+                        'sku' => self::BUNDLE_SKU,
                         'storeViewCode' => 'default',
                         'name' => 'Bundle Product',
                         'type' => 'bundle_fixed',
@@ -134,7 +137,7 @@ class BundleProductTest extends AbstractProductTestHelper
             'bundleProduct' => [
                 'item' => [
                     'feedData' => [
-                        'sku' => 'dynamic_bundle_product_with_special_price',
+                        'sku' => self::DYNAMIC_BUNDLE_SKU,
                         'storeViewCode' => 'default',
                         'name' => 'Bundle Product',
                         'type' => 'bundle',

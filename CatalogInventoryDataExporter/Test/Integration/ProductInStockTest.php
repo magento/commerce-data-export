@@ -33,8 +33,11 @@ class ProductInStockTest extends AbstractProductTestHelper
         $sku = 'simple5';
         $storeViewCode = 'default';
 
-        $this->changeInStockStatus($sku);
+        $productId = $this->getProductId($sku);
 
+        $this->changeInStockStatus($productId);
+
+        $this->emulatePartialReindexBehavior([$productId]);
         $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
         $this->validateProductInStock($extractedProduct);
     }
@@ -42,16 +45,12 @@ class ProductInStockTest extends AbstractProductTestHelper
     /**
      * Change inStock status of product
      *
-     * @param string $sku
+     * @param int $productId
      * @return void
-     * @throws NoSuchEntityException
      * @throws \Exception
      */
-    protected function changeInStockStatus(string $sku) : void
+    protected function changeInStockStatus(int $productId) : void
     {
-        $product = $this->productRepository->get($sku);
-        $productId = $product->getId();
-
         /** @var \Magento\CatalogInventory\Model\Stock\Item $stockItem */
         $stockItem = Bootstrap::getObjectManager()->create(Item::class);
         $stockItem->load($productId, 'product_id');

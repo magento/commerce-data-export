@@ -33,7 +33,6 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
         $this->objectManager = Bootstrap::getObjectManager();
         $this->action = $this->objectManager->create(Action::class);
         parent::setUp();
-        $this->emulateCustomersBehaviorAfterDeleteAction();
     }
 
     /**
@@ -58,15 +57,24 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
         $websiteRepository = $this->objectManager->get(WebsiteRepositoryInterface::class);
         foreach ($testData as $productData) {
             $product = $this->productRepository->get($productData['sku']);
+
             $websiteIds = [];
             foreach ($productData['websites'] as $websiteCode) {
                 $websiteIds[] = $websiteRepository->get($websiteCode)->getId();
             }
             $product->setWebsiteIds($websiteIds);
             $this->productRepository->save($product);
+
+            $this->emulateCustomersBehaviorAfterDeleteAction();
+            $this->emulatePartialReindexBehavior([$product->getId()]);
+
             foreach ($productData['expected_data'] as $storeViewCode => $isDeleted) {
                 $extractedProduct = $this->getExtractedProduct($productData['sku'], $storeViewCode);
-                self::assertEquals($isDeleted, $extractedProduct['is_deleted']);
+                self::assertEquals(
+                    $isDeleted,
+                    $extractedProduct['is_deleted'],
+                    "Product {$productData['sku']} is not deleted in store view {$storeViewCode}"
+                );
             }
         }
     }
@@ -103,10 +111,17 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
 
         $this->action->updateWebsites($productIds, $websiteIds, 'remove');
 
+        $this->emulateCustomersBehaviorAfterDeleteAction();
+        $this->emulatePartialReindexBehavior($productIds);
+
         foreach ($expectedData as $storeViewCode => $isDeleted) {
             foreach ($skus as $sku) {
                 $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
-                self::assertEquals($isDeleted, $extractedProduct['is_deleted']);
+                self::assertEquals(
+                    $isDeleted,
+                    $extractedProduct['is_deleted'],
+                    "Product {$sku} is not deleted in store view {$storeViewCode}"
+                );
             }
         }
     }

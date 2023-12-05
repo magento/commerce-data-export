@@ -96,8 +96,8 @@ class ProductUrlsTest extends AbstractProductTestHelper
         $storeViewCode = 'default';
         $UrlRewrite = Bootstrap::getObjectManager()->get(DbStorage::class);
         $UrlRewrite->deleteByData(['entity_id'=>10]);
-        $this->runIndexer([10]);
         $product = $this->productRepository->get($sku);
+        $this->emulatePartialReindexBehavior([$product->getId()]);
         $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
         $this->assertEquals(strtok($product->getUrlInStore(), '?'), $extractedProduct['feedData']['url']);
     }

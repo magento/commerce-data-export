@@ -21,7 +21,7 @@ use PHPUnit\Framework\TestCase;
  * @magentoDbIsolation disabled
  * @magentoAppIsolation enabled
  */
-class UnassignProductFromStockTest extends TestCase
+class UnassignProductFromStockTest extends AbstractInventoryTestHelper
 {
     /**
      * @var FeedInterface
@@ -43,6 +43,8 @@ class UnassignProductFromStockTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->stockStatusFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('inventoryStockStatus');
         $this->sourceItemProcessor = Bootstrap::getObjectManager()->get(SourceItemsProcessorInterface::class);
         $this->bulkSourceUnassign = Bootstrap::getObjectManager()->get(BulkSourceUnassignInterface::class);
@@ -62,6 +64,7 @@ class UnassignProductFromStockTest extends TestCase
         $sourceItems = $this->getSourcesData($sku, $sourcesToLeave);
         $this->sourceItemProcessor->execute($sku, $sourceItems);
 
+        $this->emulatePartialReindexBehavior([$sku]);
         $feedData = $this->getFeedData([$sku]);
 
         $this->verifyResults($feedData, $sku, $expectedData);
@@ -84,6 +87,7 @@ class UnassignProductFromStockTest extends TestCase
             $sourcesToUnassign
         );
 
+        $this->emulatePartialReindexBehavior($skus);
         $feedData = $this->getFeedData($skus);
 
         foreach ($skus as $sku) {
@@ -108,6 +112,7 @@ class UnassignProductFromStockTest extends TestCase
     }
 
     /**
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      * @return array[]
      */
     public function stocksUnassignDataProvider(): array
@@ -237,6 +242,7 @@ class UnassignProductFromStockTest extends TestCase
     }
 
     /**
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      * @return array[]
      */
     public function stocksBulkUnassignDataProvider(): array

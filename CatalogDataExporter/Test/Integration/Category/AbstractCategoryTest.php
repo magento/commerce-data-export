@@ -78,18 +78,9 @@ abstract class AbstractCategoryTest extends TestCase
         $this->categoryRepository = Bootstrap::getObjectManager()->create(CategoryRepositoryInterface::class);
         $this->storeManager = Bootstrap::getObjectManager()->create(StoreManagerInterface::class);
         $this->categoryFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('categories');
-    }
 
-    /**
-     * Run the indexer to extract categories data
-     *
-     * @param array $ids
-     * @return void
-     */
-    protected function runIndexer(array $ids) : void
-    {
         $this->indexer->load(self::CATEGORY_FEED_INDEXER);
-        $this->indexer->reindexList($ids);
+        $this->reindexCategoryDataExporterTable();
     }
 
     /**
@@ -101,6 +92,8 @@ abstract class AbstractCategoryTest extends TestCase
      */
     protected function assertBaseCategoryData(CategoryInterface $category, array $extract, StoreInterface $store) : void
     {
+        $this->assertNotEmpty($extract, "Exported Category Data is empty");
+
         $storeCode = $this->storeManager->getGroup($store->getStoreGroupId())->getCode();
         $websiteCode = $this->storeManager->getWebsite($store->getWebsiteId())->getCode();
         $this->assertEquals($store->getCode(), $extract['storeViewCode']);
@@ -135,5 +128,45 @@ abstract class AbstractCategoryTest extends TestCase
             }
         }
         return [];
+    }
+
+    /**
+     * Run the category exporter indexer
+     *
+     * @param array $ids
+     * @return void
+     */
+    protected function emulatePartialReindexBehavior(array $ids = []) : void
+    {
+        $this->indexer->reindexList($ids);
+    }
+
+    /**
+     * Reindex the full category data exporter table
+     *
+     * @return void
+     */
+    private function reindexCategoryDataExporterTable() : void
+    {
+        $this->indexer->reindexAll();
+    }
+
+    /**
+     * @return void
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $this->truncateCategoryDataExporterIndexTable();
+    }
+
+    /**
+     * Truncates index table
+     */
+    private function truncateCategoryDataExporterIndexTable(): void
+    {
+        $connection = $this->resource->getConnection();
+        $feedTable = $this->resource->getTableName(self::CATEGORY_FEED_INDEXER);
+        $connection->truncateTable($feedTable);
     }
 }

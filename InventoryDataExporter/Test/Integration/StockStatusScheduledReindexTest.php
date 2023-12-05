@@ -8,30 +8,17 @@ declare(strict_types=1);
 
 namespace Magento\InventoryDataExporter\Test\Integration;
 
-use Magento\Framework\Indexer\IndexerInterface;
-use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 use Magento\TestFramework\Helper\Bootstrap;
-use PHPUnit\Framework\TestCase;
 
 /**
  * @magentoDbIsolation disabled
  * @magentoAppIsolation enabled
  */
-class StockStatusScheduledReindexTest extends TestCase
+class StockStatusScheduledReindexTest extends AbstractInventoryTestHelper
 {
-    /**
-     * feed indexer
-     */
-    private const STOCK_STATUS_FEED_INDEXER = 'inventory_data_exporter_stock_status';
-
-    /**
-     * @var IndexerInterface
-     */
-    private $indexer;
-
     /**
      * @var SourceItemsSaveInterface
      */
@@ -47,20 +34,10 @@ class StockStatusScheduledReindexTest extends TestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->sourceItemsFactory = Bootstrap::getObjectManager()->get(SourceItemInterfaceFactory::class);
         $this->sourceItemsSave = Bootstrap::getObjectManager()->get(SourceItemsSaveInterface::class);
-        $indexer = Bootstrap::getObjectManager()->create(IndexerRegistry::class);
-        $this->indexer = $indexer->get(self::STOCK_STATUS_FEED_INDEXER);
-        $this->indexer->setScheduled(true);
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $changelog = $this->indexer->getView()->getChangelog();
-        $currentVersion = $changelog->getVersion();
-        $changelog->clear($currentVersion + 1);
-        $this->indexer->setScheduled(false);
     }
 
     /**
@@ -74,8 +51,8 @@ class StockStatusScheduledReindexTest extends TestCase
 
         $currentVersion = $this->indexer->getView()->getChangelog()->getVersion();
 
-        // check no product added to changelog yet to prevent false-positive result
-        self::assertEmpty($this->indexer->getView()->getChangelog()->getList(0, $currentVersion + 1));
+        // check the product is added to changelog due to reindex in the setUp
+        self::assertNotEmpty($this->indexer->getView()->getChangelog()->getList(0, $currentVersion));
 
         $sourceItem = $this->sourceItemsFactory->create(['data' => [
             SourceItemInterface::SOURCE_CODE => 'default',
@@ -85,9 +62,9 @@ class StockStatusScheduledReindexTest extends TestCase
         ]]);
         $this->sourceItemsSave->execute([$sourceItem]);
 
-        $currentVersion = $this->indexer->getView()->getChangelog()->getVersion();
+        $newVersion = $this->indexer->getView()->getChangelog()->getVersion();
 
         // verify SKU is present in changelog
-        self::assertEquals([$sku], $this->indexer->getView()->getChangelog()->getList(0, $currentVersion + 1));
+        self::assertEquals([$sku], $this->indexer->getView()->getChangelog()->getList($currentVersion, $newVersion));
     }
 }

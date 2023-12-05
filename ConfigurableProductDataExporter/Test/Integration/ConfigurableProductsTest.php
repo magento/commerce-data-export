@@ -138,8 +138,6 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
      */
     public function testParentProducts() : void
     {
-        $this->runIndexer([40, 50, 60, 70]);
-
         $skus = ['simple_option_50', 'simple_option_60', 'simple_option_70'];
         $storeViewCodes = ['default', 'fixture_second_store'];
 
@@ -168,8 +166,6 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
      */
     public function testParentProductsOnDifferentWebsites() : void
     {
-        $this->runIndexer([40, 50, 60, 70, 55, 59, 65]);
-
         $skus = [
             'simple_option_50' => [
                 'custom_store_view_one' => true,

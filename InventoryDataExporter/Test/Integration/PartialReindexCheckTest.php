@@ -10,6 +10,7 @@ namespace Magento\InventoryDataExporter\Test\Integration;
 
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
+use Magento\Indexer\Model\Indexer;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
@@ -23,6 +24,8 @@ use PHPUnit\Framework\TestCase;
  */
 class PartialReindexCheckTest extends TestCase
 {
+    private const STOCK_STATUS_FEED_INDEXER = 'inventory_data_exporter_stock_status';
+
     /**
      * @var FeedInterface
      */
@@ -44,6 +47,11 @@ class PartialReindexCheckTest extends TestCase
     private $bulkSourceUnassign;
 
     /**
+     * @var Indexer
+     */
+    protected $indexer;
+
+    /**
      * @inheritDoc
      */
     protected function setUp(): void
@@ -52,6 +60,7 @@ class PartialReindexCheckTest extends TestCase
         $this->sourceItemsFactory = Bootstrap::getObjectManager()->get(SourceItemInterfaceFactory::class);
         $this->sourceItemsSave = Bootstrap::getObjectManager()->get(SourceItemsSaveInterface::class);
         $this->bulkSourceUnassign = Bootstrap::getObjectManager()->get(BulkSourceUnassignInterface::class);
+        $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
     }
 
     /**
@@ -59,20 +68,23 @@ class PartialReindexCheckTest extends TestCase
      */
     public function testSourceItemQtyUpdated()
     {
+        $sku = 'product_in_EU_stock_with_2_sources';
+
         $sourceItem = $this->sourceItemsFactory->create(['data' => [
             SourceItemInterface::SOURCE_CODE => 'eu-2',
-            SourceItemInterface::SKU => 'product_in_EU_stock_with_2_sources',
+            SourceItemInterface::SKU => $sku,
             SourceItemInterface::QUANTITY => 2,
             SourceItemInterface::STATUS => SourceItemInterface::STATUS_IN_STOCK,
         ]]);
         $this->sourceItemsSave->execute([$sourceItem]);
 
-        $sku = 'product_in_EU_stock_with_2_sources';
+        $this->runIndexer([$sku]);
+
         $feedData = $this->getFeedData([$sku]);
 
         self::assertEquals(
             [
-                'sku' => 'product_in_EU_stock_with_2_sources',
+                'sku' => $sku,
                 'stock_id' => 10,
                 'qty' => 7.5 // 5.5 (eu-1)  + 2 (changed for eu-2)
             ],
@@ -112,6 +124,8 @@ class PartialReindexCheckTest extends TestCase
             $skus,
             ['eu-1', 'default']
         );
+
+        $this->runIndexer($skus);
 
         $feedData = $this->getFeedData($skus);
 
@@ -192,5 +206,17 @@ class PartialReindexCheckTest extends TestCase
             }
         }
         return $output;
+    }
+
+    /**
+     * Run the indexer to extract stock item data
+     *
+     * @param array $skus
+     * @return void
+     */
+    private function runIndexer(array $skus = []) : void
+    {
+        $this->indexer->load(self::STOCK_STATUS_FEED_INDEXER);
+        $this->indexer->reindexList($skus);
     }
 }

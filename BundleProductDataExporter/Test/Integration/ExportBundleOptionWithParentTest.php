@@ -7,18 +7,12 @@ declare(strict_types=1);
 
 namespace Magento\BundleProductDataExporter\Test\Integration;
 
-use DateTime;
-use DateTimeInterface;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Framework\App\ResourceConnection;
+use Magento\CatalogDataExporter\Test\Integration\AbstractProductTestHelper;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
-use Magento\Indexer\Model\Indexer;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
-use Throwable;
 use Zend_Db_Statement_Exception;
 
 /**
@@ -29,45 +23,22 @@ use Zend_Db_Statement_Exception;
  * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class ExportBundleOptionWithParentTest extends TestCase
+class ExportBundleOptionWithParentTest extends AbstractProductTestHelper
 {
-    private const PRODUCT_FEED_INDEXER = 'catalog_data_exporter_products';
-
-    /**
-     * @var Indexer
-     */
-    private Indexer $indexer;
-
+    private const SIMPLE_SKU = 'simple1';
     /**
      * @var FeedInterface
      */
     private FeedInterface $productsFeed;
 
     /**
-     * @var ProductRepositoryInterface
+     * @inheritDoc
      */
-    private ProductRepositoryInterface $productRepository;
-
-    /**
-     * @var ResourceConnection
-     */
-    private ResourceConnection $resourceConnection;
-
-    /**
-     * @param string|null $name
-     * @param array $data
-     * @param $dataName
-     */
-    public function __construct(
-        ?string $name = null,
-        array $data = [],
-        $dataName = ''
-    ) {
-        parent::__construct($name, $data, $dataName);
-        $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
-        $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
+    protected function setUp() : void
+    {
         $this->productsFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('products');
-        $this->resourceConnection = Bootstrap::getObjectManager()->create(ResourceConnection::class);
+
+        parent::setUp();
     }
 
     /**
@@ -92,7 +63,7 @@ class ExportBundleOptionWithParentTest extends TestCase
             [
                 [
                     [
-                        'sku' => 'simple1',
+                        'sku' => self::SIMPLE_SKU,
                         'type' => 'SIMPLE',
                         'parents' => [
                             0 => ['sku' => 'bundle-product', 'productType' => 'bundle_fixed'],
@@ -112,66 +83,18 @@ class ExportBundleOptionWithParentTest extends TestCase
      */
     private function checkExpectedItemsAreExportedInFeed(array $expectedItems): void
     {
-        $ids = [];
-        foreach ($expectedItems as $expectedItem) {
-            $ids[] = $this->productRepository->get($expectedItem['sku'])->getId();
-        }
-        $timestamp = new DateTime('Now - 1 second');
-        $this->runIndexer($ids);
-        $actualProductsFeed = $this->productsFeed->getFeedSince($timestamp->format(DateTimeInterface::W3C));
+        $extractedProduct = $this->getExtractedProduct(self::SIMPLE_SKU, 'default');
 
-        self::assertNotEmpty($actualProductsFeed['feed'], 'Product Feed should not be empty');
+        self::assertNotEmpty($extractedProduct, 'Product Feed should not be empty');
 
-        foreach ($expectedItems as $index => $product) {
-            if (!isset($actualProductsFeed['feed'][$index])) {
-                self::fail("Cannot find product feed");
-            }
-
-            self::assertEquals(
-                $product['sku'],
-                $actualProductsFeed['feed'][$index]['sku'],
-                "Sku is not equal for index {$index}"
-            );
+        foreach ($expectedItems as $product) {
+            self::assertEquals($product['sku'], $extractedProduct['sku']);
 
             self::assertEqualsCanonicalizing(
                 $product['parents'],
-                $actualProductsFeed['feed'][$index]['parents'],
-                "Parents is not equal"
+                $extractedProduct['feedData']['parents'],
+                "Expected Parents are not equal to Actual"
             );
         }
-    }
-
-    /**
-     * Run the indexer to extract product data
-     * @param $ids
-     * @return void
-     */
-    private function runIndexer($ids): void
-    {
-        try {
-            $this->indexer->load(self::PRODUCT_FEED_INDEXER);
-            $this->indexer->reindexList($ids);
-        } catch (Throwable) {
-            throw new RuntimeException('Could not reindex product data');
-        }
-    }
-
-    /**
-     * @return void
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->truncateIndexTable();
-    }
-
-    /**
-     * Truncates index table
-     */
-    private function truncateIndexTable(): void
-    {
-        $connection = $this->resourceConnection->getConnection();
-        $feedTable = $this->resourceConnection->getTableName('catalog_data_exporter_products');
-        $connection->truncateTable($feedTable);
     }
 }

@@ -67,4 +67,10 @@
     </type>
 
     <preference for="Magento\DataExporter\Model\ExportFeedInterface" type="Magento\DataExporter\Model\ExportFeedDummy"/>
+
+    <!-- Plugin to force all exporter indexer to be on schedule mode -->
+    <type name="Magento\Framework\Indexer\IndexerInterface">
+        <plugin name="force_exporter_indexer_mode_on_schedule"
+            type="Magento\DataExporter\Plugin\ForceExporterIndexerModeOnSchedule"/>
+    </type>
 </config>

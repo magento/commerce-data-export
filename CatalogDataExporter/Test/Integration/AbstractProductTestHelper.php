@@ -14,6 +14,7 @@ use Magento\Catalog\Helper\Category as CategoryHelper;
 use Magento\Catalog\Helper\Product as ProductHelper;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
+use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -126,18 +127,9 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $this->taxClassSource = Bootstrap::getObjectManager()->create(TaxClassSource::class);
 
         $this->jsonSerializer = Bootstrap::getObjectManager()->create(Json::class);
-    }
 
-    /**
-     * Run the indexer to extract product data
-     *
-     * @param array $ids
-     * @return void
-     */
-    protected function runIndexer(array $ids = []) : void
-    {
         $this->indexer->load(self::CATALOG_DATA_EXPORTER);
-        $this->indexer->reindexList($ids);
+        $this->reindexProductDataExporter();
     }
 
     /**
@@ -146,10 +138,10 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
      * @param string $sku
      * @param string $storeViewCode
      * @return array
-     * @throws \Zend_Db_Statement_Exception
      */
     protected function getExtractedProduct(string $sku, string $storeViewCode) : array
     {
+        // Select data from exporter table
         $query = $this->connection->select()
             ->from(['ex' => $this->resource->getTableName(self::CATALOG_DATA_EXPORTER)])
             ->where('ex.sku = ?', $sku)
@@ -163,7 +155,37 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
             $data[$row['sku']]['is_deleted'] = $row['is_deleted'];
             $data[$row['sku']]['feedData'] = $this->jsonSerializer->unserialize($row['feed_data']);
         }
-        return $data[$sku];
+
+        return !empty($data[$sku]) ? $data[$sku] : $data;
+    }
+
+    /**
+     * Run partial exported indexer
+     *
+     * @param array $ids
+     * @return void
+     */
+    protected function emulatePartialReindexBehavior(array $ids = []) : void
+    {
+        $this->indexer->reindexList($ids);
+    }
+
+    /**
+     * Reindex all the product data exporter table for existing products
+     *
+     * @return void
+     */
+    private function reindexProductDataExporter() : void
+    {
+        $searchCriteria = Bootstrap::getObjectManager()->create(SearchCriteriaInterface::class);
+
+        $productIds = array_map(function ($product) {
+            return $product->getId();
+        }, $this->productRepository->getList($searchCriteria)->getItems());
+
+        if (!empty($productIds)) {
+            $this->indexer->reindexList($productIds);
+        }
     }
 
     /**
@@ -232,6 +254,8 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
      */
     protected function validateBaseProductData(ProductInterface $product, array $extract, string $storeViewCode) : void
     {
+        $this->assertNotEmpty($extract, "Exported Product Data is empty");
+
         $storeViewId = $this->storeRepositoryInterface->get($storeViewCode)->getCode();
         $storeView = $this->storeManager->getStore($storeViewId);
         $websiteCode = $this->websiteRepositoryInterface->getById($storeView->getWebsiteId())->getCode();
@@ -497,5 +521,35 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         // as it's possible that feed in test will be retrieved in same time as product created:
         // \Magento\DataExporter\Model\Query\RemovedEntitiesByModifiedAtQuery::getQuery
         sleep(1);
+    }
+
+    /**
+     * @param string $sku
+     * @return int|null
+     * @throws NoSuchEntityException
+     */
+    public function getProductId(string $sku): ?int
+    {
+        $product = $this->productRepository->get($sku);
+        return (int)$product->getId();
+    }
+
+    /**
+     * @return void
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $this->truncateProductDataExporterIndexTable();
+    }
+
+    /**
+     * Truncates index table
+     */
+    private function truncateProductDataExporterIndexTable(): void
+    {
+        $connection = $this->resource->getConnection();
+        $feedTable = $this->resource->getTableName(self::CATALOG_DATA_EXPORTER);
+        $connection->truncateTable($feedTable);
     }
 }

@@ -33,8 +33,11 @@ class ProductLowStockTest extends AbstractProductTestHelper
         $sku = 'simple6';
         $storeViewCode = 'default';
 
-        $this->changeLowStockStatus($sku);
+        $productId = $this->getProductId($sku);
 
+        $this->changeLowStockStatus($productId);
+
+        $this->emulatePartialReindexBehavior([$productId]);
         $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
         $this->validateProductLowStock($extractedProduct);
     }
@@ -42,16 +45,12 @@ class ProductLowStockTest extends AbstractProductTestHelper
     /**
      * Change lowStock status of product
      *
-     * @param string $sku
+     * @param int $productId
      * @return void
-     * @throws NoSuchEntityException
      * @throws \Exception
      */
-    protected function changeLowStockStatus(string $sku) : void
+    protected function changeLowStockStatus(int $productId) : void
     {
-        $product = $this->productRepository->get($sku);
-        $productId = $product->getId();
-
         /** @var \Magento\CatalogInventory\Model\Stock\Item $stockItem */
         $stockItem = Bootstrap::getObjectManager()->create(Item::class);
         $stockItem->load($productId, 'product_id');

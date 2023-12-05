@@ -23,16 +23,23 @@ use PHPUnit\Framework\TestCase;
 /**
  * Test class to check that only feeds with "resyncable" statuses would be re-submitted
  */
-class ResubmitFailedFeedTest extends TestCase
+class ResubmitFailedFeedTest extends AbstractProductTestHelper
 {
     private const EXPORT_SUCCESS_STATUS = 200;
 
+    /**
+     * @var FeedInterface
+     */
     private FeedInterface $productFeed;
 
+    /**
+     * @var SubmitFeedInterface|ProductSubmitFeed|mixed
+     */
     private SubmitFeedInterface $submitFeed;
 
-    private ProductRepositoryInterface $productRepository;
-
+    /**
+     * @var ResourceConnection|mixed
+     */
     private ResourceConnection $resourceConnection;
 
     public static function setUpBeforeClass(): void
@@ -98,13 +105,15 @@ class ResubmitFailedFeedTest extends TestCase
     {
         $queryData = [];
         foreach ($expectedProducts as $productData) {
+            $productId = $this->productRepository->get($productData['sku'])->getId();
             $queryData[] = [
-                'id' => $this->productRepository->get($productData['sku'])->getId(),
+                'id' => $productId,
                 'sku' => $productData['sku'],
                 'store_view_code' => $productData['store_view_code'],
                 'status' => $productData['status']
             ];
         }
+
         $connection = $this->resourceConnection->getConnection();
         $connection->insertOnDuplicate(
             $connection->getTableName($this->productFeed->getFeedMetadata()->getFeedTableName()),

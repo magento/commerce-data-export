@@ -39,11 +39,6 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
      */
     public function testUnassignProductFromWebsite(array $expectedSimpleProductPrices): void
     {
-        $affectedIds = [];
-        foreach ($expectedSimpleProductPrices as $expectedItem) {
-            $affectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
-        }
-        $this->runIndexer($affectedIds);
         $product = $this->productRepository->get('simple_product_with_tier_price');
         $websiteRepository = $this->objectManager->get(WebsiteRepositoryInterface::class);
         $secondWebsiteId = $websiteRepository->get('test')->getId();
@@ -66,11 +61,6 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
      */
     public function testDisableProductGlobally(array $expectedSimpleProductPrices): void
     {
-        $affectedIds = [];
-        foreach ($expectedSimpleProductPrices as $expectedItem) {
-            $affectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
-        }
-        $this->runIndexer($affectedIds);
         //Get product for edit in general scope (all websites)
         $product = $this->productRepository->get('simple_product_with_tier_price', true, 0);
         //Disable it on general level
@@ -94,11 +84,6 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
      */
     public function testEnableProductOnWebsite(array $expectedSimpleProductPrices): void
     {
-        $affectedIds = [];
-        foreach ($expectedSimpleProductPrices as $expectedItem) {
-            $affectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
-        }
-        $this->runIndexer($affectedIds);
         //Get product for edit in general scope (all websites)
         $product = $this->productRepository->get('simple_product_with_tier_price', true, 0);
         //Disable it on general level
@@ -133,18 +118,12 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
      */
     public function testReassignProductToWebsite(array $expectedSimpleProductPrices): void
     {
-        $affectedIds = [];
-        foreach ($expectedSimpleProductPrices as $expectedItem) {
-            $affectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
-        }
-        $this->runIndexer($affectedIds);
         $product = $this->productRepository->get('simple_product_with_tier_price');
         $websiteRepository = $this->objectManager->get(WebsiteRepositoryInterface::class);
         $firstWebsiteId = $websiteRepository->get('base')->getId();
         $secondWebsiteId = $websiteRepository->get('test')->getId();
         $product->setWebsiteIds([$secondWebsiteId]);
         $this->productRepository->save($product);
-        $this->runIndexer($affectedIds);
         $product->setWebsiteIds([$firstWebsiteId, $secondWebsiteId]);
         $this->productRepository->save($product);
 

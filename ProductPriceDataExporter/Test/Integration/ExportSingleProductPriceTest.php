@@ -25,6 +25,9 @@ use Magento\TestFramework\Helper\Bootstrap;
  */
 class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
 {
+    /**
+     * @var CatalogRuleRepositoryInterface $catalogRuleRepository
+     */
     private CatalogRuleRepositoryInterface $catalogRuleRepository;
 
     protected function setUp(): void
@@ -82,11 +85,6 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
      */
     public function testExportDownloadableProductsPrices(array $expectedDownloadableProductPricesDataProvider): void
     {
-        $affectedIds = [];
-        foreach ($expectedDownloadableProductPricesDataProvider as $expectedItem) {
-            $affectedIds[] = $this->productRepository->get($expectedItem['sku'])->getId();
-        }
-        $this->runIndexer($affectedIds);
         $this->checkExpectedItemsAreExportedInFeed($expectedDownloadableProductPricesDataProvider);
     }
 

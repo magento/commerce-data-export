@@ -67,7 +67,7 @@ class ProductRemovalTest extends AbstractProductTestHelper
             if ($productId) {
                 $this->productRepository->delete($product);
                 $this->emulateCustomersBehaviorAfterDeleteAction();
-                $this->runIndexer([$productId]);
+                $this->emulatePartialReindexBehavior([$productId]);
             }
         } catch (\Exception $e) {
             //Nothing to delete
