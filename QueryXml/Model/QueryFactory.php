@@ -141,7 +141,8 @@ class QueryFactory
         $query = $this->constructQuery($queryName);
         $this->queryCache->save(
             $this->jsonSerializer->serialize($query),
-            $queryName
+            $queryName,
+            ['collections']
         );
         return $query;
     }
