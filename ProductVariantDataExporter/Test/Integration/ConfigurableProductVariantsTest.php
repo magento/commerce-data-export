@@ -186,10 +186,10 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
             $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
             $this->assertCount(2, $variantsData); //id20, id10 (disabled)
             $this->assertEquals('simple_10', $variantsData[0]['productSku']);
-            $this->assertTrue($variantsData[0]['deleted'], "simple_10 should have been flag as deleted");
+            $this->assertFalse($variantsData[0]['deleted'], "simple_10 should not have been flag as deleted");
 
             $this->assertEquals('simple_20', $variantsData[1]['productSku']);
-            $this->assertFalse($variantsData[1]['deleted'], "simple_20 should not have been flag as deleted");
+            $this->assertFalse($variantsData[1]['deleted'], "simple_20 should not not have been flag as deleted");
 
             // enable variant && verify "deleted" is set to false
             // verify enabling child product back works
@@ -201,6 +201,41 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
             $this->assertEquals('simple_10', $variantsData[0]['productSku']);
             $this->assertFalse($variantsData[0]['deleted'], "simple_10 should not have flag 'deleted'");
 
+        } catch (Throwable $e) {
+            $this->fail($e->getMessage());
+        }
+    }
+
+    /**
+     * Test that disabled product variant is exported in feed
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture Magento/ConfigurableProduct/_files/product_configurable_sku.php
+     *
+     * @return void
+     */
+    public function testDisabledVariantIsStillExportedInFeed(): void
+    {
+        try {
+            $configurable = $this->productRepository->get('configurable');
+            $configurableId = $configurable->getId();
+
+            $simple10 = $this->productRepository->get('simple_10');
+
+            $variantSimple10 = $this->idResolver->resolve([
+                ConfigurableId::PARENT_SKU_KEY => 'configurable',
+                ConfigurableId::CHILD_SKU_KEY => 'simple_10'
+            ]);
+
+            // disable variant and run indexer
+            $this->changeProductStatusProduct('simple_10', Status::STATUS_DISABLED);
+            $this->runIndexer([$configurableId, $simple10->getId()]);
+
+            $variantsData = $this->getVariantByIds([$variantSimple10]);
+            $this->assertCount(1, $variantsData);
+            $this->assertEquals('simple_10', $variantsData[0]['productSku']);
+            $this->assertFalse($variantsData[0]['deleted'], "simple_10 should not have been flag as deleted");
         } catch (Throwable $e) {
             $this->fail($e->getMessage());
         }

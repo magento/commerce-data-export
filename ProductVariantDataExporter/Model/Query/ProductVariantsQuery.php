@@ -18,12 +18,14 @@ use Magento\Framework\Exception\LocalizedException;
  */
 class ProductVariantsQuery
 {
-    private const STATUS_ATTRIBUTE_CODE = "status";
-
     /**
      * @var ResourceConnection
      */
     private $resourceConnection;
+
+    /**
+     * @var Config
+     */
     private Config $eavConfig;
 
     /**
@@ -51,9 +53,6 @@ class ProductVariantsQuery
         $joinField = $connection->getAutoIncrementField(
             $this->resourceConnection->getTableName('catalog_product_entity')
         );
-
-        $statusAttribute = $this->eavConfig->getAttribute('catalog_product', self::STATUS_ATTRIBUTE_CODE);
-        $statusAttributeId = $statusAttribute?->getId();
 
         $subSelect = $connection->select()
             ->from(
@@ -95,18 +94,6 @@ class ProductVariantsQuery
                 'option_value.option_id = cpei.value',
                 []
             )
-            ->joinLeft(
-                ['product_status' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
-                \sprintf(
-                    'product_status.%s = product.%s 
-                    AND product_status.attribute_id = %s
-                    AND product_status.store_id = 0',
-                    $joinField,
-                    $joinField,
-                    $statusAttributeId,
-                ),
-                []
-            )
             ->columns(
                 [
                     'parentId' => 'cpep.entity_id',
@@ -119,8 +106,7 @@ class ProductVariantsQuery
                     'optionLabel' => 'option_value.value'
                 ]
             )
-            ->where('product.entity_id IN (?)', $parentIds)
-            ->where('product_status.value = ?', Status::STATUS_ENABLED);
+            ->where('product.entity_id IN (?)', $parentIds);
 
         return $select;
     }

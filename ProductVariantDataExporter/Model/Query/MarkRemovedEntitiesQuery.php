@@ -7,9 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Model\Query;
 
-use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
-use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\DataExporter\Model\Query\MarkRemovedEntitiesQuery as DefaultMarkRemovedEntitiesQuery;
@@ -20,28 +18,17 @@ use Magento\Framework\Exception\LocalizedException;
  */
 class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
 {
-    private const STATUS_ATTRIBUTE_CODE = "status";
-
-    private const STATUS_DISABLED = Status::STATUS_DISABLED;
-
     /**
      * @var ResourceConnection
      */
     private ResourceConnection $resourceConnection;
 
     /**
-     * @var Config
-     */
-    private Config $eavConfig;
-
-    /**
      * @param ResourceConnection $resourceConnection
-     * @param Config $eavConfig
      */
-    public function __construct(ResourceConnection $resourceConnection, Config $eavConfig)
+    public function __construct(ResourceConnection $resourceConnection)
     {
         $this->resourceConnection = $resourceConnection;
-        $this->eavConfig = $eavConfig;
 
         parent::__construct($resourceConnection);
     }
@@ -62,9 +49,6 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
 
         $catalogProductTable = $this->resourceConnection->getTableName($metadata->getSourceTableName());
         $productEntityJoinField = $connection->getAutoIncrementField($catalogProductTable);
-
-        $statusAttribute = $this->eavConfig->getAttribute('catalog_product', self::STATUS_ATTRIBUTE_CODE);
-        $statusAttributeId = $statusAttribute?->getId();
 
         return $connection->select()
             ->from(
@@ -94,30 +78,11 @@ class MarkRemovedEntitiesQuery extends DefaultMarkRemovedEntitiesQuery
                 ),
                 []
             )
-            ->joinLeft(
-                ['disabled_product' => $catalogProductTable],
-                \sprintf('f.product_id = disabled_product.%s', $fieldName),
-                []
-            )
-            ->joinLeft(
-                ['disabled_product_status' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
-                \sprintf(
-                    'disabled_product_status.%s = disabled_product.%s 
-                    AND disabled_product_status.attribute_id = %s
-                    AND disabled_product_status.store_id = 0',
-                    $productEntityJoinField,
-                    $productEntityJoinField,
-                    $statusAttributeId,
-                ),
-                []
-            )
             ->where('f.product_id IN (?)', $ids)
             ->where(
                 \sprintf(
                     'removed_product.entity_id IS NULL 
-                    OR disabled_product_status.value = %d 
-                    OR unassigned_product.entity_id IS NULL',
-                    self::STATUS_DISABLED
+                    OR unassigned_product.entity_id IS NULL'
                 )
             );
     }
