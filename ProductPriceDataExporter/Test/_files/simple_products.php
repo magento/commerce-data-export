@@ -72,6 +72,7 @@ $product2->setTypeId(Type::TYPE_SIMPLE)
     ->setName('Simple Product With Special Price')
     ->setSku('simple_product_with_special_price')
     ->setPrice(100.10)
+    ->setData('special_price', 45.00)
     ->setWebsiteIds([$firstWebsiteId, $secondWebsiteId])
     ->setStatus(Status::STATUS_ENABLED);
 $productRepository->save($product2);

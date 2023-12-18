@@ -245,7 +245,7 @@ class ProductPrice implements DataProcessorInterface
                 $prices[$key] = $fallbackPrice;
 
                 // override customer group specific fields
-                $this->addDiscountPrice($prices[$key], 'group', $priceValue, $pricePercentage, true);
+                $this->addDiscountPrice($prices[$key], 'group', $priceValue, $pricePercentage);
             }
 
             if ($row['rule_price'] !== null) {
@@ -315,22 +315,18 @@ class ProductPrice implements DataProcessorInterface
      * @param string $code
      * @param ?string $price
      * @param ?string $percentage
-     * @param bool $override
      * @return void
      */
     private function addDiscountPrice(
         array &$priceFeedItem,
         string $code,
         string $price = null,
-        string $percentage = null,
-        bool $override = false
+        string $percentage = null
     ): void {
-        if ($override) {
-            foreach ($priceFeedItem['discounts'] as &$discount) {
-                if ($discount['code'] === $code) {
-                    $this->setPriceOrPercentageDiscount($discount, $price, $percentage);
-                    return;
-                }
+        foreach ($priceFeedItem['discounts'] as &$discount) {
+            if ($discount['code'] === $code) {
+                $this->setPriceOrPercentageDiscount($discount, $price, $percentage);
+                return;
             }
         }
         unset($discount);
