@@ -33,6 +33,7 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
      * @param FeedHashBuilder $hashBuilder
      * @param SerializerInterface $serializer
      * @param CommerceDataExportLoggerInterface $logger
+     * @param ?IndexStateProviderFactory $IndexStateProviderFactory
      * @param ?DeletedEntitiesProviderInterface $deletedEntitiesProvider
      */
     public function __construct(
@@ -44,6 +45,7 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
         FeedHashBuilder $hashBuilder,
         SerializerInterface $serializer,
         CommerceDataExportLoggerInterface $logger,
+        IndexStateProviderFactory $IndexStateProviderFactory = null,
         DeletedEntitiesProviderInterface $deletedEntitiesProvider = null
     ) {
         parent::__construct(
@@ -54,6 +56,7 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
             $hashBuilder,
             $serializer,
             $logger,
+            $IndexStateProviderFactory ?? ObjectManager::getInstance()->get(IndexStateProviderFactory::class),
             $deletedEntitiesProvider ?? ObjectManager::getInstance()->get(DeletedEntitiesProviderInterface::class)
         );
         $this->markRemovedEntities = $markRemovedEntities;
@@ -75,9 +78,10 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
         DataSerializerInterface $serializer,
         EntityIdsProviderInterface $idsProvider,
         array $ids = [],
-        callable $callback = null
+        callable $callback = null,
+        IndexStateProvider $indexState = null
     ): void {
-        parent::partialReindex($metadata, $serializer, $idsProvider, $ids, $callback);
+        parent::partialReindex($metadata, $serializer, $idsProvider, $ids, $callback, $indexState);
         if (!$metadata->isExportImmediately()) {
             try {
                 $this->markRemovedEntities->execute($ids, $metadata);

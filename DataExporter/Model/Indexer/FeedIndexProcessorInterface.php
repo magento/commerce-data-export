@@ -21,6 +21,7 @@ interface FeedIndexProcessorInterface
      * @param EntityIdsProviderInterface $idsProvider
      * @param array $ids
      * @param callable|null $callback
+     * @param IndexStateProvider|null $indexState
      * @return void
      */
     public function partialReindex(
@@ -28,7 +29,8 @@ interface FeedIndexProcessorInterface
         DataSerializerInterface $serializer,
         EntityIdsProviderInterface $idsProvider,
         array $ids = [],
-        ?callable $callback = null
+        ?callable $callback = null,
+        IndexStateProvider $indexState = null
     ): void;
 
     /**
