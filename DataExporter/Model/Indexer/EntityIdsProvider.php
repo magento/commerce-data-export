@@ -42,7 +42,8 @@ class EntityIdsProvider implements EntityIdsProviderInterface
      */
     public function getAllIds(FeedIndexMetadata $metadata): ?\Generator
     {
-        return $this->allIdsResolver->getAllIds($metadata);
+        yield from $this->allIdsResolver->getAllIds($metadata);
+        yield from $this->allIdsResolver->getAllDeletedIds($metadata);
     }
 
     /**
@@ -59,5 +60,13 @@ class EntityIdsProvider implements EntityIdsProviderInterface
             $ids = array_merge($ids, $resolver->getAllAffectedIds($ids));
         }
         return $ids;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAllDeletedIds(FeedIndexMetadata $metadata): ?\Generator
+    {
+        return $this->allIdsResolver->getAllDeletedIds($metadata);
     }
 }

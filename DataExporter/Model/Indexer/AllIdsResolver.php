@@ -22,6 +22,11 @@ class AllIdsResolver
     private const IDENTITY_FIELD_NAME = '_identity_field';
 
     /**
+     * Limit for select deleted items query
+     */
+    private const SELECT_FOR_DELETE_LIMIT = 10000;
+
+    /**
      * @var ResourceConnection
      */
     private $resourceConnection;
@@ -33,6 +38,75 @@ class AllIdsResolver
         ResourceConnection $resourceConnection
     ) {
         $this->resourceConnection = $resourceConnection;
+    }
+
+    /**
+     * Returns generator with IDs
+     *
+     * @param FeedIndexMetadata $metadata
+     * @param int $lastKnownId
+     * @return \Generator|null
+     * @throws \Zend_Db_Statement_Exception
+     */
+    public function getAllDeletedIds(FeedIndexMetadata $metadata, int $lastKnownId = -1): ?\Generator
+    {
+        $connection = $this->resourceConnection->getConnection();
+        $cursor = $connection->query($this->getDeleteIdsSelect($lastKnownId, $metadata));
+        $n = 0;
+        $ids = [];
+        while ($row = $cursor->fetch()) {
+            $n++;
+            $ids[] = $row;
+            if ($n % $metadata->getBatchSize() === 0) {
+                yield $ids;
+                $ids = [];
+            }
+            if ($n === self::SELECT_FOR_DELETE_LIMIT) {
+                yield from $this->getAllDeletedIds($metadata, (int)$row[self::IDENTITY_FIELD_NAME]);
+            }
+        }
+        if ($ids) {
+            yield $ids;
+        }
+    }
+
+    /**
+     * Get Ids select
+     *
+     * @param int $lastKnownId
+     * @param FeedIndexMetadata $metadata
+     * @return Select
+     */
+    private function getDeleteIdsSelect(int $lastKnownId, FeedIndexMetadata $metadata): Select
+    {
+        $connection = $this->resourceConnection->getConnection();
+        $tableSource = $this->resourceConnection->getTableName($metadata->getSourceTableName());
+        $tableFeed = $this->resourceConnection->getTableName($metadata->getFeedTableName());
+        $identityField = $metadata->getFeedTableField();
+
+        $columnExpression = sprintf('f.%s', $identityField);
+        $whereClause = sprintf('f.%s > ?', $identityField);
+
+        $select = $connection->select()
+            ->from(
+                ['f' => $tableFeed],
+                [
+                    $metadata->getFeedIdentity() => 'f.' . $metadata->getFeedTableField(),
+                    self::IDENTITY_FIELD_NAME => 'f.' . $identityField
+                ]
+            )
+            ->joinLeft(
+                ['s' => $tableSource],
+                "f.{$metadata->getFeedTableField()} = s.{$metadata->getSourceTableField()}",
+                []
+            )
+            ->where("f.is_deleted != 1")
+            ->where("s.{$metadata->getSourceTableField()} is null")
+            ->where($whereClause, $lastKnownId);
+
+        return $select
+            ->order($columnExpression)
+            ->limit(self::SELECT_FOR_DELETE_LIMIT);
     }
 
     /**

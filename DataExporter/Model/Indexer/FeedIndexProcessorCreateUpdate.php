@@ -82,8 +82,9 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     }
 
     /**
-     * @inerhitDoc
+     * {@inerhitDoc}
      * @throws \Zend_Db_Statement_Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function partialReindex(
         FeedIndexMetadata $metadata,
@@ -179,6 +180,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     }
 
     /**
+     * Export feed items and log status
+     *
      * @param IndexStateProvider $indexStateProvider
      * @param FeedIndexMetadata $metadata
      * @param DataSerializerInterface $serializer

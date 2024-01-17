@@ -9,6 +9,7 @@ namespace Magento\DataExporter\Model\Indexer;
 
 use Magento\DataExporter\Model\FeedExportStatus;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\DataExporter\Status\ExportStatusCodeProvider;
 use Magento\Framework\App\ResourceConnection;
 
 class FeedUpdater
@@ -59,6 +60,11 @@ class FeedUpdater
                     $metadata->getFeedTableMutableColumns(),
                     $this->getFeedTableColumns($metadata)
                 );
+                // Skip data insert if feed submit was skipped
+                if (null !== $exportStatus
+                    && $exportStatus->getStatus()->getValue() === ExportStatusCodeProvider::FEED_SUBMIT_SKIPPED) {
+                    return;
+                }
                 $connection->insertOnDuplicate(
                     $this->resourceConnection->getTableName($metadata->getFeedTableName()),
                     $dataForInsert,

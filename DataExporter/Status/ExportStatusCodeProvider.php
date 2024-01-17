@@ -25,4 +25,10 @@ class ExportStatusCodeProvider
      * for retry sending feed operation
      */
     public const FAILED_ITEM_ERROR = 1;
+
+    /**
+     * Custom code to identify skipped submit process for feed item
+     * in case if FEED_SUBMIT_SKIPPED response status was returned - the DB feed saving process will be skipped
+     */
+    public const FEED_SUBMIT_SKIPPED = -1;
 }
