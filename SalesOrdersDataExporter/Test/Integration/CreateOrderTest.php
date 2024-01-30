@@ -349,6 +349,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
             'storeViewCode' => $order->getStore()->getCode(),
             'websiteCode' => $order->getStore()->getWebsite()->getCode(),
             'storeCode' => $order->getStore()->getWebsite()->getDefaultGroup()->getCode(),
+            'customerId' => $order->getCustomerId(),
             'customerEmail' => $order->getCustomerEmail(),
             'customerNote' => $order->getCustomerNote(),
             'additionalInformation' => $this->getExpectedOrderAdditionalInformationData($order),

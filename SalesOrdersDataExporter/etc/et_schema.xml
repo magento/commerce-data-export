@@ -54,6 +54,7 @@
         <field name="storeCode" type="String" />
         <field name="websiteCode" type="String" />
         <field name="storeId" type="Int" />
+        <field name="customerId" type="Int" />
         <field name="customerEmail" type="String" />
         <field name="customerNote" type="String" />
         <field name="payment" type="Payment" repeated="false"

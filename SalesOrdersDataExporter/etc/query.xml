@@ -23,6 +23,7 @@
             <attribute name="base_discount_amount" alias="discountAmount" />
             <attribute name="base_currency_code" alias="currency" />
             <attribute name="store_id" alias="storeId" />
+            <attribute name="customer_id" alias="customerId" />
             <attribute name="customer_email" alias="customerEmail" />
             <attribute name="customer_note" alias="customerNote" />
             <filter glue="and">
