@@ -10,19 +10,26 @@ namespace Magento\CatalogInventoryDataExporter\Model\Query;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
+use Magento\InventoryCatalogApi\Api\DefaultStockProviderInterface;
+
 class InventoryData
 {
     private ResourceConnection $resourceConnection;
     private CommerceDataExportLoggerInterface $logger;
+    private int $defaultStockId;
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param CommerceDataExportLoggerInterface $logger
      */
-    public function __construct(ResourceConnection $resourceConnection, CommerceDataExportLoggerInterface $logger)
-    {
+    public function __construct(
+        ResourceConnection $resourceConnection,
+        CommerceDataExportLoggerInterface $logger,
+        DefaultStockProviderInterface $defaultStockProvider
+    ) {
         $this->resourceConnection = $resourceConnection;
         $this->logger = $logger;
+        $this->defaultStockId = $defaultStockProvider->getId();
     }
 
     /**
@@ -52,16 +59,29 @@ class InventoryData
 
         $union = [];
         foreach ($stocks->query()->fetchAll() as $stock) {
-            $union[] = $connection->select()
+            $select = $connection->select()
                 ->from(
                     ['e' => $this->resourceConnection->getTableName('catalog_product_entity')],
                     ['productId' => 'e.entity_id']
-                )
-                ->joinInner(
-                    ['i' => $this->resourceConnection->getTableName(sprintf('inventory_stock_%s', $stock['stock_id']))],
+                );
+
+            $stockId = (int)$stock['stock_id'];
+            if ($stockId === $this->defaultStockId) {
+                // to fix performance issue with `inventory_stock_1` view that doesn't have proper index
+                $select->joinInner(
+                    ['i' => $this->resourceConnection->getTableName('cataloginventory_stock_status')],
+                    'e.entity_id = i.product_id',
+                    ['is_in_stock' => 'i.stock_status',  'quantity' => 'i.qty']
+                );
+            } else {
+                $select->joinInner(
+                    ['i' => $this->resourceConnection->getTableName(sprintf('inventory_stock_%s', $stockId))],
                     'e.sku = i.sku',
                     ['is_in_stock' => 'i.is_salable', 'i.quantity']
-                )
+                );
+            }
+
+            $select
                 ->joinInner(
                     ['pw' => $this->resourceConnection->getTableName('catalog_product_website')],
                     'pw.product_id = e.entity_id',
@@ -76,6 +96,7 @@ class InventoryData
                 ->where('s.website_id IN (?)', explode(',', $stock['website_ids']))
                 ->group('e.entity_id')
                 ->group('s.store_id');
+            $union[] = $select;
         }
 
         if (!$union) {
