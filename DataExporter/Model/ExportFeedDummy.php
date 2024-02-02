@@ -24,6 +24,6 @@ class ExportFeedDummy implements ExportFeedInterface
      */
     public function export(array $data, FeedIndexMetadata $metadata): FeedExportStatus
     {
-        throw new \RuntimeException('Unimplemented');
+        throw new \RuntimeException('\Magento\DataExporter\Model\ExportFeedInterface unimplemented');
     }
 }

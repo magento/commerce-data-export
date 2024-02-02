@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Magento\CatalogInventoryDataExporter\Model\Query;
 
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\InventoryCatalogApi\Api\DefaultStockProviderInterface;
@@ -25,10 +26,12 @@ class InventoryData
     public function __construct(
         ResourceConnection $resourceConnection,
         CommerceDataExportLoggerInterface $logger,
-        DefaultStockProviderInterface $defaultStockProvider
+        DefaultStockProviderInterface $defaultStockProvider = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->logger = $logger;
+        $defaultStockProvider = $defaultStockProvider ??
+            ObjectManager::getInstance()->get(DefaultStockProviderInterface::class);
         $this->defaultStockId = $defaultStockProvider->getId();
     }
 
