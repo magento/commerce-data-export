@@ -50,7 +50,7 @@ class AllIdsResolver
      */
     public function getAllDeletedIds(FeedIndexMetadata $metadata, int $lastKnownId = -1): ?\Generator
     {
-        if ($metadata->isRemovable()) {
+        if ($metadata->isExportImmediately() && $metadata->isRemovable()) {
             $connection = $this->resourceConnection->getConnection();
             $cursor = $connection->query($this->getDeleteIdsSelect($lastKnownId, $metadata));
             $n = 0;
