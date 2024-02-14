@@ -21,6 +21,7 @@
             </argument>
             <argument name="fullReIndexSecondsLimit" xsi:type="number">604800</argument> <!-- 7 days -->
             <argument name="sourceTableFieldOnFullReIndexLimit" xsi:type="string">updated_at</argument>
+            <argument name="entitiesRemovable" xsi:type="boolean">false</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">

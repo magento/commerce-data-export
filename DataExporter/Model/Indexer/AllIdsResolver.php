@@ -50,23 +50,25 @@ class AllIdsResolver
      */
     public function getAllDeletedIds(FeedIndexMetadata $metadata, int $lastKnownId = -1): ?\Generator
     {
-        $connection = $this->resourceConnection->getConnection();
-        $cursor = $connection->query($this->getDeleteIdsSelect($lastKnownId, $metadata));
-        $n = 0;
-        $ids = [];
-        while ($row = $cursor->fetch()) {
-            $n++;
-            $ids[] = $row;
-            if ($n % $metadata->getBatchSize() === 0) {
+        if ($metadata->isRemovable()) {
+            $connection = $this->resourceConnection->getConnection();
+            $cursor = $connection->query($this->getDeleteIdsSelect($lastKnownId, $metadata));
+            $n = 0;
+            $ids = [];
+            while ($row = $cursor->fetch()) {
+                $n++;
+                $ids[] = $row;
+                if ($n % $metadata->getBatchSize() === 0) {
+                    yield $ids;
+                    $ids = [];
+                }
+                if ($n === self::SELECT_FOR_DELETE_LIMIT) {
+                    yield from $this->getAllDeletedIds($metadata, (int)$row[self::IDENTITY_FIELD_NAME]);
+                }
+            }
+            if ($ids) {
                 yield $ids;
-                $ids = [];
             }
-            if ($n === self::SELECT_FOR_DELETE_LIMIT) {
-                yield from $this->getAllDeletedIds($metadata, (int)$row[self::IDENTITY_FIELD_NAME]);
-            }
-        }
-        if ($ids) {
-            yield $ids;
         }
     }
 

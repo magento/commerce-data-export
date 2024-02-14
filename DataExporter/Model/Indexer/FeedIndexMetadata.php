@@ -130,6 +130,11 @@ class FeedIndexMetadata
     private array $feedIdentifierMapping;
 
     /**
+     * @var bool
+     */
+    private bool $entitiesRemovable;
+
+    /**
      * Mutable field: set during partial indexation
      *
      * @var null|string
@@ -155,6 +160,7 @@ class FeedIndexMetadata
      * @param array $excludeFromHashFields
      * @param bool $exportImmediately
      * @param bool $persistExportedFeed
+     * @param bool $entitiesRemovable
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -176,7 +182,8 @@ class FeedIndexMetadata
         array $minimalPayload = [],
         array $excludeFromHashFields = [],
         bool $exportImmediately = false,
-        bool $persistExportedFeed = false
+        bool $persistExportedFeed = false,
+        bool $entitiesRemovable = true
     ) {
         $this->feedName = $feedName;
         $this->sourceTableName = $sourceTableName;
@@ -203,6 +210,7 @@ class FeedIndexMetadata
         ));
 
         $this->feedIdentifierMapping = $feedIdentifierMapping;
+        $this->entitiesRemovable = $entitiesRemovable;
     }
 
     /**
@@ -399,5 +407,15 @@ class FeedIndexMetadata
     public function setCurrentModifiedAtTimeInDBFormat(string $modifiedAtTimeInDBFormat): void
     {
         $this->modifiedAtTimeInDBFormat = $modifiedAtTimeInDBFormat;
+    }
+
+    /**
+     * Check if feed metadata has flag that entities are removable
+     *
+     * @return bool
+     */
+    public function isRemovable(): bool
+    {
+        return $this->entitiesRemovable;
     }
 }

@@ -89,3 +89,6 @@ These codes will be saved in the "status" field of the feed table, to keep infor
       <item name="website_id" xsi:type="string">websiteId</item>
       <item name="customer_group_code" xsi:type="string">customerGroupCode</item>
   </argument>
+  
+### Feed Index Metadata additional parameters:
+- entitiesRemovable -  this parameter handles feed configuration to cover cases when feed entities are not removable. Default value: `true` - feed entities can be removed. For example, `sales order` feed exports Sales Orders that cannot be deleted.
