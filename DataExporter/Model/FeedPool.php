@@ -15,9 +15,9 @@ use Magento\Framework\ObjectManagerInterface;
 class FeedPool
 {
     /**
-     * @var array
+     * @var FeedInterface[]
      */
-    private $registry;
+    private $registry = [];
 
     /**
      * @var ObjectManagerInterface
@@ -59,5 +59,21 @@ class FeedPool
             $this->registry[$feedName] = $this->objectManager->get($this->classMap[$feedName]);
         }
         return $this->registry[$feedName];
+    }
+
+    /**
+     * Returns feed list.
+     *
+     * @return FeedInterface[]
+     */
+    public function getList(): array
+    {
+        if (count($this->registry) < count($this->classMap)) {
+            foreach ($this->classMap as $feedName => $feedClass) {
+                $this->registry[$feedName] = $this->objectManager->get($feedClass);
+            }
+        }
+
+        return $this->registry;
     }
 }

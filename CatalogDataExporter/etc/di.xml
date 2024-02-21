@@ -497,10 +497,6 @@
         </arguments>
     </type>
 
-    <type name="Magento\Framework\Mview\Processor">
-        <plugin name="exporter-cover-exception" type="Magento\CatalogDataExporter\Plugin\CoverExceptionMview"/>
-    </type>
-
     <!-- handle product attribute deletion  -->
     <type name="Magento\Catalog\Model\ResourceModel\Eav\Attribute">
         <plugin name="exporter-reindex-on-product-attribute-delete" type="Magento\CatalogDataExporter\Plugin\Eav\Attribute\ProductAttributeDelete"/>

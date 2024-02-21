@@ -21,6 +21,7 @@
             </argument>
             <argument name="fullReIndexSecondsLimit" xsi:type="number">604800</argument> <!-- 7 days -->
             <argument name="sourceTableFieldOnFullReIndexLimit" xsi:type="string">updated_at</argument>
+            <argument name="dateTimeFormat" xsi:type="const">\DateTimeInterface::RFC3339</argument>
             <argument name="entitiesRemovable" xsi:type="boolean">false</argument>
         </arguments>
     </virtualType>
@@ -35,7 +36,6 @@
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexMetadata</argument>
             <argument name="hasRemovableEntities" xsi:type="boolean">false</argument>
-            <argument name="dateTimeFormat" xsi:type="const">\DateTimeInterface::RFC3339</argument>
         </arguments>
     </virtualType>
 
@@ -175,7 +175,6 @@
         <arguments>
             <argument name="classMap" xsi:type="array">
                 <item name="salesOrders" xsi:type="string">Magento\SalesOrdersDataExporter\Model\OrdersFeed</item>
-                <item name="onDemandSalesOrdersV2" xsi:type="string">Magento\SalesOrdersDataExporter\Model\OrdersOnDemandExportFeed</item>
             </argument>
         </arguments>
     </type>

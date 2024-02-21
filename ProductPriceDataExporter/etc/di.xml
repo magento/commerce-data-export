@@ -15,8 +15,6 @@
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
             <argument name="feedTableName" xsi:type="string">catalog_data_exporter_product_prices</argument>
             <argument name="feedTableField" xsi:type="string">product_id</argument>
-            <argument name="feedOffsetLimit" xsi:type="number">500</argument>
-            <argument name="batchSize" xsi:type="number">500</argument>
             <argument name="truncateFeedOnFullReindex" xsi:type="boolean">false</argument>
             <argument name="exportImmediately" xsi:type="boolean">true</argument>
             <argument name="persistExportedFeed" xsi:type="init_parameter">Magento\DataExporter\Model\ExportFeedInterface::PERSIST_EXPORTED_FEED</argument>

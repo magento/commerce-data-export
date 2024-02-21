@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
+use Magento\DataExporter\Model\Batch\BatchGeneratorInterface;
+use Magento\DataExporter\Model\Batch\FeedSource\Generator as FeedSourceBatchGenerator;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\DataExporter\Status\ExportStatusCodeProvider;
 use Magento\Framework\App\ObjectManager;
@@ -15,6 +17,7 @@ use Magento\DataExporter\Export\Processor as ExportProcessor;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\DataExporter\Model\ExportFeedInterface;
 use Magento\DataExporter\Model\FeedHashBuilder;
+use Magento\Indexer\Model\ProcessManagerFactory;
 
 /**
  * Base implementation of feed indexing behaviour, does not care about deleted entities
@@ -23,27 +26,69 @@ use Magento\DataExporter\Model\FeedHashBuilder;
  */
 class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
 {
+    /**
+     * @var string
+     */
     private const MODIFIED_AT_FORMAT = 'Y-m-d H:i:s';
 
     /**
      * @var ResourceConnection
      */
     private ResourceConnection $resourceConnection;
+
+    /**
+     * @var ExportProcessor
+     */
     private ExportProcessor $exportProcessor;
+
+    /**
+     * @var CommerceDataExportLoggerInterface
+     */
     private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @var ExportFeedInterface
      */
     private $exportFeedProcessor;
+
+    /**
+     * @var FeedUpdater
+     */
     private FeedUpdater $feedUpdater;
+
+    /**
+     * @var FeedHashBuilder
+     */
     private FeedHashBuilder $hashBuilder;
+
+    /**
+     * @var SerializerInterface
+     */
     private SerializerInterface $serializer;
 
+    /**
+     * @var array
+     */
     private $feedTablePrimaryKey;
 
+    /**
+     * @var DeletedEntitiesProviderInterface
+     */
     private DeletedEntitiesProviderInterface $deletedEntitiesProvider;
 
+    /**
+     * @var ProcessManagerFactory
+     */
+    private ProcessManagerFactory $processManagerFactory;
+
+    /**
+     * @var BatchGeneratorInterface
+     */
+    private BatchGeneratorInterface $batchGenerator;
+
+    /**
+     * @var IndexStateProviderFactory
+     */
     private IndexStateProviderFactory $indexStateProviderFactory;
 
     /**
@@ -54,8 +99,12 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * @param FeedHashBuilder $hashBuilder
      * @param SerializerInterface $serializer
      * @param CommerceDataExportLoggerInterface $logger
+     * @param DeletedEntitiesProviderInterface|null $deletedEntitiesProvider
+     * @param ProcessManagerFactory|null $processManagerFactory
+     * @param BatchGeneratorInterface|null $batchGenerator
      * @param ?IndexStateProviderFactory $indexStateProviderFactory
-     * @param ?DeletedEntitiesProviderInterface $deletedEntitiesProvider
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -65,8 +114,10 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         FeedHashBuilder $hashBuilder,
         SerializerInterface $serializer,
         CommerceDataExportLoggerInterface $logger,
-        IndexStateProviderFactory $indexStateProviderFactory = null,
-        DeletedEntitiesProviderInterface $deletedEntitiesProvider = null
+        ?DeletedEntitiesProviderInterface $deletedEntitiesProvider = null,
+        ?ProcessManagerFactory $processManagerFactory = null,
+        ?BatchGeneratorInterface $batchGenerator = null,
+        ?IndexStateProviderFactory $indexStateProviderFactory = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->exportProcessor = $exportProcessor;
@@ -75,14 +126,25 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         $this->hashBuilder = $hashBuilder;
         $this->serializer = $serializer;
         $this->logger = $logger;
-        $this->indexStateProviderFactory = $indexStateProviderFactory ??
-            ObjectManager::getInstance()->get(IndexStateProviderFactory::class);
         $this->deletedEntitiesProvider = $deletedEntitiesProvider ??
             ObjectManager::getInstance()->get(DeletedEntitiesProviderInterface::class);
+        $this->processManagerFactory = $processManagerFactory ??
+            ObjectManager::getInstance()->get(ProcessManagerFactory::class);
+        $this->batchGenerator = $batchGenerator ??
+            ObjectManager::getInstance()->get(FeedSourceBatchGenerator::class);
+        $this->indexStateProviderFactory = $indexStateProviderFactory ??
+            ObjectManager::getInstance()->get(IndexStateProviderFactory::class);
     }
 
     /**
      * {@inerhitDoc}
+     *
+     * @param FeedIndexMetadata $metadata
+     * @param DataSerializerInterface $serializer
+     * @param EntityIdsProviderInterface $idsProvider
+     * @param array $ids
+     * @param callable|null $callback
+     * @param IndexStateProvider|null $indexState
      * @throws \Zend_Db_Statement_Exception
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
@@ -152,11 +214,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     }
 
     /**
-     * {@inerhitDoc}
-     *
-     * @param FeedIndexMetadata $metadata
-     * @param DataSerializerInterface $serializer
-     * @param EntityIdsProviderInterface $idsProvider
+     * @inheritDoc
      */
     public function fullReindex(
         FeedIndexMetadata $metadata,
@@ -165,12 +223,28 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     ): void {
         try {
             $this->truncateIndexTable($metadata);
-            $indexState = $this->indexStateProviderFactory->create(['batchSize' => $metadata->getBatchSize()]);
-            foreach ($idsProvider->getAllIds($metadata) as $batch) {
-                $ids = \array_column($batch, $metadata->getFeedIdentity());
-                $this->partialReindex($metadata, $serializer, $idsProvider, $ids, null, $indexState);
+            $batchIterator = $this->batchGenerator->generate($metadata);
+            $threadCount = min($metadata->getThreadCount(), $batchIterator->count());
+            $userFunctions = [];
+            for ($threadNumber = 1; $threadNumber <= $threadCount; $threadNumber++) {
+                $userFunctions[] = function () use ($batchIterator, $metadata, $serializer, $idsProvider) {
+                    $indexState = $this->indexStateProviderFactory->create(['batchSize' => $metadata->getBatchSize()]);
+                    try {
+                        foreach ($batchIterator as $ids) {
+                            $this->partialReindex($metadata, $serializer, $idsProvider, $ids, null, $indexState);
+                        }
+                        $this->exportFeedItemsAndLogStatus($indexState, $metadata, $serializer, true);
+                    } catch (\Throwable $e) {
+                        $this->logger->error(
+                            'Data Exporter exception has occurred: ' . $e->getMessage(),
+                            ['exception' => $e]
+                        );
+                        throw $e;
+                    }
+                };
             }
-            $this->exportFeedItemsAndLogStatus($indexState, $metadata, $serializer, true);
+            $processManager = $this->processManagerFactory->create(['threadsCount' => $threadCount]);
+            $processManager->execute($userFunctions);
         } catch (\Throwable $e) {
             $this->logger->error(
                 'Data Exporter exception has occurred: ' . $e->getMessage(),
@@ -180,7 +254,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     }
 
     /**
-     * Export feed items and log status
+     * Export feed items and log status.
      *
      * @param IndexStateProvider $indexStateProvider
      * @param FeedIndexMetadata $metadata

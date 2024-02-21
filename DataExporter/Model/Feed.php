@@ -15,6 +15,8 @@ use Magento\Framework\Serialize\SerializerInterface;
 
 /**
  * Class responsible for providing feed data
+ * @deprecated use \Magento\DataExporter\Model\Batch\Feed\Generator to prepare feeds collection
+ * @see \Magento\DataExporter\Model\Batch\Feed\Generator
  */
 class Feed implements FeedInterface
 {
@@ -39,11 +41,6 @@ class Feed implements FeedInterface
     private FeedQuery $feedQuery;
 
     /**
-     * @var string|null
-     */
-    private ?string $dateTimeFormat;
-
-    /**
      * @var CommerceDataExportLoggerInterface
      */
     private CommerceDataExportLoggerInterface $logger;
@@ -54,7 +51,6 @@ class Feed implements FeedInterface
      * @param FeedIndexMetadata $feedIndexMetadata
      * @param FeedQuery $feedQuery
      * @param CommerceDataExportLoggerInterface $logger
-     * @param ?string $dateTimeFormat
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -62,14 +58,12 @@ class Feed implements FeedInterface
         FeedIndexMetadata $feedIndexMetadata,
         FeedQuery $feedQuery,
         CommerceDataExportLoggerInterface $logger,
-        ?string $dateTimeFormat = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->serializer = $serializer;
         $this->feedIndexMetadata = $feedIndexMetadata;
         $this->feedQuery = $feedQuery;
         $this->logger = $logger;
-        $this->dateTimeFormat = $dateTimeFormat;
     }
 
     /**
@@ -82,7 +76,7 @@ class Feed implements FeedInterface
             $this->feedQuery->getLimitSelect(
                 $this->feedIndexMetadata,
                 $timestamp,
-                $this->feedIndexMetadata->getFeedOffsetLimit(),
+                $this->feedIndexMetadata->getBatchSize(),
                 $ignoredExportStatus
             )
         );
@@ -113,14 +107,15 @@ class Feed implements FeedInterface
         while ($row = $cursor->fetch()) {
             $dataRow = $this->serializer->unserialize($row['feed_data']);
             $dataRow['modifiedAt'] = $row['modifiedAt'];
-            if (null !== $this->dateTimeFormat) {
+            if (null !== $this->feedIndexMetadata->getDateTimeFormat()) {
                 try {
-                    $dataRow['modifiedAt'] = (new \DateTime($dataRow['modifiedAt']))->format($this->dateTimeFormat);
+                    $dataRow['modifiedAt'] = (new \DateTime($dataRow['modifiedAt']))
+                        ->format($this->feedIndexMetadata->getDateTimeFormat());
                 } catch (\Throwable $e) {
                     $this->logger->warning(\sprintf(
                         'Cannot convert modifiedAt "%s" to formant "%s", error: %s',
                         $dataRow['modifiedAt'],
-                        $this->dateTimeFormat,
+                        $this->feedIndexMetadata->getDateTimeFormat(),
                         $e->getMessage()
                     ));
                 }
@@ -140,9 +135,7 @@ class Feed implements FeedInterface
     }
 
     /**
-     * @inheirtDoc
-     *
-     * @return FeedIndexMetadata
+     * @inheritDoc
      */
     public function getFeedMetadata(): FeedIndexMetadata
     {

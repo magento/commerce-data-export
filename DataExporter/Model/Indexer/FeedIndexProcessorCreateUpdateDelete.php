@@ -8,12 +8,13 @@ declare(strict_types=1);
 namespace Magento\DataExporter\Model\Indexer;
 
 use Magento\DataExporter\Export\Processor as ExportProcessor;
+use Magento\DataExporter\Model\Batch\BatchGeneratorInterface;
 use Magento\DataExporter\Model\FeedHashBuilder;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\DataExporter\Model\ExportFeedInterface;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Indexer\Model\ProcessManagerFactory;
 
 /**
  * Feed indexer processor strategy, support creation, updates and deletion of an entity
@@ -21,7 +22,14 @@ use Magento\Framework\Serialize\SerializerInterface;
  */
 class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
 {
+    /**
+     * @var MarkRemovedEntitiesInterface
+     */
     private MarkRemovedEntitiesInterface $markRemovedEntities;
+
+    /**
+     * @var CommerceDataExportLoggerInterface
+     */
     private CommerceDataExportLoggerInterface $logger;
 
     /**
@@ -33,8 +41,12 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
      * @param FeedHashBuilder $hashBuilder
      * @param SerializerInterface $serializer
      * @param CommerceDataExportLoggerInterface $logger
-     * @param ?IndexStateProviderFactory $IndexStateProviderFactory
      * @param ?DeletedEntitiesProviderInterface $deletedEntitiesProvider
+     * @param ?ProcessManagerFactory $processManagerFactory
+     * @param ?BatchGeneratorInterface $batchGenerator
+     * @param ?IndexStateProviderFactory $indexStateProviderFactory
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -45,8 +57,10 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
         FeedHashBuilder $hashBuilder,
         SerializerInterface $serializer,
         CommerceDataExportLoggerInterface $logger,
-        IndexStateProviderFactory $IndexStateProviderFactory = null,
-        DeletedEntitiesProviderInterface $deletedEntitiesProvider = null
+        ?DeletedEntitiesProviderInterface $deletedEntitiesProvider = null,
+        ?ProcessManagerFactory $processManagerFactory = null,
+        ?BatchGeneratorInterface $batchGenerator = null,
+        ?IndexStateProviderFactory $indexStateProviderFactory = null
     ) {
         parent::__construct(
             $resourceConnection,
@@ -56,22 +70,17 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
             $hashBuilder,
             $serializer,
             $logger,
-            $IndexStateProviderFactory ?? ObjectManager::getInstance()->get(IndexStateProviderFactory::class),
-            $deletedEntitiesProvider ?? ObjectManager::getInstance()->get(DeletedEntitiesProviderInterface::class)
+            $deletedEntitiesProvider,
+            $processManagerFactory,
+            $batchGenerator,
+            $indexStateProviderFactory
         );
         $this->markRemovedEntities = $markRemovedEntities;
         $this->logger = $logger;
     }
 
     /**
-     * @inerhitDoc
-     *
-     * @param FeedIndexMetadata $metadata
-     * @param DataSerializerInterface $serializer
-     * @param EntityIdsProviderInterface $idsProvider
-     * @param array $ids
-     * @param callable|null $callback
-     * @return void
+     * @inheritDoc
      */
     public function partialReindex(
         FeedIndexMetadata $metadata,

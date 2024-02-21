@@ -19,7 +19,7 @@ This project is licensed under the OSL-3.0 License. See [LICENSE](./LICENSE.md) 
 
 ## Export process
 This extension allows to collect and export entity (called "feed") to consumer immediately after feed items have been collected.
-Consumer must implement interface `Magento\DataExporter\Model\ExportFeedInterface::export` (see default implementation in [magento-commerce/saas-export](https://github.com/magento-commerce/saas-export))
+Consumer must implement interface `Magento\DataExporter\Model\ExportFeedInterface::export` (see default implementation in [magento/saas-export](https://github.com/magento/saas-export))
 
 Implementation of `ExportFeedInterface::export` must return status of operation `Magento\DataExporter\Model\FeedExportStatus` with response status code `Magento\DataExporter\Status\ExportStatusCode`:
 - Can be HTTP status code
@@ -29,7 +29,7 @@ Implementation of `ExportFeedInterface::export` must return status of operation 
 - Or custom codes:
   -- `Magento\DataExporter\Status\ExportStatusCodeProvider::APPLICATION_ERROR` - something happened in side of Adobe Commerce configuration or processing
   -- `Magento\DataExporter\Status\ExportStatusCodeProvider::FAILED_ITEM_ERROR` - happens when some of the items in request were not processed successfully
-These codes will be saved in the "status" field of the feed table, to keep information about item status and resend items if they have "retryable" status (everything which is not 200 or 400 is retryable): https://github.com/magento-commerce/commerce-data-export/blob/7d225940ea9714f18130ef8bbb5a32027aea94bc/DataExporter/Status/ExportStatusCodeProvider.php#L15
+These codes will be saved in the "status" field of the feed table, to keep information about item status and resend items if they have "retryable" status (everything which is not 200 or 400 is retryable): https://github.com/magento/commerce-data-export/blob/7d225940ea9714f18130ef8bbb5a32027aea94bc/DataExporter/Status/ExportStatusCodeProvider.php#L15
 
 ### Immediate export flow:
 - collect entities during reindex or save action
@@ -89,6 +89,38 @@ These codes will be saved in the "status" field of the feed table, to keep infor
       <item name="website_id" xsi:type="string">websiteId</item>
       <item name="customer_group_code" xsi:type="string">customerGroupCode</item>
   </argument>
-  
+
 ### Feed Index Metadata additional parameters:
 - entitiesRemovable -  this parameter handles feed configuration to cover cases when feed entities are not removable. Default value: `true` - feed entities can be removed. For example, `sales order` feed exports Sales Orders that cannot be deleted.
+
+### Multi-thread data export mode:
+The purpose of this mode is to speed up the export process by splitting the data into batches and processing them in parallel.
+The performance of data export should be aligned with the limit that is defined for a client at consumer side.
+
+Configuration of this mode is done via System configuration (config.xml) per feed indexer:
+```xml
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <commerce_data_export>
+            <feeds>
+                <products>
+                    <thread_count>1</thread_count>
+                    <batch_size>100</batch_size>
+                </products>
+            </feeds>
+        </commerce_data_export>
+    </default>
+</config>
+```
+- `thread_count` - number of threads that will be used for processing _(1 by default)_
+- `batch_size` - number of items that will be processed in one batch _(100 by default)_
+
+The multi-thread data export mode is applied for full and partial reindex.
+
+It may be useful to change `thread_count` and `batch_size` in runtime when performing data export via CLI command. This can be done by passing the options --thread-count, --batch-size to the saas:resync command.
+
+For example:
+```bash
+bin/magento indexer:reindex catalog_data_exporter_products --thread-count=5 --batch-size=400
+```
+

@@ -16,9 +16,13 @@ return [
     ],
     'app/code/Magento/CatalogInventoryDataExporter/Model/Query/InventoryData.php' => [
         'Magento\InventorySales',
+        'Magento\InventoryCatalogApi',
     ],
     'app/code/Magento/CatalogInventoryDataExporter/Model/Plugin/StockStatusUpdater.php' => [
         'Magento\InventoryApi',
         'Magento\InventoryMultiDimensionalIndexerApi',
     ],
+    'app/code/Magento/DataExporter/Model/Batch/Feed/Generator.php' => ['Magento\ResourceConnections'],
+    'app/code/Magento/DataExporter/Model/Batch/FeedChangeLog/Generator.php' => ['Magento\ResourceConnections'],
+    'app/code/Magento/DataExporter/Model/Batch/FeedSource/Generator.php' => ['Magento\ResourceConnections'],
 ];

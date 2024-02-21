@@ -1,13 +1,24 @@
 <?php
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+/*************************************************************************
+ *
+ * Copyright 2023 Adobe
+ * All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ * ***********************************************************************
  */
-
 declare(strict_types=1);
 
-namespace Magento\CatalogDataExporter\Plugin;
+namespace Magento\DataExporter\Plugin;
 
+use Magento\DataExporter\Model\Indexer\ViewMaterializer;
 use Magento\DataExporter\Model\Indexer\FeedIndexer;
 use Magento\Framework\Exception\BulkException;
 use Magento\Framework\Mview\Processor;
@@ -17,24 +28,32 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Phrase;
 use Magento\Framework\Exception\RuntimeException;
 
-/**
- * Hot fix before AC-8768
- */
-class CoverExceptionMview
+class MviewUpdatePlugin
 {
+    /**
+     * @var CollectionFactory
+     */
     private CollectionFactory $viewsFactory;
 
     /**
+     * @var ViewMaterializer
+     */
+    private ViewMaterializer $viewMaterializer;
+
+    /**
      * @param CollectionFactory $viewsFactory
+     * @param ViewMaterializer $viewMaterializer
      */
     public function __construct(
-        CollectionFactory $viewsFactory
+        CollectionFactory $viewsFactory,
+        ViewMaterializer $viewMaterializer
     ) {
         $this->viewsFactory = $viewsFactory;
+        $this->viewMaterializer = $viewMaterializer;
     }
 
     /**
-     * Don't fail before complete all indexer
+     * Run custom mview::update logic for commerce data export indexers.
      *
      * @param Processor $subject
      * @param callable $proceed
@@ -49,16 +68,17 @@ class CoverExceptionMview
         $exception = new BulkException();
         $views = $this->getViewsByGroup($group);
         foreach ($views as $view) {
-            try {
-                $view->update();
-            } catch (\Throwable $e) {
-                if ($this->isDataExporterIndexer($view)) {
+            if ($this->isDataExporterIndexer($view)) {
+                try {
+                    $this->viewMaterializer->execute($view);
+                } catch (\Throwable $e) {
+                    // Hot fix before AC-8768
                     $exception->addException(
                         new RuntimeException(new Phrase('Mview fail %1', [$view->getId()]), $e)
                     );
-                } else {
-                    throw $e; // keep original behavior for core indexers
                 }
+            } else {
+                $view->update();
             }
         }
 
@@ -68,7 +88,7 @@ class CoverExceptionMview
     }
 
     /**
-     * Return list of views by group
+     * Returns list of views by group
      *
      * @param string $group
      * @return ViewInterface[]
@@ -79,6 +99,12 @@ class CoverExceptionMview
         return $group ? $collection->getItemsByColumnValue('group', $group) : $collection->getItems();
     }
 
+    /**
+     * Checks if view is data exporter indexer.
+     *
+     * @param ViewInterface $view
+     * @return bool
+     */
     private function isDataExporterIndexer(ViewInterface $view): bool
     {
         return is_subclass_of(ObjectManager::getInstance()->get($view->getActionClass()), FeedIndexer::class);

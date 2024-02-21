@@ -67,10 +67,29 @@
     </type>
 
     <preference for="Magento\DataExporter\Model\ExportFeedInterface" type="Magento\DataExporter\Model\ExportFeedDummy"/>
+    <type name="Magento\Framework\Mview\Processor">
+        <plugin name="exporter-mview-update" type="Magento\DataExporter\Plugin\MviewUpdatePlugin"/>
+    </type>
+
+    <type name="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete">
+        <arguments>
+            <argument name="batchGenerator" xsi:type="object">Magento\DataExporter\Model\Batch\FeedSource\Generator</argument>
+        </arguments>
+    </type>
+    <type name="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdate">
+        <arguments>
+            <argument name="batchGenerator" xsi:type="object">Magento\DataExporter\Model\Batch\FeedSource\Generator</argument>
+        </arguments>
+    </type>
+    <type name="Magento\DataExporter\Model\Indexer\ViewMaterializer">
+        <arguments>
+            <argument name="batchGenerator" xsi:type="object">Magento\DataExporter\Model\Batch\FeedChangeLog\Generator</argument>
+        </arguments>
+    </type>
 
     <!-- Plugin to force all exporter indexer to be on schedule mode -->
     <type name="Magento\Framework\Indexer\IndexerInterface">
         <plugin name="force_exporter_indexer_mode_on_schedule"
-            type="Magento\DataExporter\Plugin\ForceExporterIndexerModeOnSchedule"/>
+                type="Magento\DataExporter\Plugin\ForceExporterIndexerModeOnSchedule"/>
     </type>
 </config>

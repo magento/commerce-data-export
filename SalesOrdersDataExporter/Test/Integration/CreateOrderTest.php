@@ -78,7 +78,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
         $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
         $expectedOrderData = $this->getOrderDataToVerify($order);
 
-        $this->checkFields($expectedOrderData, $orderFeed);
+        $this->checkFields($expectedOrderData, $orderFeed, true);
     }
 
     /**
@@ -97,7 +97,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
         $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
         $expectedOrderData = $this->getOrderDataToVerify($order);
 
-        $this->checkFields($expectedOrderData, $orderFeed);
+        $this->checkFields($expectedOrderData, $orderFeed, true);
     }
 
     /**
@@ -116,7 +116,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
         $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
         $expectedOrderData = $this->getOrderDataToVerify($order);
 
-        $this->checkFields($expectedOrderData, $orderFeed);
+        $this->checkFields($expectedOrderData, $orderFeed, true);
     }
 
     /**
@@ -135,7 +135,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
         $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
         $expectedOrderData = $this->getOrderDataToVerify($order);
 
-        $this->checkFields($expectedOrderData, $orderFeed);
+        $this->checkFields($expectedOrderData, $orderFeed, true);
     }
 
     /**
@@ -154,7 +154,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
         $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
         $expectedOrderData = $this->getOrderDataToVerify($order);
 
-        $this->checkFields($expectedOrderData, $orderFeed);
+        $this->checkFields($expectedOrderData, $orderFeed, true);
     }
 
     /**
@@ -173,7 +173,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
         $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
         $expectedOrderData = $this->getOrderDataToVerify($order);
 
-        $this->checkFields($expectedOrderData, $orderFeed);
+        $this->checkFields($expectedOrderData, $orderFeed, true);
     }
 
     /**
@@ -192,7 +192,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
         $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
         $expectedOrderData = $this->getOrderDataToVerify($order);
 
-        $this->checkFields($expectedOrderData, $orderFeed);
+        $this->checkFields($expectedOrderData, $orderFeed, true);
     }
 
     /**
@@ -211,15 +211,30 @@ class CreateOrderTest extends AbstractOrderFeedTest
         $orderFeed = $this->getOrderFeedByIds([$orderId])[0];
         $expectedOrderData = $this->getOrderDataToVerify($order);
 
-        $this->checkFields($expectedOrderData, $orderFeed);
+        $this->checkFields($expectedOrderData, $orderFeed, true);
     }
 
     /**
      * @param array $expectedData
      * @param array $feedData
+     * @param ?bool $checkDatefiedls
+     * @throws \Exception
      */
-    private function checkFields(array $expectedData, array $feedData): void
+    private function checkFields(array $expectedData, array $feedData, $checkDatefiedls = null): void
     {
+        if (true === $checkDatefiedls) {
+            $dateFields = [
+                'createdAt',
+                'updatedAt',
+                'modifiedAt'
+            ];
+            foreach ($dateFields as $dateFieldName) {
+                self::assertEquals(
+                    $feedData[$dateFieldName],
+                    (new \DateTime($feedData[$dateFieldName]))->format(\DateTimeInterface::RFC3339)
+                );
+            }
+        }
         foreach ($expectedData as $field => $expectedValue) {
             if (is_array($expectedValue)) {
                 $this->assertArrayHasKey($field, $feedData, sprintf('Field %s is not set in feed', $field));

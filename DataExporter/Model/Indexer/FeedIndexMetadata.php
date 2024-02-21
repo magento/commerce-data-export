@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
+use Magento\Framework\App\ObjectManager;
+
 /**
  * Feed indexer metadata provider
  *
@@ -76,11 +78,6 @@ class FeedIndexMetadata
     private $feedTableMutableColumns;
 
     /**
-     * @var int
-     */
-    private $batchSize;
-
-    /**
      * Field used in WHERE & ORDER statement during select IDs from source table
      *
      * @var string
@@ -96,11 +93,6 @@ class FeedIndexMetadata
      * @var string
      */
     private $sourceTableFieldOnFullReIndexLimit;
-
-    /**
-     * @var int
-     */
-    private int $feedOffsetLimit;
 
     /**
      * @var bool
@@ -122,6 +114,9 @@ class FeedIndexMetadata
      */
     private array $minimalPayload;
 
+    /**
+     * @var array
+     */
     private array $excludeFromHashFields;
 
     /**
@@ -135,11 +130,21 @@ class FeedIndexMetadata
     private bool $entitiesRemovable;
 
     /**
+     * @var Config|null
+     */
+    private ?Config $config;
+
+    /**
      * Mutable field: set during partial indexation
      *
      * @var null|string
      */
     private ?string $modifiedAtTimeInDBFormat;
+
+    /**
+     * @var string|null
+     */
+    private ?string $dateTimeFormat;
 
     /**
      * @param string $feedName
@@ -149,8 +154,6 @@ class FeedIndexMetadata
      * @param string $feedTableName
      * @param string $feedTableField
      * @param array $feedTableMutableColumns
-     * @param int $batchSize
-     * @param int $feedOffsetLimit
      * @param string|null $sourceTableIdentityField
      * @param int $fullReIndexSecondsLimit
      * @param string $sourceTableFieldOnFullReIndexLimit
@@ -161,7 +164,8 @@ class FeedIndexMetadata
      * @param bool $exportImmediately
      * @param bool $persistExportedFeed
      * @param bool $entitiesRemovable
-     *
+     * @param string|null $dateTimeFormat
+     * @param Config|null $config
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -172,8 +176,6 @@ class FeedIndexMetadata
         string $feedTableName,
         string $feedTableField,
         array $feedTableMutableColumns = [],
-        int $batchSize = 100,
-        int $feedOffsetLimit = 100,
         string $sourceTableIdentityField = null,
         int $fullReIndexSecondsLimit = 0,
         string $sourceTableFieldOnFullReIndexLimit = 'updated_at',
@@ -183,7 +185,9 @@ class FeedIndexMetadata
         array $excludeFromHashFields = [],
         bool $exportImmediately = false,
         bool $persistExportedFeed = false,
-        bool $entitiesRemovable = true
+        bool $entitiesRemovable = true,
+        ?string $dateTimeFormat = null,
+        ?Config $config = null
     ) {
         $this->feedName = $feedName;
         $this->sourceTableName = $sourceTableName;
@@ -195,11 +199,9 @@ class FeedIndexMetadata
             $feedTableMutableColumns,
             self::FEED_TABLE_MUTABLE_COLUMNS_DEFAULT
         ));
-        $this->batchSize = $batchSize;
         $this->sourceTableIdentityField = $sourceTableIdentityField ?? $sourceTableField;
         $this->fullReindexSecondsLimit = $fullReIndexSecondsLimit;
         $this->sourceTableFieldOnFullReIndexLimit = $sourceTableFieldOnFullReIndexLimit;
-        $this->feedOffsetLimit = $feedOffsetLimit;
         $this->truncateFeedOnFullReindex = $truncateFeedOnFullReindex;
         $this->exportImmediately = $exportImmediately;
         $this->persistExportedFeed = $persistExportedFeed;
@@ -210,7 +212,9 @@ class FeedIndexMetadata
         ));
 
         $this->feedIdentifierMapping = $feedIdentifierMapping;
+        $this->dateTimeFormat = $dateTimeFormat;
         $this->entitiesRemovable = $entitiesRemovable;
+        $this->config = $config ?? ObjectManager::getInstance()->get(Config::class);
     }
 
     /**
@@ -290,7 +294,25 @@ class FeedIndexMetadata
      */
     public function getBatchSize(): int
     {
-        return $this->batchSize;
+        return $this->config->getBatchSize($this->feedName);
+    }
+
+    /**
+     * Get thread count. Used to run feed indexation and sync in parallel threads.
+     *
+     * @return int
+     */
+    public function getThreadCount(): int
+    {
+        return $this->config->getThreadCount($this->feedName);
+    }
+
+    /**
+     * Whether resync  process should be continued from the last position
+     */
+    public function isResyncShouldBeContinued(): bool
+    {
+        return $this->config->isResyncShouldBeContinued();
     }
 
     /**
@@ -327,10 +349,12 @@ class FeedIndexMetadata
      * Limit number of items returned in query
      *
      * @return int
+     * @deprecated
+     * @see getBatchSize
      */
     public function getFeedOffsetLimit(): int
     {
-        return $this->feedOffsetLimit;
+        return $this->getBatchSize();
     }
 
     /**
@@ -394,6 +418,8 @@ class FeedIndexMetadata
     }
 
     /**
+     * Get current modified at time in DB format.
+     *
      * @return string|null
      */
     public function getCurrentModifiedAtTimeInDBFormat(): ?string
@@ -402,6 +428,8 @@ class FeedIndexMetadata
     }
 
     /**
+     * Set current modified at time in DB format.
+     *
      * @param string $modifiedAtTimeInDBFormat
      */
     public function setCurrentModifiedAtTimeInDBFormat(string $modifiedAtTimeInDBFormat): void
@@ -417,5 +445,15 @@ class FeedIndexMetadata
     public function isRemovable(): bool
     {
         return $this->entitiesRemovable;
+    }
+
+    /**
+     * Get date time format for feed data
+     *
+     * @return string|null
+     */
+    public function getDateTimeFormat(): ?string
+    {
+        return $this->dateTimeFormat;
     }
 }
