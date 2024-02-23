@@ -50,6 +50,10 @@ class Config
      */
     private const EXPORTER_CONTINUE_RESYNC = 'continue-resync';
 
+    private const EXPORTER_CLEAN_UP_FEED = 'cleanup-feed';
+
+    private const EXPORTER_DRY_RUN = 'dry-run';
+
     /**
      * @var ScopeConfigInterface
      */
@@ -128,5 +132,27 @@ class Config
     {
         $configOptions = $this->configOptionsHandler->getConfigOptionsPool();
         return $configOptions->getFeedOption(self::EXPORTER_CONTINUE_RESYNC) ?? false;
+    }
+
+    /**
+     * Check if feed table should be cleaned up before export
+     *
+     * @return bool
+     */
+    public function isCleanUpFeed(): bool
+    {
+        $configOptions = $this->configOptionsHandler->getConfigOptionsPool();
+        return $configOptions->getFeedOption(self::EXPORTER_CLEAN_UP_FEED) ?? false;
+    }
+
+    /**
+     * Check if dry run mode is enabled
+     *
+     * @return bool
+     */
+    public function isDryRun(): bool
+    {
+        $configOptions = $this->configOptionsHandler->getConfigOptionsPool();
+        return $configOptions->getFeedOption(self::EXPORTER_DRY_RUN) ?? false;
     }
 }
