@@ -139,7 +139,8 @@ class Generator implements BatchGeneratorInterface
                     'sourceTableName' => $sourceTableName,
                     'sourceTableKeyColumns' => $sourceTableKeyColumns,
                     'batchLocator' => $batchLocator,
-                    'dateTimeFormat' => $metadata->getDateTimeFormat()
+                    'dateTimeFormat' => $metadata->getDateTimeFormat(),
+                    'isRemovable' => $metadata->isRemovable()
                 ]
             );
         }

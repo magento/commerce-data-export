@@ -91,8 +91,9 @@ These codes will be saved in the "status" field of the feed table, to keep infor
   </argument>
 
 ### Feed Index Metadata additional parameters:
-- entitiesRemovable -  this parameter handles feed configuration to cover cases when feed entities are not removable. Default value: `true` - feed entities can be removed. For example, `sales order` feed exports Sales Orders that cannot be deleted.
-
+- entitiesRemovable - this parameter handles feed configuration to cover cases when feed entities are not removable. Default value: `false` - feed entities can not be removed.  For example:
+- `sales order` feed export's Sales Orders entities cannot be deleted and `isRemovable` metadata parameter set to false.
+- `product` feed export's Products can be deleted and `isRemovable` metadata parameter *MUST* be set to true, in other case - feed records wouldn't be marked as deleted in the event of entity removal.
 ### Multi-thread data export mode:
 The purpose of this mode is to speed up the export process by splitting the data into batches and processing them in parallel.
 The performance of data export should be aligned with the limit that is defined for a client at consumer side.

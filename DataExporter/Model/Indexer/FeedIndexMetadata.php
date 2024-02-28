@@ -185,7 +185,7 @@ class FeedIndexMetadata
         array $excludeFromHashFields = [],
         bool $exportImmediately = false,
         bool $persistExportedFeed = false,
-        bool $entitiesRemovable = true,
+        bool $entitiesRemovable = false,
         ?string $dateTimeFormat = null,
         ?Config $config = null
     ) {

@@ -15,7 +15,7 @@ use Magento\Framework\Mview\ActionInterface as MviewActionInterface;
  * Product export feed indexer class
  * Facade for IndexerProcessor, implements Magento native indexers interfaces
  */
-class FeedIndexer implements IndexerActionInterface, MviewActionInterface
+class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedIndexMetadataProviderInterface
 {
     /**
      * @var FeedIndexProcessorCreateUpdate
@@ -117,5 +117,13 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface
             $this->entityIdsProvider,
             $ids
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFeedIndexMetadata(): FeedIndexMetadata
+    {
+        return $this->feedIndexMetadata;
     }
 }

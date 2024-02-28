@@ -83,6 +83,13 @@ class Iterator implements BatchIteratorInterface
     private ?string $dateTimeFormat;
 
     /**
+     * Is removable flag.
+     *
+     * @var bool|null
+     */
+    private ?bool $isRemovable;
+
+    /**
      * @var CommerceDataExportLoggerInterface
      */
     private CommerceDataExportLoggerInterface $logger;
@@ -95,6 +102,7 @@ class Iterator implements BatchIteratorInterface
      * @param array $sourceTableKeyColumns
      * @param CommerceDataExportLoggerInterface $logger
      * @param string|null $dateTimeFormat
+     * @param bool|null $isRemovable
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -103,7 +111,8 @@ class Iterator implements BatchIteratorInterface
         string             $sourceTableName,
         array              $sourceTableKeyColumns,
         CommerceDataExportLoggerInterface $logger,
-        ?string            $dateTimeFormat = null
+        ?string            $dateTimeFormat = null,
+        ?bool              $isRemovable = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->batchLocator = $batchLocator;
@@ -112,6 +121,7 @@ class Iterator implements BatchIteratorInterface
         $this->sourceTableKeyColumns = $sourceTableKeyColumns;
         $this->dateTimeFormat = $dateTimeFormat;
         $this->logger = $logger;
+        $this->isRemovable = $isRemovable;
     }
 
     /**
@@ -201,7 +211,6 @@ class Iterator implements BatchIteratorInterface
                 ['t' => $this->sourceTableName],
                 [
                     't.' . FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA,
-                    't.' . FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED,
                     't.' . FeedIndexMetadata::FEED_TABLE_FIELD_MODIFIED_AT
                 ]
             )
@@ -211,12 +220,16 @@ class Iterator implements BatchIteratorInterface
                 []
             )
             ->where($this->batchTable->getBatchNumberField() . ' = ?', $this->batchNumber);
-
+        if (true === $this->isRemovable) {
+            $select->columns(
+                't.' . FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED
+            );
+        }
         $statement = $connection->query($select);
         $data = [];
         while ($row = $statement->fetch()) {
             $entity = json_decode($row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA], true);
-            $entity['deleted'] = (bool)$row[FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED];
+            $entity['deleted'] = $this->isRemovable && $row[FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED];
             $entity['modifiedAt'] = $row[FeedIndexMetadata::FEED_TABLE_FIELD_MODIFIED_AT];
             if (null !== $this->dateTimeFormat) {
                 try {

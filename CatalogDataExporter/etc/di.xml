@@ -242,6 +242,8 @@
                 <item name="websiteCode" xsi:type="string">websiteCode</item>
             </argument>
 
+            <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
+
             <argument name="feedIdentifierMapping" xsi:type="array">
                 <item name="id" xsi:type="string">productId</item>
                 <item name="store_view_code" xsi:type="string">storeViewCode</item>
@@ -284,6 +286,7 @@
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
             </argument>
+            <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductAttributeDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
@@ -380,6 +383,7 @@
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
             </argument>
+            <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\CategoryDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">

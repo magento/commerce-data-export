@@ -32,6 +32,8 @@
                 <item name="customer_group_code" xsi:type="string">customerGroupCode</item>
             </argument>
 
+            <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
+
         </arguments>
     </virtualType>
     <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">

@@ -33,6 +33,8 @@
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
             </argument>
+
+            <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">

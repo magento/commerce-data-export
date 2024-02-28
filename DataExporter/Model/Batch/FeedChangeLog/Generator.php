@@ -89,7 +89,7 @@ class Generator implements BatchGeneratorInterface
         if ($connection instanceof \Magento\ResourceConnections\DB\Adapter\Pdo\MysqlProxy) {
             $connection->setUseMasterConnection();
         }
-        $viewId = $metadata->getFeedTableName();
+        $viewId = $args['viewId'] ?? $metadata->getFeedTableName();
         $view = $this->viewFactory->create()->load($viewId);
         $sourceTableName = $this->resourceConnection->getTableName($view->getChangelog()->getName());
         $sourceTableField = $view->getChangelog()->getColumnName();

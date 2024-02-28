@@ -22,6 +22,7 @@ use Magento\DataExporter\Model\Batch\BatchGeneratorInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\Mview\ActionFactory;
+use Magento\Framework\Mview\ActionInterface;
 use Magento\Framework\Mview\View\ChangelogTableNotExistsException;
 use Magento\Framework\Mview\View\StateInterface;
 use Magento\Framework\Mview\ViewInterface;
@@ -141,9 +142,9 @@ class ViewMaterializer
     private function executeAction(ViewInterface $view)
     {
         $action = $this->actionFactory->get($view->getActionClass());
-        $feedMetadata = $this->getFeedIndexMetadata($view->getId());
+        $feedMetadata = $this->getFeedIndexMetadata($action);
 
-        $batchIterator = $this->batchGenerator->generate($feedMetadata);
+        $batchIterator = $this->batchGenerator->generate($feedMetadata, ['viewId' => $view->getId()]);
         $threadCount = min($feedMetadata->getThreadCount(), $batchIterator->count());
         $userFunctions = [];
         for ($threadNumber = 1; $threadNumber <= $threadCount; $threadNumber++) {
@@ -171,22 +172,19 @@ class ViewMaterializer
     }
 
     /**
-     * Returns feed metadata by feed table name.
+     * Returns feed metadata by mview action object
      *
-     * @param string $feedTableName
+     * @param ActionInterface $action
      * @return FeedIndexMetadata
      */
-    private function getFeedIndexMetadata(string $feedTableName): FeedIndexMetadata
+    private function getFeedIndexMetadata(ActionInterface $action): FeedIndexMetadata
     {
-        $feedList = $this->feedPool->getList();
-        foreach ($feedList as $feed) {
-            if ($feed->getFeedMetadata()->getFeedTableName() === $feedTableName) {
-                return $feed->getFeedMetadata();
-            }
+        if ($action instanceof FeedIndexMetadataProviderInterface) {
+            return $action->getFeedIndexMetadata();
+        } else {
+            throw new \InvalidArgumentException(
+                \sprintf('Feed for the "%s" action class is not registered', $action::class)
+            );
         }
-
-        throw new \InvalidArgumentException(
-            \sprintf('Feed with "%s" table name is not registered', $feedTableName)
-        );
     }
 }
