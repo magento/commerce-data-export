@@ -7,7 +7,8 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
-use Magento\DataExporter\Model\ExportFeedInterface;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Indexer\ActionInterface as IndexerActionInterface;
 use Magento\Framework\Mview\ActionInterface as MviewActionInterface;
 
@@ -38,6 +39,11 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
     private $entityIdsProvider;
 
     /**
+     * @var CommerceDataExportLoggerInterface
+     */
+    private CommerceDataExportLoggerInterface $logger;
+
+    /**
      * @param FeedIndexProcessorInterface $processor
      * @param DataSerializerInterface $serializer
      * @param FeedIndexMetadata $feedIndexMetadata
@@ -47,12 +53,15 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
         FeedIndexProcessorInterface $processor,
         DataSerializerInterface $serializer,
         FeedIndexMetadata $feedIndexMetadata,
-        EntityIdsProviderInterface $entityIdsProvider
+        EntityIdsProviderInterface $entityIdsProvider,
+        ?CommerceDataExportLoggerInterface $logger = null
     ) {
         $this->processor = $processor;
         $this->feedIndexMetadata = $feedIndexMetadata;
         $this->dataSerializer = $serializer;
         $this->entityIdsProvider = $entityIdsProvider;
+        $this->logger = $logger ??
+            ObjectManager::getInstance()->get(CommerceDataExportLoggerInterface::class);
     }
 
     /**
@@ -84,6 +93,8 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
             $this->entityIdsProvider,
             $ids
         );
+        // track iteration completion
+        $this->logger->logProgress();
     }
 
     /**
@@ -117,6 +128,8 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
             $this->entityIdsProvider,
             $ids
         );
+        // track iteration completion
+        $this->logger->logProgress();
     }
 
     /**

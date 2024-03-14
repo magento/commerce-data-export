@@ -23,6 +23,8 @@ use Magento\DataExporter\Model\Batch\BatchIteratorInterface;
 use Magento\DataExporter\Model\Batch\BatchTableFactory;
 use Magento\DataExporter\Model\Batch\BatchLocatorFactory;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\DataExporter\Model\Logging\LogRegistry;
 use Magento\DataExporter\Status\ExportStatusCodeProvider;
 use Magento\DataExporter\Model\Batch\FeedSource\IteratorFactory as IdIteratorFactory;
 use Magento\Framework\App\ResourceConnection;
@@ -57,6 +59,7 @@ class Generator implements BatchGeneratorInterface
      * @var BatchTableFactory
      */
     private BatchTableFactory $batchTableFactory;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -70,19 +73,40 @@ class Generator implements BatchGeneratorInterface
         IteratorFactory     $iteratorFactory,
         IdIteratorFactory $idIteratorFactory,
         BatchLocatorFactory $batchLocatorFactory,
-        BatchTableFactory   $batchTableFactory
+        BatchTableFactory   $batchTableFactory,
+        CommerceDataExportLoggerInterface $logger,
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->iteratorFactory = $iteratorFactory;
         $this->idIteratorFactory = $idIteratorFactory;
         $this->batchLocatorFactory = $batchLocatorFactory;
         $this->batchTableFactory = $batchTableFactory;
+        $this->logger = $logger;
     }
 
     /**
      * @inheritDoc
      */
     public function generate(FeedIndexMetadata $metadata, array $args = []): BatchIteratorInterface
+    {
+        try {
+            $batchIterator = $this->doGenerate($metadata, $args);
+            $this->logger->addContext([LogRegistry::TOTAL_ITERATIONS => $batchIterator->count()]);
+            return $batchIterator;
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                sprintf(
+                    '%s feed: error occurred: %s',
+                    $metadata->getFeedName(),
+                    $e->getMessage()
+                ),
+                ['exception' => $e]
+            );
+            throw $e;
+        }
+    }
+
+    private function doGenerate(FeedIndexMetadata $metadata, array $args = []): BatchIteratorInterface
     {
         $sinceTimestamp = array_key_exists('sinceTimestamp', $args) ? (string)$args['sinceTimestamp'] : '1';
         $connection = $this->resourceConnection->getConnection();
@@ -121,7 +145,17 @@ class Generator implements BatchGeneratorInterface
             $batchTable->getBatchTableName(),
             array_merge([$batchTable->getBatchNumberField()], $sourceTableKeyColumns)
         );
-        $batchTable->create($insertDataQuery);
+        $totalProcessedItems = $batchTable->create($insertDataQuery);
+
+        // to avoid chatty logs on each cron run - log only case when work expected
+        if ($totalProcessedItems > 0) {
+            $this->logger->info(sprintf(
+                    'start processing `%s` items in `%s` threads',
+                    $totalProcessedItems,
+                    $metadata->getThreadCount()
+                )
+            );
+        }
 
         if ($metadata->isExportImmediately()) {
             $batchIterator = $this->idIteratorFactory->create(

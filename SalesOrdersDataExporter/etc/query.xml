@@ -7,7 +7,7 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_QueryXml:etc/query.xsd">
-    <query name="salesOrdersV2">
+    <query name="orders">
         <source name="sales_order">
             <attribute name="entity_id" alias="commerceOrderId" />
             <attribute name="increment_id" alias="commerceOrderNumber" />

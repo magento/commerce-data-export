@@ -23,6 +23,8 @@ use Magento\DataExporter\Model\Batch\BatchIteratorInterface;
 use Magento\DataExporter\Model\Batch\BatchTableFactory;
 use Magento\DataExporter\Model\Batch\BatchLocatorFactory;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\DataExporter\Model\Logging\LogRegistry;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 
@@ -31,6 +33,19 @@ use Magento\Framework\DB\Select;
  */
 class Generator implements BatchGeneratorInterface
 {
+    private const MAX_PROCESSED_ITEMS_PER_ITERATION = 10000000;
+
+    /**
+     * List of filterable source field types
+     */
+    private const FILTERABLE_FIELD_TYPES = [
+        'int',
+        'tinyint',
+        'smallint',
+        'mediumint',
+        'bigint'
+    ];
+
     /**
      * @var ResourceConnection
      */
@@ -51,28 +66,51 @@ class Generator implements BatchGeneratorInterface
      */
     private BatchTableFactory $batchTableFactory;
 
+    private CommerceDataExportLoggerInterface $logger;
+
     /**
      * @param ResourceConnection $resourceConnection
      * @param IteratorFactory $iteratorFactory
      * @param BatchLocatorFactory $batchLocatorFactory
      * @param BatchTableFactory $batchTableFactory
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         ResourceConnection  $resourceConnection,
         IteratorFactory     $iteratorFactory,
         BatchLocatorFactory $batchLocatorFactory,
-        BatchTableFactory   $batchTableFactory
+        BatchTableFactory   $batchTableFactory,
+        CommerceDataExportLoggerInterface $logger,
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->iteratorFactory = $iteratorFactory;
         $this->batchLocatorFactory = $batchLocatorFactory;
         $this->batchTableFactory = $batchTableFactory;
+        $this->logger = $logger;
     }
 
     /**
      * @inheritDoc
      */
     public function generate(FeedIndexMetadata $metadata, array $args = []): BatchIteratorInterface
+    {
+        try {
+            $batchIterator = $this->doGenerate($metadata, $args);
+            $this->logger->addContext([LogRegistry::TOTAL_ITERATIONS => $batchIterator->count()]);
+            return $batchIterator;
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                sprintf(
+                    '%s feed: error occurred: %s',
+                    $metadata->getFeedName(),
+                    $e->getMessage()
+                ),
+                ['exception' => $e]
+            );
+            throw $e;
+        }
+    }
+    private function doGenerate(FeedIndexMetadata $metadata, array $args = []): BatchIteratorInterface
     {
         $connection = $this->resourceConnection->getConnection();
         // feed exporter must use a master connection because reading from slaves occurs with a delay,
@@ -105,22 +143,96 @@ class Generator implements BatchGeneratorInterface
                 'sourceTableKeyColumns' => [$sourceTableField]
             ]
         );
+        $startFrom = null;
+        if ($metadata->isResyncShouldBeContinued() && $this->isSourceEntityFieldFilterable($metadata)) {
+            $startFrom = $this->getLastExportedId($metadata);
+            // to cover case when feed table is empty but source table doesn't start from 1
+            if ($startFrom <= 0) {
+                $startFrom = $this->getStartFromValue($sourceTableName, $sourceTableField);
+            }
+        } elseif ($this->isSourceEntityFieldFilterable($metadata)) {
+            $startFrom = $this->getStartFromValue($sourceTableName, $sourceTableField);
+        }
+
+        $maxProcessedItemsLimit = $startFrom + self::MAX_PROCESSED_ITEMS_PER_ITERATION;
+        $batchNumberIncrement = 0;
+        $processedItems = 0;
+        $totalProcessedItems = 0;
+
+        while (true) {
         $insertDataQuery = $connection->insertFromSelect(
-            $this->getSelect($metadata, $sourceTableName, $sourceTableField, $batchTable->getBatchNumberField()),
+                $this->getSelect(
+                    $metadata,
+                    $sourceTableName,
+                    $sourceTableField,
+                    $batchTable->getBatchNumberField(),
+                    $batchNumberIncrement,
+                    $startFrom,
+                    $maxProcessedItemsLimit),
             $batchTable->getBatchTableName(),
             [$batchTable->getBatchNumberField(), $sourceTableField]
         );
-        $batchTable->create($insertDataQuery);
+            // TOTO: make initialization more explicit
+            $initializeCreate = $processedItems === 0;
+            if ($initializeCreate) {
+                $this->logger->info(sprintf(
+                        'Creating batch table `%s`. Start position: %s',
+                        $batchTable->getBatchTableName(),
+                        $startFrom
+                    )
+                );
+            }
+            $processedItems = $batchTable->create($insertDataQuery, $initializeCreate);
+            if (!$initializeCreate && $processedItems > 0) {
+                $this->logger->info(
+                    sprintf(
+                        'Continue fulfilling batch table `%s`. Start position: %s, end: %s',
+                        $batchTable->getBatchTableName(),
+                        $startFrom,
+                        $maxProcessedItemsLimit
+                    )
+                );
+            }
 
-        $batchIterator = $this->iteratorFactory->create(
+            $totalProcessedItems+= $processedItems;
+            $batchNumberIncrement = intdiv($totalProcessedItems, $metadata->getBatchSize());
+
+            if ($processedItems === 0) {
+                break;
+            }
+            $startFrom += self::MAX_PROCESSED_ITEMS_PER_ITERATION;
+            $maxProcessedItemsLimit += self::MAX_PROCESSED_ITEMS_PER_ITERATION;
+        }
+
+        $this->logger->info(
+            sprintf(
+                'Batch table `%s` created. Total Items: %s, batches: ~%s',
+                $batchTable->getBatchTableName(),
+                $totalProcessedItems,
+                $batchNumberIncrement
+            )
+        );
+        $this->logger->info(
+            $totalProcessedItems > 0
+                ? sprintf(
+                'start processing `%s` items in `%s` threads with `%s` batch size',
+                $totalProcessedItems,
+                $metadata->getThreadCount(),
+                $metadata->getBatchSize()
+            )
+                : sprintf(
+                'nothing to process - no items to sync. Not expected? Are there any items in source table `%s`?',
+                $sourceTableName
+            )
+        );
+
+        return $this->iteratorFactory->create(
             [
                 'batchTable' => $batchTable,
                 'sourceTableKeyColumn' => $sourceTableField,
                 'batchLocator' => $batchLocator,
             ]
         );
-
-        return $batchIterator;
     }
 
     /**
@@ -130,6 +242,9 @@ class Generator implements BatchGeneratorInterface
      * @param string $sourceTableName
      * @param string $sourceTableField
      * @param string $batchNumField
+     * @param int $batchNumberIncrement
+     * @param int|null $startFrom
+     * @param int|null $maxLimit
      * @return Select
      * @throws \Zend_Db_Select_Exception
      */
@@ -137,7 +252,10 @@ class Generator implements BatchGeneratorInterface
         FeedIndexMetadata $metadata,
         string $sourceTableName,
         string $sourceTableField,
-        string $batchNumField
+        string $batchNumField,
+        int $batchNumberIncrement = 0,
+        int $startFrom = null,
+        int $maxLimit = null
     ): Select {
         $connection = $this->resourceConnection->getConnection();
         $tableFeed = $this->resourceConnection->getTableName($metadata->getFeedTableName());
@@ -182,7 +300,7 @@ class Generator implements BatchGeneratorInterface
                 [
                     $batchNumField => new \Zend_Db_Expr(
                         sprintf(
-                            "CEILING(ROW_NUMBER() OVER (ORDER BY %s)/%d)",
+                            "CEILING(ROW_NUMBER() OVER (ORDER BY %s)/%d) + $batchNumberIncrement",
                             $sourceTableField,
                             $metadata->getBatchSize()
                         )
@@ -190,12 +308,10 @@ class Generator implements BatchGeneratorInterface
                     $sourceTableField
                 ]
             );
-        if ($metadata->isResyncShouldBeContinued()) {
-            $max = $this->getLastExportedId($metadata);
-            if ($max && $max > 0) {
-                $select->where(sprintf('%s > %s', $sourceTableField, $max));
+        if ($startFrom !== null && $maxLimit !== null) {
+            $select->where(sprintf('%s > %s', $sourceTableField, $startFrom));
+            $select->where(sprintf('%s <= %s', $sourceTableField, $maxLimit));
             }
-        }
 
         return $select;
     }
@@ -204,15 +320,30 @@ class Generator implements BatchGeneratorInterface
      * Get last exported id
      *
      * @param FeedIndexMetadata $metadata
-     * @return string
+     * @return int
      */
-    private function getLastExportedId(FeedIndexMetadata $metadata)
+    private function getLastExportedId(FeedIndexMetadata $metadata): int
     {
         $select = $this->resourceConnection->getConnection()->select()->from(
             $this->resourceConnection->getTableName($metadata->getFeedTableName()),
             [$metadata->getFeedTableField() => sprintf('max(%s)', $metadata->getFeedTableField())]
         );
-        return $this->resourceConnection->getConnection()->fetchOne($select);
+        return (int)$this->resourceConnection->getConnection()->fetchOne($select);
+    }
+
+    /**
+     * @param string $sourceTableName
+     * @param string $sourceTableField
+     * @return int
+     */
+    private function getStartFromValue(string $sourceTableName, string $sourceTableField): int
+    {
+        $select = $this->resourceConnection->getConnection()->select()->from(
+            $sourceTableName,
+            [$sourceTableField => sprintf('min(%s)', $sourceTableField)]
+        );
+        $startValue = (int)$this->resourceConnection->getConnection()->fetchOne($select);
+        return $startValue > 0 ? --$startValue : $startValue;
     }
 
     /**
@@ -234,5 +365,25 @@ class Generator implements BatchGeneratorInterface
         }
 
         return null;
+    }
+
+    /**
+     * Check if source entity field is integer
+     *
+     * @param FeedIndexMetadata $metadata
+     * @return bool
+     */
+    private function isSourceEntityFieldFilterable(FeedIndexMetadata $metadata): bool
+    {
+        $sourceTableDescribed = $this->resourceConnection->getConnection()
+            ->describeTable($metadata->getSourceTableName());
+        if (isset($sourceTableDescribed[$metadata->getSourceTableField()])) {
+            return \in_array(
+                $sourceTableDescribed[$metadata->getSourceTableField()]['DATA_TYPE'],
+                self::FILTERABLE_FIELD_TYPES,
+                true
+            );
+        }
+        return false;
     }
 }

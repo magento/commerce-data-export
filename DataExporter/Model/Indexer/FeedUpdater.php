@@ -70,6 +70,7 @@ class FeedUpdater
                     $dataForInsert,
                     $fieldsToUpdateOnDuplicate
                 );
+                $this->logger->logProgress(null, count($dataForInsert));
             }
         } catch (\Throwable $e) {
             $this->logger->error(

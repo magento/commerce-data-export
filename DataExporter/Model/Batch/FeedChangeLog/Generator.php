@@ -23,9 +23,11 @@ use Magento\DataExporter\Model\Batch\BatchIteratorInterface;
 use Magento\DataExporter\Model\Batch\BatchTableFactory;
 use Magento\DataExporter\Model\Batch\BatchLocatorFactory;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\DataExporter\Model\Logging\LogRegistry;
+use Magento\DataExporter\Model\Provider\ChangelogQueryProvider;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
-use Magento\Framework\Mview\View\Changelog;
 use Magento\Framework\Mview\ViewFactory;
 use Magento\Framework\Mview\ViewInterface;
 
@@ -59,31 +61,64 @@ class Generator implements BatchGeneratorInterface
      */
     private ViewFactory $viewFactory;
 
+    private CommerceDataExportLoggerInterface $logger;
+
+    /**
+     * @var ChangelogQueryProvider
+     */
+    private ChangelogQueryProvider $changeLogQueryProvider;
+
     /**
      * @param ResourceConnection $resourceConnection
      * @param IteratorFactory $iteratorFactory
      * @param BatchLocatorFactory $batchLocatorFactory
      * @param BatchTableFactory $batchTableFactory
      * @param ViewFactory $viewFactory
+     * @param CommerceDataExportLoggerInterface $logger
+     * @param ChangelogQueryProvider $changeLogQueryProvider
      */
     public function __construct(
         ResourceConnection  $resourceConnection,
         IteratorFactory     $iteratorFactory,
         BatchLocatorFactory $batchLocatorFactory,
         BatchTableFactory   $batchTableFactory,
-        ViewFactory         $viewFactory
+        ViewFactory         $viewFactory,
+        CommerceDataExportLoggerInterface $logger,
+        ChangelogQueryProvider $changeLogQueryProvider
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->iteratorFactory = $iteratorFactory;
         $this->batchLocatorFactory = $batchLocatorFactory;
         $this->batchTableFactory = $batchTableFactory;
         $this->viewFactory = $viewFactory;
+        $this->logger = $logger;
+        $this->changeLogQueryProvider = $changeLogQueryProvider;
     }
 
     /**
      * @inheritDoc
      */
     public function generate(FeedIndexMetadata $metadata, array $args = []): BatchIteratorInterface
+    {
+        try {
+            $batchIterator = $this->doGenerate($metadata, $args);
+            $this->logger->addContext([LogRegistry::TOTAL_ITERATIONS => $batchIterator->count()]);
+            return $batchIterator;
+        } catch (\Throwable $e) {
+            // TODO: throw exception and check it will not impact on cron:run
+            $this->logger->error(
+                sprintf(
+                    '%s feed: error occurred: %s',
+                    $metadata->getFeedName(),
+                    $e->getMessage()
+                ),
+                ['exception' => $e]
+            );
+            throw $e;
+        }
+    }
+
+    private function doGenerate(FeedIndexMetadata $metadata, array $args = []): BatchIteratorInterface
     {
         $connection = $this->resourceConnection->getConnection();
         if ($connection instanceof \Magento\ResourceConnections\DB\Adapter\Pdo\MysqlProxy) {
@@ -117,7 +152,20 @@ class Generator implements BatchGeneratorInterface
             $batchTable->getBatchTableName(),
             [$batchTable->getBatchNumberField(), $sourceTableField]
         );
-        $batchTable->create($insertDataQuery);
+        $totalProcessedItems = $batchTable->create($insertDataQuery);
+
+        $this->logger->info(
+            $totalProcessedItems > 0
+                ? sprintf(
+                'start processing `%s` items in `%s` threads',
+                $totalProcessedItems,
+                $metadata->getThreadCount()
+            )
+                : sprintf(
+                'nothing to process - no items to sync. Not expected? Are there any items in source table `%s`?',
+                $sourceTableName
+            )
+        );
 
         $batchIterator = $this->iteratorFactory->create(
             [
@@ -150,15 +198,12 @@ class Generator implements BatchGeneratorInterface
     ): Select {
         $connection = $this->resourceConnection->getConnection();
         $lastVersionId = (int)$view->getState()->getVersionId();
-
-        $subSelect = $this->resourceConnection->getConnection()
-            ->select()
-            ->from(
-                ['v' => $sourceTableName],
-                [$view->getChangelog()->getColumnName()]
-            )
-            ->distinct(true)
-            ->where(sprintf('v.%s > ?', Changelog::VERSION_ID_COLUMN_NAME), $lastVersionId);
+        $changeLogQuery = $this->changeLogQueryProvider->getChangeLogSelectQuery($view->getId());
+        $subSelect = $changeLogQuery->getChangelogSelect(
+            $sourceTableName,
+            $sourceTableField,
+            $lastVersionId
+        );
 
         $select = $connection->select()
             ->from(

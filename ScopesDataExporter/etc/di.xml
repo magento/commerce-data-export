@@ -14,6 +14,7 @@
             type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">scopesCustomerGroup</argument>
+            <argument name="feedSummary" xsi:type="string">Scopes Customer Groups Feed</argument>
             <argument name="feedIdentity" xsi:type="string">customerGroupId</argument>
             <argument name="sourceTableName" xsi:type="string">customer_group</argument>
             <argument name="sourceTableField" xsi:type="string">customer_group_id</argument>
@@ -25,7 +26,6 @@
             </argument>
         </arguments>
     </virtualType>
-
     <virtualType
             name="Magento\ScopesDataExporter\Model\Indexer\ScopesCustomerGroupDataSerializer"
             type="Magento\DataExporter\Model\Indexer\DataSerializer">
@@ -64,6 +64,7 @@
             type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">scopesWebsite</argument>
+            <argument name="feedSummary" xsi:type="string">Scopes Websites Feed</argument>
             <argument name="feedIdentity" xsi:type="string">websiteId</argument>
             <argument name="sourceTableName" xsi:type="string">store_website</argument>
             <argument name="sourceTableField" xsi:type="string">website_id</argument>
@@ -75,7 +76,14 @@
             </argument>
         </arguments>
     </virtualType>
-
+    <type name="Magento\DataExporter\Model\FeedMetadataPool">
+        <arguments>
+            <argument name="classMap" xsi:type="array">
+                <item name="scopesWebsite" xsi:type="object">Magento\ScopesDataExporter\Model\Indexer\ScopesWebsiteFeedIndexMetadata</item>
+                <item name="scopesCustomerGroup" xsi:type="object">Magento\ScopesDataExporter\Model\Indexer\ScopesCustomerGroupFeedIndexMetadata</item>
+            </argument>
+        </arguments>
+    </type>
     <virtualType
             name="Magento\ScopesDataExporter\Model\Indexer\ScopesWebsiteDataSerializer"
             type="Magento\DataExporter\Model\Indexer\DataSerializer">

@@ -50,6 +50,10 @@ class FeedIndexMetadata
     /**
      * @var string
      */
+    private $feedSummary;
+    /**
+     * @var string
+     */
     private $sourceTableName;
 
     /**
@@ -146,6 +150,8 @@ class FeedIndexMetadata
      */
     private ?string $dateTimeFormat;
 
+    private ?string $viewSourceLinkField;
+
     /**
      * @param string $feedName
      * @param string $sourceTableName
@@ -166,6 +172,8 @@ class FeedIndexMetadata
      * @param bool $entitiesRemovable
      * @param string|null $dateTimeFormat
      * @param Config|null $config
+     * @param string|null $feedSummary
+     * @param string|null $viewSourceLinkField
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -187,9 +195,12 @@ class FeedIndexMetadata
         bool $persistExportedFeed = false,
         bool $entitiesRemovable = false,
         ?string $dateTimeFormat = null,
-        ?Config $config = null
+        ?Config $config = null,
+        ?string $feedSummary = null,
+        ?string $viewSourceLinkField = null
     ) {
         $this->feedName = $feedName;
+        $this->feedSummary = $feedSummary ?? '';
         $this->sourceTableName = $sourceTableName;
         $this->sourceTableField = $sourceTableField;
         $this->feedIdentity = $feedIdentity;
@@ -214,6 +225,7 @@ class FeedIndexMetadata
         $this->feedIdentifierMapping = $feedIdentifierMapping;
         $this->dateTimeFormat = $dateTimeFormat;
         $this->entitiesRemovable = $entitiesRemovable;
+        $this->viewSourceLinkField = $viewSourceLinkField;
         $this->config = $config ?? ObjectManager::getInstance()->get(Config::class);
     }
 
@@ -225,6 +237,16 @@ class FeedIndexMetadata
     public function getFeedName(): string
     {
         return $this->feedName;
+    }
+
+    /**
+     * Get Feed Summary
+     *
+     * @return string
+     */
+    public function getFeedSummary(): string
+    {
+        return $this->feedSummary;
     }
 
     /**
@@ -455,5 +477,18 @@ class FeedIndexMetadata
     public function getDateTimeFormat(): ?string
     {
         return $this->dateTimeFormat;
+    }
+
+    /**
+     * Get view -> source link field for mapping with source table field
+     *
+     * Use when view entity field is different from source table entity field.
+     * It will use this field to link view identity field with source identity field.
+     *
+     * @return string|null
+     */
+    public function getViewSourceLinkField(): ?string
+    {
+        return $this->viewSourceLinkField;
     }
 }

@@ -18,6 +18,8 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Batch;
 
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 
 /**
@@ -51,30 +53,41 @@ class BatchTable
     private array $sourceTableKeyColumns;
 
     /**
+     * @var CommerceDataExportLoggerInterface
+     */
+    private CommerceDataExportLoggerInterface $logger;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param string $batchTableName
      * @param string $sourceTableName
      * @param array $sourceTableKeyColumns
+     * @param CommerceDataExportLoggerInterface|null $logger
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         string $batchTableName,
         string $sourceTableName,
-        array $sourceTableKeyColumns
+        array $sourceTableKeyColumns,
+        ?CommerceDataExportLoggerInterface $logger,
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->batchTableName = $batchTableName;
         $this->sourceTableName = $sourceTableName;
         $this->sourceTableKeyColumns = $sourceTableKeyColumns;
+        $this->logger = $logger ?? ObjectManager::getInstance()->get(CommerceDataExportLoggerInterface::class);
     }
 
     /**
      * Creates batch table.
      *
      * @param string $insertDataQuery
+     * @param null|bool $initializeCreate
+     * @return Number of inserted rows: 0 if nothing to insert
      * @throws \Zend_Db_Exception
+     * @throws \Zend_Db_Statement_Exception
      */
-    public function create(string $insertDataQuery): void
+    public function create(string $insertDataQuery, bool $initializeCreate = null): int
     {
         $connection = $this->resourceConnection->getConnection();
         $batchTable = $connection->newTable()
@@ -112,10 +125,21 @@ class BatchTable
             ['type' => 'primary']
         );
 
+        if ($initializeCreate || $initializeCreate === null) {
         $connection->dropTable($this->batchTableName);
         $connection->createTable($batchTable);
-        $connection->query($insertDataQuery);
+        }
+        $result = $connection->query($insertDataQuery);
+        $processedItems = 0;
+        if ($result instanceof \Zend_Db_Statement_Pdo) {
+            $processedItems = (int)$result->rowCount() ;
+        } else {
+            $this->logger->warning('Batch table insert query returned unexpected result');
+        }
+        if ($processedItems === 0 || $initializeCreate === null) {
         $connection->query(sprintf("ANALYZE TABLE %s", $this->batchTableName));
+    }
+        return $processedItems;
     }
 
     /**

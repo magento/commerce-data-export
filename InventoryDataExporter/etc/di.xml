@@ -22,11 +22,13 @@
     <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">inventoryStockStatus</argument>
+            <argument name="feedSummary" xsi:type="string">Inventory Stock Status Feed</argument>
             <argument name="feedIdentity" xsi:type="string">sku</argument>
-            <!--  source table used only during full reindex -->
-            <argument name="sourceTableName" xsi:type="string">inventory_source_item</argument>
-            <argument name="sourceTableField" xsi:type="string">sku</argument>
-            <argument name="sourceTableIdentityField" xsi:type="string">source_item_id</argument>
+            <!-- source table used only during full reindex -->
+            <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
+            <argument name="sourceTableField" xsi:type="string">entity_id</argument>
+            <!-- use when view entity field is different from the source table entity. It will use this field to link view identity field with source identity field -->
+            <argument name="viewSourceLinkField" xsi:type="string">sku</argument>
             <argument name="feedTableName" xsi:type="string">inventory_data_exporter_stock_status</argument>
             <argument name="feedTableField" xsi:type="string">sku</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">
@@ -56,7 +58,13 @@
             <argument name="feedIndexMetadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
         </arguments>
     </virtualType>
-
+    <type name="Magento\DataExporter\Model\FeedMetadataPool">
+        <arguments>
+            <argument name="classMap" xsi:type="array">
+                <item name="inventoryStockStatus" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</item>
+            </argument>
+        </arguments>
+    </type>
     <type name="Magento\Framework\Mview\View\Changelog">
         <plugin name="create_stock_item_changelog_table" type="Magento\InventoryDataExporter\Plugin\Mview\StockStatusChangelog"/>
     </type>
@@ -69,7 +77,18 @@
             <argument name="metadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
         </arguments>
     </type>
-
+    <type name="Magento\InventoryDataExporter\Model\Query\ChangelogSelectQuery">
+        <arguments>
+            <argument name="metadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
+        </arguments>
+    </type>
+    <type name="Magento\DataExporter\Model\Provider\ChangelogQueryProvider">
+        <arguments>
+            <argument name="changeLogQuery" xsi:type="array">
+                <item name="inventory_data_exporter_stock_status" xsi:type="object">Magento\InventoryDataExporter\Model\Query\ChangelogSelectQuery</item>
+            </argument>
+        </arguments>
+    </type>
     <!-- Plugins to cover on-save indexer mode  -->
     <type name="Magento\InventoryApi\Api\SourceItemsSaveInterface">
         <!-- sort order guarantee it will be executed after Inventory Index plugin -->

@@ -44,4 +44,14 @@ class FeedMetadataPool
         }
         return $this->classMap[$feedName];
     }
+
+    /**
+     * Get list of all registered feeds
+     *
+     * @return array
+     */
+    public function getAll(): array
+    {
+        return $this->classMap;
+    }
 }

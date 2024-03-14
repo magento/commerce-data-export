@@ -10,6 +10,7 @@ namespace Magento\DataExporter\Model\Indexer;
 use Magento\DataExporter\Model\Batch\BatchGeneratorInterface;
 use Magento\DataExporter\Model\Batch\FeedSource\Generator as FeedSourceBatchGenerator;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\DataExporter\Model\Logging\LogRegistry;
 use Magento\DataExporter\Status\ExportStatusCodeProvider;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
@@ -211,6 +212,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         if ($isPartialReindex) {
             $this->exportFeedItemsAndLogStatus($indexState, $metadata, $serializer, true);
         }
+        $this->logger->logProgress(count($ids));
     }
 
     /**
@@ -222,6 +224,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         EntityIdsProviderInterface $idsProvider
     ): void {
         try {
+            $operation = $metadata->isExportImmediately() ? 'full sync' : 'full reindex(legacy)';
+            $this->logger->initSyncLog($metadata, $operation);
             $this->truncateIndexTable($metadata);
             $batchIterator = $this->batchGenerator->generate($metadata);
             $threadCount = min($metadata->getThreadCount(), $batchIterator->count());
@@ -232,6 +236,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     try {
                         foreach ($batchIterator as $ids) {
                             $this->partialReindex($metadata, $serializer, $idsProvider, $ids, null, $indexState);
+                            // track iteration completion
+                            $this->logger->logProgress();
                         }
                         $this->exportFeedItemsAndLogStatus($indexState, $metadata, $serializer, true);
                     } catch (\Throwable $e) {
@@ -245,6 +251,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             }
             $processManager = $this->processManagerFactory->create(['threadsCount' => $threadCount]);
             $processManager->execute($userFunctions);
+            $this->logger->complete();
         } catch (\Throwable $e) {
             $this->logger->error(
                 'Data Exporter exception has occurred: ' . $e->getMessage(),
@@ -266,7 +273,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         IndexStateProvider $indexStateProvider,
         FeedIndexMetadata $metadata,
         DataSerializerInterface $serializer,
-        $processRemainingFeedItems = false
+        bool $processRemainingFeedItems = false
     ) {
         while ($indexStateProvider->isBatchLimitReached()) {
             $data = $indexStateProvider->getFeedItems();

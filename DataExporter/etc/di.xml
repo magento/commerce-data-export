@@ -38,6 +38,13 @@
             <argument name="data" xsi:type="object">Magento\DataExporter\Config\Data</argument>
         </arguments>
     </type>
+    <type name="Magento\DataExporter\Model\Provider\ChangelogQueryProvider">
+        <arguments>
+            <argument name="changeLogQuery" xsi:type="array">
+                <item name="default_view" xsi:type="object">Magento\DataExporter\Model\Query\ChangelogSelectQuery</item>
+            </argument>
+        </arguments>
+    </type>
     <preference for="Magento\DataExporter\Config\ConfigInterface" type="Magento\DataExporter\Config\Config" />
 
     <preference for="Magento\DataExporter\Model\Indexer\MarkRemovedEntitiesInterface"
@@ -66,6 +73,11 @@
         </arguments>
     </type>
 
+    <type name="Magento\DataExporter\Model\Logging\LogRegistry">
+        <arguments>
+            <argument name="logProgressInterval" xsi:type="init_parameter">Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface::LOG_PROGRESS_INTERVAL</argument>
+        </arguments>
+    </type>
     <preference for="Magento\DataExporter\Model\ExportFeedInterface" type="Magento\DataExporter\Model\ExportFeedDummy"/>
     <type name="Magento\Framework\Mview\Processor">
         <plugin name="exporter-mview-update" type="Magento\DataExporter\Plugin\MviewUpdatePlugin"/>

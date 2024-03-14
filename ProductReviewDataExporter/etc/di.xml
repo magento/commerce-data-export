@@ -11,6 +11,7 @@
                  type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">reviews</argument>
+            <argument name="feedSummary" xsi:type="string">Product Reviews Feed</argument>
             <argument name="feedIdentity" xsi:type="string">reviewId</argument>
             <argument name="sourceTableName" xsi:type="string">review</argument>
             <argument name="sourceTableField" xsi:type="string">review_id</argument>
@@ -24,7 +25,6 @@
             <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
         </arguments>
     </virtualType>
-
     <virtualType name="Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsDataSerializer"
                  type="Magento\DataExporter\Model\Indexer\DataSerializer">
         <arguments>
@@ -74,6 +74,7 @@
                  type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">ratingMetadata</argument>
+            <argument name="feedSummary" xsi:type="string">Product Ratings Metadata Feed</argument>
             <argument name="feedIdentity" xsi:type="string">ratingId</argument>
             <argument name="sourceTableName" xsi:type="string">rating</argument>
             <argument name="sourceTableField" xsi:type="string">rating_id</argument>
@@ -87,7 +88,14 @@
             <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
         </arguments>
     </virtualType>
-
+    <type name="Magento\DataExporter\Model\FeedMetadataPool">
+        <arguments>
+            <argument name="classMap" xsi:type="array">
+                <item name="reviews" xsi:type="object">Magento\ProductReviewDataExporter\Model\Indexer\ProductReviewsFeedIndexMetadata</item>
+                <item name="ratingMetadata" xsi:type="object">Magento\ProductReviewDataExporter\Model\Indexer\RatingFeedIndexMetadata</item>
+            </argument>
+        </arguments>
+    </type>
     <type name="Magento\ProductReviewDataExporter\Model\Indexer\RatingDataSerializer">
         <arguments>
             <argument name="feedIdentity" xsi:type="string">ratingId</argument>

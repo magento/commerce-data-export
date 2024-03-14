@@ -10,7 +10,8 @@
     <!-- Sales Orders Feed -->
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
-            <argument name="feedName" xsi:type="string">salesOrdersV2</argument>
+            <argument name="feedName" xsi:type="string">orders</argument>
+            <argument name="feedSummary" xsi:type="string">Sales Orders Feed</argument>
             <argument name="feedIdentity" xsi:type="string">commerceOrderId</argument>
             <argument name="sourceTableName" xsi:type="string">sales_order</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
@@ -25,6 +26,13 @@
             <argument name="entitiesRemovable" xsi:type="boolean">false</argument>
         </arguments>
     </virtualType>
+    <type name="Magento\DataExporter\Model\FeedMetadataPool">
+        <arguments>
+            <argument name="classMap" xsi:type="array">
+                <item name="orders" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexMetadata</item>
+            </argument>
+        </arguments>
+    </type>
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexMetadata</argument>
@@ -174,7 +182,7 @@
     <type name="Magento\DataExporter\Model\FeedPool">
         <arguments>
             <argument name="classMap" xsi:type="array">
-                <item name="salesOrders" xsi:type="string">Magento\SalesOrdersDataExporter\Model\OrdersFeed</item>
+                <item name="orders" xsi:type="string">Magento\SalesOrdersDataExporter\Model\OrdersFeed</item>
             </argument>
         </arguments>
     </type>

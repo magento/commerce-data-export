@@ -8,7 +8,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_DataExporter:etc/et_schema.xsd">
     <record name="Export">
-        <field name="salesOrdersV2" type="OrderV2" repeated="true"
+        <field name="orders" type="OrderV2" repeated="true"
             provider="Magento\SalesOrdersDataExporter\Model\Provider\Orders">
             <using field="commerceOrderId" />
         </field>

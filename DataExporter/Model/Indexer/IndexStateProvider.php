@@ -42,6 +42,7 @@ class IndexStateProvider
     }
 
     /**
+     * Warming: this function is NOT idempotent
      * @return array
      */
     public function getFeedItems(): array

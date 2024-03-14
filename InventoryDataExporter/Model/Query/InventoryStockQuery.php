@@ -55,11 +55,11 @@ class InventoryStockQuery
     /**
      * Get query for provider
      *
-     * @param array $skus
+     * @param array $productIds
      * @param bool $defaultStock
      * @return Select|null
      */
-    public function getQuery(array $skus): ?Select
+    public function getQuery(array $productIds): ?Select
     {
         $connection = $this->resourceConnection->getConnection();
         $selects = [];
@@ -69,12 +69,12 @@ class InventoryStockQuery
                 continue;
             }
             $select = $connection->select()
-                ->from(['isi' => $this->getTable(sprintf('inventory_stock_%s', $stockId))], [])
-                ->joinLeft(
+                ->from(['product' => $this->resourceConnection->getTableName('catalog_product_entity')], [])
+                ->joinInner(
                     [
-                        'product' => $this->resourceConnection->getTableName('catalog_product_entity'),
+                        'isi' => $this->getTable(sprintf('inventory_stock_%s', $stockId)),
                     ],
-                    'product.sku = isi.sku',
+                    'isi.sku = product.sku',
                     []
                 )->joinLeft(
                     [
@@ -82,7 +82,7 @@ class InventoryStockQuery
                     ],
                     'stock_item.product_id = product.entity_id',
                     []
-                )->where('isi.sku IN (?)', $skus)
+                )->where('product.entity_id IN (?)', $productIds)
                 ->columns(
                     [
                         'qty' => "isi.quantity",

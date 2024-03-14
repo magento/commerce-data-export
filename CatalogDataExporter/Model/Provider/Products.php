@@ -128,7 +128,11 @@ class Products implements DataProcessorInterface
             $productsIds = \implode(',', \array_unique(\array_column($arguments, 'productId')));
             $scopes = \implode(',', \array_unique(\array_column($arguments, 'scopeId')));
             $this->logger->info(
-                \sprintf('Product exporter: no product data found for ids %s in scopes %s', $productsIds, $scopes)
+                \sprintf(
+                    'Product exporter: no product data found for ids %s in scopes %s. Is product deleted or un-assigned from website?',
+                    $productsIds,
+                    $scopes
+                )
             );
         } else {
             $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback);

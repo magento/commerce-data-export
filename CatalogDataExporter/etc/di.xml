@@ -221,6 +221,7 @@
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">products</argument>
+            <argument name="feedSummary" xsi:type="string">Products Feed</argument>
             <argument name="feedIdentity" xsi:type="string">productId</argument>
             <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
@@ -277,6 +278,7 @@
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">productAttributes</argument>
+            <argument name="feedSummary" xsi:type="string">Product Attributes Feed</argument>
             <argument name="feedIdentity" xsi:type="string">id</argument>
             <argument name="sourceTableName" xsi:type="string">eav_attribute</argument>
             <argument name="sourceTableField" xsi:type="string">attribute_id</argument>
@@ -374,6 +376,7 @@
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">categories</argument>
+            <argument name="feedSummary" xsi:type="string">Categories Feed</argument>
             <argument name="feedIdentity" xsi:type="string">categoryId</argument>
             <argument name="sourceTableName" xsi:type="string">catalog_category_entity</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
