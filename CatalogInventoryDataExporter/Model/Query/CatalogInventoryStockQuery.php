@@ -14,10 +14,8 @@ use Magento\Framework\DB\Select;
  * Class CatalogInventoryQuery
  *
  * Gets information about product inventory
- * @deprecated use CatalogInventoryStockQueryInterface to get stock status
- * @see \Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface
  */
-class CatalogInventoryQuery
+class CatalogInventoryStockQuery implements CatalogInventoryStockQueryInterface
 {
     /**
      * @var ResourceConnection

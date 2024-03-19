@@ -15,7 +15,6 @@ use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface;
 use Magento\InventoryCatalogApi\Model\SourceItemsProcessorInterface;
 use Magento\TestFramework\Helper\Bootstrap;
-use PHPUnit\Framework\TestCase;
 
 /**
  * @magentoDbIsolation disabled
@@ -63,8 +62,8 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
     {
         $sourceItems = $this->getSourcesData($sku, $sourcesToLeave);
         $this->sourceItemProcessor->execute($sku, $sourceItems);
-
-        $this->emulatePartialReindexBehavior([$sku]);
+        $productId = $this->getProductId($sku);
+        $this->emulatePartialReindexBehavior([$productId]);
         $feedData = $this->getFeedData([$sku]);
 
         $this->verifyResults($feedData, $sku, $expectedData);
@@ -86,8 +85,11 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
             $skus,
             $sourcesToUnassign
         );
-
-        $this->emulatePartialReindexBehavior($skus);
+        $productIds = [];
+        foreach ($skus as $sku) {
+            $productIds[] = $this->getProductId($sku);
+        }
+        $this->emulatePartialReindexBehavior($productIds);
         $feedData = $this->getFeedData($skus);
 
         foreach ($skus as $sku) {

@@ -75,12 +75,13 @@ class StockStatus
      */
     public function get(array $values): array
     {
-        $skus = \array_column($values, 'sku');
+        // For stock statuses we are operating with product ids
+        $ids = \array_column($values, 'sku');
         $connection = $this->resourceConnection->getConnection();
         $output = [];
 
         try {
-            $select = $this->query->getQuery($skus);
+            $select = $this->query->getQuery($ids);
             // $select can be null if no stocks exists except default
             if ($select) {
                 $cursor = $connection->query($select);
@@ -89,7 +90,7 @@ class StockStatus
                 }
             }
 
-            $select = $this->query->getQueryForDefaultStock($skus);
+            $select = $this->query->getQueryForDefaultStock($ids);
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {
                 $output[] = $this->fillWithDefaultValues($row);
@@ -112,8 +113,15 @@ class StockStatus
      */
     private function fillWithDefaultValues(array $row): array
     {
-        if (!isset($row['qty'], $row['isSalable'], $row['sku'], $row['stockId'], $row['manageStock'],
-            $row['useConfigManageStock'], $row['backorders'], $row['useConfigBackorders'])) {
+        if (!isset($row['qty'],
+            $row['isSalable'],
+            $row['sku'],
+            $row['stockId'],
+            $row['manageStock'],
+            $row['useConfigManageStock'],
+            $row['backorders'],
+            $row['useConfigBackorders'])
+        ) {
             throw new \RuntimeException("missed required field: " . \var_export($row, true));
         }
         // set updated at

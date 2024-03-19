@@ -6,13 +6,6 @@
 
 namespace Magento\CatalogInventoryDataExporter\Model\Plugin;
 
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\Indexer\IndexerRegistry;
-use Magento\InventoryApi\Api\Data\SourceItemInterface;
-use Magento\InventoryApi\Api\SourceItemsSaveInterface;
-use Magento\Catalog\Model\ProductRepository;
-use Magento\Indexer\Model\IndexerFactory;
-use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 use Magento\InventoryIndexer\Model\ResourceModel\UpdateIsSalable;
 use Magento\InventoryMultiDimensionalIndexerApi\Model\IndexName;
 
@@ -44,7 +37,8 @@ class StockStatusUpdater
      */
     public function afterExecute(
         UpdateIsSalable $subject,
-        $result, IndexName $indexName,
+        $result,
+        IndexName $indexName,
         array $dataForUpdate,
         string $connectionName
     ): void {

@@ -11,6 +11,7 @@
             <argument name="mainTable" xsi:type="string">catalog_product_entity</argument>
         </arguments>
     </type>
+    <preference for="Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface" type="Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQuery" />
     <type name="Magento\CatalogDataExporter\Model\Provider\Product\Buyable">
         <plugin name="modified-buyable-value" type="Magento\CatalogInventoryDataExporter\Model\Plugin\Buyable"/>
     </type>

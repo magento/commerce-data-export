@@ -5,18 +5,19 @@
  */
 declare(strict_types=1);
 
-namespace Magento\CatalogInventoryDataExporter\Model\Query;
+namespace Magento\InventoryDataExporter\Model\Query;
 
+use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
-use Magento\CatalogInventory\Model\Stock;
+use Magento\InventoryCatalogApi\Api\DefaultStockProviderInterface;
 
 /**
- * @deprecated use CatalogInventoryStockQueryInterface to get stock status
- * @see CatalogInventoryStockQueryInterface
+ * Gets information about product inventory with MSI enabled
  */
-class InventoryData
+class CatalogInventoryStockQuery implements CatalogInventoryStockQueryInterface
 {
     private ResourceConnection $resourceConnection;
     private CommerceDataExportLoggerInterface $logger;
@@ -25,24 +26,28 @@ class InventoryData
     /**
      * @param ResourceConnection $resourceConnection
      * @param CommerceDataExportLoggerInterface $logger
+     * @param DefaultStockProviderInterface|null $defaultStockProvider
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         CommerceDataExportLoggerInterface $logger,
+        DefaultStockProviderInterface $defaultStockProvider = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->logger = $logger;
-        $this->defaultStockId = Stock::DEFAULT_STOCK_ID;
+        $defaultStockProvider = $defaultStockProvider ??
+            ObjectManager::getInstance()->get(DefaultStockProviderInterface::class);
+        $this->defaultStockId = $defaultStockProvider->getId();
     }
 
     /**
      * Get is_salable data from inventory
      *
-     * @param $arguments
+     * @param array $arguments
      * @return Select|null
      * @throws \Zend_Db_Select_Exception
      */
-    public function get($arguments): ?Select
+    public function getInStock($arguments): ?Select
     {
         $productIds = $arguments['productId'] ?? [];
         $connection = $this->resourceConnection->getConnection();

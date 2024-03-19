@@ -7,10 +7,13 @@ declare(strict_types=1);
 
 namespace Magento\CatalogInventoryDataExporter\Model\Provider\Product;
 
+use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface;
 use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryQuery;
 use Magento\CatalogInventoryDataExporter\Model\Query\InventoryData;
+use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQuery;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Module\ModuleList;
+use Magento\Framework\App\ObjectManager;
 
 /**
  * Provide inventory stock status data depending on current Inventory Management system
@@ -28,17 +31,31 @@ class InventoryDataProvider
     /**
      * Provide inventory data when MSI modules enabled
      *
+     * @deprecated Not used anymore. Left for BC
+     * @see \Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface
      * @var InventoryData
      */
     private InventoryData $inventoryData;
 
     /**
-     * Provide inventory data when only Legacy Inventory modules enabled
-     *
+     * @deprecated Not used anymore. Left for BC
+     * @see \Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface
      * @var CatalogInventoryQuery
      */
     private CatalogInventoryQuery $catalogInventoryQuery;
 
+    /**
+     * Provide inventory data
+     *
+     * @var CatalogInventoryStockQueryInterface
+     */
+    private CatalogInventoryStockQueryInterface $catalogInventoryStockQuery;
+
+    /**
+     * @deprecated Not used anymore. Left for BC
+     * @see \Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface
+     * @var ModuleList
+     */
     private ModuleList $moduleList;
 
     /**
@@ -46,22 +63,29 @@ class InventoryDataProvider
      * @param InventoryData $inventoryData
      * @param CatalogInventoryQuery $catalogInventoryQuery
      * @param ModuleList $moduleList
+     * @param CatalogInventoryStockQueryInterface|null $catalogInventoryStockQuery
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function __construct(
         ResourceConnection    $resourceConnection,
         InventoryData         $inventoryData,
         CatalogInventoryQuery $catalogInventoryQuery,
-        ModuleList $moduleList
+        ModuleList $moduleList,
+        ?CatalogInventoryStockQueryInterface $catalogInventoryStockQuery
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->inventoryData = $inventoryData;
         $this->catalogInventoryQuery = $catalogInventoryQuery;
         $this->moduleList = $moduleList;
+        $this->catalogInventoryStockQuery = $catalogInventoryStockQuery
+            ?? ObjectManager::getInstance()->get(CatalogInventoryStockQuery::class);
     }
 
     /**
      * @param array $feedItems
      * @return array
+     * @throws \Zend_Db_Select_Exception
+     * @throws \Zend_Db_Statement_Exception
      */
     public function get(array $feedItems): array
     {
@@ -78,11 +102,7 @@ class InventoryDataProvider
         }
 
         $connection = $this->resourceConnection->getConnection();
-        if ($this->isMSIEnabled()) {
-            $select = $this->inventoryData->get($queryArguments);
-        } else {
-            $select = $this->catalogInventoryQuery->getInStock($queryArguments);
-        }
+        $select = $this->catalogInventoryStockQuery->getInStock($queryArguments);
         if (!$select) {
             return $output;
         }
@@ -93,14 +113,6 @@ class InventoryDataProvider
         }
 
         return $output;
-    }
-
-    /**
-     * @return bool
-     */
-    private function isMSIEnabled(): bool
-    {
-        return $this->moduleList->getOne('Magento_InventoryIndexer') !== null;
     }
 
     /**
@@ -119,10 +131,10 @@ class InventoryDataProvider
     }
 
     /**
-     * @param $item
+     * @param array $item
      * @return string
      */
-    private function getKey($item): string
+    private function getKey(array $item): string
     {
         return $item['productId'] . '-' . $item['storeViewCode'];
     }

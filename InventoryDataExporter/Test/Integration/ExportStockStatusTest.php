@@ -14,7 +14,7 @@ use Magento\TestFramework\Helper\Bootstrap;
  * @magentoDbIsolation disabled
  * @magentoAppIsolation enabled
  */
-class ExportStockStatusTest extends \PHPUnit\Framework\TestCase
+class ExportStockStatusTest extends AbstractInventoryTestHelper
 {
     /**
      * @var Processor
@@ -35,17 +35,22 @@ class ExportStockStatusTest extends \PHPUnit\Framework\TestCase
      */
     public function testExportStockStatuses()
     {
+        $productsSkus = [
+            'product_in_EU_stock_with_2_sources',
+            'product_in_Global_stock_with_3_sources',
+            'product_with_default_stock_only',
+            'product_in_default_and_2_EU_sources',
+            'product_with_disabled_manage_stock',
+            'product_with_enabled_backorders',
+            'product_in_US_stock_with_disabled_source'
+        ];
+        $products = [];
+        foreach ($productsSkus as $sku) {
+            $products[] = ['sku' => $this->getProductId($sku)];
+        }
         $actualStockStatus = $this->processor->process(
             'inventoryStockStatus',
-            [
-                ['sku' => 'product_in_EU_stock_with_2_sources'],
-                ['sku' => 'product_in_Global_stock_with_3_sources'],
-                ['sku' => 'product_with_default_stock_only'],
-                ['sku' => 'product_in_default_and_2_EU_sources'],
-                ['sku' => 'product_with_disabled_manage_stock'],
-                ['sku' => 'product_with_enabled_backorders'],
-                ['sku' => 'product_in_US_stock_with_disabled_source'],
-            ]
+            $products
         );
 
         $actualStockStatusFormatted = [];
@@ -74,20 +79,23 @@ class ExportStockStatusTest extends \PHPUnit\Framework\TestCase
      */
     public function testExportStockStatusesWithReservations()
     {
+        $productsSkus = [
+            'product_in_EU_stock_with_2_sources',
+            'product_in_Global_stock_with_3_sources',
+            'product_with_default_stock_only',
+            'product_in_default_and_2_EU_sources',
+            'product_with_disabled_manage_stock',
+            'product_with_enabled_backorders',
+            'product_in_US_stock_with_disabled_source'
+        ];
+        $products = [];
+        foreach ($productsSkus as $sku) {
+            $products[] = ['sku' => $this->getProductId($sku)];
+        }
         $actualStockStatus = $this->processor->process(
             'inventoryStockStatus',
-            [
-                ['sku' => 'product_in_EU_stock_with_2_sources'],
-                ['sku' => 'product_in_Global_stock_with_3_sources'],
-                ['sku' => 'product_with_default_stock_only'],
-                ['sku' => 'product_in_default_and_2_EU_sources'],
-                ['sku' => 'product_with_disabled_manage_stock'],
-                ['sku' => 'product_with_enabled_backorders'],
-                ['sku' => 'product_in_US_stock_with_disabled_source'],
-            ]
+            $products
         );
-
-        $actualStockStatusFormatted = [];
         foreach ($actualStockStatus as $stockStatus) {
             $actualStockStatusFormatted[$stockStatus['stockId']][$stockStatus['sku']] = $stockStatus;
         }

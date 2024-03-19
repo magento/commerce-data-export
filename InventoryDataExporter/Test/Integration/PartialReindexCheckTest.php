@@ -10,22 +10,18 @@ namespace Magento\InventoryDataExporter\Test\Integration;
 
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
-use Magento\Indexer\Model\Indexer;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 use Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface;
 use Magento\TestFramework\Helper\Bootstrap;
-use PHPUnit\Framework\TestCase;
 
 /**
  * @magentoDbIsolation disabled
  * @magentoAppIsolation enabled
  */
-class PartialReindexCheckTest extends TestCase
+class PartialReindexCheckTest extends AbstractInventoryTestHelper
 {
-    private const STOCK_STATUS_FEED_INDEXER = 'inventory_data_exporter_stock_status';
-
     /**
      * @var FeedInterface
      */
@@ -47,20 +43,16 @@ class PartialReindexCheckTest extends TestCase
     private $bulkSourceUnassign;
 
     /**
-     * @var Indexer
-     */
-    protected $indexer;
-
-    /**
      * @inheritDoc
      */
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->stockStatusFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('inventoryStockStatus');
         $this->sourceItemsFactory = Bootstrap::getObjectManager()->get(SourceItemInterfaceFactory::class);
         $this->sourceItemsSave = Bootstrap::getObjectManager()->get(SourceItemsSaveInterface::class);
         $this->bulkSourceUnassign = Bootstrap::getObjectManager()->get(BulkSourceUnassignInterface::class);
-        $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
     }
 
     /**
@@ -78,7 +70,8 @@ class PartialReindexCheckTest extends TestCase
         ]]);
         $this->sourceItemsSave->execute([$sourceItem]);
 
-        $this->runIndexer([$sku]);
+        $productId = $this->getProductId($sku);
+        $this->emulatePartialReindexBehavior([$productId]);
 
         $feedData = $this->getFeedData([$sku]);
 
@@ -124,8 +117,11 @@ class PartialReindexCheckTest extends TestCase
             $skus,
             ['eu-1', 'default']
         );
-
-        $this->runIndexer($skus);
+        $productIds = [];
+        foreach ($skus as $sku) {
+            $productIds[] = $this->getProductId($sku);
+        }
+        $this->emulatePartialReindexBehavior($productIds);
 
         $feedData = $this->getFeedData($skus);
 
@@ -206,17 +202,5 @@ class PartialReindexCheckTest extends TestCase
             }
         }
         return $output;
-    }
-
-    /**
-     * Run the indexer to extract stock item data
-     *
-     * @param array $skus
-     * @return void
-     */
-    private function runIndexer(array $skus = []) : void
-    {
-        $this->indexer->load(self::STOCK_STATUS_FEED_INDEXER);
-        $this->indexer->reindexList($skus);
     }
 }

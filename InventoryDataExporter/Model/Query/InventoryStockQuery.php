@@ -56,8 +56,8 @@ class InventoryStockQuery
      * Get query for provider
      *
      * @param array $productIds
-     * @param bool $defaultStock
      * @return Select|null
+     * @throws \Zend_Db_Select_Exception
      */
     public function getQuery(array $productIds): ?Select
     {
@@ -118,17 +118,17 @@ class InventoryStockQuery
     /**
      * Get data for default stock: "inventory_stock_1" is a view used as a fallback
      *
-     * @param array $skus
+     * @param array $productIds
      * @return Select
      * @see \Magento\InventoryCatalog\Setup\Patch\Schema\CreateLegacyStockStatusView
      */
-    public function getQueryForDefaultStock(array $skus): Select
+    public function getQueryForDefaultStock(array $productIds): Select
     {
         $connection = $this->resourceConnection->getConnection();
         $stockId = $this->defaultStockProvider->getId();
         return $connection->select()
             ->from(['isi' => $this->getTable(sprintf('inventory_stock_%s', $stockId))], [])
-            ->where('isi.sku IN (?)', $skus)
+            ->where('isi.product_id IN (?)', $productIds)
             ->joinInner(
                 [
                     'stock_item' => $this->resourceConnection->getTableName('cataloginventory_stock_item'),

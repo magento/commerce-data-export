@@ -9,7 +9,9 @@ declare(strict_types=1);
 
 namespace Magento\InventoryDataExporter\Test\Integration;
 
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Indexer\Model\Indexer;
 use Magento\TestFramework\Helper\Bootstrap;
 use function PHPUnit\Framework\assertEmpty;
@@ -38,6 +40,11 @@ abstract class AbstractInventoryTestHelper extends \PHPUnit\Framework\TestCase
     protected $indexer;
 
     /**
+     * @var ProductRepositoryInterface
+     */
+    private mixed $productRepository;
+
+    /**
      * Setup tests
      * @throws \Throwable
      */
@@ -45,6 +52,7 @@ abstract class AbstractInventoryTestHelper extends \PHPUnit\Framework\TestCase
     {
         $this->resource = Bootstrap::getObjectManager()->create(ResourceConnection::class);
         $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
+        $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
 
         $this->indexer->load(self::STOCK_STATUS_FEED_INDEXER);
         $this->reindexStockStatusDataExporterTable();
@@ -92,5 +100,16 @@ abstract class AbstractInventoryTestHelper extends \PHPUnit\Framework\TestCase
 
         $changeLogTable = $this->indexer->getView()->getChangelog()->getName();
         $connection->truncateTable($changeLogTable);
+    }
+
+    /**
+     * @param string $sku
+     * @return int|null
+     * @throws NoSuchEntityException
+     */
+    public function getProductId(string $sku): ?int
+    {
+        $product = $this->productRepository->get($sku);
+        return (int)$product->getId();
     }
 }
