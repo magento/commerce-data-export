@@ -93,13 +93,24 @@ class ProductPricesQuery
                 ['price_type' => 'value']
             )
             ->joinLeft(
+                ['eav' => $eavAttributeTable],
+                \sprintf('product.%1$s = eav.%1$s', $linkField) .
+                $connection->quoteInto(' AND eav.attribute_id IN (?)', $priceAttributes) .
+                ' AND eav.store_id IN (store_group.default_store_id, 0)',
+                []
+            )
+            ->joinLeft(
                 ['eav_store' => $eavAttributeTable],
                 \sprintf('product.%1$s = eav_store.%1$s', $linkField) .
-                $connection->quoteInto(' AND eav_store.attribute_id IN (?)', $priceAttributes) .
-                ' AND eav_store.store_id IN (store_group.default_store_id, 0)',
+                ' AND eav_store.attribute_id = eav.attribute_id' .
+                ' AND eav_store.store_id = store_group.default_store_id',
                 [
-                    'price' => 'eav_store.value',
-                    'attributeId' => 'attribute_id'
+                    'price' => new Expression(
+                        'IF (eav_store.value_id, eav_store.value, eav.value)'
+                    ),
+                    'attributeId' => new Expression(
+                        'IF (eav_store.value_id, eav_store.attribute_id, eav.attribute_id)'
+                    )
                 ]
             )
             // get parent skus
@@ -132,13 +143,8 @@ class ProductPricesQuery
             ->where('product.type_id NOT IN (?)', self::IGNORED_TYPES)
             // exclude "admin" website
             ->where('store_website.website_id != ?', 0)
-            ->order('product.entity_id')
-            ->order('product_website.website_id')
-            ->order('eav_store.attribute_id')
-            ->order('eav_store.store_id')
             ->group('product.entity_id')
             ->group('product_website.website_id')
-            ->group('eav_store.attribute_id')
-            ->group('eav_store.store_id');
+            ->group('eav.attribute_id');
     }
 }

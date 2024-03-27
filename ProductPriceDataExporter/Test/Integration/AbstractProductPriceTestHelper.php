@@ -14,6 +14,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Indexer\Model\Indexer;
 use Magento\Indexer\Model\Processor;
+use Magento\Store\Api\WebsiteRepositoryInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 
@@ -48,6 +49,11 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     private $resourceConnection;
 
     /**
+     * @var WebsiteRepositoryInterface
+     */
+    protected WebsiteRepositoryInterface $websiteRepository;
+
+    /**
      * Setup tests
      */
     protected function setUp(): void
@@ -56,6 +62,7 @@ abstract class AbstractProductPriceTestHelper extends TestCase
         $this->productRepository = $this->objectManager->create(ProductRepositoryInterface::class);
         $this->indexer = $this->objectManager->create(Indexer::class);
         $this->resourceConnection = $this->objectManager->create(ResourceConnection::class);
+        $this->websiteRepository = $this->objectManager->get(WebsiteRepositoryInterface::class);
 
         $this->indexer->load(self::PRODUCT_PRICE_FEED_INDEXER);
         $this->reindexProductPriceDataExporter();

@@ -93,6 +93,7 @@ $productVirtual->setTypeId(Type::TYPE_VIRTUAL)
     ->setName('Virtual Product With Special Price')
     ->setSku('virtual_product_with_special_price')
     ->setPrice(100.10)
+    ->setData('special_price', 45.00)
     ->setWebsiteIds([$firstWebsiteId, $secondWebsiteId])
     ->setStatus(Status::STATUS_ENABLED);
 $productRepository->save($productVirtual);
