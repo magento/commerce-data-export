@@ -68,7 +68,14 @@ class DateWebsiteProvider
             } catch (\Throwable $e) {
                 // use current timestamp
                 $timestamp = true;
-                $this->logger->warning("can't obtain website datetime", ['exception' => $e]);
+                $this->logger->warning(
+                    sprintf(
+                        "can't obtain datetime for website: '%s', store: '%s':",
+                        $item['website_id'],
+                        $item['store_id'],
+                    ),
+                    ['exception' => $e]
+                );
             }
 
             $this->data[$item['website_id']] = $this->dateTime->formatDate($timestamp, false);

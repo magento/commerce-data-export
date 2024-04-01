@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
+use Magento\DataExporter\Lock\FeedLockManager;
 use Magento\DataExporter\Model\Batch\BatchGeneratorInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
@@ -59,6 +60,7 @@ class ViewMaterializer
      * @var FeedPool
      */
     private FeedPool $feedPool;
+    private FeedLockManager $lockManager;
 
     /**
      * @param ActionFactory $actionFactory
@@ -66,19 +68,22 @@ class ViewMaterializer
      * @param BatchGeneratorInterface $batchGenerator
      * @param ProcessManagerFactory $processManagerFactory
      * @param FeedPool $feedPool
+     * @param FeedLockManager $lockManager
      */
     public function __construct(
         ActionFactory                     $actionFactory,
         CommerceDataExportLoggerInterface $logger,
         BatchGeneratorInterface           $batchGenerator,
         ProcessManagerFactory             $processManagerFactory,
-        FeedPool                          $feedPool
+        FeedPool                          $feedPool,
+        FeedLockManager                   $lockManager
     ) {
         $this->actionFactory = $actionFactory;
         $this->logger = $logger;
         $this->batchGenerator = $batchGenerator;
         $this->processManagerFactory = $processManagerFactory;
         $this->feedPool = $feedPool;
+        $this->lockManager = $lockManager;
     }
 
     /**
@@ -105,10 +110,23 @@ class ViewMaterializer
             return;
         }
 
+        $action = $this->actionFactory->get($view->getActionClass());
+        $feedMetadata = $this->getFeedIndexMetadata($action);
+
+        $operationName = $feedMetadata->isExportImmediately() ? 'partial sync' : 'partial reindex (legacy)';
+        $this->logger->initSyncLog($feedMetadata, $operationName);
+        if (!$this->lockManager->lock($feedMetadata->getFeedName(), $operationName)) {
+            $this->logger->info(sprintf(
+                'operation skipped - process locked by "%s"',
+                $this->lockManager->getLockedByName($feedMetadata->getFeedName())
+            ));
+
+            return;
+        }
+
         try {
             $view->getState()->setStatus(StateInterface::STATUS_WORKING)->save();
-
-            $this->executeAction($view);
+            $this->executeAction($view, $feedMetadata, $action);
 
             $view->getState()->loadByView($view->getId());
             $statusToRestore = $view->getState()->getStatus() === StateInterface::STATUS_SUSPENDED
@@ -129,6 +147,9 @@ class ViewMaterializer
                 );
             }
             throw $exception;
+        } finally {
+            $this->lockManager->unlock($feedMetadata->getFeedName());
+            $this->logger->complete();
         }
     }
 
@@ -136,16 +157,12 @@ class ViewMaterializer
      * Execute view action from last version to current version, by batches
      *
      * @param ViewInterface $view
+     * @param FeedIndexMetadata $feedMetadata
+     * @param ActionInterface $action
      * @return void
-     * @throws \Exception
      */
-    private function executeAction(ViewInterface $view)
+    private function executeAction(ViewInterface $view, FeedIndexMetadata $feedMetadata, ActionInterface $action): void
     {
-        $action = $this->actionFactory->get($view->getActionClass());
-        $feedMetadata = $this->getFeedIndexMetadata($action);
-
-        $operationName = $feedMetadata->isExportImmediately() ? 'partial sync' : 'partial reindex (legacy)';
-        $this->logger->initSyncLog($feedMetadata, $operationName);
         $batchIterator = $this->batchGenerator->generate($feedMetadata, ['viewId' => $view->getId()]);
         $threadCount = min($feedMetadata->getThreadCount(), $batchIterator->count());
         $userFunctions = [];
@@ -171,7 +188,6 @@ class ViewMaterializer
 
         $processManager = $this->processManagerFactory->create(['threadsCount' => $threadCount]);
         $processManager->execute($userFunctions);
-        $this->logger->complete();
     }
 
     /**
@@ -185,9 +201,9 @@ class ViewMaterializer
         if ($action instanceof FeedIndexMetadataProviderInterface) {
             return $action->getFeedIndexMetadata();
         } else {
-            throw new \InvalidArgumentException(
-                \sprintf('Feed for the "%s" action class is not registered', $action::class)
-            );
+            $message = sprintf('Feed for the "%s" action class is not registered', $action::class);
+            $this->logger->error($message);
+            throw new \InvalidArgumentException($message);
         }
     }
 }

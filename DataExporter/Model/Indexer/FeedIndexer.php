@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
+use Magento\DataExporter\Lock\FeedLockManager;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Indexer\ActionInterface as IndexerActionInterface;
@@ -44,17 +45,25 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
     private CommerceDataExportLoggerInterface $logger;
 
     /**
+     * @var FeedLockManager|null
+     */
+    private ?FeedLockManager $lockManager;
+
+    /**
      * @param FeedIndexProcessorInterface $processor
      * @param DataSerializerInterface $serializer
      * @param FeedIndexMetadata $feedIndexMetadata
      * @param EntityIdsProviderInterface $entityIdsProvider
+     * @param CommerceDataExportLoggerInterface|null $logger
+     * @param FeedLockManager|null $lockManager
      */
     public function __construct(
         FeedIndexProcessorInterface $processor,
         DataSerializerInterface $serializer,
         FeedIndexMetadata $feedIndexMetadata,
         EntityIdsProviderInterface $entityIdsProvider,
-        ?CommerceDataExportLoggerInterface $logger = null
+        ?CommerceDataExportLoggerInterface $logger = null,
+        FeedLockManager $lockManager = null
     ) {
         $this->processor = $processor;
         $this->feedIndexMetadata = $feedIndexMetadata;
@@ -62,6 +71,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
         $this->entityIdsProvider = $entityIdsProvider;
         $this->logger = $logger ??
             ObjectManager::getInstance()->get(CommerceDataExportLoggerInterface::class);
+        $this->lockManager = $lockManager ?? ObjectManager::getInstance()->get(FeedLockManager::class);
     }
 
     /**
@@ -72,11 +82,47 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
      */
     public function executeFull()
     {
-        $this->processor->fullReindex(
-            $this->feedIndexMetadata,
-            $this->dataSerializer,
-            $this->entityIdsProvider
-        );
+        $operation = $this->feedIndexMetadata->isExportImmediately() ? 'full sync' : 'full reindex(legacy)';
+        $this->logger->initSyncLog($this->feedIndexMetadata, $operation);
+
+        $unlock = true;
+        $feedName = $this->feedIndexMetadata->getFeedName();
+        if (!$this->lockManager->lock($feedName, $operation)) {
+            $lockedBy = $this->lockManager->getLockedByName($feedName);
+            // CLI command may initialize full resync, in this case ignore lock and let parent caller to unlock process
+            if ($lockedBy === $this->getResyncLockedByName()) {
+                $unlock = false;
+            } else {
+                $this->logger->info(sprintf('operation skipped - process locked by "%s"', $lockedBy));
+                // feed marked as "invalid" in "indexer_state" table will be marked as "valid"
+                // it's done intentionally since current full reindex process should handle it.
+                // If needed to keep feed as "invalid" exception should be thrown here.
+                return ;
+            }
+        }
+
+        try {
+            $this->processor->fullReindex(
+                $this->feedIndexMetadata,
+                $this->dataSerializer,
+                $this->entityIdsProvider
+            );
+        } finally {
+            if ($unlock) {
+                $this->lockManager->unlock($feedName);
+            }
+            $this->logger->complete();
+        }
+    }
+
+    /**
+     * @return string
+     * @see \Magento\DataExporter\Lock\FeedLockManager::lock for name patter
+     */
+    private function getResyncLockedByName(): string
+    {
+        // pid used to guarantee caller and current are the same processes
+        return sprintf('resync(%s)', getmypid());
     }
 
     /**
@@ -87,6 +133,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
      */
     public function executeList(array $ids)
     {
+        $this->logWarningIfFeedIsNotLocked();
         $this->processor->partialReindex(
             $this->feedIndexMetadata,
             $this->dataSerializer,
@@ -105,6 +152,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
      */
     public function executeRow($id)
     {
+        $this->logWarningIfFeedIsNotLocked();
         $this->processor->partialReindex(
             $this->feedIndexMetadata,
             $this->dataSerializer,
@@ -122,6 +170,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
      */
     public function execute($ids)
     {
+        $this->logWarningIfFeedIsNotLocked();
         $this->processor->partialReindex(
             $this->feedIndexMetadata,
             $this->dataSerializer,
@@ -138,5 +187,18 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
     public function getFeedIndexMetadata(): FeedIndexMetadata
     {
         return $this->feedIndexMetadata;
+    }
+
+    private function logWarningIfFeedIsNotLocked()
+    {
+        if (!$this->lockManager->isLocked($this->feedIndexMetadata->getFeedName())) {
+            $this->logger->warning(
+                sprintf(
+                    'Unexpected call: feed "%s" is not locked, trace: %s',
+                    $this->feedIndexMetadata->getFeedName(),
+                    (new \Exception())->getTraceAsString()
+                )
+            );
+        }
     }
 }

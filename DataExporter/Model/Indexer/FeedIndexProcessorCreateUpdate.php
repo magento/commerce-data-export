@@ -224,8 +224,6 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         EntityIdsProviderInterface $idsProvider
     ): void {
         try {
-            $operation = $metadata->isExportImmediately() ? 'full sync' : 'full reindex(legacy)';
-            $this->logger->initSyncLog($metadata, $operation);
             $this->truncateIndexTable($metadata);
             $batchIterator = $this->batchGenerator->generate($metadata);
             $threadCount = min($metadata->getThreadCount(), $batchIterator->count());
@@ -251,7 +249,6 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             }
             $processManager = $this->processManagerFactory->create(['threadsCount' => $threadCount]);
             $processManager->execute($userFunctions);
-            $this->logger->complete();
         } catch (\Throwable $e) {
             $this->logger->error(
                 'Data Exporter exception has occurred: ' . $e->getMessage(),
