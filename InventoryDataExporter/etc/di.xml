@@ -18,7 +18,6 @@
             <argument name="feedIndexMetadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
         </arguments>
     </virtualType>
-    <preference for="Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface" type="Magento\InventoryDataExporter\Model\Query\CatalogInventoryStockQuery" />
     <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">inventoryStockStatus</argument>

@@ -7,14 +7,15 @@ declare(strict_types=1);
 
 namespace Magento\CatalogInventoryDataExporter\Model\Query;
 
+use Magento\CatalogInventoryDataExporter\Model\InventoryHelper;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\CatalogInventory\Model\Stock;
 
 /**
- * @deprecated use CatalogInventoryStockQueryInterface to get stock status
- * @see CatalogInventoryStockQueryInterface
+ * Gets information about product inventory with MSI enabled
  */
 class InventoryData
 {
@@ -25,20 +26,26 @@ class InventoryData
     /**
      * @param ResourceConnection $resourceConnection
      * @param CommerceDataExportLoggerInterface $logger
+     * @param ?InventoryHelper $inventoryHelper
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         CommerceDataExportLoggerInterface $logger,
+        ?InventoryHelper $inventoryHelper
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->logger = $logger;
-        $this->defaultStockId = Stock::DEFAULT_STOCK_ID;
+        $inventoryHelper = $inventoryHelper ?? ObjectManager::getInstance()->get(InventoryHelper::class);
+        $this->defaultStockId = $inventoryHelper->isMSIEnabled()
+            ? ObjectManager::getInstance()->get(\Magento\InventoryCatalogApi\Api\DefaultStockProviderInterface::class)
+                ->getId()
+            : Stock::DEFAULT_STOCK_ID;
     }
 
     /**
      * Get is_salable data from inventory
      *
-     * @param $arguments
+     * @param array $arguments
      * @return Select|null
      * @throws \Zend_Db_Select_Exception
      */

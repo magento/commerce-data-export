@@ -7,13 +7,11 @@ declare(strict_types=1);
 
 namespace Magento\CatalogInventoryDataExporter\Model\Provider\Product;
 
-use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface;
+use Magento\CatalogInventoryDataExporter\Model\InventoryHelper;
 use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryQuery;
 use Magento\CatalogInventoryDataExporter\Model\Query\InventoryData;
-use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQuery;
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\Module\ModuleList;
 use Magento\Framework\App\ObjectManager;
+use Magento\Framework\App\ResourceConnection;
 
 /**
  * Provide inventory stock status data depending on current Inventory Management system
@@ -26,59 +24,44 @@ use Magento\Framework\App\ObjectManager;
  */
 class InventoryDataProvider
 {
+    /**
+     * @var ResourceConnection
+     */
     private ResourceConnection $resourceConnection;
 
     /**
      * Provide inventory data when MSI modules enabled
      *
-     * @deprecated Not used anymore. Left for BC
-     * @see \Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface
      * @var InventoryData
      */
     private InventoryData $inventoryData;
 
     /**
-     * @deprecated Not used anymore. Left for BC
-     * @see \Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface
      * @var CatalogInventoryQuery
      */
     private CatalogInventoryQuery $catalogInventoryQuery;
 
     /**
-     * Provide inventory data
-     *
-     * @var CatalogInventoryStockQueryInterface
+     * @var InventoryHelper
      */
-    private CatalogInventoryStockQueryInterface $catalogInventoryStockQuery;
-
-    /**
-     * @deprecated Not used anymore. Left for BC
-     * @see \Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryStockQueryInterface
-     * @var ModuleList
-     */
-    private ModuleList $moduleList;
+    private InventoryHelper $inventoryHelper;
 
     /**
      * @param ResourceConnection $resourceConnection
      * @param InventoryData $inventoryData
      * @param CatalogInventoryQuery $catalogInventoryQuery
-     * @param ModuleList $moduleList
-     * @param CatalogInventoryStockQueryInterface|null $catalogInventoryStockQuery
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @param InventoryHelper|null $inventoryHelper
      */
     public function __construct(
         ResourceConnection    $resourceConnection,
         InventoryData         $inventoryData,
         CatalogInventoryQuery $catalogInventoryQuery,
-        ModuleList $moduleList,
-        ?CatalogInventoryStockQueryInterface $catalogInventoryStockQuery
+        ?InventoryHelper $inventoryHelper
     ) {
         $this->resourceConnection = $resourceConnection;
-        $this->inventoryData = $inventoryData;
         $this->catalogInventoryQuery = $catalogInventoryQuery;
-        $this->moduleList = $moduleList;
-        $this->catalogInventoryStockQuery = $catalogInventoryStockQuery
-            ?? ObjectManager::getInstance()->get(CatalogInventoryStockQuery::class);
+        $this->inventoryData = $inventoryData;
+        $this->inventoryHelper = $inventoryHelper ?? ObjectManager::getInstance()->get(InventoryHelper::class);
     }
 
     /**
@@ -94,7 +77,6 @@ class InventoryDataProvider
         foreach ($feedItems as $value) {
             $queryArguments['productId'][$value['productId']] = $value['productId'];
             $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
-
             // cover case when Inventory Provider doesn't return records if there is no Stock assigned to Website
             $defaultStockValue = $value;
             $defaultStockValue['is_in_stock'] = false;
@@ -102,16 +84,18 @@ class InventoryDataProvider
         }
 
         $connection = $this->resourceConnection->getConnection();
-        $select = $this->catalogInventoryStockQuery->getInStock($queryArguments);
+        if ($this->inventoryHelper->isMSIEnabled()) {
+            $select = $this->inventoryData->get($queryArguments);
+        } else {
+            $select = $this->catalogInventoryQuery->getInStock($queryArguments);
+        }
         if (!$select) {
             return $output;
         }
         $cursor = $connection->query($select);
-
         while ($stockItem = $cursor->fetch()) {
             $output[$this->getKey($stockItem)] = $this->format($stockItem);
         }
-
         return $output;
     }
 
