@@ -23,6 +23,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\ProductPriceDataExporter\Model\Query\CustomerGroupPricesQuery;
+use Magento\ProductPriceDataExporter\Model\Query\ParentProductsQuery;
 use Magento\ProductPriceDataExporter\Model\Query\ProductPricesQuery;
 
 /**
@@ -37,7 +38,8 @@ use Magento\ProductPriceDataExporter\Model\Query\ProductPricesQuery;
 class ProductPrice implements DataProcessorInterface
 {
     private const FALLBACK_CUSTOMER_GROUP = "0";
-    private const REGULAR_PRICE = 'price';
+    private const GLOBAL_STORE_ID = 0;
+    private const REGULAR_PRICE = 'regular';
     private const UNKNOWN_PRICE_CODE = 'unknown';
     private const BUNDLE_FIXED = 'BUNDLE_FIXED';
     private const BUNDLE_DYNAMIC = 'BUNDLE_DYNAMIC';
@@ -69,6 +71,11 @@ class ProductPrice implements DataProcessorInterface
     private ?array $priceAttributes = null;
 
     /**
+     * @var ParentProductsQuery
+     */
+    private ParentProductsQuery $parentProductsQuery;
+
+    /**
      * @param ProductPricesQuery $pricesQuery
      * @param CustomerGroupPricesQuery $customerGroupPricesQuery
      * @param ResourceConnection $resourceConnection
@@ -82,7 +89,8 @@ class ProductPrice implements DataProcessorInterface
         ResourceConnection $resourceConnection,
         DateTime $dateTime,
         Config $eavConfig,
-        CommerceDataExportLoggerInterface $logger
+        CommerceDataExportLoggerInterface $logger,
+        ParentProductsQuery $parentProductsQuery
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->pricesQuery = $pricesQuery;
@@ -90,6 +98,7 @@ class ProductPrice implements DataProcessorInterface
         $this->dateTime = $dateTime;
         $this->logger = $logger;
         $this->eavConfig = $eavConfig;
+        $this->parentProductsQuery = $parentProductsQuery;
     }
 
     /**
@@ -115,35 +124,48 @@ class ProductPrice implements DataProcessorInterface
     ): void {
         $ids = array_column($arguments, 'productId');
         $cursor = $this->resourceConnection->getConnection()->query(
-            $this->pricesQuery->getQuery($ids, \array_keys($this->getPriceAttributes()))
+            $this->pricesQuery->getQuery($ids, $this->getPriceAttributes())
         );
         $fallbackPrices = [];
+        $parentProducts = $this->getParentProductSkus($ids);
         while ($row = $cursor->fetch()) {
             $percentageDiscount = null;
-            $priceAttributeCode = $this->resolvePriceCode($row);
+
             if ($row['type_id'] === Type::TYPE_BUNDLE) {
                 $row['type_id'] = (int)$row['price_type'] === BundlePrice::PRICE_TYPE_FIXED
                     ? self::BUNDLE_FIXED
                     : self::BUNDLE_DYNAMIC;
-                if ($priceAttributeCode === ProductAttributeInterface::CODE_SPECIAL_PRICE) {
-                    $percentageDiscount = $row['price'];
+                $specialPrice = $row[ProductAttributeInterface::CODE_SPECIAL_PRICE] ?? null;
+                if ($specialPrice) {
+                    $percentageDiscount = $specialPrice;
                 }
             }
             $key = $this->buildKey($row['entity_id'], $row['website_id'], self::FALLBACK_CUSTOMER_GROUP);
             if (!isset($fallbackPrices[$key])) {
-                $fallbackPrices[$key] = $this->fillOutput($row, $key);
-            }
-            if ($priceAttributeCode === self::REGULAR_PRICE) {
-                $fallbackPrices[$key]['regular'] = (float)$row['price'];
-            } elseif ($priceAttributeCode !== self::UNKNOWN_PRICE_CODE) {
-                $this->addDiscountPrice($fallbackPrices[$key], $priceAttributeCode, $row['price'], $percentageDiscount);
+                $fallbackPrices[$key] = $this->fillOutput($row, $key, $parentProducts);
             }
 
-            // cover case when _this_ product type doesn't have regular price, but this field is required in schema
-            if (!isset($fallbackPrices[$key]['regular'])) {
-                $fallbackPrices[$key]['regular'] = 0.;
+            foreach ($this->getPriceAttributes() as $attributeCode) {
+                $price = $row[$attributeCode];
+                $priceIsSet = $row[$attributeCode . '_storeId'] !== null;
+                if ($attributeCode === self::REGULAR_PRICE && $priceIsSet && $price !== null) {
+                    if ($this->shouldOverrideGlobalPrice($fallbackPrices[$key], self::REGULAR_PRICE, $row)) {
+                        $fallbackPrices[$key][self::REGULAR_PRICE] = (float)$price;
+                    }
+                } elseif ($priceIsSet) {
+                    if ($this->shouldOverrideGlobalPrice($fallbackPrices[$key], $attributeCode, $row)) {
+                        if ($price === null) {
+                            // cover case when special price was set on global level but unset on store level
+                            $fallbackPrices[$key]['discounts'] = [];
+                        } else {
+                            $this->addDiscountPrice($fallbackPrices[$key], $attributeCode, $price, $percentageDiscount);
+                        }
+                    }
+                }
             }
         }
+        $this->addRegularPriceIfMissed($fallbackPrices);
+
         $filteredIds = array_unique(array_column($fallbackPrices, 'productId'));
         // Add customer group prices to fallback records before processing
         $this->addFallbackCustomerGroupPrices($fallbackPrices, $filteredIds);
@@ -151,6 +173,33 @@ class ProductPrice implements DataProcessorInterface
         $dataProcessorCallback($this->get($fallbackPrices));
 
         $this->addCustomerGroupPrices($fallbackPrices, $filteredIds, $dataProcessorCallback, $metadata);
+    }
+
+    /**
+     * SQL query may return multiple rows for the same product but with different price per price attribute.
+     * Website-specific price must override global price
+     * @param array $fallbackPrice
+     * @param string $attribute
+     * @param array $priceRow
+     * @return bool
+     */
+    private function shouldOverrideGlobalPrice(array $fallbackPrice, string $attribute, array $priceRow): bool
+    {
+        $priceStoreId = (int)$priceRow[$attribute . '_storeId'];
+        if ($attribute === self::REGULAR_PRICE) {
+            return !isset($fallbackPrice[$attribute]) || $priceStoreId !== self::GLOBAL_STORE_ID;
+        } else {
+            $discounts = $fallbackPrice['discounts'] ?? null;
+            if (!$discounts) {
+                return true;
+            }
+            foreach ($discounts as $discount) {
+                if ($discount['code'] === $attribute) {
+                    return $priceStoreId !== self::GLOBAL_STORE_ID;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -162,17 +211,13 @@ class ProductPrice implements DataProcessorInterface
     private function getPriceAttributes(): array
     {
         if ($this->priceAttributes === null) {
-            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, 'price');
+            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, ProductAttributeInterface::CODE_PRICE);
             if ($attribute) {
-                $this->priceAttributes[$attribute->getId()] = 'price';
+                $this->priceAttributes[$attribute->getId()] = self::REGULAR_PRICE;
             }
-            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, 'special_price');
+            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, ProductAttributeInterface::CODE_SPECIAL_PRICE);
             if ($attribute) {
-                $this->priceAttributes[$attribute->getId()] = 'special_price';
-            }
-            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, 'price_type');
-            if ($attribute) {
-                $this->priceAttributes[$attribute->getId()] = 'price_type';
+                $this->priceAttributes[$attribute->getId()] = ProductAttributeInterface::CODE_SPECIAL_PRICE;
             }
         }
         if (!$this->priceAttributes) {
@@ -190,18 +235,6 @@ class ProductPrice implements DataProcessorInterface
     public function get(array $values) : array
     {
         return $values;
-    }
-
-    /**
-     * Resolve price code
-     *
-     * @param array $row
-     * @return string
-     * @throws UnableRetrieveData|LocalizedException
-     */
-    private function resolvePriceCode(array $row): string
-    {
-        return $this->getPriceAttributes()[$row['attributeId']] ?? self::UNKNOWN_PRICE_CODE;
     }
 
     /**
@@ -341,34 +374,36 @@ class ProductPrice implements DataProcessorInterface
     }
 
     /**
+     * @param array $productIds
+     * @return array
+     * @throws \Zend_Db_Statement_Exception
+     */
+    private function getParentProductSkus(array $productIds): array
+    {
+        $cursor = $this->resourceConnection->getConnection()->query(
+            $this->parentProductsQuery->getQuery($productIds)
+        );
+        $parentProducts = [];
+        while ($row = $cursor->fetch()) {
+            $key = $this->buildKey($row['child_id'], $row['website_id'], self::FALLBACK_CUSTOMER_GROUP);
+            $parentProducts[$key][] = [
+                'type' => $this->convertProductType($row['type_id']),
+                'sku' => $row['sku'],
+            ];
+        }
+        return $parentProducts;
+    }
+
+    /**
      * Fill Output
      *
      * @param array $row
      * @param string $key
+     * @param array $parentProducts
      * @return array
      */
-    private function fillOutput(array $row, string $key): array
+    private function fillOutput(array $row, string $key, array $parentProducts): array
     {
-        $parentsRaw = !empty($row['parent_skus']) ? explode("{\0}", $row['parent_skus']) : [];
-        $parents = [];
-        foreach ($parentsRaw as $parent) {
-            $parentTypeWithSkuPair = explode("*\0*", $parent, 2);
-            if (!isset($parentTypeWithSkuPair[0], $parentTypeWithSkuPair[1])) {
-                $this->logger->error(
-                    'Parent SKU has illegal NUL symbol and cannot be exported',
-                    ['parentSku' => $parent, 'row' => $row]
-                );
-                continue;
-            } else {
-                $parentType = $parentTypeWithSkuPair[0];
-                $parentSku = $parentTypeWithSkuPair[1];
-            }
-            $parents[] = [
-                'type' => $this->convertProductType($parentType),
-                'sku' => $parentSku,
-            ];
-        }
-
         return [
             // system fields required for handle product / website deletion
             'websiteId' => $row['website_id'],
@@ -380,7 +415,7 @@ class ProductPrice implements DataProcessorInterface
             'websiteCode' => $row['websiteCode'],
             'updatedAt' => $this->dateTime->formatDate(time()),
             'customerGroupCode' => self::FALLBACK_CUSTOMER_GROUP,
-            'parents' => !empty($parents) ? $parents : null,
+            'parents' => $parentProducts[$key] ?? null,
             'discounts' => [],
             'deleted' => false,
             'productPriceId' => $key,
@@ -427,6 +462,20 @@ class ProductPrice implements DataProcessorInterface
         } elseif (null !== $price) {
             $discount['price'] = (float)$price;
             unset($discount['percentage']);
+        }
+    }
+
+    /**
+     * "regular" field  is require in schema. Covers case when _this_ product type doesn't have regular price
+     *
+     * @param array $fallbackPrices
+     */
+    public function addRegularPriceIfMissed(array &$fallbackPrices): void
+    {
+        foreach ($fallbackPrices as &$fallbackPrice) {
+            if (!isset($fallbackPrice[self::REGULAR_PRICE])) {
+                $fallbackPrice[self::REGULAR_PRICE] = 0.;
+            }
         }
     }
 }

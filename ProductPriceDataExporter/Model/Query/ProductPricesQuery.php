@@ -8,12 +8,14 @@ declare(strict_types=1);
 namespace Magento\ProductPriceDataExporter\Model\Query;
 
 use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\Product;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
-use Magento\Framework\DB\Sql\Expression;
 use Magento\Framework\EntityManager\EntityMetadataInterface;
 use Magento\Framework\EntityManager\MetadataPool;
+use Magento\Eav\Model\Config;
 
 /**
  * Get raw price data for price && special_price attributes with parent product SKUs
@@ -31,6 +33,8 @@ class ProductPricesQuery
     private MetadataPool $metadataPool;
 
     private const IGNORED_TYPES = [Configurable::TYPE_CODE, 'giftcard'];
+    private Config $eavConfig;
+    private int|bool|null $priceType = null;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -39,9 +43,11 @@ class ProductPricesQuery
     public function __construct(
         ResourceConnection $resourceConnection,
         MetadataPool $metadataPool,
+        Config $eavConfig = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->metadataPool = $metadataPool;
+        $this->eavConfig = $eavConfig ?? ObjectManager::getInstance()->get(Config::class);
     }
 
     /**
@@ -57,10 +63,9 @@ class ProductPricesQuery
         /** @var EntityMetadataInterface $metadata */
         $metadata = $this->metadataPool->getMetadata(ProductInterface::class);
         $connection = $this->resourceConnection->getConnection();
-        $eavAttributeTable = $this->resourceConnection->getTableName('catalog_product_entity_decimal');
         $linkField = $metadata->getLinkField();
 
-        return $connection->select()
+        $select = $connection->select()
             ->from(
                 ['product' => $this->resourceConnection->getTableName('catalog_product_entity')],
                 [
@@ -85,66 +90,49 @@ class ProductPricesQuery
                 'store_group.website_id = store_website.website_id',
                 []
             )
-            ->joinLeft(
-                ['eavi' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
-                \sprintf('product.%1$s = eavi.%1$s', $linkField) .
-                $connection->quoteInto(' AND eavi.attribute_id IN (?)', $priceAttributes) .
-                ' AND eavi.store_id = 0',
-                ['price_type' => 'value']
-            )
-            ->joinLeft(
-                ['eav' => $eavAttributeTable],
-                \sprintf('product.%1$s = eav.%1$s', $linkField) .
-                $connection->quoteInto(' AND eav.attribute_id IN (?)', $priceAttributes) .
-                ' AND eav.store_id IN (store_group.default_store_id, 0)',
-                []
-            )
-            ->joinLeft(
-                ['eav_store' => $eavAttributeTable],
-                \sprintf('product.%1$s = eav_store.%1$s', $linkField) .
-                ' AND eav_store.attribute_id = eav.attribute_id' .
-                ' AND eav_store.store_id = store_group.default_store_id',
-                [
-                    'price' => new Expression(
-                        'IF (eav_store.value_id, eav_store.value, eav.value)'
-                    ),
-                    'attributeId' => new Expression(
-                        'IF (eav_store.value_id, eav_store.attribute_id, eav.attribute_id)'
-                    )
-                ]
-            )
-            // get parent skus
-            ->joinLeft(
-                ['child_parent' => $this->resourceConnection->getTableName('catalog_product_relation')],
-                'child_parent.child_id = product.entity_id',
-                []
-            )
-            ->joinLeft(
-                ['parent_product' => $this->resourceConnection->getTableName('catalog_product_entity')],
-                \sprintf('parent_product.%1$s = child_parent.parent_id', $linkField),
-                []
-            )
-            ->joinLeft(
-                ['parent_website' => $this->resourceConnection->getTableName('catalog_product_website')],
-                'parent_website.product_id = parent_product.entity_id '
-                . 'AND parent_website.website_id = product_website.website_id',
-                []
-            )
-            ->joinLeft(
-                ['parent_sku' => $this->resourceConnection->getTableName('catalog_product_entity')],
-                'parent_sku.entity_id = parent_website.product_id',
-                [
-                    'parent_skus' => new Expression(
-                        "GROUP_CONCAT(DISTINCT parent_sku.type_id,'*\0*',parent_sku.sku separator '{\0}')"
-                    )
-                ]
-            )
             ->where('product.entity_id IN (?)', $productIds)
-            ->where('product.type_id NOT IN (?)', self::IGNORED_TYPES)
-            // exclude "admin" website
-            ->where('store_website.website_id != ?', 0)
-            ->group('product.entity_id')
-            ->group('product_website.website_id')
-            ->group('eav.attribute_id');
+            ->where('product.type_id NOT IN (?)', self::IGNORED_TYPES);
+
+        $eavAttributeTable = $this->resourceConnection->getTableName('catalog_product_entity_decimal');
+        foreach ($priceAttributes as $attributeId => $attributeCode) {
+            $alias = 'eav_' . $attributeCode;
+            $select->joinLeft(
+                [$alias => $eavAttributeTable],
+                \sprintf('product.%1$s = %2$s.%1$s', $linkField, $alias) .
+                $connection->quoteInto(" AND $alias.attribute_id = ?", $attributeId) .
+                " AND $alias.store_id IN (store_group.default_store_id, 0)",
+                [
+                    $attributeCode => 'value',
+                    $attributeCode . '_storeId' => 'store_id',
+                ]
+            );
+        }
+        if ($this->getPriceTypeAttributeId()) {
+            $select->joinLeft(
+                ['price_type' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
+                \sprintf('product.%1$s = price_type.%1$s', $linkField) .
+                $connection->quoteInto(' AND price_type.attribute_id = ?', $this->getPriceTypeAttributeId()) .
+                ' AND price_type.store_id = 0',
+                ['price_type' => 'value']
+            );
+        }
+        return $select;
+    }
+
+    /**
+     * Get price type attribute id
+     * @return int|bool
+     */
+    private function getPriceTypeAttributeId(): int|bool
+    {
+        if ($this->priceType === null) {
+            $attribute = $this->eavConfig->getAttribute(Product::ENTITY, 'price_type');
+            if ($attribute) {
+                $this->priceType = (int)$attribute->getId();
+            } else {
+                $this->priceType = false;
+            }
+        }
+        return $this->priceType;
     }
 }
