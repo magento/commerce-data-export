@@ -376,7 +376,7 @@ class Generator implements BatchGeneratorInterface
     private function isSourceEntityFieldFilterable(FeedIndexMetadata $metadata): bool
     {
         $sourceTableDescribed = $this->resourceConnection->getConnection()
-            ->describeTable($metadata->getSourceTableName());
+            ->describeTable($this->resourceConnection->getTableName($metadata->getSourceTableName()));
         if (isset($sourceTableDescribed[$metadata->getSourceTableField()])) {
             return \in_array(
                 $sourceTableDescribed[$metadata->getSourceTableField()]['DATA_TYPE'],

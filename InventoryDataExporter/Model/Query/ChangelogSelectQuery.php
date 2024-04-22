@@ -48,7 +48,8 @@ class ChangelogSelectQuery implements ChangelogSelectQueryInterface
         string $sourceTableField,
         int $lastVersionId
     ): Select {
-        $sourceEntityTableName = $this->metadata->getSourceTableName();
+        $sourceEntityTableName = $this->resourceConnection->getTableName($this->metadata->getSourceTableName());
+        $sourceTableName = $this->resourceConnection->getTableName($sourceTableName);
         $viewSourceLinkField = $this->metadata->getViewSourceLinkField();
         return $this->resourceConnection->getConnection()
             ->select()

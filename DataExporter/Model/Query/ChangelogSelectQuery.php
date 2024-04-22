@@ -40,7 +40,7 @@ class ChangelogSelectQuery implements ChangelogSelectQueryInterface
        return $this->resourceConnection->getConnection()
             ->select()
             ->from(
-                ['v' => $sourceTableName],
+                ['v' => $this->resourceConnection->getTableName($sourceTableName)],
                 [$sourceTableField]
             )
             ->distinct(true)
