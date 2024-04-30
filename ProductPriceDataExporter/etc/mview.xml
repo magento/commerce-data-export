@@ -6,7 +6,7 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
-    <view id="catalog_data_exporter_product_prices" class="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexer" group="indexer">
+    <view id="cde_product_prices_feed" class="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexer" group="indexer">
         <subscriptions>
             <table name="catalog_product_website" entity_column="product_id" />
             <table name="catalog_product_entity_decimal" entity_column="entity_id" />

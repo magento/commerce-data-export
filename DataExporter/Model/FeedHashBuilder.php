@@ -17,6 +17,7 @@ use Magento\Framework\Serialize\SerializerInterface;
  */
 class FeedHashBuilder
 {
+    private const FEED_ID_SEPARATOR = "\0";
     private SerializerInterface $serializer;
     private ResourceConnection $resourceConnection;
     private CommerceDataExportLoggerInterface $logger;
@@ -75,63 +76,33 @@ class FeedHashBuilder
     public function buildIdentifierFromFeedItem(array $feedItem, FeedIndexMetadata $metadata): string
     {
         $identifier = [];
-        foreach ($metadata->getFeedIdentifierMappingFields() as $field) {
-            $value = array_key_exists($field, $feedItem) ? (string)$feedItem[$field] : null;
+        foreach ($metadata->getFeedItemIdentifiers() as $field) {
+            $value = $this->getNestedValue($feedItem, $field);
             if ($value === null) {
                 $this->logger->error(
                     "Cannot build identifier for '$field' from feed item: " . var_export($feedItem, true)
                 );
                 continue;
             }
-
-            $this->addValue($identifier, $value);
+            $identifier[] = $value;
         }
-        return $this->convertToString($identifier);
+
+        return sha1(implode(self::FEED_ID_SEPARATOR, $identifier));
     }
 
     /**
-     * Build identifier from feed table row
+     * Get nested array value.
      *
-     * @param array $row
-     * @param FeedIndexMetadata $metadata
-     * @return string
+     * @param array $array
+     * @param string $path
+     * @return mixed
      */
-    public function buildIdentifierFromFeedTableRow(array $row, FeedIndexMetadata $metadata): string
+    private function getNestedValue(array $array, string $path): mixed
     {
-        $identifier = [];
-        foreach (array_keys($metadata->getFeedIdentifierMappingFields()) as $columnName) {
-            $value = array_key_exists($columnName, $row) ? (string)$row[$columnName] : null;
-            if ($value === null) {
-                $this->logger->error(
-                    "Cannot build identifier for '$columnName' from feed table: " . var_export($row, true)
-                );
-                continue;
-            }
-            $this->addValue($identifier, $value);
-        }
-        return $this->convertToString($identifier);
-    }
-
-    /**
-     * Add value
-     *
-     * @param array $identifier
-     * @param string $value
-     * @return void
-     */
-    private function addValue(array &$identifier, string $value): void
-    {
-        $identifier[] = $this->resourceConnection->getConnection()->quote($value);
-    }
-
-    /**
-     * Convert to string
-     *
-     * @param array $identifier
-     * @return string
-     */
-    private function convertToString(array $identifier): string
-    {
-        return implode(',', $identifier);
+        $arrayPath = explode('.', $path);
+        $reduce = function (array $source, $key) {
+            return array_key_exists($key, $source) ? $source[$key] : null;
+        };
+        return array_reduce($arrayPath, $reduce, $array);
     }
 }

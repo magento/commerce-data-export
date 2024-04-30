@@ -107,7 +107,7 @@ class LogRegistry
     {
         $pid = $this->getPid();
         if ($this->threadsCount > 1) {
-            return $pid === $this->mainThread ? "main($pid)" : "child($pid)";
+            return $pid === $this->mainThread ? "main($pid)" : "main($this->mainThread)::child($pid)";
         }
         return (string)$pid;
     }
@@ -235,7 +235,7 @@ class LogRegistry
     {
         $cli = $_SERVER['argv'] ?? [];
         if ($cli) {
-            return \implode(' ', array_slice($cli, 0, 3));
+            return \implode(' ', \array_slice($cli, 0, 6));
         } else {
             return 'app';
         }

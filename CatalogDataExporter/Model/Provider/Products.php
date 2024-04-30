@@ -118,7 +118,7 @@ class Products implements DataProcessorInterface
                 $mappedProducts[$row['storeViewCode']][$row['productId']] = $row;
                 $attributesData[$row['storeViewCode']][$row['productId']] = $productData[$row['productId']];
                 if ($itemN % $metadata->getBatchSize() == 0) {
-                    $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback);
+                    $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback, $metadata);
                     $mappedProducts = [];
                     $attributesData = [];
                 }
@@ -129,13 +129,14 @@ class Products implements DataProcessorInterface
             $scopes = \implode(',', \array_unique(\array_column($arguments, 'scopeId')));
             $this->logger->info(
                 \sprintf(
-                    'Product exporter: no product data found for ids %s in scopes %s. Is product deleted or un-assigned from website?',
+                    'Product exporter: no product data found for ids %s in scopes %s.'
+                    . ' Is product deleted or un-assigned from website?',
                     $productsIds,
                     $scopes
                 )
             );
         } else {
-            $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback);
+            $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback, $metadata);
         }
     }
 
@@ -156,17 +157,22 @@ class Products implements DataProcessorInterface
      * @param array $mappedProducts
      * @param array $attributesData
      * @param callable $dataProcessorCallback
+     * @param FeedIndexMetadata $metadata
      * @return void
      * @throws UnableRetrieveData
      */
     private function processProducts(
         array $mappedProducts,
         array $attributesData,
-        callable $dataProcessorCallback
+        callable $dataProcessorCallback,
+        FeedIndexMetadata $metadata
     ): void {
         $output = [];
+        $modifiedAt = (new \DateTime())->format($metadata->getDateTimeFormat());
+
         foreach ($mappedProducts as $storeCode => $products) {
-            $output[] = \array_map(function ($row) {
+            $output[] = \array_map(function ($row) use ($modifiedAt) {
+                $row['modifiedAt'] = $modifiedAt;
                 return $this->formatter->format($row);
             }, \array_replace_recursive(
                 $products,

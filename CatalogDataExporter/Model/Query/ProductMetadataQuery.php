@@ -16,10 +16,11 @@ use Magento\Framework\DB\Sql\Expression;
  */
 class ProductMetadataQuery
 {
+    private const PRODUCT_EAV_ENTITY_TYPE = 'catalog_product';
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -44,8 +45,17 @@ class ProductMetadataQuery
         return $connection->select()
             ->from(['eav' => $this->resourceConnection->getTableName('eav_attribute')], [])
             ->join(
+                ['eav_type' => $this->resourceConnection->getTableName('eav_entity_type')],
+                sprintf(
+                    'eav_type.entity_type_code = "%s" AND eav.entity_type_id = eav_type.entity_type_id',
+                    self::PRODUCT_EAV_ENTITY_TYPE
+                ),
+                []
+            )
+            ->join(
                 ['cea' => $this->resourceConnection->getTableName('catalog_eav_attribute')],
-                'eav.attribute_id = cea.attribute_id'
+                'eav.attribute_id = cea.attribute_id',
+                []
             )
             ->joinLeft(
                 ['s' => $this->resourceConnection->getTableName('store')],

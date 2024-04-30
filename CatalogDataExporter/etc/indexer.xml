@@ -8,7 +8,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
     <indexer
         id="catalog_data_exporter_products"
-        view_id="catalog_data_exporter_products"
+        view_id="cde_products_feed"
         class="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer"
     >
         <title translate="true">Product Feed</title>
@@ -20,7 +20,7 @@
     </indexer>
     <indexer
         id="catalog_data_exporter_product_attributes"
-        view_id="catalog_data_exporter_product_attributes"
+        view_id="cde_product_attributes_feed"
         class="Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndex"
     >
         <title translate="true">Catalog Attributes Feed</title>
@@ -29,7 +29,7 @@
 
     <indexer
         id="catalog_data_exporter_categories"
-        view_id="catalog_data_exporter_categories"
+        view_id="cde_categories_feed"
         class="Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexer"
     >
         <title translate="true">Category Feed</title>

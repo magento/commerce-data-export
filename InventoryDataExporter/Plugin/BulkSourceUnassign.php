@@ -50,7 +50,8 @@ class BulkSourceUnassign
         try {
             $sourcesAssignedToProducts = $this->stockStatusDeleteQuery->getStocksAssignedToSkus($skus);
             $sourcesByStocks = $this->stockStatusDeleteQuery->getStocksWithSources($sourceCodes);
-            $stocksToDelete = $this->getStocksToDelete($skus, $sourcesByStocks, $sourcesAssignedToProducts);
+            $unassignedProducts = $this->stockStatusDeleteQuery->getProductIdsForSkus($skus);
+            $stocksToDelete = $this->getStocksToDelete($unassignedProducts, $sourcesByStocks, $sourcesAssignedToProducts);
 
             if (!empty($stocksToDelete)) {
                 $this->stockStatusDeleteQuery->markStockStatusesAsDeleted($stocksToDelete);
@@ -65,7 +66,7 @@ class BulkSourceUnassign
     /**
      * @param array $affectedSkus
      * @param array $sourcesByStocks
-     * @param array $sourcesAssignedToProducts
+     * @param array $stockData
      * @return array
      */
     private function getStocksToDelete(
@@ -74,13 +75,14 @@ class BulkSourceUnassign
         array $sourcesAssignedToProducts
     ): array {
         $stocksToDelete = [];
-        foreach ($affectedSkus as $deletedItemSku) {
+        foreach ($affectedSkus as $deletedItemSku => $deletedItemProductId) {
             foreach (array_keys($sourcesByStocks) as $stockId) {
                 $stockStatusId = StockStatusIdBuilder::build(
                     ['stockId' => (string)$stockId, 'sku' => $deletedItemSku]
                 );
                 $stocksToDelete[$stockStatusId] = [
-                    'stock_id' => (string)$stockId,
+                    'stockId' => (string)$stockId,
+                    'productId' => $deletedItemProductId,
                     'sku' => $deletedItemSku
                 ];
             }

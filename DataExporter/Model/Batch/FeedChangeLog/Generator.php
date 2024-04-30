@@ -33,6 +33,8 @@ use Magento\Framework\Mview\ViewInterface;
 
 /**
  * Creates batches based on feed change log table and configured batch size.
+ * Used in the following scenarios:
+ * - partial entity update, triggered by `indexer_update_all_views` cron job
  */
 class Generator implements BatchGeneratorInterface
 {
@@ -59,8 +61,12 @@ class Generator implements BatchGeneratorInterface
     /**
      * @var ViewFactory
      */
+
     private ViewFactory $viewFactory;
 
+    /**
+     * @var CommerceDataExportLoggerInterface
+     */
     private CommerceDataExportLoggerInterface $logger;
 
     /**
@@ -118,6 +124,15 @@ class Generator implements BatchGeneratorInterface
         }
     }
 
+    /**
+     * Generate batches based on feed change log table.
+     *
+     * @param FeedIndexMetadata $metadata
+     * @param array $args
+     * @return BatchIteratorInterface
+     * @throws \Zend_Db_Exception
+     * @throws \Zend_Db_Statement_Exception
+     */
     private function doGenerate(FeedIndexMetadata $metadata, array $args = []): BatchIteratorInterface
     {
         $connection = $this->resourceConnection->getConnection();

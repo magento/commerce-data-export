@@ -6,7 +6,7 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
-    <view id="inventory_data_exporter_stock_status" class="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexer" group="indexer">
+    <view id="inventory_data_exporter_stock_status_feed" class="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexer" group="indexer">
         <subscriptions>
             <table name="inventory_source_item" entity_column="sku" />
             <table name="inventory_reservation" entity_column="sku" />

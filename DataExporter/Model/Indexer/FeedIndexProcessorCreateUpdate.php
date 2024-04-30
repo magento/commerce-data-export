@@ -10,7 +10,6 @@ namespace Magento\DataExporter\Model\Indexer;
 use Magento\DataExporter\Model\Batch\BatchGeneratorInterface;
 use Magento\DataExporter\Model\Batch\FeedSource\Generator as FeedSourceBatchGenerator;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
-use Magento\DataExporter\Model\Logging\LogRegistry;
 use Magento\DataExporter\Status\ExportStatusCodeProvider;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
@@ -27,11 +26,6 @@ use Magento\Indexer\Model\ProcessManagerFactory;
  */
 class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
 {
-    /**
-     * @var string
-     */
-    private const MODIFIED_AT_FORMAT = 'Y-m-d H:i:s';
-
     /**
      * @var ResourceConnection
      */
@@ -66,11 +60,6 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * @var SerializerInterface
      */
     private SerializerInterface $serializer;
-
-    /**
-     * @var array
-     */
-    private $feedTablePrimaryKey;
 
     /**
      * @var DeletedEntitiesProviderInterface
@@ -168,9 +157,9 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             $arguments[] = [$feedIdentity => $id];
         }
         foreach (\array_chunk($arguments, $metadata->getBatchSize()) as $chunk) {
-            $metadata->setCurrentModifiedAtTimeInDBFormat((new \DateTime())->format(self::MODIFIED_AT_FORMAT));
             $exportStatus = null;
             if ($metadata->isExportImmediately()) {
+                $chunkTimeStamp = (new \DateTime())->format($metadata->getDbDateTimeFormat());
                 $dataProcessorCallback = function ($feedItems) use (
                     $metadata,
                     $serializer,
@@ -197,7 +186,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     array_column($chunk, $feedIdentity),
                     $indexState,
                     $metadata,
-                    $serializer
+                    $serializer,
+                    $chunkTimeStamp
                 );
             } else {
                 $this->feedUpdater->execute(
@@ -275,7 +265,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         while ($indexStateProvider->isBatchLimitReached()) {
             $data = $indexStateProvider->getFeedItems();
             $exportStatus = $this->exportFeedProcessor->export(
-                array_column($data, 'feed'),
+                array_column($data, FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA),
                 $metadata
             );
             $this->feedUpdater->execute($data, $exportStatus, $metadata, $serializer);
@@ -287,7 +277,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 return ;
             }
             $exportStatus = $this->exportFeedProcessor->export(
-                array_column($data, 'feed'),
+                array_column($data, FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA),
                 $metadata
             );
             $this->feedUpdater->execute($data, $exportStatus, $metadata, $serializer);
@@ -329,30 +319,35 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             return [];
         }
         $connection = $this->resourceConnection->getConnection();
-        $primaryKeyFields = $this->getFeedTablePrimaryKey($metadata);
-        $primaryKeys = \array_keys($feedItems);
-        $primaryKeys = count($primaryKeyFields) == 1
-            ? \implode(',', $primaryKeys)
-            : '(' . \implode('),(', $primaryKeys) . ')';
+        $feedIdsValues =  \array_keys($feedItems);
 
         $select = $connection->select()
             ->from(
                 ['f' => $this->resourceConnection->getTableName($metadata->getFeedTableName())],
-                array_merge($primaryKeyFields, ['feed_hash', 'status'])
-            )->where(sprintf('(%s) IN (%s)', \implode(', ', $primaryKeyFields), $primaryKeys));
+                [
+                    FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID,
+                    FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH,
+                    FeedIndexMetadata::FEED_TABLE_FIELD_STATUS
+                ]
+            )->where(sprintf('f.%s IN (?)', FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID), $feedIdsValues);
 
         $cursor = $connection->query($select);
 
         while ($row = $cursor->fetch()) {
-            $identifier = $this->hashBuilder->buildIdentifierFromFeedTableRow($row, $metadata);
-            $feedHash = $row['feed_hash'];
+            $identifier = $row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID];
+            $feedHash = $row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH];
 
             if ($indexStateProvider !== null) {
                 $indexStateProvider->addProcessedHash($feedHash);
             }
-            if (\in_array((int)$row['status'], ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE, true)
-                && isset($feedItems[$identifier]['hash'])
-                && $feedHash == $feedItems[$identifier]['hash']) {
+            if (isset($feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH])
+                && \in_array(
+                    (int)$row[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS],
+                    ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE,
+                    true
+                )
+                && $feedHash == $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH]
+            ) {
                 unset($feedItems[$identifier]);
             }
         }
@@ -376,8 +371,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     unset($data[$key]);
                     continue ;
                 }
-                $identifier = $this->hashBuilder->buildIdentifierFromFeedTableRow($row, $metadata);
-                $row = $this->serializer->unserialize($row['feed_data']);
+                $identifier = $row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID];
+                $row = $this->serializer->unserialize($row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA]);
                 $row['deleted'] = true;
             } else {
                 if (!\array_key_exists('deleted', $row)) {
@@ -397,45 +392,14 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 continue;
             }
             $hash = $this->hashBuilder->buildHash($row, $metadata);
-            $this->addModifiedAtField($row, $metadata);
             $data[$identifier] = [
-                'hash' => $hash,
-                'feed' => $row,
-                'deleted' => $deleted
+                FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID => $identifier,
+                FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH => $hash,
+                FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA => $row,
+                FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED => $deleted
             ];
         }
         return $data;
-    }
-
-    /**
-     * Get feed table primary key
-     *
-     * @param FeedIndexMetadata $metadata
-     * @return array
-     */
-    private function getFeedTablePrimaryKey(FeedIndexMetadata $metadata): array
-    {
-        if (!isset($this->feedTablePrimaryKey[$metadata->getFeedName()])) {
-            $connection = $this->resourceConnection->getConnection();
-            $table = $this->resourceConnection->getTableName($metadata->getFeedTableName());
-            $indexList = $connection->getIndexList($table);
-            $this->feedTablePrimaryKey[$metadata->getFeedName()] = $indexList[
-                $connection->getPrimaryKeyName($table)
-            ]['COLUMNS_LIST'];
-        }
-        return $this->feedTablePrimaryKey[$metadata->getFeedName()];
-    }
-
-    /**
-     * Add modified at field to each row
-     *
-     * @param array $dataRow
-     * @param FeedIndexMetadata $metadata
-     * @return void
-     */
-    private function addModifiedAtField(&$dataRow, FeedIndexMetadata $metadata): void
-    {
-        $dataRow['modifiedAt'] = $metadata->getCurrentModifiedAtTimeInDBFormat();
     }
 
     /**
@@ -448,18 +412,21 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * @param IndexStateProvider $indexStateProvider
      * @param FeedIndexMetadata $metadata
      * @param DataSerializerInterface $serializer
+     * @param string $recentTimeStamp
      * @throws \Zend_Db_Statement_Exception
      */
     private function handleDeletedItems(
         array                   $ids,
         IndexStateProvider      $indexStateProvider,
         FeedIndexMetadata       $metadata,
-        DataSerializerInterface $serializer
+        DataSerializerInterface $serializer,
+        string $recentTimeStamp
     ): void {
         foreach ($this->deletedEntitiesProvider->get(
             $ids,
             $indexStateProvider->getProcessedHashes(),
-            $metadata
+            $metadata,
+            $recentTimeStamp
         ) as $feedItems) {
             $feedItems = $this->addHashes($feedItems, $metadata, true);
             $data = $this->filterFeedItems($feedItems, $metadata);

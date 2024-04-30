@@ -1,17 +1,12 @@
 {
-    "inventory_data_exporter_stock_status": {
+    "inventory_data_exporter_stock_status_feed": {
         "index": {
-            "INVENTORY_DATA_EXPORTER_STOCK_STATUS_MODIFIED_AT": true
+            "INV_DATA_EXPORTER_STOCK_STS_FEED_SOURCE_ENTT_ID_MODIFIED_AT": true,
+            "INVENTORY_DATA_EXPORTER_STOCK_STATUS_FEED_STATUS": true
         },
         "constraint": {
-            "PRIMARY": true
-        },
-        "column": {
-            "stock_id": true,
-            "sku": true,
-            "feed_data": true,
-            "modified_at": true,
-            "is_deleted": true
+            "PRIMARY": true,
+            "INVENTORY_DATA_EXPORTER_STOCK_STATUS_FEED_FEED_ID": true
         }
     }
 }

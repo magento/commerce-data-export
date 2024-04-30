@@ -7,7 +7,9 @@ declare(strict_types=1);
 
 namespace Magento\InventoryDataExporter\Test\Integration;
 
-use Magento\DataExporter\Export\Processor;
+use Magento\DataExporter\Model\FeedInterface;
+use Magento\DataExporter\Model\FeedPool;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\TestFramework\Helper\Bootstrap;
 
 /**
@@ -17,9 +19,9 @@ use Magento\TestFramework\Helper\Bootstrap;
 class ExportStockStatusTest extends AbstractInventoryTestHelper
 {
     /**
-     * @var Processor
+     * @var FeedInterface
      */
-    private $processor;
+    private $stockStatusFeed;
 
     /**
      * Setup tests
@@ -27,11 +29,13 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
     protected function setUp(): void
     {
         parent::setUp();
-        $this->processor = Bootstrap::getObjectManager()->create(Processor::class);
+        $this->stockStatusFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('inventoryStockStatus');
     }
 
     /**
      * @magentoDataFixture Magento_InventoryDataExporter::Test/_files/products_with_sources.php
+     * @throws \Zend_Db_Statement_Exception
+     * @throws NoSuchEntityException
      */
     public function testExportStockStatuses()
     {
@@ -44,27 +48,26 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
             'product_with_enabled_backorders',
             'product_in_US_stock_with_disabled_source'
         ];
-        $products = [];
+        $productIds = [];
         foreach ($productsSkus as $sku) {
-            $products[] = ['sku' => $this->getProductId($sku)];
+            $productIds[$sku] = $this->getProductId($sku);
         }
-        $actualStockStatus = $this->processor->process(
-            'inventoryStockStatus',
-            $products
-        );
+        $actualStockStatuses = $this->getFeedData($productsSkus);
 
-        $actualStockStatusFormatted = [];
-        foreach ($actualStockStatus as $stockStatus) {
-            $actualStockStatusFormatted[$stockStatus['stockId']][$stockStatus['sku']] = $stockStatus;
-        }
         foreach ($this->getExpectedStockStatus() as $stockId => $stockStatuses) {
             foreach ($stockStatuses as $sku => $stockStatus) {
-                if (!isset($actualStockStatusFormatted[$stockId][$sku])) {
+                $stockStatus['productId'] = $productIds[$sku] ?? null;
+                if (!isset($actualStockStatuses[$stockId][$sku])) {
                     self::fail("Cannot find stock status for stock $stockId & sku $sku");
                 }
-                $actualStockStatus = $actualStockStatusFormatted[$stockId][$sku];
+                $actualStockStatus = $actualStockStatuses[$stockId][$sku];
                 // ignore fields for now
-                unset($actualStockStatus['id'], $actualStockStatus['lowStock'], $actualStockStatus['updatedAt']);
+                unset(
+                    $actualStockStatus['id'],
+                    $actualStockStatus['lowStock'],
+                    $actualStockStatus['updatedAt'],
+                    $actualStockStatus['modifiedAt']
+                );
                 self::assertEquals(
                     $stockStatus,
                     $actualStockStatus,
@@ -76,6 +79,8 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
 
     /**
      * @magentoDataFixture Magento_InventoryDataExporter::Test/_files/products_with_sources_and_reservations.php
+     * @throws \Zend_Db_Statement_Exception
+     * @throws NoSuchEntityException
      */
     public function testExportStockStatusesWithReservations()
     {
@@ -88,25 +93,25 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
             'product_with_enabled_backorders',
             'product_in_US_stock_with_disabled_source'
         ];
-        $products = [];
+        $productIds = [];
         foreach ($productsSkus as $sku) {
-            $products[] = ['sku' => $this->getProductId($sku)];
+            $productIds[$sku] = $this->getProductId($sku);
         }
-        $actualStockStatus = $this->processor->process(
-            'inventoryStockStatus',
-            $products
-        );
-        foreach ($actualStockStatus as $stockStatus) {
-            $actualStockStatusFormatted[$stockStatus['stockId']][$stockStatus['sku']] = $stockStatus;
-        }
+        $actualStockStatuses = $this->getFeedData($productsSkus);
         foreach ($this->getExpectedStockStatusForReservations() as $stockId => $stockStatuses) {
             foreach ($stockStatuses as $sku => $stockStatus) {
-                if (!isset($actualStockStatusFormatted[$stockId][$sku])) {
+                $stockStatus['productId'] = $productIds[$sku] ?? null;
+                if (!isset($actualStockStatuses[$stockId][$sku])) {
                     self::fail("Cannot find stock status for stock $stockId & sku $sku");
                 }
-                $actualStockStatus = $actualStockStatusFormatted[$stockId][$sku];
+                $actualStockStatus = $actualStockStatuses[$stockId][$sku];
                 // ignore fields for now
-                unset($actualStockStatus['id'], $actualStockStatus['lowStock'], $actualStockStatus['updatedAt']);
+                unset(
+                    $actualStockStatus['id'],
+                    $actualStockStatus['lowStock'],
+                    $actualStockStatus['updatedAt'],
+                    $actualStockStatus['modifiedAt']
+                );
                 self::assertEquals(
                     $stockStatus,
                     $actualStockStatus,
@@ -131,6 +136,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 8.5,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_in_default_and_2_EU_sources' => [
                     'stockId' => '1',
@@ -139,6 +145,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 2,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_with_disabled_manage_stock' => [
                     'stockId' => '1',
@@ -147,6 +154,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 0,
                     'infiniteStock' => true,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_with_enabled_backorders' => [
                     'stockId' => '1',
@@ -155,6 +163,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 5,
                     'infiniteStock' => true,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
             ],
             // EU Stock
@@ -166,6 +175,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 9.5,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_in_Global_stock_with_3_sources' => [
                     'stockId' => '10',
@@ -174,6 +184,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 3,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_in_default_and_2_EU_sources' => [
                     'stockId' => '10',
@@ -182,6 +193,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 9.5,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
             ],
             // US Stock
@@ -193,6 +205,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 4,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_in_US_stock_with_disabled_source' => [
                     'stockId' => '20',
@@ -201,6 +214,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 0,
                     'infiniteStock' => false,
                     'isSalable' => false,
+                    'deleted' => false,
                 ],
             ],
             // Global Stock
@@ -212,6 +226,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 5,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_in_EU_stock_with_2_sources' => [
                     'stockId' => '30',
@@ -220,6 +235,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 5.5,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
             ],
         ];
@@ -240,6 +256,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 6.3,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_in_default_and_2_EU_sources' => [
                     'stockId' => '1',
@@ -248,6 +265,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 1,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_with_disabled_manage_stock' => [
                     'stockId' => '1',
@@ -256,6 +274,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 0,
                     'infiniteStock' => true,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_with_enabled_backorders' => [
                     'stockId' => '1',
@@ -266,6 +285,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => -2.2, // JUST TEMPORARILY FIX. We should not allow negative values
                     'infiniteStock' => true,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
             ],
             // EU Stock
@@ -277,6 +297,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 0,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_in_Global_stock_with_3_sources' => [
                     'stockId' => '10',
@@ -285,6 +306,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 0,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_in_default_and_2_EU_sources' => [
                     'stockId' => '10',
@@ -293,6 +315,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 5.5,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
             ],
             // US Stock
@@ -304,6 +327,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 2,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_in_US_stock_with_disabled_source' => [
                     'stockId' => '20',
@@ -312,6 +336,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 0,
                     'infiniteStock' => false,
                     'isSalable' => false,
+                    'deleted' => false,
                 ],
             ],
             // Global Stock
@@ -323,6 +348,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 2.5,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
                 'product_in_EU_stock_with_2_sources' => [
                     'stockId' => '30',
@@ -331,8 +357,25 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
                     'qtyForSale' => 5.5,
                     'infiniteStock' => false,
                     'isSalable' => true,
+                    'deleted' => false,
                 ],
             ],
         ];
+    }
+
+    /**
+     * @param array $skus
+     * @return array[stock][sku]
+     * @throws \Zend_Db_Statement_Exception
+     */
+    private function getFeedData(array $skus): array
+    {
+        $output = [];
+        foreach ($this->stockStatusFeed->getFeedSince('1')['feed'] as $item) {
+            if (\in_array($item['sku'], $skus, true)) {
+                $output[$item['stockId']][$item['sku']] = $item;
+            }
+        }
+        return $output;
     }
 }

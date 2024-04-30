@@ -12,6 +12,8 @@ use Magento\CatalogDataExporter\Model\Provider\Category\Formatter\FormatterInter
 use Magento\CatalogDataExporter\Model\Provider\EavAttributes\EntityEavAttributesResolver;
 use Magento\CatalogDataExporter\Model\Query\CategoryMainQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
+use Magento\DataExporter\Export\DataProcessorInterface;
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Store\Model\Store;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
@@ -19,7 +21,7 @@ use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as Logg
 /**
  * Categories main data provider
  */
-class Categories
+class Categories implements DataProcessorInterface
 {
     /**
      * @var ResourceConnection
@@ -68,52 +70,92 @@ class Categories
     }
 
     /**
-     * Get provider data
-     *
-     * @param array $values
-     *
-     * @return array
+     * @inheritdoc
      *
      * @throws UnableRetrieveData
+     * @throws \Zend_Db_Statement_Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function get(array $values) : array
-    {
-        $output = [];
-        $queryArguments = [];
-        $mappedCategories = [];
-        $attributesData = [];
-
+    public function execute(
+        array $arguments,
+        callable $dataProcessorCallback,
+        FeedIndexMetadata $metadata,
+        $node = null,
+        $info = null,
+        $lastChunk = null
+    ): void {
         try {
-            foreach ($values as $value) {
-                $scope = $value['scopeId'] ?? Store::DEFAULT_STORE_ID;
-                $queryArguments[$scope][$value['categoryId']] = $value['attribute_ids'] ?? [];
-            }
-
-            $connection = $this->resourceConnection->getConnection();
-            foreach ($queryArguments as $scopeId => $categoryData) {
-                $cursor = $connection->query(
-                    $this->categoryMainQuery->getQuery(\array_keys($categoryData), $scopeId ?: null)
-                );
-
-                while ($row = $cursor->fetch()) {
-                    $mappedCategories[$row['storeViewCode']][$row['categoryId']] = $row;
-                    $attributesData[$row['storeViewCode']][$row['categoryId']] = $categoryData[$row['categoryId']];
+            foreach ($this->getDataBatch($arguments, $metadata->getBatchSize()) as $dataBatch) {
+                $output = [];
+                list($mappedCategories, $attributesData) = $dataBatch;
+                $modifiedAt = (new \DateTime())->format($metadata->getDateTimeFormat());
+                foreach ($mappedCategories as $storeCode => $categories) {
+                    $output[] = \array_map(function ($row) use ($modifiedAt) {
+                        $row['modifiedAt'] = $modifiedAt;
+                        return $this->formatter->format($row);
+                    }, \array_replace_recursive(
+                        $categories,
+                        $this->entityEavAttributesResolver->resolve($attributesData[$storeCode], $storeCode)
+                    ));
                 }
-            }
-
-            foreach ($mappedCategories as $storeCode => $categories) {
-                $output[] = \array_map(function ($row) {
-                    return $this->formatter->format($row);
-                }, \array_replace_recursive(
-                    $categories,
-                    $this->entityEavAttributesResolver->resolve($attributesData[$storeCode], $storeCode)
-                ));
+                $dataProcessorCallback($this->get(\array_merge(...$output)));
             }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve category data');
         }
+    }
 
-        return !empty($output) ? \array_merge(...$output) : [];
+    /**
+     * For backward compatibility - to allow 3rd party plugins work
+     *
+     * @param array $values
+     * @return array
+     * @deprecated
+     * @see self::execute
+     */
+    public function get(array $values) : array
+    {
+        return $values;
+    }
+
+    /**
+     * Returns data batch.
+     *
+     * @param array $arguments
+     * @param int $batchSize
+     * @return \Generator
+     * @throws \Zend_Db_Statement_Exception
+     */
+    private function getDataBatch(array $arguments, int $batchSize): \Generator
+    {
+        $itemN = 0;
+        $queryArguments = [];
+        $mappedCategories = [];
+        $attributesData = [];
+        foreach ($arguments as $value) {
+            $scope = $value['scopeId'] ?? Store::DEFAULT_STORE_ID;
+            $queryArguments[$scope][$value['categoryId']] = $value['attribute_ids'] ?? [];
+        }
+
+        $connection = $this->resourceConnection->getConnection();
+        foreach ($queryArguments as $scopeId => $categoryData) {
+            $cursor = $connection->query(
+                $this->categoryMainQuery->getQuery(\array_keys($categoryData), $scopeId ?: null)
+            );
+
+            while ($row = $cursor->fetch()) {
+                $itemN++;
+                $mappedCategories[$row['storeViewCode']][$row['categoryId']] = $row;
+                $attributesData[$row['storeViewCode']][$row['categoryId']] = $categoryData[$row['categoryId']];
+                if ($itemN % $batchSize == 0) {
+                    yield [$mappedCategories,  $attributesData];
+                    $mappedCategories = [];
+                    $attributesData = [];
+                }
+            }
+        }
+
+        yield [$mappedCategories, $attributesData];
     }
 }

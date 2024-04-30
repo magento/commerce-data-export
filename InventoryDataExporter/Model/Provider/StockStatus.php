@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Magento\InventoryDataExporter\Model\Provider;
 
+use Magento\DataExporter\Export\DataProcessorInterface;
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\DB\Adapter\TableNotFoundException;
@@ -25,7 +27,7 @@ use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as Logg
  * ]
  * ]
  */
-class StockStatus
+class StockStatus implements DataProcessorInterface
 {
     /**
      * @var ResourceConnection
@@ -68,15 +70,25 @@ class StockStatus
     /**
      * Getting inventory stock statuses.
      *
-     * @param array $values
-     * @return array
-     * @throws \Zend_Db_Statement_Exception
+     * @param array $arguments
+     * @param callable $dataProcessorCallback
+     * @param FeedIndexMetadata $metadata
+     * @param null $node
+     * @param null $info
+     * @return void
      * @throws \Throwable
+     * @throws \Zend_Db_Select_Exception
+     * @throws \Zend_Db_Statement_Exception
      */
-    public function get(array $values): array
-    {
+    public function execute(
+        array $arguments,
+        callable $dataProcessorCallback,
+        FeedIndexMetadata $metadata,
+        $node = null,
+        $info = null
+    ): void {
         // For stock statuses we are operating with product ids
-        $ids = \array_column($values, 'sku');
+        $ids = \array_column($arguments, 'productId');
         $connection = $this->resourceConnection->getConnection();
         $output = [];
 
@@ -104,7 +116,20 @@ class StockStatus
             throw $e;
         }
 
-        return $output;
+        $dataProcessorCallback($this->get($output));
+    }
+
+    /**
+     * For backward compatibility with existing 3-rd party plugins.
+     *
+     * @param array $values
+     * @return array
+     * @deprecated
+     * @see self::execute
+     */
+    public function get(array $values) : array
+    {
+        return $values;
     }
 
     /**
@@ -113,14 +138,18 @@ class StockStatus
      */
     private function fillWithDefaultValues(array $row): array
     {
-        if (!isset($row['qty'],
-            $row['isSalable'],
-            $row['sku'],
-            $row['stockId'],
-            $row['manageStock'],
-            $row['useConfigManageStock'],
-            $row['backorders'],
-            $row['useConfigBackorders'])
+        if (
+            !isset(
+                $row['qty'],
+                $row['isSalable'],
+                $row['productId'],
+                $row['sku'],
+                $row['stockId'],
+                $row['manageStock'],
+                $row['useConfigManageStock'],
+                $row['backorders'],
+                $row['useConfigBackorders']
+            )
         ) {
             throw new \RuntimeException("missed required field: " . \var_export($row, true));
         }

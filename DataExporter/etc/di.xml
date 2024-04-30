@@ -55,6 +55,8 @@
                 type="Magento\DataExporter\Model\Indexer\FeedIndexProcessorCreateUpdateDelete" />
     <preference for="Magento\DataExporter\Model\Indexer\DeletedEntitiesProviderInterface"
                 type="Magento\DataExporter\Model\Indexer\DeletedEntitiesProvider"/>
+    <preference for="Magento\DataExporter\Model\Indexer\DataSerializerInterface"
+                type="Magento\DataExporter\Model\Indexer\DataSerializer"/>
 
     <!-- Logger -->
     <virtualType name="CommerceDataExportLogger" type="Magento\DataExporter\Model\Logging\Monolog">

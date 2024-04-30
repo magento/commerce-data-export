@@ -41,32 +41,87 @@ These codes will be saved in the "status" field of the feed table, to keep infor
 
 ### Retry Logic for failed entities (only server error code):
 - by cron check is any entities with status different from [200, 400] (`Magento\DataExporter\Status\ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE`) in the feed table
-- select entities with filter by modified_at && NOT IN status = `200`, `400`
-- partial reindex
+- do partial reindex
 
 ### Migration to immediate export approach:
-- Add new columns (required for immediate feed processing) to db_schema of the feed table:
+- Replace existing feed table with the new one (with required fields and indexes for immediate feed processing) to db_schema:
    ```xml
-        <column
-            xsi:type="smallint"
-            name="status"
-            nullable="false"
-            default="0"
-            comment="Status"
+  <table name="cde_new_immediate_feed" resource="default" engine="innodb" comment="New Immediate Feed Table">
+          <column xsi:type="int" name="id" unsigned="true" nullable="false" identity="true"
+                  comment="Autoincrement ID. System field"/>
+
+        <column xsi:type="int"
+                name="source_entity_id"
+                padding="10"
+                unsigned="true"
+                nullable="false"
+                comment="Entity ID from the source table"
         />
         <column
-            xsi:type="varchar"
-            name="feed_hash"
-            nullable="false"
-            length="64"
-            comment="Feed Hash"
+                xsi:type="varchar"
+                name="feed_id"
+                nullable="false"
+                length="64"
+                comment="Feed Item Identifier. Hash based on feed item identity fields"
         />
         <column
-            xsi:type="text"
-            name="errors"
-            nullable="true"
-            comment="Errors"
+                xsi:type="timestamp"
+                name="modified_at"
+                on_update="true"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"
+                comment="Timestamp of the latest table row modification"
         />
+        <column
+                xsi:type="tinyint"
+                name="is_deleted"
+                nullable="false"
+                default="0"
+                comment="Feed item deletion flag"
+        />
+        <column
+                xsi:type="smallint"
+                name="status"
+                nullable="false"
+                default="0"
+                comment="Feed item sending status"
+        />
+        <column
+                xsi:type="mediumtext"
+                name="feed_data"
+                nullable="false"
+                comment="Feed Data"
+        />
+        <column
+                xsi:type="varchar"
+                name="feed_hash"
+                nullable="false"
+                length="64"
+                comment="Hash based on {feed_data}"
+        />
+        <column
+                xsi:type="text"
+                name="errors"
+                nullable="true"
+                comment="Errors from consumer"
+        />
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+
+        <constraint referenceId="cde_new_immediate_feed_id"  xsi:type="unique">
+            <column name="feed_id"/>
+        </constraint>
+        <!-- \Magento\DataExporter\Model\Query\DeletedEntitiesByModifiedAtQuery::getQuery -->
+        <index referenceId="cde_new_immediate_feed_source_id_modified_at" indexType="btree">
+            <column name="source_entity_id"/>
+            <column name="modified_at"/>
+        </index>
+        <!-- for failed items \Magento\DataExporter\Model\Batch\Feed\Generator::getSelect -->
+        <index referenceId="cde_new_immediate_feed_status" indexType="btree">
+            <column name="status"/>
+        </index>
+    </table>
 - di.xml changes (in case if virtual type is created for the `FeedIndexMetadata` type. Otherwise - add these arguments to real class):
 -- Change the `exportImmediately` value to `true` for metadata configuration:
    ```xml
@@ -81,15 +136,16 @@ These codes will be saved in the "status" field of the feed table, to keep infor
       <item name="websiteCode" xsi:type="string">websiteCode</item>
       <item name="updatedAt" xsi:type="string">updatedAt</item>
   </argument>
-- Add `feedIdentifierMapping` argument: describes the mapping between primary key columns in the feed table and corresponding fields in the feed item:
+- Add `feedItemIdentifiers` argument: describes the mapping between generated feed identified hash in the feed table and corresponding fields in the feed item:
   for example:
   ```xml
-  <argument name="feedIdentifierMapping" xsi:type="array">
+  <argument name="feedItemIdentifiers" xsi:type="array">
       <item name="product_id" xsi:type="string">productId</item>
       <item name="website_id" xsi:type="string">websiteId</item>
       <item name="customer_group_code" xsi:type="string">customerGroupCode</item>
   </argument>
-
+- Remove implementation of Magento\DataExporter\Model\Indexer\DataSerializer (virtual or actual) as it is not needed anymore and not used in immediate export logic.
+- Make sure that your feed provider extends `\Magento\DataExporter\Export\DataProcessorInterface` and implements the `execute` method.
 ### Feed Index Metadata additional parameters:
 - entitiesRemovable - this parameter handles feed configuration to cover cases when feed entities are not removable. Default value: `false` - feed entities can not be removed.  For example:
 - `sales order` feed export's Sales Orders entities cannot be deleted and `isRemovable` metadata parameter set to false.

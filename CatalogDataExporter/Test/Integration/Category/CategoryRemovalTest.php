@@ -34,6 +34,7 @@ class CategoryRemovalTest extends AbstractCategoryTest
         $this->assertEquals(false, $extractedCategory['deleted']);
 
         $this->deleteCategory($categoryId);
+        $this->emulateCustomersBehaviorAfterDeleteAction();
         $this->emulatePartialReindexBehavior([$categoryId]);
 
         $extractedCategory = $this->getCategoryById($categoryId, 'default');

@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Test\Integration;
 
-use Magento\CatalogDataExporter\Model\Indexer\ProductDataSerializer;
 use Magento\DataExporter\Model\FeedExportStatus;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
@@ -18,6 +17,11 @@ use Magento\DataExporter\Model\FeedExportStatusBuilder;
 
 class ProductDataSerializerTest extends AbstractProductTestHelper
 {
+    /**
+     * @var string
+     */
+    private const EXPECTED_DATE_TIME_FORMAT = '%d-%d-%d %d:%d:%d';
+
     /**
      * @var DataSerializer
      */
@@ -45,7 +49,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
     ) {
         parent::__construct($name, $data, $dataName);
         $this->testUnit = Bootstrap::getObjectManager()->create(
-            ProductDataSerializer::class // @phpstan-ignore-line
+            \Magento\DataExporter\Model\Indexer\DataSerializer::class // @phpstan-ignore-line
         );
         $this->productFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('products');
         $this->feedExportStatusBuilder = Bootstrap::getObjectManager()->get(FeedExportStatusBuilder::class);
@@ -53,45 +57,53 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
 
     /**
      * @return void
+     * @throws \Exception
      */
     public function testSecondFeedItemHasErrorInExportStatus(): void
     {
+        $metadata = $this->productFeed->getFeedMetadata();
+        $modifiedAt = (new \DateTime('2023-01-06 23:36:51'))->format($metadata->getDateTimeFormat());
+        $rowModifiedAt = (new \DateTime())->getTimestamp();
+
         $feedItems = [
             [
-                'feed' => [
+                'feed_data' => [
                     'sku' => 'valid-sku1',
                     'storeViewCode' => 'default',
                     'storeCode' => 'main_website_store',
                     'websiteCode' => 'base',
                     'productId' => 1,
                     'deleted' => false,
-                    'modifiedAt' => "2023-01-06 23:36:51"
+                    'modifiedAt' => $modifiedAt
                 ],
-                'hash' => 'hash',
+                'feed_hash' => 'hash',
+                'feed_id' => 'feed_id_1',
             ],
             [
-                'feed' => [
+                'feed_data' => [
                     'sku' => 'wrong-data-in-feed',
                     'storeViewCode' => 'default',
                     'storeCode' => 'main_website_store',
                     'websiteCode' => 'base',
                     'productId' => 2,
                     'deleted' => false,
-                    'modifiedAt' => "2023-01-06 23:36:51"
+                    'modifiedAt' => $modifiedAt
                 ],
-                'hash' => 'hash',
+                'feed_hash' => 'hash',
+                'feed_id' => 'feed_id_2',
             ],
             [
-                'feed' => [
+                'feed_data' => [
                     'sku' => 'valid-sku2',
                     'storeViewCode' => 'default',
                     'storeCode' => 'main_website_store',
                     'websiteCode' => 'base',
                     'productId' => 3,
                     'deleted' => false,
-                    'modifiedAt' => "2023-01-06 23:36:51"
+                    'modifiedAt' => $modifiedAt
                 ],
-                'hash' => 'hash',
+                'feed_hash' => 'hash',
+                'feed_id' => 'feed_id_3',
             ],
         ];
 
@@ -106,54 +118,68 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
             ]
         );
-
+        $actual = $this->testUnit->serialize($feedItems, $exportStatus, $this->productFeed->getFeedMetadata());
+        foreach ($actual as &$feed) {
+            $this->assertNotEmpty($feed['modified_at']);
+            $this->assertStringMatchesFormat(self::EXPECTED_DATE_TIME_FORMAT, $feed['modified_at']);
+            $actualRowModifiedAt = (new \DateTime($feed['modified_at']))->getTimestamp();
+            $this->assertEqualsWithDelta($rowModifiedAt, $actualRowModifiedAt, 3);
+            unset($feed['modified_at']);
+        }
         $this->assertEquals(
             $this->prepareExpectedData($feedItems, $exportStatus, 1),
-            $this->testUnit->serialize($feedItems, $exportStatus, $this->productFeed->getFeedMetadata())
+            $actual
         );
     }
 
     /**
      * @return void
+     * @throws \Exception
      */
     public function testAllItemsHaveErrorsInExportStatus(): void
     {
+        $metadata = $this->productFeed->getFeedMetadata();
+        $modifiedAt = (new \DateTime('2023-01-06 23:36:51'))->format($metadata->getDateTimeFormat());
+        $rowModifiedAt = (new \DateTime())->getTimestamp();
         $feedItems = [
             [
-                'feed' => [
+                'feed_data' => [
                     'sku' => 'sku1',
                     'storeViewCode' => 'default',
                     'storeCode' => 'main_website_store',
                     'websiteCode' => 'base',
                     'productId' => 1,
                     'deleted' => false,
-                    'modifiedAt' => "2023-01-06 23:36:51"
+                    'modifiedAt' => $modifiedAt
                 ],
-                'hash' => 'hash',
+                'feed_hash' => 'hash',
+                'feed_id' => 'feed_id_1',
             ],
             [
-                'feed' => [
+                'feed_data' => [
                     'sku' => 'sku2',
                     'storeViewCode' => 'default',
                     'storeCode' => 'main_website_store',
                     'websiteCode' => 'base',
                     'productId' => 2,
                     'deleted' => false,
-                    'modifiedAt' => "2023-01-06 23:36:51"
+                    'modifiedAt' => $modifiedAt
                 ],
-                'hash' => 'hash',
+                'feed_hash' => 'hash',
+                'feed_id' => 'feed_id_2',
             ],
             [
-                'feed' => [
+                'feed_data' => [
                     'sku' => 'sku3',
                     'storeViewCode' => 'default',
                     'storeCode' => 'main_website_store',
                     'websiteCode' => 'base',
                     'productId' => 3,
                     'deleted' => false,
-                    'modifiedAt' => "2023-01-06 23:36:51"
+                    'modifiedAt' => $modifiedAt
                 ],
-                'hash' => 'hash',
+                'feed_hash' => 'hash',
+                'feed_id' => 'feed_id_3',
             ],
         ];
 
@@ -161,10 +187,18 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
             501,
             'Failed to save feed'
         );
+        $actual = $this->testUnit->serialize($feedItems, $exportStatus, $this->productFeed->getFeedMetadata());
+        foreach ($actual as &$feed) {
+            $this->assertNotEmpty($feed['modified_at']);
+            $this->assertStringMatchesFormat(self::EXPECTED_DATE_TIME_FORMAT, $feed['modified_at']);
+            $actualRowModifiedAt = (new \DateTime($feed['modified_at']))->getTimestamp();
+            $this->assertEqualsWithDelta($rowModifiedAt, $actualRowModifiedAt, 3);
+            unset($feed['modified_at']);
+        }
 
         $this->assertEquals(
             $this->prepareExpectedData($feedItems, $exportStatus),
-            $this->testUnit->serialize($feedItems, $exportStatus, $this->productFeed->getFeedMetadata())
+            $actual
         );
     }
 
@@ -183,21 +217,19 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
         $failedStatus = $failedSkuPosition ? $exportStatus->getFailedItems()[$failedSkuPosition] : null;
         $status = $exportStatus->getStatus()->getValue();
         foreach ($feedItems as $position => $item) {
-            $feed = $item['feed'];
+            $feed = $item['feed_data'];
             $expected[] = [
-                'sku' => $feed['sku'],
-                'id' => $feed['productId'],
-                'store_view_code' => $feed['storeViewCode'],
                 'is_deleted' => $feed['deleted'],
                 'status' => $failedSkuPosition
                     ? ($failedSkuPosition === $position ? ExportStatusCodeProvider::FAILED_ITEM_ERROR : $status)
                     : $status,
-                'modified_at' => $feed['modifiedAt'],
                 'errors' => $failedSkuPosition
                     ? ($failedSkuPosition === $position ? $failedStatus['message'] : '')
                     : $exportStatus->getReasonPhrase(),
                 'feed_data' => $this->jsonSerializer->serialize($feed),
-                'feed_hash' => $item['hash']
+                'feed_hash' => $item['feed_hash'],
+                'feed_id' => $item['feed_id'],
+                'source_entity_id' => $feed['productId']
             ];
         }
         return $expected;

@@ -32,6 +32,11 @@ abstract class AbstractCategoryTest extends TestCase
     private const CATEGORY_FEED_INDEXER = 'catalog_data_exporter_categories';
 
     /**
+     * Category feed indexer table name
+     */
+    private const CATEGORY_FEED_INDEXER_TABLE = 'cde_categories_feed';
+
+    /**
      * @var ResourceConnection
      */
     protected $resource;
@@ -142,6 +147,20 @@ abstract class AbstractCategoryTest extends TestCase
     }
 
     /**
+     * Wait one second before test execution after fixtures created.
+     *
+     * @return void
+     */
+    protected function emulateCustomersBehaviorAfterDeleteAction(): void
+    {
+        // Avoid getFeed right after category was created.
+        // We have to emulate real customers behavior
+        // as it's possible that feed in test will be retrieved in same time as category created:
+        // \Magento\DataExporter\Model\Query\RemovedEntitiesByModifiedAtQuery::getQuery
+        sleep(1);
+    }
+
+    /**
      * Reindex the full category data exporter table
      *
      * @return void
@@ -166,7 +185,7 @@ abstract class AbstractCategoryTest extends TestCase
     private function truncateCategoryDataExporterIndexTable(): void
     {
         $connection = $this->resource->getConnection();
-        $feedTable = $this->resource->getTableName(self::CATEGORY_FEED_INDEXER);
+        $feedTable = $this->resource->getTableName(self::CATEGORY_FEED_INDEXER_TABLE);
         $connection->truncateTable($feedTable);
     }
 }

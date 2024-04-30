@@ -225,8 +225,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
         if (true === $checkDatefiedls) {
             $dateFields = [
                 'createdAt',
-                'updatedAt',
-                'modifiedAt'
+                'updatedAt'
             ];
             foreach ($dateFields as $dateFieldName) {
                 self::assertEquals(

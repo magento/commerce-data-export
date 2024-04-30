@@ -1,19 +1,12 @@
 {
-    "catalog_data_exporter_product_prices": {
-        "index": {
-            "CATALOG_DATA_EXPORTER_PRODUCT_PRICES_MODIFIED_AT": true,
-            "CATALOG_DATA_EXPORTER_PRODUCT_PRICES_MODIFIED_AT_STATUS": true
-        },
+    "cde_product_prices_feed": {
         "constraint": {
-            "PRIMARY": true
+            "PRIMARY": true,
+            "CDE_PRICES_FEED_FEED_ID":  true
         },
-        "column": {
-            "product_id": true,
-            "customer_group_code": true,
-            "website_id": true,
-            "feed_data": true,
-            "modified_at": true,
-            "is_deleted": true
+        "index": {
+            "CDE_PRODUCT_PRICES_FEED_SOURCE_ENTITY_ID_MODIFIED_AT": true,
+            "CDE_PRODUCT_PRICES_FEED_STATUS": true
         }
     }
 }

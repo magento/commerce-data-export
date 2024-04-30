@@ -30,9 +30,13 @@ class DeletedEntitiesProvider implements DeletedEntitiesProviderInterface
     /**
      * @inheritDoc
      */
-    public function get(array $ids, array $filteredHashes, FeedIndexMetadata $metadata): \Generator
-    {
-        $select = $this->deletedEntitiesByModifiedAtQuery->getQuery($ids, $metadata);
+    public function get(
+        array $ids,
+        array $filteredHashes,
+        FeedIndexMetadata $metadata,
+        string $recentTimeStamp
+    ): \Generator {
+        $select = $this->deletedEntitiesByModifiedAtQuery->getQuery($ids, $metadata, $recentTimeStamp);
         $cursor = $this->resourceConnection->getConnection()->query($select);
         $deletedItems = [];
         $n = 0;

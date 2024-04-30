@@ -32,6 +32,9 @@ use Magento\Framework\DB\Select;
 
 /**
  * Creates batches based on feed index table and configured batch size.
+ * Used in the following scenarios:
+ * - resend failed feed items for immediate export feeds (e.g. see products_feed_resend_failed_items cron job)
+ * - send feed items to already collected feeds for legacy feeds (e.g. see submit_orders_feed cron job)
  */
 class Generator implements BatchGeneratorInterface
 {
@@ -59,6 +62,10 @@ class Generator implements BatchGeneratorInterface
      * @var BatchTableFactory
      */
     private BatchTableFactory $batchTableFactory;
+
+    /**
+     * @var CommerceDataExportLoggerInterface
+     */
     private CommerceDataExportLoggerInterface $logger;
 
     /**
@@ -67,6 +74,7 @@ class Generator implements BatchGeneratorInterface
      * @param IdIteratorFactory $idIteratorFactory
      * @param BatchLocatorFactory $batchLocatorFactory
      * @param BatchTableFactory $batchTableFactory
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         ResourceConnection  $resourceConnection,
@@ -149,7 +157,8 @@ class Generator implements BatchGeneratorInterface
 
         // to avoid chatty logs on each cron run - log only case when work expected
         if ($totalProcessedItems > 0) {
-            $this->logger->info(sprintf(
+            $this->logger->info(
+                sprintf(
                     'start processing `%s` items in `%s` threads',
                     $totalProcessedItems,
                     $metadata->getThreadCount()
@@ -162,8 +171,7 @@ class Generator implements BatchGeneratorInterface
                 [
                     'batchTable' => $batchTable,
                     'sourceTableKeyColumn' => $metadata->getFeedTableField(),
-                    'batchLocator' => $batchLocator,
-                    'dateTimeFormat' => $metadata->getDateTimeFormat()
+                    'batchLocator' => $batchLocator
                 ]
             );
         } else {
@@ -173,7 +181,6 @@ class Generator implements BatchGeneratorInterface
                     'sourceTableName' => $sourceTableName,
                     'sourceTableKeyColumns' => $sourceTableKeyColumns,
                     'batchLocator' => $batchLocator,
-                    'dateTimeFormat' => $metadata->getDateTimeFormat(),
                     'isRemovable' => $metadata->isRemovable()
                 ]
             );
@@ -209,11 +216,12 @@ class Generator implements BatchGeneratorInterface
             ->from(
                 ['st' => $sourceTableName],
                 $sourceTableKeyColumns
-            )
-            ->where('st.modified_at > ?', $sinceTimestamp);
+            );
         if ($isExportImmediately) {
             $subSelect->distinct(true);
             $subSelect->where('st.status NOT IN (?)', ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE);
+        } else {
+            $subSelect->where('st.modified_at > ?', $sinceTimestamp);
         }
 
         $select = $connection->select()

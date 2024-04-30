@@ -24,6 +24,7 @@
         "magento/module-catalog-inventory": ">=100.4.4",
         "magento/module-catalog": ">=104.0.4",
         "magento/module-store": ">=101.1.4",
+        "magento/module-indexer": ">=100.4.4",
         "magento/module-inventory": ">=1.2.2",
         "magento/module-inventory-api": ">=1.2.2",
         "magento/module-inventory-catalog-api": ">=1.3.2",

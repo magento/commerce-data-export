@@ -7,7 +7,9 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
+use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\DataExporter\Model\FeedExportStatus;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\DataExporter\Status\ExportStatusCodeProvider;
 use Magento\Framework\Serialize\SerializerInterface;
 
@@ -38,20 +40,24 @@ class DataSerializer implements DataSerializerInterface
      * @var array
      */
     private array $unserializeKeys;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param SerializerInterface $serializer
+     * @param CommerceDataExportLoggerInterface $logger
      * @param array $mapping
      * @param array $unserializeKeys
      */
     public function __construct(
         SerializerInterface $serializer,
+        CommerceDataExportLoggerInterface $logger,
         array $mapping = [],
         array $unserializeKeys = [],
     ) {
         $this->serializer = $serializer;
         $this->mapping = $mapping;
         $this->unserializeKeys = $unserializeKeys;
+        $this->logger = $logger;
     }
 
     /**
@@ -97,28 +103,44 @@ class DataSerializer implements DataSerializerInterface
         $output = [];
         $status = $exportStatus->getStatus();
         $exportFailedItems = $exportStatus->getFailedItems();
-        $feedItemFields = array_values($metadata->getFeedIdentifierMappingFields());
+        $feedItemFields = array_values($metadata->getFeedItemIdentifiers());
         $feedItemFieldsToPersist = array_merge(
             $metadata->getMinimalPayloadFieldsList(),
             // required to build feed's table primary key if entity was deleted
             array_combine($feedItemFields, $feedItemFields),
         );
+        $rowModifiedAt = (new \DateTime())->format($metadata->getDbDateTimeFormat());
 
         $itemN = -1;
         foreach ($data as $row) {
             $itemN++;
-            $feedData = $row['feed'];
+            $feedData = $row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA];
 
             foreach ($this->unserializeKeys as $unserializeKey) {
                 $feedData[$unserializeKey] = $this->serializer->unserialize($feedData[$unserializeKey]);
             }
-            $outputRow = $this->buildRow($feedData);
+            if (!array_key_exists($metadata->getFeedIdentity(), $feedData)) {
+                throw new UnableRetrieveData(sprintf(
+                    'Source entity id not found in feed data. field: %s, Feed data: %s',
+                    $metadata->getFeedIdentity(),
+                    var_export($feedData, true)
+                ));
+            }
+            $sourceEntityId = $feedData[$metadata->getFeedIdentity()] ?? null;
+            if ($sourceEntityId === null) {
+                $this->logger->warning(
+                    'Source entity id is null. Check your data. field: %s, Feed data: %s',
+                    ['field' => $metadata->getFeedIdentity(), 'data' => var_export($feedData, true)]
+                );
+            }
 
-            // get the first available value [feed.deleted, row.delete, 0]
-            $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED] = $feedData['deleted'] ?? $row['deleted'] ?? 0;
+            $outputRow = [FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID => $sourceEntityId];
+            // get the first available value [feed.deleted, row.is_delete, 0]
+            $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED] = $feedData['deleted']
+                ?? $row[FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED]
+                ?? 0;
             $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS] = $status->getValue();
-            $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_MODIFIED_AT] = $feedData['modifiedAt'];
-
+            $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_MODIFIED_AT] = $rowModifiedAt;
             if (!empty($exportFailedItems)) {
                 $failedFeedItem = $exportFailedItems[$itemN]['message'] ?? null;
                 $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_ERRORS] = $failedFeedItem ?? '';
@@ -139,7 +161,10 @@ class DataSerializer implements DataSerializerInterface
                 $feedData = \array_intersect_key($feedData, $feedItemFieldsToPersist);
             }
             $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA] = $this->serializer->serialize($feedData);
-            $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH] = $row['hash'];
+            $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID] = $row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID];
+            $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH] = $row[
+                FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH
+            ];
 
             $output[] = $outputRow;
         }

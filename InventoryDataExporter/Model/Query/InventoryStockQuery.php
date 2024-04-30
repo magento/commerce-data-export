@@ -87,6 +87,7 @@ class InventoryStockQuery
                     [
                         'qty' => "isi.quantity",
                         'isSalable' => "isi.is_salable",
+                        'productId' => "product.entity_id",
                         'sku' => "isi.sku",
                         'stockId' => new Expression($stockId),
                         'manageStock' => $connection->getCheckSql(
@@ -148,6 +149,7 @@ class InventoryStockQuery
                 [
                     'qty' => "isi.quantity",
                     'isSalable' => "isi.is_salable",
+                    'productId' => 'isi.product_id',
                     'sku' => "isi.sku",
                     'stockId' => new Expression($stockId),
                     'manageStock' => 'stock_item.manage_stock',

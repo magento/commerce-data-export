@@ -77,14 +77,15 @@ class MarkItemsAsDeleted
             if (!isset($fetchedSourceItems[$deletedItemSku])) {
                 continue ;
             }
-            foreach ($fetchedSourceItems[$deletedItemSku] as $fetchedItemStockId => $fetchedItemSources) {
+            foreach ($fetchedSourceItems[$deletedItemSku]['stock'] as $fetchedItemStockId => $fetchedItemSources) {
                 if ($this->isContainsAllKeys($fetchedItemSources, $deletedItemSources)) {
                     $stockStatusId = StockStatusIdBuilder::build(
                         ['stockId' => (string)$fetchedItemStockId, 'sku' => $deletedItemSku]
                     );
                     $stocksToDelete[$stockStatusId] = [
-                        'stock_id' => (string)$fetchedItemStockId,
-                        'sku' => $deletedItemSku
+                        'stockId' => (string)$fetchedItemStockId,
+                        'sku' => $deletedItemSku,
+                        'productId' => $fetchedSourceItems[$deletedItemSku]['product_id'],
                     ];
                 }
             }

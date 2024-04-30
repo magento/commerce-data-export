@@ -1,42 +1,32 @@
 {
-    "catalog_data_exporter_products": {
+    "cde_products_feed": {
         "index": {
-            "CATALOG_DATA_EXPORTER_PRODUCTS_MODIFIED_AT": true,
-            "CATALOG_DATA_EXPORTER_PRODUCTS_MODIFIED_AT_STATUS": true
+            "CDE_PRODUCTS_FEED_SOURCE_ENTITY_ID_MODIFIED_AT": true,
+            "CDE_PRODUCTS_FEED_STATUS": true
         },
         "constraint": {
-            "PRIMARY": true
-        },
-        "column": {
-            "id": true,
-            "sku": true,
-            "store_view_code": true,
-            "feed_data": true,
-            "modified_at": true,
-            "is_deleted": true
+            "PRIMARY": true,
+            "CDE_PRODUCTS_FEED_FEED_ID": true
         }
     },
-    "catalog_data_exporter_categories": {
-        "index": {
-            "CATALOG_DATA_EXPORTER_CATEGORIES_MODIFIED_AT": true
-        },
+    "cde_categories_feed": {
         "constraint": {
-            "PRIMARY": true
+            "PRIMARY": true,
+            "CDE_CATEGORIES_FEED_FEED_ID": true
         },
-        "column": {
-            "id": true,
-            "store_view_code": true,
-            "feed_data": true,
-            "modified_at": true,
-            "is_deleted": true
+        "index": {
+            "CDE_CATEGORIES_FEED_SOURCE_ENTITY_ID_MODIFIED_AT": true,
+            "CDE_CATEGORIES_FEED_STATUS" : true
         }
     },
-    "catalog_data_exporter_product_attributes": {
-        "index": {
-            "CATALOG_DATA_EXPORTER_PRODUCT_ATTRIBUTES_MODIFIED_AT": true
-        },
+    "cde_product_attributes_feed": {
         "constraint": {
-            "PRIMARY": true
+            "PRIMARY": true,
+            "CDE_PRODUCT_ATTRIBUTES_FEED_FEED_ID": true
+        },
+        "index": {
+            "CDE_PRODUCT_ATTRIBUTES_FEED_SOURCE_ENTITY_ID_MODIFIED_AT": true,
+            "CDE_PRODUCT_ATTRIBUTES_FEED_STATUS": true
         }
     }
 }

@@ -12,6 +12,7 @@
     <record name="StockItemStatus">
         <field name="stockId" type="ID"/>
         <field name="sku" type="String"/>
+        <field name="productId" type="Int"/>
         <field name="qty" type="Float" />
         <field name="qtyForSale" type="Float" provider="Magento\InventoryDataExporter\Model\Provider\QtyForSale">
             <using field="sku" />

@@ -17,4 +17,24 @@
             <argument name="persistExportedFeed" xsi:type="boolean">true</argument>
         </arguments>
     </virtualType>
+    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="persistExportedFeed" xsi:type="boolean">true</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="persistExportedFeed" xsi:type="boolean">true</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="persistExportedFeed" xsi:type="boolean">true</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
+        <arguments>
+            <argument name="persistExportedFeed" xsi:type="boolean">true</argument>
+        </arguments>
+    </virtualType>
 </config>

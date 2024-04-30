@@ -9,6 +9,7 @@ namespace Magento\CatalogDataExporter\Test\Integration;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\DataExporter\Model\ExportFeedInterface;
+use Magento\DataExporter\Model\FeedHashBuilder;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\DataExporter\Status\ExportStatusCodeProvider;
@@ -22,6 +23,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Test class to check that only feeds with "resyncable" statuses would be re-submitted
+ *
+ * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
  */
 class ResubmitFailedFeedTest extends AbstractProductTestHelper
 {
@@ -41,6 +44,8 @@ class ResubmitFailedFeedTest extends AbstractProductTestHelper
      * @var ResourceConnection|mixed
      */
     private ResourceConnection $resourceConnection;
+
+    private FeedHashBuilder $hashBuilder;
 
     public static function setUpBeforeClass(): void
     {
@@ -71,12 +76,14 @@ class ResubmitFailedFeedTest extends AbstractProductTestHelper
         $this->submitFeed = Bootstrap::getObjectManager()->get(ProductSubmitFeed::class); // @phpstan-ignore-line
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
         $this->resourceConnection = Bootstrap::getObjectManager()->create(ResourceConnection::class);
+        $this->hashBuilder = Bootstrap::getObjectManager()->create(FeedHashBuilder::class);
     }
 
     /**
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
      * @magentoConfigFixture services_connector/services_connector_integration/production_api_key test_key
+     * @magentoConfigFixture services_connector/services_connector_integration/production_private_key private_test_key
      * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/setup_simple_products.php
      * @dataProvider productsWithStatusesDataProvider
      *
@@ -104,19 +111,23 @@ class ResubmitFailedFeedTest extends AbstractProductTestHelper
     private function updateFeeds(array $expectedProducts): void
     {
         $queryData = [];
+        $metadata = $this->productFeed->getFeedMetadata();
         foreach ($expectedProducts as $productData) {
             $productId = $this->productRepository->get($productData['sku'])->getId();
+            $identifierMapData = [
+                'storeViewCode' => $productData['store_view_code'],
+                'sku' => $productData['sku']
+            ];
             $queryData[] = [
-                'id' => $productId,
-                'sku' => $productData['sku'],
-                'store_view_code' => $productData['store_view_code'],
+                'source_entity_id' => $productId,
+                'feed_id' => $this->hashBuilder->buildIdentifierFromFeedItem($identifierMapData, $metadata),
                 'status' => $productData['status']
             ];
         }
 
         $connection = $this->resourceConnection->getConnection();
         $connection->insertOnDuplicate(
-            $connection->getTableName($this->productFeed->getFeedMetadata()->getFeedTableName()),
+            $connection->getTableName($metadata->getFeedTableName()),
             $queryData
         );
     }

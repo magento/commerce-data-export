@@ -127,4 +127,16 @@ abstract class AbstractProductVariantsTest extends TestCase
             throw new RuntimeException('Could not reindex product variant data');
         }
     }
+
+    /**
+     * Wait one second before test execution after fixtures created.
+     *
+     * @return void
+     */
+    protected function emulateCustomersBehaviorAfterDeleteAction(): void
+    {
+        // Avoid getFeed right after product was created or removed.
+        // We have to emulate real customers behavior
+        sleep(1);
+    }
 }

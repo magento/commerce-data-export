@@ -13,6 +13,8 @@ use Magento\Framework\DB\Select;
 
 /**
  * Feed Queries source
+ * @deprecared
+ * @see \Magento\DataExporter\Model\Batch\BatchGeneratorInterface to prepare feeds collection
  */
 class FeedQuery
 {
@@ -57,8 +59,6 @@ class FeedQuery
             ->order('modified_at')
             ->limit(1, $offset);
 
-        $this->addFilterByStatus($select, $feedTableName, $ignoredExportStatus);
-
         return $select;
     }
 
@@ -96,30 +96,7 @@ class FeedQuery
         if ($limit) {
             $select->where('t.modified_at <= ?', $limit);
         }
-        $this->addFilterByStatus($select, $feedTableName, $ignoredExportStatus);
-        return $select;
-    }
 
-    /**
-     * Add filter by status
-     *
-     * @param Select $select
-     * @param string $feedTableName
-     * @param ?array $ignoredExportStatus
-     * @return void
-     */
-    private function addFilterByStatus(Select $select, string $feedTableName, array $ignoredExportStatus = null): void
-    {
-        if ($ignoredExportStatus === null) {
-            return ;
-        }
-        $connection = $this->resourceConnection->getConnection();
-        if (!$connection->tableColumnExists($feedTableName, FeedIndexMetadata::FEED_TABLE_FIELD_STATUS)) {
-            throw new \RuntimeException(sprintf(
-                'Feed table "%s" doesn\'t have "status" column.',
-                $feedTableName
-            ));
-        }
-        $select->where('t.status NOT IN (?)', $ignoredExportStatus);
+        return $select;
     }
 }

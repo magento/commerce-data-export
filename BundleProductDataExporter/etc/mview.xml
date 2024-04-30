@@ -6,7 +6,7 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
-    <view id="catalog_data_exporter_products" class="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer" group="indexer">
+    <view id="cde_products_feed" class="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer" group="indexer">
         <subscriptions>
             <!-- used to collect option "type" and "required" attributes-->
             <table name="catalog_product_bundle_option" entity_column="parent_id" />

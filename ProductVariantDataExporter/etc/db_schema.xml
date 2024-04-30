@@ -7,53 +7,80 @@
 -->
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
-    <table name="catalog_data_exporter_product_variants" resource="default" engine="innodb" comment="Product Variant Feed Storage">
-        <column
-            xsi:type="varchar"
-            name="parent_id"
-            nullable="false"
-            length="64"
-            comment="Parent product Id"
+    <table name="cde_product_variants_feed" resource="default" engine="innodb" comment="Product Variants Feed">
+        <column xsi:type="int" name="id" unsigned="true" nullable="false" identity="true"
+                comment="Autoincrement ID. System field"/>
+
+        <column xsi:type="int"
+                name="source_entity_id"
+                padding="10"
+                unsigned="true"
+                nullable="false"
+                comment="Product Entity Id"
         />
         <column
-            xsi:type="varchar"
-            name="product_id"
-            nullable="false"
-            length="64"
-            comment="Variant product Id"
-        />
-        <column xsi:type="varchar"
-                name="id"
+                xsi:type="varchar"
+                name="feed_id"
                 nullable="false"
                 length="64"
-                comment="Variant Id"
+                comment="Feed Item Identifier. Hash based on feed item identity fields"
         />
         <column
-            xsi:type="mediumtext"
-            name="feed_data"
-            nullable="false"
-            comment="Feed Data"
+                xsi:type="timestamp"
+                name="modified_at"
+                on_update="true"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"
+                comment="Created At"
         />
         <column
-            xsi:type="timestamp"
-            name="modified_at"
-            on_update="true"
-            nullable="false"
-            default="CURRENT_TIMESTAMP"
-            comment="Created At"
+                xsi:type="tinyint"
+                name="is_deleted"
+                nullable="false"
+                default="0"
+                comment="Feed item deletion flag"
         />
         <column
-            xsi:type="tinyint"
-            name="is_deleted"
-            nullable="false"
-            default="0"
-            comment="Variant Deleted"
+                xsi:type="smallint"
+                name="status"
+                nullable="false"
+                default="0"
+                comment="Feed item status"
+        />
+        <column
+                xsi:type="mediumtext"
+                name="feed_data"
+                nullable="false"
+                comment="Feed Data"
+        />
+        <column
+                xsi:type="varchar"
+                name="feed_hash"
+                nullable="false"
+                length="64"
+                comment="hash from {feed_data}"
+        />
+        <column
+                xsi:type="text"
+                name="errors"
+                nullable="true"
+                comment="Errors"
         />
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>
-        <index referenceId="catalog_data_exporter_product_variants_modified_at" indexType="btree">
+
+        <constraint referenceId="cde_product_variants_feed_id"  xsi:type="unique">
+            <column name="feed_id"/>
+        </constraint>
+        <!-- \Magento\DataExporter\Model\Query\DeletedEntitiesByModifiedAtQuery::getQuery -->
+        <index referenceId="cde_product_variants_feed_source_id_modified_at" indexType="btree">
+            <column name="source_entity_id"/>
             <column name="modified_at"/>
+        </index>
+        <!-- for failed items -->
+        <index referenceId="cde_product_variants_feed_status" indexType="btree">
+            <column name="status"/>
         </index>
     </table>
 </schema>

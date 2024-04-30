@@ -6,7 +6,7 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
-    <view id="catalog_data_exporter_products" class="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer" group="indexer">
+    <view id="cde_products_feed" class="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer" group="indexer">
         <subscriptions>
             <table name="catalog_product_entity" entity_column="entity_id" />
             <table name="catalog_product_website" entity_column="product_id" />
@@ -23,14 +23,14 @@
             <table name="catalog_product_relation" entity_column="child_id" />
         </subscriptions>
     </view>
-    <view id="catalog_data_exporter_product_attributes" class="Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndex" group="indexer">
+    <view id="cde_product_attributes_feed" class="Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndex" group="indexer">
         <subscriptions>
             <table name="eav_attribute" entity_column="attribute_id" />
             <table name="catalog_eav_attribute" entity_column="attribute_id" />
         </subscriptions>
     </view>
 
-    <view id="catalog_data_exporter_categories" class="Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexer" group="indexer">
+    <view id="cde_categories_feed" class="Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexer" group="indexer">
         <subscriptions>
             <table name="catalog_category_entity" entity_column="entity_id" />
             <table name="catalog_category_entity_datetime" entity_column="entity_id" />

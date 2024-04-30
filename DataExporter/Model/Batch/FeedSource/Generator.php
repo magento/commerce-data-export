@@ -30,6 +30,9 @@ use Magento\Framework\DB\Select;
 
 /**
  * Creates batches based on feed source table and configured batch size.
+ * Used in the following scenarios:
+ * - full reindex. Can be triggered by `indexer_reindex_all_invalid` cron job or by indexer:reindex CLI command
+ * - full sync. Can be triggered by saas:resync CLI command
  */
 class Generator implements BatchGeneratorInterface
 {
@@ -66,6 +69,9 @@ class Generator implements BatchGeneratorInterface
      */
     private BatchTableFactory $batchTableFactory;
 
+    /**
+     * @var CommerceDataExportLoggerInterface
+     */
     private CommerceDataExportLoggerInterface $logger;
 
     /**
@@ -110,6 +116,18 @@ class Generator implements BatchGeneratorInterface
             throw $e;
         }
     }
+
+    /**
+     * Generate batch iterator
+     *
+     * @param FeedIndexMetadata $metadata
+     * @param array $args
+     * @return BatchIteratorInterface
+     * @throws \Zend_Db_Exception
+     * @throws \Zend_Db_Select_Exception
+     * @throws \Zend_Db_Statement_Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     private function doGenerate(FeedIndexMetadata $metadata, array $args = []): BatchIteratorInterface
     {
         $connection = $this->resourceConnection->getConnection();
@@ -289,7 +307,7 @@ class Generator implements BatchGeneratorInterface
             $sourceSelect->where(sprintf(
                 "s.%s >= DATE_SUB(STR_TO_DATE('%s', '%%Y-%%m-%%d %%H:%%i:%%s'), INTERVAL %d SECOND)",
                 $metadata->getSourceTableFieldOnFullReIndexLimit(),
-                $dateTime->format('Y-m-d H:i:s'),
+                $dateTime->format($metadata->getDbDateTimeFormat()),
                 $metadata->getFullReIndexSecondsLimit()
             ));
         }

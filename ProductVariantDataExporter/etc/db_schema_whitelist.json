@@ -1,18 +1,12 @@
 {
-    "catalog_data_exporter_product_variants": {
-        "index": {
-            "CATALOG_DATA_EXPORTER_PRODUCT_VARIANTS_MODIFIED_AT": true
-        },
+    "cde_product_variants_feed": {
         "constraint": {
-            "PRIMARY": true
+            "PRIMARY":  true,
+            "CDE_PRODUCT_VARIANTS_FEED_FEED_ID": true
         },
-        "column": {
-            "parent_id": true,
-            "product_id": true,
-            "id": true,
-            "feed_data": true,
-            "modified_at": true,
-            "is_deleted": true
+        "index": {
+            "CDE_PRODUCT_VARIANTS_FEED_SOURCE_ENTITY_ID_MODIFIED_AT": true,
+            "CDE_PRODUCT_VARIANTS_FEED_STATUS": true
         }
     }
 }

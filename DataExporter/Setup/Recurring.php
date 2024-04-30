@@ -7,18 +7,19 @@
  */
 declare(strict_types=1);
 
-namespace Magento\DataExporter\Setup\Patch\Schema;
+namespace Magento\DataExporter\Setup;
 
+use Magento\DataExporter\Model\Indexer\FeedIndexer;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 use Magento\Framework\Indexer\ActionFactory;
-use Magento\Framework\Setup\Patch\SchemaPatchInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 use Magento\Indexer\Model\Indexer\Collection;
 
 /**
  * Set all data exporter indexers to 'Update by Schedule' mode on upgrade.
  */
-class SetExporterIndexerOnUpdateOnSchedule implements SchemaPatchInterface
+class Recurring implements \Magento\Framework\Setup\InstallSchemaInterface
 {
     /**
      * @var SchemaSetupInterface
@@ -61,7 +62,7 @@ class SetExporterIndexerOnUpdateOnSchedule implements SchemaPatchInterface
     /**
      * @inheritdoc
      */
-    public function apply()
+    public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
         $this->schemaSetup->startSetup();
 
@@ -71,7 +72,7 @@ class SetExporterIndexerOnUpdateOnSchedule implements SchemaPatchInterface
             try {
                 $indexerAction =  $this->actionFactory->create($indexer->getActionClass());
 
-                if ($indexerAction instanceof \Magento\DataExporter\Model\Indexer\FeedIndexer) {
+                if ($indexerAction instanceof FeedIndexer && $indexer->isScheduled() === false) {
                     $this->logger->info(
                         sprintf("Setting mode Update On Schedule for indexer %s", $indexer->getTitle())
                     );

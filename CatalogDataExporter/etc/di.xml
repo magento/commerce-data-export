@@ -225,13 +225,14 @@
             <argument name="feedIdentity" xsi:type="string">productId</argument>
             <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
-            <argument name="feedTableName" xsi:type="string">catalog_data_exporter_products</argument>
-            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableName" xsi:type="string">cde_products_feed</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
                 <item name="sku" xsi:type="string">sku</item>
             </argument>
+            <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
+
             <argument name="exportImmediately" xsi:type="boolean">true</argument>
             <argument name="persistExportedFeed" xsi:type="init_parameter">Magento\DataExporter\Model\ExportFeedInterface::PERSIST_EXPORTED_FEED</argument>
 
@@ -243,29 +244,15 @@
                 <item name="websiteCode" xsi:type="string">websiteCode</item>
             </argument>
 
-            <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
-
-            <argument name="feedIdentifierMapping" xsi:type="array">
-                <item name="id" xsi:type="string">productId</item>
-                <item name="store_view_code" xsi:type="string">storeViewCode</item>
-            </argument>
-
-        </arguments>
-    </virtualType>
-    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
-        <arguments>
-            <argument name="mapping" xsi:type="array">
+            <argument name="feedItemIdentifiers" xsi:type="array">
                 <item name="sku" xsi:type="string">sku</item>
-                <item name="id" xsi:type="string">productId</item>
-                <item name="store_view_code" xsi:type="string">storeViewCode</item>
+                <item name="storeViewCode" xsi:type="string">storeViewCode</item>
             </argument>
         </arguments>
     </virtualType>
-
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>
-            <argument name="serializer" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductDataSerializer</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\CatalogDataExporter\Model\ProductFeed" type="Magento\DataExporter\Model\Feed">
@@ -282,27 +269,31 @@
             <argument name="feedIdentity" xsi:type="string">id</argument>
             <argument name="sourceTableName" xsi:type="string">eav_attribute</argument>
             <argument name="sourceTableField" xsi:type="string">attribute_id</argument>
-            <argument name="feedTableName" xsi:type="string">catalog_data_exporter_product_attributes</argument>
-            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableName" xsi:type="string">cde_product_attributes_feed</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
             </argument>
             <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductAttributeDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
-        <arguments>
-            <argument name="mapping" xsi:type="array">
-                <item name="id" xsi:type="string">id</item>
-                <item name="store_view_code" xsi:type="string">storeViewCode</item>
+
+            <argument name="exportImmediately" xsi:type="boolean">true</argument>
+            <argument name="persistExportedFeed" xsi:type="init_parameter">Magento\DataExporter\Model\ExportFeedInterface::PERSIST_EXPORTED_FEED</argument>
+            <argument name="minimalPayload" xsi:type="array">
+                <item name="websiteCode" xsi:type="string">websiteCode</item>
+                <item name="storeCode" xsi:type="string">storeCode</item>
+                <item name="storeViewCode" xsi:type="string">storeViewCode</item>
+                <item name="attributeCode" xsi:type="string">attributeCode</item>
+                <item name="attributeType" xsi:type="string">attributeType</item>
+            </argument>
+            <argument name="feedItemIdentifiers" xsi:type="array">
+                <item name="attributeCode" xsi:type="string">attributeCode</item>
+                <item name="storeViewCode" xsi:type="string">storeViewCode</item>
             </argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndex" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndexMetadata</argument>
-            <argument name="serializer" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductAttributeDataSerializer</argument>
         </arguments>
     </virtualType>
 
@@ -380,20 +371,27 @@
             <argument name="feedIdentity" xsi:type="string">categoryId</argument>
             <argument name="sourceTableName" xsi:type="string">catalog_category_entity</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
-            <argument name="feedTableName" xsi:type="string">catalog_data_exporter_categories</argument>
-            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableName" xsi:type="string">cde_categories_feed</argument>
+
             <argument name="feedTableMutableColumns" xsi:type="array">
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
             </argument>
             <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Magento\CatalogDataExporter\Model\Indexer\CategoryDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
-        <arguments>
-            <argument name="mapping" xsi:type="array">
-                <item name="id" xsi:type="string">categoryId</item>
-                <item name="store_view_code" xsi:type="string">storeViewCode</item>
+
+            <argument name="exportImmediately" xsi:type="boolean">true</argument>
+            <argument name="persistExportedFeed" xsi:type="init_parameter">Magento\DataExporter\Model\ExportFeedInterface::PERSIST_EXPORTED_FEED</argument>
+
+            <argument name="minimalPayload" xsi:type="array">
+                <item name="websiteCode" xsi:type="string">websiteCode</item>
+                <item name="storeCode" xsi:type="string">storeCode</item>
+                <item name="storeViewCode" xsi:type="string">storeViewCode</item>
+                <item name="categoryId" xsi:type="string">categoryId</item>
+            </argument>
+
+            <argument name="feedItemIdentifiers" xsi:type="array">
+                <item name="categoryId" xsi:type="string">categoryId</item>
+                <item name="storeViewCode" xsi:type="string">storeViewCode</item>
             </argument>
         </arguments>
     </virtualType>
@@ -401,7 +399,6 @@
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata</argument>
-            <argument name="serializer" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\CategoryDataSerializer</argument>
             <argument name="callbackSkipAttributes" xsi:type="array">
                 <item name="store_view_code" xsi:type="string">storeViewCode</item>
                 <item name="category_id" xsi:type="string">categoryId</item>

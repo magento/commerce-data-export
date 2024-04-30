@@ -29,6 +29,11 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     private const PRODUCT_PRICE_FEED_INDEXER = 'catalog_data_exporter_product_prices';
 
     /**
+     * Data Exporter Price Indexer table
+     */
+    private const PRODUCT_PRICE_FEED_TABLE = 'cde_product_prices_feed';
+
+    /**
      * @var ObjectManagerInterface
      */
     protected $objectManager;
@@ -157,7 +162,7 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     private function truncateIndexTable(): void
     {
         $connection = $this->resourceConnection->getConnection();
-        $feedTable = $this->resourceConnection->getTableName('catalog_data_exporter_product_prices');
+        $feedTable = $this->resourceConnection->getTableName(self::PRODUCT_PRICE_FEED_TABLE);
         $connection->truncateTable($feedTable);
     }
 
@@ -165,8 +170,8 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     {
         $connection = $this->resourceConnection->getConnection();
         $query = $connection->select()
-            ->from(['ex' => $this->resourceConnection->getTableName(self::PRODUCT_PRICE_FEED_INDEXER)])
-            ->where('ex.product_id IN (?)', $productIds);
+            ->from(['ex' => $this->resourceConnection->getTableName(self::PRODUCT_PRICE_FEED_TABLE)])
+            ->where('ex.source_entity_id IN (?)', $productIds);
         $cursor = $connection->query($query);
         $data = [];
         while ($row = $cursor->fetch()) {

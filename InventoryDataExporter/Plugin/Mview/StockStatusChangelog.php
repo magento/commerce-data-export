@@ -18,12 +18,12 @@ use Magento\Framework\Phrase;
 
 /**
  * Override default behavior for Mview:
- * - allow to collect String instead Integer for "inventory_data_exporter_stock_status" changelog table
+ * - allow to collect String instead Integer for "inventory_data_exporter_stock_status_feed_cl" changelog table
  */
 class StockStatusChangelog
 {
     private const SKU_FIELD_SIZE = 64;
-    private const STOCK_STATUS_CHANGELOG_NAME = 'inventory_data_exporter_stock_status_' . Changelog::NAME_SUFFIX;
+    private const STOCK_STATUS_CHANGELOG_NAME = 'inventory_data_exporter_stock_status_feed_' . Changelog::NAME_SUFFIX;
 
     private ResourceConnection $resource;
     private AdapterInterface $connection;
@@ -136,7 +136,9 @@ class StockStatusChangelog
             }
             $changelogTableName = $this->resource->getTableName($subject->getName());
             if (!$this->connection->isTableExists($changelogTableName)) {
-                throw new ChangelogTableNotExistsException(new Phrase("Table %1 does not exist", [$changelogTableName]));
+                throw new ChangelogTableNotExistsException(
+                    new Phrase("Table %1 does not exist", [$changelogTableName])
+                );
             }
 
             $select = $this->connection->select()->distinct(

@@ -11,6 +11,8 @@ use Magento\DataExporter\Exception\UnableRetrieveData;
 
 /**
  * Interface ProductVariantsProviderInterface
+ * @deprecated
+ * @see \Magento\DataExporter\Export\DataProcessorInterface
  */
 interface ProductVariantsProviderInterface
 {

@@ -10,6 +10,8 @@
         <sequence>
             <module name="Magento_CatalogDataExporter"/>
             <module name="Magento_ProductPriceDataExporter"/>
+            <module name="Magento_ProductVariantDataExporter"/>
+            <module name="Magento_InventoryDataExporter"/>
         </sequence>
     </module>
 </config>

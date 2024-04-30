@@ -42,6 +42,11 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     public const CATALOG_DATA_EXPORTER = 'catalog_data_exporter_products';
 
     /**
+     * Catalog Data Exporter feed table
+     */
+    public const CATALOG_DATA_EXPORTER_TABLE = 'cde_products_feed';
+
+    /**
      * @var ProductRepositoryInterface
      */
     protected $productRepository;
@@ -143,17 +148,19 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     {
         // Select data from exporter table
         $query = $this->connection->select()
-            ->from(['ex' => $this->resource->getTableName(self::CATALOG_DATA_EXPORTER)])
-            ->where('ex.sku = ?', $sku)
-            ->where('ex.store_view_code = ?', $storeViewCode);
+            ->from(['ex' => $this->resource->getTableName(self::CATALOG_DATA_EXPORTER_TABLE)])
+            ->where('json_extract(feed_data, \'$.sku\') = ?', $sku)
+            ->where('json_extract(feed_data, \'$.storeViewCode\') = ?', $storeViewCode);
         $cursor = $this->connection->query($query);
         $data = [];
         while ($row = $cursor->fetch()) {
-            $data[$row['sku']]['sku'] = $row['sku'];
-            $data[$row['sku']]['store_view_code'] = $row['store_view_code'];
-            $data[$row['sku']]['modified_at'] = $row['modified_at'];
-            $data[$row['sku']]['is_deleted'] = $row['is_deleted'];
-            $data[$row['sku']]['feedData'] = $this->jsonSerializer->unserialize($row['feed_data']);
+            $feedData = $this->jsonSerializer->unserialize($row['feed_data']);
+            $sku = $feedData['sku'];
+            $data[$sku]['sku'] = $feedData['sku'];
+            $data[$sku]['store_view_code'] = $feedData['storeViewCode'];
+            $data[$sku]['modified_at'] = $row['modified_at'];
+            $data[$sku]['is_deleted'] = $row['is_deleted'];
+            $data[$sku]['feedData'] = $feedData;
         }
 
         return !empty($data[$sku]) ? $data[$sku] : $data;
@@ -549,7 +556,7 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     private function truncateProductDataExporterIndexTable(): void
     {
         $connection = $this->resource->getConnection();
-        $feedTable = $this->resource->getTableName(self::CATALOG_DATA_EXPORTER);
+        $feedTable = $this->resource->getTableName(self::CATALOG_DATA_EXPORTER_TABLE);
         $connection->truncateTable($feedTable);
     }
 }

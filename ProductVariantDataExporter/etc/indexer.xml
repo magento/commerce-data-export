@@ -8,7 +8,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
     <indexer
         id="catalog_data_exporter_product_variants"
-        view_id="catalog_data_exporter_product_variants"
+        view_id="cde_product_variants_feed"
         class="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer"
     >
         <title translate="true">Product Variant Feed</title>

@@ -16,8 +16,10 @@ use Magento\Framework\App\ObjectManager;
  */
 class FeedIndexMetadata
 {
+    public const FEED_TABLE_FIELD_SOURCE_ENTITY_ID = 'source_entity_id';
     public const FEED_TABLE_FIELD_IS_DELETED = 'is_deleted';
     public const FEED_TABLE_FIELD_MODIFIED_AT = 'modified_at';
+    public const FEED_TABLE_FIELD_FEED_ID = 'feed_id';
     public const FEED_TABLE_FIELD_FEED_HASH = 'feed_hash';
     public const FEED_TABLE_FIELD_FEED_DATA = 'feed_data';
     public const FEED_TABLE_FIELD_STATUS = 'status';
@@ -41,6 +43,11 @@ class FeedIndexMetadata
         'modifiedAt',
         'updatedAt'
     ];
+
+    /**
+     * @var string
+     */
+    private const DB_DATE_TIME_FORMAT = 'Y-m-d H:i:s';
 
     /**
      * @var string
@@ -139,18 +146,13 @@ class FeedIndexMetadata
     private ?Config $config;
 
     /**
-     * Mutable field: set during partial indexation
-     *
-     * @var null|string
-     */
-    private ?string $modifiedAtTimeInDBFormat;
-
-    /**
      * @var string|null
      */
     private ?string $dateTimeFormat;
 
     private ?string $viewSourceLinkField;
+
+    private array $feedItemIdentifiers;
 
     /**
      * @param string $feedName
@@ -165,6 +167,7 @@ class FeedIndexMetadata
      * @param string $sourceTableFieldOnFullReIndexLimit
      * @param bool $truncateFeedOnFullReindex
      * @param array $feedIdentifierMapping
+     * @param array $feedItemIdentifiers
      * @param array $minimalPayload
      * @param array $excludeFromHashFields
      * @param bool $exportImmediately
@@ -182,13 +185,14 @@ class FeedIndexMetadata
         string $sourceTableField,
         string $feedIdentity,
         string $feedTableName,
-        string $feedTableField,
+        string $feedTableField = self::FEED_TABLE_FIELD_SOURCE_ENTITY_ID,
         array $feedTableMutableColumns = [],
         string $sourceTableIdentityField = null,
         int $fullReIndexSecondsLimit = 0,
         string $sourceTableFieldOnFullReIndexLimit = 'updated_at',
         bool $truncateFeedOnFullReindex = true,
         array $feedIdentifierMapping = [],
+        array $feedItemIdentifiers = [],
         array $minimalPayload = [],
         array $excludeFromHashFields = [],
         bool $exportImmediately = false,
@@ -227,6 +231,7 @@ class FeedIndexMetadata
         $this->entitiesRemovable = $entitiesRemovable;
         $this->viewSourceLinkField = $viewSourceLinkField;
         $this->config = $config ?? ObjectManager::getInstance()->get(Config::class);
+        $this->feedItemIdentifiers = $feedItemIdentifiers;
     }
 
     /**
@@ -430,6 +435,16 @@ class FeedIndexMetadata
     }
 
     /**
+     * Get feed item identifiers fields
+     *
+     * @return array
+     */
+    public function getFeedItemIdentifiers(): array
+    {
+        return $this->feedItemIdentifiers;
+    }
+
+    /**
      * Get exclude from hash fields
      *
      * @return array
@@ -437,26 +452,6 @@ class FeedIndexMetadata
     public function getExcludeFromHashFields(): array
     {
         return $this->excludeFromHashFields;
-    }
-
-    /**
-     * Get current modified at time in DB format.
-     *
-     * @return string|null
-     */
-    public function getCurrentModifiedAtTimeInDBFormat(): ?string
-    {
-        return $this->modifiedAtTimeInDBFormat;
-    }
-
-    /**
-     * Set current modified at time in DB format.
-     *
-     * @param string $modifiedAtTimeInDBFormat
-     */
-    public function setCurrentModifiedAtTimeInDBFormat(string $modifiedAtTimeInDBFormat): void
-    {
-        $this->modifiedAtTimeInDBFormat = $modifiedAtTimeInDBFormat;
     }
 
     /**
@@ -476,7 +471,17 @@ class FeedIndexMetadata
      */
     public function getDateTimeFormat(): ?string
     {
-        return $this->dateTimeFormat;
+        return $this->dateTimeFormat ?? $this->getDbDateTimeFormat();
+    }
+
+    /**
+     * Get default date time format
+     *
+     * @return string
+     */
+    public function getDbDateTimeFormat(): string
+    {
+        return self::DB_DATE_TIME_FORMAT;
     }
 
     /**

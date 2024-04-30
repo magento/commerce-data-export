@@ -22,7 +22,6 @@ use Magento\DataExporter\Model\Batch\BatchIteratorInterface;
 use Magento\DataExporter\Model\Batch\BatchTable;
 use Magento\DataExporter\Model\Batch\BatchLocator;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
-use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\App\ResourceConnection;
 
 /**
@@ -76,13 +75,6 @@ class Iterator implements BatchIteratorInterface
     private ?int $count = null;
 
     /**
-     * Specific date time format for modifiedAt field.
-     *
-     * @var string|null
-     */
-    private ?string $dateTimeFormat;
-
-    /**
      * Is removable flag.
      *
      * @var bool|null
@@ -90,18 +82,11 @@ class Iterator implements BatchIteratorInterface
     private ?bool $isRemovable;
 
     /**
-     * @var CommerceDataExportLoggerInterface
-     */
-    private CommerceDataExportLoggerInterface $logger;
-
-    /**
      * @param ResourceConnection $resourceConnection
      * @param BatchLocator $batchLocator
      * @param BatchTable $batchTable
      * @param string $sourceTableName
      * @param array $sourceTableKeyColumns
-     * @param CommerceDataExportLoggerInterface $logger
-     * @param string|null $dateTimeFormat
      * @param bool|null $isRemovable
      */
     public function __construct(
@@ -110,8 +95,6 @@ class Iterator implements BatchIteratorInterface
         BatchTable         $batchTable,
         string             $sourceTableName,
         array              $sourceTableKeyColumns,
-        CommerceDataExportLoggerInterface $logger,
-        ?string            $dateTimeFormat = null,
         ?bool              $isRemovable = null
     ) {
         $this->resourceConnection = $resourceConnection;
@@ -119,8 +102,6 @@ class Iterator implements BatchIteratorInterface
         $this->batchTable = $batchTable;
         $this->sourceTableName = $sourceTableName;
         $this->sourceTableKeyColumns = $sourceTableKeyColumns;
-        $this->dateTimeFormat = $dateTimeFormat;
-        $this->logger = $logger;
         $this->isRemovable = $isRemovable;
     }
 
@@ -193,11 +174,12 @@ class Iterator implements BatchIteratorInterface
      * Returns batch data.
      *
      * @return array
+     * @throws \Zend_Db_Statement_Exception
+     * @throws \Exception
      */
     private function getBatch(): array
     {
         $connection = $this->resourceConnection->getConnection();
-        $recentTimestamp = null;
         $this->batchNumber = $this->batchLocator->getNumber();
         $pkJoinConditions = array_map(
             function ($key) {
@@ -230,27 +212,12 @@ class Iterator implements BatchIteratorInterface
         while ($row = $statement->fetch()) {
             $entity = json_decode($row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA], true);
             $entity['deleted'] = $this->isRemovable && $row[FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED];
-            $entity['modifiedAt'] = $row[FeedIndexMetadata::FEED_TABLE_FIELD_MODIFIED_AT];
-            if (null !== $this->dateTimeFormat) {
-                try {
-                    $entity['modifiedAt'] = (new \DateTime($entity['modifiedAt']))->format($this->dateTimeFormat);
-                } catch (\Throwable $e) {
-                    $this->logger->warning(\sprintf(
-                        'Cannot convert modifiedAt "%s" to formant "%s", error: %s',
-                        $entity['modifiedAt'],
-                        $this->dateTimeFormat,
-                        $e->getMessage()
-                    ));
-                }
-            }
+
             $data[] = $entity;
-            if ($recentTimestamp === null || $recentTimestamp < $row[FeedIndexMetadata::FEED_TABLE_FIELD_MODIFIED_AT]) {
-                $recentTimestamp = $row[FeedIndexMetadata::FEED_TABLE_FIELD_MODIFIED_AT];
-            }
+
         }
 
         return [
-            'recentTimestamp' => $recentTimestamp,
             'feed' => $data,
         ];
     }

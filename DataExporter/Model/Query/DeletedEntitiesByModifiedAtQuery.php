@@ -25,17 +25,20 @@ class DeletedEntitiesByModifiedAtQuery
     }
 
     /**
+     * Get query for deleted entities by modified at timestamp
+     *
      * @param array $ids
      * @param FeedIndexMetadata $metadata
+     * @param string $recentTimeStamp
      * @return Select
      */
-    public function getQuery(array $ids, FeedIndexMetadata $metadata): Select
+    public function getQuery(array $ids, FeedIndexMetadata $metadata, string $recentTimeStamp): Select
     {
         return $this->resourceConnection->getConnection()->select()
             ->from(
                 ['f' => $this->resourceConnection->getTableName($metadata->getFeedTableName())]
             )
             ->where(\sprintf('f.%s IN (?)', $metadata->getFeedTableField()), $ids)
-            ->where('f.modified_at < ?', $metadata->getCurrentModifiedAtTimeInDBFormat());
+            ->where('f.modified_at < ?', $recentTimeStamp);
     }
 }

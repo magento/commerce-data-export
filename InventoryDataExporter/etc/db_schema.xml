@@ -7,46 +7,79 @@
 -->
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
-    <table name="inventory_data_exporter_stock_status" resource="default" engine="innodb" comment="Inventory Stock Status Feed Storage">
-        <column xsi:type="varchar"
-                name="stock_id"
+    <table name="inventory_data_exporter_stock_status_feed" resource="default" engine="innodb" comment="Inventory Stock Status Feed">
+        <column xsi:type="int" name="id" unsigned="true" nullable="false" identity="true"
+                comment="Autoincrement ID. System field"/>
+        <column xsi:type="int"
+                name="source_entity_id"
+                padding="10"
+                unsigned="true"
                 nullable="false"
-                length="64"
-                comment="Stock ID"
-        />
-        <column xsi:type="varchar"
-                name="sku"
-                nullable="false"
-                length="64"
                 comment="Product SKU"
         />
         <column
-            xsi:type="mediumtext"
-            name="feed_data"
-            nullable="false"
-            comment="Feed Data"
+                xsi:type="varchar"
+                name="feed_id"
+                nullable="false"
+                length="64"
+                comment="Feed Item Identifier. Hash based on feed item identity fields"
         />
         <column
-            xsi:type="timestamp"
-            name="modified_at"
-            on_update="true"
-            nullable="false"
-            default="CURRENT_TIMESTAMP"
-            comment="Created At"
+                xsi:type="timestamp"
+                name="modified_at"
+                on_update="true"
+                nullable="false"
+                default="CURRENT_TIMESTAMP"
+                comment="Created At"
         />
         <column
-            xsi:type="tinyint"
-            name="is_deleted"
-            nullable="false"
-            default="0"
-            comment="Stock Item Status Deleted"
+                xsi:type="tinyint"
+                name="is_deleted"
+                nullable="false"
+                default="0"
+                comment="Feed item deletion flag"
+        />
+        <column
+                xsi:type="smallint"
+                name="status"
+                nullable="false"
+                default="0"
+                comment="Feed item status"
+        />
+        <column
+                xsi:type="mediumtext"
+                name="feed_data"
+                nullable="false"
+                comment="Feed Data"
+        />
+        <column
+                xsi:type="varchar"
+                name="feed_hash"
+                nullable="false"
+                length="64"
+                comment="hash from {feed_data}"
+        />
+        <column
+                xsi:type="text"
+                name="errors"
+                nullable="true"
+                comment="Errors"
         />
         <constraint xsi:type="primary" referenceId="PRIMARY">
-            <column name="stock_id"/>
-            <column name="sku"/>
+            <column name="id"/>
         </constraint>
-        <index referenceId="inventory_data_exporter_stock_status_modified_at" indexType="btree">
+
+        <constraint referenceId="inventory_data_exporter_stock_status_feed_feed_id"  xsi:type="unique">
+            <column name="feed_id"/>
+        </constraint>
+        <!-- \Magento\DataExporter\Model\Query\DeletedEntitiesByModifiedAtQuery::getQuery -->
+        <index referenceId="inventory_data_exporter_stock_status_feed_source_id_modified_at" indexType="btree">
+            <column name="source_entity_id"/>
             <column name="modified_at"/>
+        </index>
+        <!-- for failed items -->
+        <index referenceId="inventory_data_exporter_stock_status_feed_status" indexType="btree">
+            <column name="status"/>
         </index>
     </table>
 </schema>

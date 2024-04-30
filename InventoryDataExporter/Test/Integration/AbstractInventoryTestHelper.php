@@ -30,6 +30,11 @@ abstract class AbstractInventoryTestHelper extends \PHPUnit\Framework\TestCase
     protected const STOCK_STATUS_FEED_INDEXER = 'inventory_data_exporter_stock_status';
 
     /**
+     * Inventory Stock Status Feed Table
+     */
+    private const STOCK_STATUS_FEED_TABLE = 'inventory_data_exporter_stock_status_feed';
+
+    /**
      * @var ResourceConnection
      */
     protected $resource;
@@ -95,7 +100,7 @@ abstract class AbstractInventoryTestHelper extends \PHPUnit\Framework\TestCase
     private function truncateStockStatusDataExporterIndexTable(): void
     {
         $connection = $this->resource->getConnection();
-        $feedTable = $this->resource->getTableName(self::STOCK_STATUS_FEED_INDEXER);
+        $feedTable = $this->resource->getTableName(self::STOCK_STATUS_FEED_TABLE);
         $connection->truncateTable($feedTable);
 
         $changeLogTable = $this->indexer->getView()->getChangelog()->getName();

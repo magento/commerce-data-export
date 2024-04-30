@@ -7,7 +7,9 @@ declare(strict_types=1);
 
 namespace Magento\InventoryDataExporter\Model\Query;
 
+use Magento\DataExporter\Model\FeedHashBuilder;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Stdlib\DateTime;
@@ -37,22 +39,27 @@ class StockStatusDeleteQuery
      */
     private $dateTime;
 
+    private FeedHashBuilder $hashBuilder;
+
     /**
      * @param ResourceConnection $resourceConnection
      * @param FeedIndexMetadata $metadata
      * @param SerializerInterface $serializer
      * @param DateTime $dateTime
+     * @param ?FeedHashBuilder $hashBuilder
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         FeedIndexMetadata $metadata,
         SerializerInterface $serializer,
-        DateTime $dateTime
+        DateTime $dateTime,
+        ?FeedHashBuilder $hashBuilder
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->metadata = $metadata;
         $this->serializer = $serializer;
         $this->dateTime = $dateTime;
+        $this->hashBuilder = $hashBuilder ?? ObjectManager::getInstance()->get(FeedHashBuilder::class);
     }
 
     /**
@@ -72,14 +79,42 @@ class StockStatusDeleteQuery
                 ['source_stock_link' => $this->resourceConnection->getTableName('inventory_source_stock_link')],
                 'source_item.source_code = source_stock_link.source_code',
                 []
+            )->joinLeft(
+                ['products' => $this->resourceConnection->getTableName('catalog_product_entity')],
+                'source_item.sku = products.sku',
+                ['products.entity_id AS product_id']
             )->where('source_item.sku IN (?)', $skus);
 
         $fetchedSourceItems = [];
         foreach ($connection->fetchAll($select) as $sourceItem) {
-            $fetchedSourceItems[$sourceItem['sku']][$sourceItem['stock_id']][] = $sourceItem['source_code'];
+            $fetchedSourceItems[$sourceItem['sku']]['product_id'] = $sourceItem['product_id'];
+            $fetchedSourceItems[$sourceItem['sku']]['stock'][$sourceItem['stock_id']][] = $sourceItem['source_code'];
         }
 
         return $fetchedSourceItems;
+    }
+
+    /**
+     * Get product ids for provided SKUs
+     *
+     * @param array $skus
+     * @return array
+     */
+    public function getProductIdsForSkus(array $skus): array
+    {
+        $output = [];
+
+        $connection = $this->resourceConnection->getConnection();
+        $select = $connection->select()
+            ->from(
+                ['catalog_product_entity' => $this->resourceConnection->getTableName('catalog_product_entity')],
+                ['catalog_product_entity.sku', 'catalog_product_entity.entity_id AS product_id']
+            )->where('catalog_product_entity.sku IN (?)', $skus);
+
+        foreach ($connection->fetchAll($select) as $productData) {
+            $output[$productData['sku']] = $productData['product_id'];
+        }
+        return $output;
     }
 
     /**
@@ -123,8 +158,8 @@ class StockStatusDeleteQuery
     public function markStockStatusesAsDeleted(array $idsToDelete): void
     {
         $records = [];
-        foreach ($idsToDelete as $deletedItemId => $stockStatusData) {
-            $records[] = $this->buildFeedData($deletedItemId, $stockStatusData);
+        foreach ($idsToDelete as $stockStatusData) {
+            $records[] = $this->buildFeedData($stockStatusData);
         }
         $connection = $this->resourceConnection->getConnection();
         $feedTableName = $this->resourceConnection->getTableName($this->metadata->getFeedTableName());
@@ -138,23 +173,23 @@ class StockStatusDeleteQuery
     }
 
     /**
-     * @param string $stockStatusId
-     * @param array $stockIdAndSku
+     * @param array $stockData
      * @return array
      */
-    private function buildFeedData(string $stockStatusId, array $stockIdAndSku): array
+    private function buildFeedData( array $stockData): array
     {
-        if (!isset($stockIdAndSku['stock_id'], $stockIdAndSku['sku'])) {
+        if (!isset($stockData['stockId'], $stockData['sku'], $stockData['productId'])) {
             throw new \RuntimeException(
                 sprintf(
-                    "inventory_data_exporter_stock_status indexer error: cannot build unique id from %s",
-                    \var_export($stockIdAndSku, true)
+                    "inventory_data_exporter_stock_status indexer error: cannot build feed data from %s",
+                    \var_export($stockData, true)
                 )
             );
         }
         $feedData = [
-            'stockId' => $stockIdAndSku['stock_id'],
-            'sku' => $stockIdAndSku['sku'],
+            'stockId' => $stockData['stockId'],
+            'sku' => $stockData['sku'],
+            'productId' => $stockData['productId'],
             'qty' => 0,
             'qtyForSale' => 0,
             'infiniteStock' => false,
@@ -164,8 +199,10 @@ class StockStatusDeleteQuery
         ];
 
         return [
-            'stock_id' => $stockIdAndSku['stock_id'],
-            'sku' => $stockIdAndSku['sku'],
+            FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID => $this->hashBuilder->buildIdentifierFromFeedItem(
+                $stockData,
+                $this->metadata
+            ),
             'feed_data' => $this->serializer->serialize($feedData),
             'is_deleted' => 1,
             'modified_at' => $this->dateTime->formatDate(time())

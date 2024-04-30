@@ -66,7 +66,7 @@ class SimpleProductsTest extends AbstractProductTestHelper
      * @throws \Zend_Db_Statement_Exception
      * @throws \Throwable
      */
-    public function testSimpleProductsWithoutCreatedAtAndUpdatedAt() : void
+    public function testSimpleProductsWithoutCreatedAtModifiedAtAndUpdatedAt() : void
     {
         $sku = 'simple1';
         $storeViewCode = 'default';
@@ -75,8 +75,10 @@ class SimpleProductsTest extends AbstractProductTestHelper
 
         $this->assertNotEmpty($extractedProduct['feedData']['createdAt']);
         $this->assertNotEmpty($extractedProduct['feedData']['updatedAt']);
+        $this->assertNotEmpty($extractedProduct['feedData']['modifiedAt']);
 
         $this->assertNotEquals('0000-00-00 00:00:00', $extractedProduct['feedData']['createdAt']);
         $this->assertNotEquals('0000-00-00 00:00:00', $extractedProduct['feedData']['updatedAt']);
+        $this->assertNotEquals('0000-00-00 00:00:00', $extractedProduct['feedData']['modifiedAt']);
     }
 }

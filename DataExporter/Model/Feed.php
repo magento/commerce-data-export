@@ -80,6 +80,9 @@ class Feed implements FeedInterface
                 $ignoredExportStatus
             )
         );
+        if ($ignoredExportStatus !== null) {
+            $this->logger->warning(__METHOD__ . ' is deprecated. $ignoredExportStatus parameter is ignored');
+        }
         return $this->fetchData(
             $this->feedQuery->getDataSelect(
                 $this->feedIndexMetadata,
@@ -106,26 +109,14 @@ class Feed implements FeedInterface
         $output = [];
         while ($row = $cursor->fetch()) {
             $dataRow = $this->serializer->unserialize($row['feed_data']);
-            $dataRow['modifiedAt'] = $row['modifiedAt'];
-            if (null !== $this->feedIndexMetadata->getDateTimeFormat()) {
-                try {
-                    $dataRow['modifiedAt'] = (new \DateTime($dataRow['modifiedAt']))
-                        ->format($this->feedIndexMetadata->getDateTimeFormat());
-                } catch (\Throwable $e) {
-                    $this->logger->warning(\sprintf(
-                        'Cannot convert modifiedAt "%s" to formant "%s", error: %s',
-                        $dataRow['modifiedAt'],
-                        $this->feedIndexMetadata->getDateTimeFormat(),
-                        $e->getMessage()
-                    ));
-                }
-            }
+            $rowModifiedAt = $row['modifiedAt'];
+
             if (isset($row['deleted'])) {
                 $dataRow['deleted'] = (bool)$row['deleted'];
             }
             $output[] = $dataRow;
-            if ($recentTimestamp === null || $recentTimestamp < $row['modifiedAt']) {
-                $recentTimestamp = $row['modifiedAt'];
+            if ($recentTimestamp === null || $recentTimestamp < $rowModifiedAt) {
+                $recentTimestamp = $rowModifiedAt;
             }
         }
         return [

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Model\Provider;
 
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\IdFactory;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\OptionValueFactory;
@@ -14,11 +15,12 @@ use Magento\ProductVariantDataExporter\Model\Query\ProductVariantsQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
+use Magento\DataExporter\Export\DataProcessorInterface;
 
 /**
  * Configurable product variants provider
  */
-class ConfigurableVariants implements ProductVariantsProviderInterface
+class ConfigurableVariants implements ProductVariantsProviderInterface, DataProcessorInterface
 {
     /**
      * @var ResourceConnection
@@ -67,20 +69,28 @@ class ConfigurableVariants implements ProductVariantsProviderInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      *
      * @throws UnableRetrieveData
+     * @throws \Zend_Db_Statement_Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function get(array $values): array
-    {
+    public function execute(
+        array $arguments,
+        callable $dataProcessorCallback,
+        FeedIndexMetadata $metadata,
+        $node = null,
+        $info = null
+    ): void {
         $output = [];
         $childIds = [];
-        foreach ($values as $value) {
-            $childIds[$value['id']] = $value['id'];
+        foreach ($arguments as $value) {
+            $childIds[$value['productId']] = $value['productId'];
         }
 
         try {
             $variants = $this->getVariants($childIds);
+            $modifiedAt = (new \DateTime())->format($metadata->getDateTimeFormat());
             foreach ($variants as $id => $optionValues) {
                 $output[] = [
                     'id' => $id,
@@ -88,14 +98,16 @@ class ConfigurableVariants implements ProductVariantsProviderInterface
                     'parentId' => $optionValues['parentId'],
                     'productId' => $optionValues['childId'],
                     'parentSku' => $optionValues['parentSku'],
-                    'productSku' => $optionValues['productSku']
+                    'productSku' => $optionValues['productSku'],
+                    'modifiedAt' => $modifiedAt
                 ];
             }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve configurable product variants data');
         }
-        return $output;
+
+        $dataProcessorCallback($this->get($output));
     }
 
     /**
@@ -119,7 +131,7 @@ class ConfigurableVariants implements ProductVariantsProviderInterface
                 ConfigurableId::PARENT_SKU_KEY => $row['parentSku'],
                 ConfigurableId::CHILD_SKU_KEY => $row['productSku']
             ]);
-            if(isset($row['optionValueId']) && isset($row['attributeCode'])) {
+            if (isset($row['optionValueId'], $row['attributeCode'])) {
                 $optionValue = $optionValueResolver->resolve($row);
                 $variants[$id]['parentId'] = $row['parentId'];
                 $variants[$id]['childId'] = $row['childId'];
@@ -129,5 +141,18 @@ class ConfigurableVariants implements ProductVariantsProviderInterface
             }
         }
         return $variants;
+    }
+
+    /**
+     * For backward compatibility with existing 3-rd party plugins.
+     *
+     * @param array $values
+     * @return array
+     * @deprecated
+     * @see self::execute
+     */
+    public function get(array $values) : array
+    {
+        return $values;
     }
 }

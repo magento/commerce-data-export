@@ -10,17 +10,28 @@
         <arguments>
             <argument name="feedName" xsi:type="string">variants</argument>
             <argument name="feedSummary" xsi:type="string">Product Variants Feed</argument>
-            <argument name="feedIdentity" xsi:type="string">id</argument>
+            <argument name="feedIdentity" xsi:type="string">productId</argument>
             <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
-            <argument name="feedTableName" xsi:type="string">catalog_data_exporter_product_variants</argument>
-            <argument name="feedTableField" xsi:type="string">id</argument>
+            <argument name="feedTableName" xsi:type="string">cde_product_variants_feed</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
             </argument>
-
             <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
+            <argument name="exportImmediately" xsi:type="boolean">true</argument>
+            <argument name="persistExportedFeed" xsi:type="init_parameter">Magento\DataExporter\Model\ExportFeedInterface::PERSIST_EXPORTED_FEED</argument>
+            <argument name="minimalPayload" xsi:type="array">
+                <item name="id" xsi:type="string">id</item>
+                <item name="optionValues" xsi:type="string">optionValues</item>
+                <item name="parentSku" xsi:type="string">parentSku</item>
+                <item name="productSku" xsi:type="string">productSku</item>
+                <item name="productId" xsi:type="string">productId</item>
+            </argument>
+            <argument name="feedItemIdentifiers" xsi:type="array">
+                <item name="parentSku" xsi:type="string">parentSku</item>
+                <item name="productSku" xsi:type="string">productSku</item>
+            </argument>
         </arguments>
     </virtualType>
     <type name="Magento\DataExporter\Model\FeedMetadataPool">
@@ -30,15 +41,6 @@
             </argument>
         </arguments>
     </type>
-    <virtualType name="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
-        <arguments>
-            <argument name="mapping" xsi:type="array">
-                <item name="id" xsi:type="string">id</item>
-                <item name="parent_id" xsi:type="string">parentId</item>
-                <item name="product_id" xsi:type="string">productId</item>
-            </argument>
-        </arguments>
-    </virtualType>
     <!-- :begin: The following configuration substitutes delete logic for product variants-->
     <virtualType name="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantMarkRemovedEntities" type="Magento\DataExporter\Model\Indexer\MarkRemovedEntities">
         <arguments>
@@ -54,7 +56,6 @@
     <virtualType name="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexer"  type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata</argument>
-            <argument name="serializer" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantDataSerializer</argument>
             <argument name="processor" xsi:type="object">Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexProcessorCreateUpdateDelete</argument>
         </arguments>
     </virtualType>

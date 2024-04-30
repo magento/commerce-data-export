@@ -14,11 +14,11 @@
             <argument name="feedIdentity" xsi:type="string">productId</argument>
             <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
-            <argument name="feedTableName" xsi:type="string">catalog_data_exporter_product_prices</argument>
-            <argument name="feedTableField" xsi:type="string">product_id</argument>
+            <argument name="feedTableName" xsi:type="string">cde_product_prices_feed</argument>
             <argument name="truncateFeedOnFullReindex" xsi:type="boolean">false</argument>
             <argument name="exportImmediately" xsi:type="boolean">true</argument>
             <argument name="persistExportedFeed" xsi:type="init_parameter">Magento\DataExporter\Model\ExportFeedInterface::PERSIST_EXPORTED_FEED</argument>
+            <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
 
             <argument name="minimalPayload" xsi:type="array">
                 <item name="sku" xsi:type="string">sku</item>
@@ -27,22 +27,10 @@
                 <item name="updatedAt" xsi:type="string">updatedAt</item>
             </argument>
 
-            <argument name="feedIdentifierMapping" xsi:type="array">
-                <item name="product_id" xsi:type="string">productId</item>
-                <item name="website_id" xsi:type="string">websiteId</item>
-                <item name="customer_group_code" xsi:type="string">customerGroupCode</item>
-            </argument>
-
-            <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
-
-        </arguments>
-    </virtualType>
-    <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
-        <arguments> <!-- TODO: move to metadata and remove it -->
-            <argument name="mapping" xsi:type="array">
-                <item name="product_id" xsi:type="string">productId</item>
-                <item name="website_id" xsi:type="string">websiteId</item>
-                <item name="customer_group_code" xsi:type="string">customerGroupCode</item>
+            <argument name="feedItemIdentifiers" xsi:type="array">
+                <item name="sku" xsi:type="string">sku</item>
+                <item name="customerGroupCode" xsi:type="string">customerGroupCode</item>
+                <item name="websiteCode" xsi:type="string">websiteCode</item>
             </argument>
         </arguments>
     </virtualType>
@@ -50,7 +38,6 @@
     <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata</argument>
-            <argument name="serializer" xsi:type="object">Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceDataSerializer</argument>
         </arguments>
     </virtualType>
 

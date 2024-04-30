@@ -8,7 +8,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
     <indexer
         id="catalog_data_exporter_product_prices"
-        view_id="catalog_data_exporter_product_prices"
+        view_id="cde_product_prices_feed"
         class="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexer"
     >
         <title translate="true">Product Prices Feed</title>

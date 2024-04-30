@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Magento\ProductVariantDataExporter\Test\Integration;
 
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\ProductVariantDataExporter\Model\Provider\ProductVariants\ConfigurableId;
 use RuntimeException;
 use Throwable;
@@ -22,12 +23,18 @@ use Magento\TestFramework\Helper\Bootstrap;
 class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
 {
     /**
+     * @var string
+     */
+    private const EXPECTED_DATE_TIME_FORMAT = '%d-%d-%d %d:%d:%d';
+
+    /**
      * Test configurable product variants.
      *
      * @magentoAppIsolation enabled
      * @magentoDbIsolation disabled
      * @magentoDataFixture Magento/ConfigurableProduct/_files/configurable_products_with_two_attributes.php
      * @return void
+     * @throws NoSuchEntityException
      */
     public function testConfigurableVariants(): void
     {
@@ -45,6 +52,13 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
                 ConfigurableId::CHILD_SKU_KEY => 'simple_20'
             ]);
             $actual = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
+            $modifiedAt = (new \DateTime())->getTimestamp();
+            foreach ($actual as $actualFeed) {
+                $this->assertNotEmpty($actualFeed['modifiedAt']);
+                $this->assertStringMatchesFormat(self::EXPECTED_DATE_TIME_FORMAT, $actualFeed['modifiedAt']);
+                $actualModifiedAt = (new \DateTime($actualFeed['modifiedAt']))->getTimestamp();
+                $this->assertEqualsWithDelta($modifiedAt, $actualModifiedAt, 3);
+            }
             $diff = $this->arrayUtils->recursiveDiff($expected, $actual);
             self::assertEquals([], $diff, "Product variants response doesn't equal expected response");
         } catch (Throwable $e) {
@@ -83,6 +97,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
             $simple = $this->productRepository->get('simple_10');
             $simpleId  = $simple->getId();
             $this->deleteProduct($simple->getSku());
+            $this->emulateCustomersBehaviorAfterDeleteAction();
             $this->runIndexer([$configurableId, $simpleId]);
 
             $assignedVariantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
@@ -135,7 +150,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
             $extensionConfigurableAttributes->setConfigurableProductLinks($associatedProductIds);
             $configurable->setExtensionAttributes($extensionConfigurableAttributes);
             $this->productRepository->save($configurable);
-
+            $this->emulateCustomersBehaviorAfterDeleteAction();
             $this->runIndexer([$configurableId, $simple10->getId()]);
 
             $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
@@ -309,6 +324,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
      */
     private function getExpectedProductVariants(array $simples): array
     {
+
         $variants = [
             'simple_10' => [
                 'id' => '8a880c29baa2ec8a5068350ec04f5b7d',

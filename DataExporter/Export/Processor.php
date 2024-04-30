@@ -70,12 +70,14 @@ class Processor
      * @param FeedIndexMetadata $metadata
      * @param array $arguments
      * @param callable $dataProcessorCallback
+     * @param bool $lastChunk
      * @return void
      */
     public function processWithCallback(
         FeedIndexMetadata $metadata,
         array $arguments,
-        callable $dataProcessorCallback
+        callable $dataProcessorCallback,
+        $lastChunk = false
     ) : void {
         try {
             $info = $this->infoAssembler->assembleFieldInfo($metadata->getFeedName(), $this->rootProfileName);
@@ -84,7 +86,7 @@ class Processor
 
                 $dataProcessorCallback($this->transformer->transform($info, $snapshots));
             };
-            $this->extractor->extractWithCallback($info, $arguments, $dataProcessorCallback, $metadata);
+            $this->extractor->extractWithCallback($info, $arguments, $dataProcessorCallback, $metadata, $lastChunk);
         } catch (\Throwable $exception) {
             $provider = empty($info) === false ? $info->getRootNode()->getField()['provider'] : '';
             // if error happened during data collecting we skip entire process

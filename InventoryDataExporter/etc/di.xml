@@ -22,34 +22,38 @@
         <arguments>
             <argument name="feedName" xsi:type="string">inventoryStockStatus</argument>
             <argument name="feedSummary" xsi:type="string">Inventory Stock Status Feed</argument>
-            <argument name="feedIdentity" xsi:type="string">sku</argument>
+            <argument name="feedIdentity" xsi:type="string">productId</argument>
             <!-- source table used only during full reindex -->
             <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>
             <!-- use when view entity field is different from the source table entity. It will use this field to link view identity field with source identity field -->
             <argument name="viewSourceLinkField" xsi:type="string">sku</argument>
-            <argument name="feedTableName" xsi:type="string">inventory_data_exporter_stock_status</argument>
-            <argument name="feedTableField" xsi:type="string">sku</argument>
+            <argument name="feedTableName" xsi:type="string">inventory_data_exporter_stock_status_feed</argument>
             <argument name="feedTableMutableColumns" xsi:type="array">
                 <item name="feed_data" xsi:type="string">feed_data</item>
                 <item name="is_deleted" xsi:type="string">is_deleted</item>
             </argument>
-
             <argument name="entitiesRemovable" xsi:type="boolean">true</argument>
-        </arguments>
-    </virtualType>
-    <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusDataSerializer" type="Magento\DataExporter\Model\Indexer\DataSerializer">
-        <arguments>
-            <argument name="mapping" xsi:type="array">
+
+            <argument name="exportImmediately" xsi:type="boolean">true</argument>
+            <argument name="persistExportedFeed" xsi:type="init_parameter">Magento\DataExporter\Model\ExportFeedInterface::PERSIST_EXPORTED_FEED</argument>
+            <argument name="minimalPayload" xsi:type="array">
+                <item name="stockId" xsi:type="string">stockId</item>
+                <item name="sku" xsi:type="string">sku</item>
+            </argument>
+            <argument name="feedItemIdentifiers" xsi:type="array">
                 <item name="stock_id" xsi:type="string">stockId</item>
                 <item name="sku" xsi:type="string">sku</item>
+            </argument>
+            <!--ProductId is a utility field that we are using to build the DB record. It's not used in service and should not be included in the hash-->
+            <argument name="excludeFromHashFields" xsi:type="array">
+                <item name="0" xsi:type="string">productId</item>
             </argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexer"  type="Magento\DataExporter\Model\Indexer\FeedIndexer">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata</argument>
-            <argument name="serializer" xsi:type="object">Magento\InventoryDataExporter\Model\Indexer\StockStatusDataSerializer</argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\InventoryDataExporter\Model\StockStatusFeed" type="Magento\DataExporter\Model\Feed">
@@ -84,7 +88,7 @@
     <type name="Magento\DataExporter\Model\Provider\ChangelogQueryProvider">
         <arguments>
             <argument name="changeLogQuery" xsi:type="array">
-                <item name="inventory_data_exporter_stock_status" xsi:type="object">Magento\InventoryDataExporter\Model\Query\ChangelogSelectQuery</item>
+                <item name="inventory_data_exporter_stock_status_feed" xsi:type="object">Magento\InventoryDataExporter\Model\Query\ChangelogSelectQuery</item>
             </argument>
         </arguments>
     </type>

@@ -10,13 +10,15 @@ namespace Magento\CatalogDataExporter\Model\Provider;
 use Magento\CatalogDataExporter\Model\Provider\Product\Formatter\FormatterInterface;
 use Magento\CatalogDataExporter\Model\Query\ProductMetadataQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
+use Magento\DataExporter\Export\DataProcessorInterface;
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
 /**
  * Product attributes metadata provider
  */
-class ProductMetadata
+class ProductMetadata implements DataProcessorInterface
 {
     /**
      * Category EAV entity type id
@@ -88,24 +90,29 @@ class ProductMetadata
 
         // we only retrieve catalog eav attributes (product and category attributes only) in query
         $output['attributeType'] = ((int)$output['entityTypeId'] === self::CATEGORY_EAV_ENTITY_TYPE_ID) ?
-                                        self::CATEGORY_EAV_ENTITY_TYPE : self::PRODUCT_EAV_ENTITY_TYPE;
+            self::CATEGORY_EAV_ENTITY_TYPE : self::PRODUCT_EAV_ENTITY_TYPE;
 
         return $output;
     }
 
     /**
-     * Returns attribute data
+     * @inheritdoc
      *
-     * @param array $values
-     * @return array
      * @throws UnableRetrieveData
+     * @throws \Zend_Db_Statement_Exception
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function get(array $values): array
-    {
+    public function execute(
+        array $arguments,
+        callable $dataProcessorCallback,
+        FeedIndexMetadata $metadata,
+        $node = null,
+        $info = null
+    ): void {
         $output = [];
         $queryArguments = [];
         try {
-            foreach ($values as $value) {
+            foreach ($arguments as $value) {
                 $queryArguments['id'][$value['id']] = $value['id'];
             }
             $connection = $this->resourceConnection->getConnection();
@@ -118,6 +125,20 @@ class ProductMetadata
             $this->logger->error($exception->getMessage(), ['exception' => $exception]);
             throw new UnableRetrieveData('Unable to retrieve product data');
         }
-        return $output;
+
+        $dataProcessorCallback($this->get($output));
+    }
+
+    /**
+     * For backward compatibility with existing 3-rd party plugins.
+     *
+     * @param array $values
+     * @return array
+     * @deprecated
+     * @see self::execute
+     */
+    public function get(array $values) : array
+    {
+        return $values;
     }
 }
