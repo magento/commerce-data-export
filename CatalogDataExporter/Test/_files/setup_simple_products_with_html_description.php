@@ -3,7 +3,6 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 use Magento\Catalog\Api\CategoryLinkManagementInterface;
 use Magento\Catalog\Model\Product;
@@ -20,7 +19,6 @@ Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_
 Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_categories.php');
 Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_attributes.php');
 Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_catalog_rule.php');
-
 /** @var ObjectManagerInterface $objectManager */
 $objectManager = Bootstrap::getObjectManager();
 
@@ -46,10 +44,10 @@ $product->isObjectNew(true);
 $product->setTypeId(Type::TYPE_SIMPLE)
     ->setId(10)
     ->setAttributeSetId($attributeSet->getId())
-    ->setName('Simple Product1')
-    ->setSku('simple1')
+    ->setName('Simple Product With HTML Description')
+    ->setSku('simple_html_description')
     ->setTaxClassId('none')
-    ->setDescription('description')
+    ->setDescription('<style>#html-body [data-pb-style=KGJ9YC7]{background-position:left top;background-size:cover;background-repeat:no-repeat;background-attachment:scroll;align-self:stretch}#html-body [data-pb-style=SQ83KIC]{display:flex;width:100%}#html-body [data-pb-style=C71MH3Q],#html-body [data-pb-style=SYXWUC5]{justify-content:flex-start;display:flex;flex-direction:column;background-position:left top;background-size:cover;background-repeat:no-repeat;background-attachment:scroll;width:50%;align-self:stretch}</style><div data-content-type="block" data-appearance="default" data-element="main">{{widget type="Magento\Cms\Block\Widget\Block" template="widget/static_block/default.phtml" block_id="2" type_name="CMS Static Block"}}</div><div class="pagebuilder-column-group" data-background-images="{}" data-content-type="column-group" data-appearance="default" data-grid-size="12" data-element="main" data-pb-style="KGJ9YC7"><div class="pagebuilder-column-line" data-content-type="column-line" data-element="main" data-pb-style="SQ83KIC"><div class="pagebuilder-column" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" data-pb-style="C71MH3Q"><div data-content-type="text" data-appearance="default" data-element="main"><p>Test 2</p></div></div><div class="pagebuilder-column" data-content-type="column" data-appearance="full-height" data-background-images="{}" data-element="main" data-pb-style="SYXWUC5"><h2 data-content-type="heading" data-appearance="default" data-element="main">Test 3</h2></div></div></div>')
     ->setShortDescription('short description')
     ->setOptionsContainer('container1')
     ->setMsrpDisplayActualPriceType(\Magento\Msrp\Model\Product\Attribute\Source\Type::TYPE_IN_CART)
@@ -72,64 +70,3 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setCustomAttribute('yes_no_attribute', 1)
     ->save();
 $categoryLinkManagement->assignProductToCategories($product->getSku(), [100, 200]);
-
-$product = $objectManager->create(Product::class);
-$product->isObjectNew(true);
-$product->setTypeId(Type::TYPE_SIMPLE)
-    ->setId(11)
-    ->setAttributeSetId($attributeSet->getId())
-    ->setName('Simple Product2')
-    ->setSku('simple2')
-    ->setTaxClassId('none')
-    ->setDescription('description')
-    ->setShortDescription('short description')
-    ->setOptionsContainer('container1')
-    ->setMsrpDisplayActualPriceType(\Magento\Msrp\Model\Product\Attribute\Source\Type::TYPE_ON_GESTURE)
-    ->setPrice(100)
-    ->setWeight(1)
-    ->setMetaTitle('meta title')
-    ->setMetaKeyword('meta keyword')
-    ->setMetaDescription('meta description')
-    ->setVisibility(Visibility::VISIBILITY_IN_CATALOG)
-    ->setStatus(Status::STATUS_ENABLED)
-    ->setWebsiteIds([1])
-    ->setStockData(['use_config_manage_stock' => 1, 'qty' => 50, 'is_qty_decimal' => 0, 'is_in_stock' => 1])
-    ->setSpecialPrice('95.99')
-    ->setImage('/m/a/magento_image.jpg')
-    ->setSmallImage('/m/a/magento_small_image.jpg')
-    ->setThumbnail('/m/a/magento_thumbnail.jpg')
-    ->setCustomAttribute('custom_label', 'label1')
-    ->setCustomAttribute('custom_description', 'description, <b>data</b>')
-    ->setCustomSelect($optionIds[1])
-    ->setCustomAttribute('yes_no_attribute', 0)
-    ->save();
-$categoryLinkManagement->assignProductToCategories($product->getSku(), [100, 200]);
-
-$product = $objectManager->create(Product::class);
-$product->isObjectNew(true);
-$product->setTypeId(Type::TYPE_SIMPLE)
-    ->setId(12)
-    ->setAttributeSetId($attributeSet->getId())
-    ->setName('Simple Product3')
-    ->setSku('simple3')
-    ->setTaxClassId('none')
-    ->setDescription('description')
-    ->setShortDescription('short description')
-    ->setPrice(30)
-    ->setWeight(1)
-    ->setMetaTitle('meta title')
-    ->setMetaKeyword('meta keyword')
-    ->setMetaDescription('meta description')
-    ->setVisibility(Visibility::VISIBILITY_IN_CATALOG)
-    ->setStatus(Status::STATUS_DISABLED)
-    ->setWebsiteIds([1])
-    ->setStockData(['use_config_manage_stock' => 1, 'qty' => 140, 'is_qty_decimal' => 0, 'is_in_stock' => 1])
-    ->setSpecialPrice('25.99')
-    ->setImage('/m/a/magento_image.jpg')
-    ->setSmallImage('/m/a/magento_small_image.jpg')
-    ->setThumbnail('/m/a/magento_thumbnail.jpg')
-    ->setCustomAttribute('custom_label', 'label1')
-    ->setCustomAttribute('custom_description', 'description1')
-    ->save();
-$categoryLinkManagement->assignProductToCategories($product->getSku(), [100, 200]);
-

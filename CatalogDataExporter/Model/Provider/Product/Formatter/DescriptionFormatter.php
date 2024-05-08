@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Provider\Product\Formatter;
 
-use Magento\Backend\App\Area\FrontNameResolver;
 use Magento\Catalog\Helper\Data;
 use Magento\Framework\App\State;
+use Magento\Framework\View\DesignInterface;
 
 /**
  * Parse tags for description field
@@ -47,7 +47,7 @@ class DescriptionFormatter implements FormatterInterface
         foreach ($row as $attribute => &$value) {
             if (!empty($value) && \in_array($attribute, $this->attributes, true)) {
                 $value = $this->state->emulateAreaCode(
-                    FrontNameResolver::AREA_CODE,
+                    DesignInterface::DEFAULT_AREA,
                     function ($value) {
                         return $this->catalogHelper->getPageTemplateProcessor()->filter($value);
                     },

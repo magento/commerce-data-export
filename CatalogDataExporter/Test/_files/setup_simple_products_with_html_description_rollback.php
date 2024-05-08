@@ -3,7 +3,6 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\ObjectManagerInterface;
@@ -22,17 +21,7 @@ $registry->register('isSecureArea', true);
 try {
     /** @var ProductRepositoryInterface $productInterface */
     $productInterface = $objectManager->create(ProductRepositoryInterface::class);
-    $product = $productInterface->get('simple1');
-    if ($product->getId()) {
-        $productInterface->delete($product);
-    }
-
-    $product = $productInterface->get('simple2');
-    if ($product->getId()) {
-        $productInterface->delete($product);
-    }
-
-    $product = $productInterface->get('simple3');
+    $product = $productInterface->get('simple_html_description');
     if ($product->getId()) {
         $productInterface->delete($product);
     }

@@ -60,6 +60,28 @@ class SimpleProductsTest extends AbstractProductTestHelper
      *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
+     * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/setup_simple_products_with_html_description.php
+     *
+     * @return void
+     * @throws \Throwable
+     */
+    public function testSimpleProductWithHtmlDescription() : void
+    {
+        $sku = 'simple_html_description';
+        $storeViewCodes = ['default', 'fixture_second_store'];
+
+        foreach ($storeViewCodes as $storeViewCode) {
+            $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
+            self::assertEquals($sku, $extractedProduct['sku']);
+            self::assertNotEmpty($extractedProduct['feedData']['description']);
+        }
+    }
+
+    /**
+     * Validate simple product data
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
      * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/setup_simple_products_without_date.php
      *
      * @return void
