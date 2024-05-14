@@ -168,11 +168,9 @@ class Products implements DataProcessorInterface
         FeedIndexMetadata $metadata
     ): void {
         $output = [];
-        $modifiedAt = (new \DateTime())->format($metadata->getDateTimeFormat());
 
         foreach ($mappedProducts as $storeCode => $products) {
-            $output[] = \array_map(function ($row) use ($modifiedAt) {
-                $row['modifiedAt'] = $modifiedAt;
+            $output[] = \array_map(function ($row) {
                 return $this->formatter->format($row);
             }, \array_replace_recursive(
                 $products,

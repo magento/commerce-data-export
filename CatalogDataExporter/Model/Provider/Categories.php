@@ -88,10 +88,8 @@ class Categories implements DataProcessorInterface
             foreach ($this->getDataBatch($arguments, $metadata->getBatchSize()) as $dataBatch) {
                 $output = [];
                 list($mappedCategories, $attributesData) = $dataBatch;
-                $modifiedAt = (new \DateTime())->format($metadata->getDateTimeFormat());
                 foreach ($mappedCategories as $storeCode => $categories) {
-                    $output[] = \array_map(function ($row) use ($modifiedAt) {
-                        $row['modifiedAt'] = $modifiedAt;
+                    $output[] = \array_map(function ($row) {
                         return $this->formatter->format($row);
                     }, \array_replace_recursive(
                         $categories,

@@ -169,7 +169,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     //for backward compatibility:
                     //allows to execute plugins on Process method when callbacks are in place
                     $feedItems = $this->exportProcessor->process($metadata->getFeedName(), $chunk, $feedItems);
-                    $feedItems = $this->addHashes($feedItems, $metadata);
+                    $feedItems = $this->addHashesAndModifiedAt($feedItems, $metadata);
                     $data = $this->filterFeedItems($feedItems, $metadata, $indexState);
                     if (empty($data)) {
                         return;
@@ -355,14 +355,14 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     }
 
     /**
-     * Add hashes
+     * Add hashes and modifiedAt field if it's required
      *
      * @param array $data
      * @param FeedIndexMetadata $metadata
      * @param bool $deleted
      * @return array
      */
-    private function addHashes(array $data, FeedIndexMetadata $metadata, bool $deleted = false): array
+    private function addHashesAndModifiedAt(array $data, FeedIndexMetadata $metadata, bool $deleted = false): array
     {
         foreach ($data as $key => $row) {
             if ($deleted) {
@@ -379,6 +379,10 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     $row['deleted'] = false;
                 }
                 $identifier = $this->hashBuilder->buildIdentifierFromFeedItem($row, $metadata);
+            }
+            //Assign updated modifiedAt value to the record if it's required for feed
+            if (\in_array('modifiedAt', $metadata->getMinimalPayloadFieldsList(), true)) {
+                $row['modifiedAt'] = (new \DateTime())->format($metadata->getDateTimeFormat());
             }
             unset($data[$key]);
             if (empty($identifier)) {
@@ -428,7 +432,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             $metadata,
             $recentTimeStamp
         ) as $feedItems) {
-            $feedItems = $this->addHashes($feedItems, $metadata, true);
+            $feedItems = $this->addHashesAndModifiedAt($feedItems, $metadata, true);
             $data = $this->filterFeedItems($feedItems, $metadata);
 
             if (empty($data)) {

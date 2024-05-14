@@ -90,7 +90,6 @@ class ConfigurableVariants implements ProductVariantsProviderInterface, DataProc
 
         try {
             $variants = $this->getVariants($childIds);
-            $modifiedAt = (new \DateTime())->format($metadata->getDateTimeFormat());
             foreach ($variants as $id => $optionValues) {
                 $output[] = [
                     'id' => $id,
@@ -98,8 +97,7 @@ class ConfigurableVariants implements ProductVariantsProviderInterface, DataProc
                     'parentId' => $optionValues['parentId'],
                     'productId' => $optionValues['childId'],
                     'parentSku' => $optionValues['parentSku'],
-                    'productSku' => $optionValues['productSku'],
-                    'modifiedAt' => $modifiedAt
+                    'productSku' => $optionValues['productSku']
                 ];
             }
         } catch (\Throwable $exception) {

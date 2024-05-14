@@ -242,6 +242,7 @@
                 <item name="storeViewCode" xsi:type="string">storeViewCode</item>
                 <item name="storeCode" xsi:type="string">storeCode</item>
                 <item name="websiteCode" xsi:type="string">websiteCode</item>
+                <item name="modifiedAt" xsi:type="string">modifiedAt</item>
             </argument>
 
             <argument name="feedItemIdentifiers" xsi:type="array">
@@ -284,6 +285,7 @@
                 <item name="storeViewCode" xsi:type="string">storeViewCode</item>
                 <item name="attributeCode" xsi:type="string">attributeCode</item>
                 <item name="attributeType" xsi:type="string">attributeType</item>
+                <item name="modifiedAt" xsi:type="string">modifiedAt</item>
             </argument>
             <argument name="feedItemIdentifiers" xsi:type="array">
                 <item name="attributeCode" xsi:type="string">attributeCode</item>
@@ -387,6 +389,7 @@
                 <item name="storeCode" xsi:type="string">storeCode</item>
                 <item name="storeViewCode" xsi:type="string">storeViewCode</item>
                 <item name="categoryId" xsi:type="string">categoryId</item>
+                <item name="modifiedAt" xsi:type="string">modifiedAt</item>
             </argument>
 
             <argument name="feedItemIdentifiers" xsi:type="array">

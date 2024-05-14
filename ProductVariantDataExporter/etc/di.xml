@@ -27,6 +27,7 @@
                 <item name="parentSku" xsi:type="string">parentSku</item>
                 <item name="productSku" xsi:type="string">productSku</item>
                 <item name="productId" xsi:type="string">productId</item>
+                <item name="modifiedAt" xsi:type="string">modifiedAt</item>
             </argument>
             <argument name="feedItemIdentifiers" xsi:type="array">
                 <item name="parentSku" xsi:type="string">parentSku</item>

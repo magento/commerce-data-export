@@ -212,7 +212,7 @@
         <field name="to" type="Float" />
     </record>
 
-     <record name="ProductAttributeMetadata">
+    <record name="ProductAttributeMetadata">
         <field name="id" type="ID" />
         <field name="storeCode" type="String"/>
         <field name="websiteCode" type="String"/>
@@ -247,6 +247,7 @@
             <using field="id" />
             <using field="storeViewCode" />
         </field>
+        <field name="modifiedAt" type="String"/>
     </record>
 
     <!-- TODO: delete deprecated "MediaItem" type. use "Image" or "Video" instead -->
