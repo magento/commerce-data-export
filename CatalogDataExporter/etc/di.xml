@@ -105,7 +105,6 @@
                 <item name="small_image_label" xsi:type="string">small_image_label</item>
                 <item name="status" xsi:type="string">status</item>
                 <item name="swatch_image" xsi:type="string">swatch_image</item>
-                <item name="swatch_image_label" xsi:type="string">swatch_image_label</item>
                 <item name="tax_class_id" xsi:type="string">tax_class_id</item>
                 <item name="thumbnail" xsi:type="string">thumbnail</item>
                 <item name="thumbnail_label" xsi:type="string">thumbnail_label</item>

@@ -14,6 +14,7 @@ return [
     'app/code/Magento/CatalogInventoryDataExporter/Model/Provider/Product/InventoryDataProvider.php' => [
         'Magento\InventoryIndexer',
     ],
+    'app/code/Magento/CatalogInventoryDataExporter/Model/InventoryHelper.php' => ['Magento\InventoryIndexer'],
     'app/code/Magento/CatalogInventoryDataExporter/Model/Query/InventoryData.php' => [
         'Magento\InventorySales',
         'Magento\InventoryCatalogApi',

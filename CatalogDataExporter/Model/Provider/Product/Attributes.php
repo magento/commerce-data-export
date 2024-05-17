@@ -80,23 +80,26 @@ class Attributes
                         'storeViewCode' => $storeViewCode
                     ]
                 );
+                if ($select === null) {
+                    continue;
+                }
+
                 $cursor = $connection->query($select);
                 while ($row = $cursor->fetch()) {
-                    $key = implode('-', [$storeViewCode, $row['productId'], $row['attributeCode']]);
-                    $output[$key]['productId'] = $row['productId'];
+                    $key = implode('-', [$storeViewCode, $row['entity_id'], $row['attribute_code']]);
+                    $output[$key]['productId'] = $row['entity_id'];
                     $output[$key]['storeViewCode'] = $storeViewCode;
                     $output[$key]['attributes'] = [
-                        'attributeCode' => $row['attributeCode'],
-                        'type' => $row['frontendInput'],
+                        'attributeCode' => $row['attribute_code'],
                         'value' => ($row['value'] != null) ?
                             $this->attributeMetadata->getAttributeValue(
-                                $row['attributeCode'],
+                                $row['attribute_code'],
                                 $storeViewCode,
                                 $row['value']
                             ) : null,
                         'valueId' => ($row['value'] != null) ?
                             $this->attributeMetadata->getAttributeValueId(
-                                $row['attributeCode'],
+                                $row['attribute_code'],
                                 $storeViewCode,
                                 $row['value']
                             ) : null,

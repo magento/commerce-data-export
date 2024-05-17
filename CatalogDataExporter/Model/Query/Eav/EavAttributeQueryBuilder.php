@@ -9,7 +9,9 @@ namespace Magento\CatalogDataExporter\Model\Query\Eav;
 
 use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Select;
+use Magento\Framework\EntityManager\EntityMetadataInterface;
 use Magento\Framework\EntityManager\MetadataPool;
 use Magento\Store\Model\Store;
 
@@ -62,6 +64,12 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
     private $eavConfig;
 
     /**
+     * @var array
+     */
+    private array $attributesMetadata = [];
+    private array $storeCodeToStoreIdMap = [];
+
+    /**
      * @param string $entityType
      * @param ResourceConnection $resourceConnection
      * @param MetadataPool $metadataPool
@@ -87,34 +95,28 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
      */
     public function build(array $entityIds, array $attributes, string $storeCode): Select
     {
-        /** @var \Magento\Framework\EntityManager\EntityMetadataInterface $metadata */
+        /** @var EntityMetadataInterface $metadata */
         $metadata = $this->metadataPool->getMetadata($this->entityType);
         $entityTableName = $metadata->getEntityTable();
 
         $connection = $this->resourceConnection->getConnection();
-        $entityTableAttributes = \array_keys($connection->describeTable($entityTableName));
 
-        $attributeMetadataTable = $this->resourceConnection->getTableName('eav_attribute');
-        $eavAttributes = $this->getEavAttributeCodes($attributes, $entityTableAttributes);
+        $eavAttributes = $this->getEavAttributeCodes($attributes);
 
-        $eavAttributesMetaData = $this->getAttributesMetaData($connection, $attributeMetadataTable, $eavAttributes);
-        $attributesPerTable = $this->getAttributeCodeTables($entityTableName, $eavAttributesMetaData);
+        $eavAttributesMetaData = $this->getAttributesMetaData($connection, $entityTableName, $eavAttributes);
 
-        if ($eavAttributesMetaData && $attributesPerTable) {
+        if ($eavAttributesMetaData) {
             $select = $this->getEavAttributes(
                 $connection,
                 $metadata,
-                $entityTableAttributes,
                 $entityIds,
                 $eavAttributesMetaData,
-                $attributesPerTable,
                 $entityTableName,
                 $storeCode
             );
         } else {
             $select = $this->getAttributesFromEntityTable(
                 $connection,
-                $entityTableAttributes,
                 $entityIds,
                 $entityTableName
             );
@@ -126,103 +128,138 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
     /**
      * Form and return query to get entity $entityTableAttributes for given $entityIds
      *
-     * @param \Magento\Framework\DB\Adapter\AdapterInterface $connection
+     * @param AdapterInterface $connection
      * @param array $entityTableAttributes
      * @param int[] $entityIds
      * @param string $entityTableName
      * @return Select
      */
     private function getAttributesFromEntityTable(
-        \Magento\Framework\DB\Adapter\AdapterInterface $connection,
-        array $entityTableAttributes,
+        AdapterInterface $connection,
         array $entityIds,
         string $entityTableName
     ): Select {
-        $select = $connection->select()
-            ->from(['e' => $entityTableName], $entityTableAttributes)
+        return $connection->select()
+            ->from(['e' => $entityTableName])
             ->where('e.entity_id IN (?)', $entityIds);
-
-        return $select;
     }
 
     /**
-     * Return ids of eav attributes by $eavAttributeCodes.
+     * Returns eav attributes metadata in format
+     *  [
+     *    '<eav table name>' => [
+     *        'attribute_code' => 'attribute_id'
+     *        ...
+     *    ], ...
+     *  ]
      *
-     * @param \Magento\Framework\DB\Adapter\AdapterInterface $connection
-     * @param string $attributeMetadataTable
+     * @param AdapterInterface $connection
+     * @param string $entityTableName
      * @param array $eavAttributeCodes
      * @return array
      * @throws \Exception
      */
     private function getAttributesMetaData(
-        \Magento\Framework\DB\Adapter\AdapterInterface $connection,
-        string $attributeMetadataTable,
+        AdapterInterface $connection,
+        string $entityTableName,
         array $eavAttributeCodes
     ): array {
-        $eavAttributeIdsSelect = $connection->select()
-            ->from(['a' => $attributeMetadataTable], ['attribute_id', 'backend_type', 'attribute_code'])
-            ->where('a.attribute_code IN (?)', $eavAttributeCodes)
-            ->where('a.entity_type_id = ?', $this->getEntityTypeId());
+        $missingAttributeCodes = array_diff($eavAttributeCodes, array_keys($this->attributesMetadata));
+        if (!empty($missingAttributeCodes)) {
+            $attributeMetadataTable = $this->resourceConnection->getTableName('eav_attribute');
 
-        return $connection->fetchAssoc($eavAttributeIdsSelect);
+            $eavAttributeIdsSelect = $connection->select()
+                ->from(['a' => $attributeMetadataTable], ['attribute_id', 'backend_type', 'attribute_code'])
+                ->where('a.attribute_code IN (?)', $missingAttributeCodes)
+                ->where('a.entity_type_id = ?', $this->getEntityTypeId());
+
+            $fetchedData = $connection->fetchAssoc($eavAttributeIdsSelect);
+            foreach ($fetchedData as $data) {
+                if (\in_array($data['backend_type'], self::SUPPORTED_BACKEND_TYPES, true)) {
+                    $data['table'] = \sprintf('%s_%s', $entityTableName, $data['backend_type']);
+                }
+                $this->attributesMetadata[$data['attribute_code']] = $data;
+            }
+        }
+        $attributes = \array_intersect_key($this->attributesMetadata, $eavAttributeCodes);
+        $result = [];
+        foreach ($attributes as $attribute) {
+            if (!isset($attribute['table'])) {
+                continue;
+            }
+            $result[$attribute['table']][$attribute['attribute_code']] = $attribute['attribute_id'];
+        }
+        return $result;
     }
 
     /**
      * Form and return query to get eav entity $attributes for given $entityIds.
      *
-     * @param \Magento\Framework\DB\Adapter\AdapterInterface $connection
-     * @param \Magento\Framework\EntityManager\EntityMetadataInterface $metadata
+     * @param AdapterInterface $connection
+     * @param EntityMetadataInterface $metadata
      * @param array $entityTableAttributes
      * @param int[] $entityIds
      * @param array $eavAttributesMetaData
-     * @param array $attributesPerTable
      * @param string $entityTableName
      * @param string $storeCode
      * @return Select
      * @throws \Zend_Db_Select_Exception
      */
     private function getEavAttributes(
-        \Magento\Framework\DB\Adapter\AdapterInterface $connection,
-        \Magento\Framework\EntityManager\EntityMetadataInterface $metadata,
-        array $entityTableAttributes,
+        AdapterInterface $connection,
+        EntityMetadataInterface $metadata,
         array $entityIds,
         array $eavAttributesMetaData,
-        array $attributesPerTable,
         string $entityTableName,
         string $storeCode
     ): Select {
         $selects = [];
         $linkField = $metadata->getLinkField();
-        $attributeIds = \array_keys($eavAttributesMetaData);
-        foreach ($attributesPerTable as $attributeTable => $eavAttributes) {
+        foreach ($eavAttributesMetaData as $attributeTable => $eavAttributes) {
             $attributeCodeExpression = $this->buildAttributeCodeExpression($eavAttributes);
             $eavAttributeTable = $this->resourceConnection->getTableName($attributeTable);
 
             $selects[] = $connection->select()
-                ->from(['e' => $entityTableName], $entityTableAttributes)
-                ->joinLeft(
+                ->from(['e' => $entityTableName], ['entity_id'])
+                ->join(
                     ['eav' => $eavAttributeTable],
                     \sprintf('e.%1$s = eav.%1$s', $linkField) .
-                    $connection->quoteInto(' AND eav.attribute_id IN (?)', $attributeIds),
-                    ['store_id', 'value']
-                )
-                ->join(
-                    ['s' => $this->resourceConnection->getTableName('store')],
-                    \implode(' AND ', [
-                        'eav.store_id = s.store_id',
-                        $connection->quoteInto('s.code IN (?)', [Store::ADMIN_CODE, $storeCode])
-                    ]),
-                    []
+                    $connection->quoteInto(' AND eav.attribute_id IN (?)', array_values($eavAttributes)) .
+                    $connection->quoteInto(
+                        ' AND eav.store_id IN (?)',
+                        [Store::DEFAULT_STORE_ID, $this->getStoreId($storeCode)]
+                    ),
+                    ['store_id']
                 )
                 ->where('e.entity_id IN (?)', $entityIds)
                 ->columns(
                     [
                         'attribute_code' => $attributeCodeExpression,
+                        'value' => new \Zend_Db_Expr('CAST(eav.value as CHAR)')
                     ]
                 );
         }
 
         return $connection->select()->union($selects, Select::SQL_UNION_ALL);
+    }
+
+    /**
+     * @param string $storeCode
+     * @return int
+     */
+    private function getStoreId(string $storeCode): int
+    {
+        if (!isset($this->storeCodeToStoreIdMap[$storeCode])) {
+            $connection = $this->resourceConnection->getConnection();
+
+            $storeId = (int)$connection->fetchOne(
+                $connection->select()
+                    ->from(['s' => $this->resourceConnection->getTableName('store')], ['store_id'])
+                    ->where('s.code = ?', $storeCode)
+            );
+            $this->storeCodeToStoreIdMap[$storeCode] = $storeId;
+        }
+        return $this->storeCodeToStoreIdMap[$storeCode];
     }
 
     /**
@@ -245,10 +282,10 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
         $dbConnection = $this->resourceConnection->getConnection();
         $expressionParts = ['CASE'];
 
-        foreach ($eavAttributes as $attribute) {
+        foreach ($eavAttributes as $attributeCode => $attributeId) {
             $expressionParts[]=
-                $dbConnection->quoteInto('WHEN eav.attribute_id = ?', $attribute['attribute_id'], \Zend_Db::INT_TYPE) .
-                $dbConnection->quoteInto(' THEN ?', $attribute['attribute_code'], 'string');
+                $dbConnection->quoteInto('WHEN eav.attribute_id = ?', $attributeId, \Zend_Db::INT_TYPE) .
+                $dbConnection->quoteInto(' THEN ?', $attributeCode, 'string');
         }
 
         $expressionParts[]= 'END';
@@ -257,57 +294,16 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
     }
 
     /**
-     * Get list of attribute tables.
-     *
-     * Returns result in the following format:     *
-     * ```
-     * $attributeAttributeCodeTables = [
-     *      'm2_catalog_product_entity_varchar' =>
-     *          '45' => [
-     *              'attribute_id' => 45,
-     *              'backend_type' => 'varchar',
-     *              'name' => attribute_code,
-     *          ]
-     *      ]
-     * ];
-     * ```
-     *
-     * @param string $entityTable
-     * @param array $eavAttributesMetaData
-     * @return array
-     */
-    private function getAttributeCodeTables($entityTable, $eavAttributesMetaData): array
-    {
-        $attributeAttributeCodeTables = [];
-        $metaTypes = \array_unique(\array_column($eavAttributesMetaData, 'backend_type'));
-
-        foreach ($metaTypes as $type) {
-            if (\in_array($type, self::SUPPORTED_BACKEND_TYPES, true)) {
-                $tableName = \sprintf('%s_%s', $entityTable, $type);
-                $attributeAttributeCodeTables[$tableName] = array_filter(
-                    $eavAttributesMetaData,
-                    function ($attribute) use ($type) {
-                        return $attribute['backend_type'] === $type;
-                    }
-                );
-            }
-        }
-
-        return $attributeAttributeCodeTables;
-    }
-
-    /**
      * Get EAV attribute codes
-     * Remove attributes from entity table and attributes from exclude list
+     * Remove attributes from exclude list
      * Add linked attributes to output
      *
      * @param array $attributes
      * @param array $entityTableAttributes
      * @return array
      */
-    private function getEavAttributeCodes($attributes, $entityTableAttributes): array
+    private function getEavAttributeCodes($attributes): array
     {
-        $attributes = \array_diff($attributes, $entityTableAttributes);
         $unusedAttributeList = [];
         $newAttributes = [];
         foreach ($this->linkedAttributes as $attribute => $linkedAttributes) {

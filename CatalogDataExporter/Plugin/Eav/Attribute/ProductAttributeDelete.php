@@ -85,12 +85,12 @@ class ProductAttributeDelete
                 $this->invalidationManager->invalidate('product_attribute_deleted');
             } else {
                 $query->joinInner(
-                    ['product' => $connection->getTableName('catalog_product_entity')],
+                    ['product' => $this->resourceConnection->getTableName('catalog_product_entity')],
                     \sprintf('attribute.%1$s = product.%1$s', $linkField),
                     ['product.entity_id']
                 );
                 $connection->query($query->insertFromSelect(
-                    $connection->getTableName($indexer->getView()->getChangelog()->getName()),
+                    $this->resourceConnection->getTableName($indexer->getView()->getChangelog()->getName()),
                     ['entity_id']
                 ));
             }

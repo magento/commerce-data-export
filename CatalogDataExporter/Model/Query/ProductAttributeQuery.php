@@ -7,8 +7,11 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Query;
 
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
+use Magento\CatalogDataExporter\Model\Query\Eav\EavAttributeQueryBuilderFactory;
 
 /**
  * Product attribute query for catalog data exporter
@@ -21,39 +24,36 @@ class ProductAttributeQuery
     private $resourceConnection;
 
     /**
-     * @var array
-     */
-    private $attributeTypes = ['int', 'varchar', 'decimal', 'text', 'datetime'];
-
-    /**
      * @var string
      */
     private $mainTable;
+
+    /**
+     * @var array
+     */
+    private array $userDefinedAttributes;
+
+    /**
+     * @var EavAttributeQueryBuilderFactory
+     */
+    private ?EavAttributeQueryBuilderFactory $attributeQueryFactory;
 
     /**
      * MainProductQuery constructor.
      *
      * @param ResourceConnection $resourceConnection
      * @param string $mainTable
+     * @param EavAttributeQueryBuilderFactory|null $attributeQueryFactory
      */
     public function __construct(
         ResourceConnection $resourceConnection,
-        string $mainTable = 'catalog_product_entity'
+        string $mainTable = 'catalog_product_entity',
+        EavAttributeQueryBuilderFactory $attributeQueryFactory = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->mainTable = $mainTable;
-    }
-
-    /**
-     * Get resource table for attributes
-     *
-     * @param string $tableName
-     * @param string $type
-     * @return string
-     */
-    private function getAttributeTable(string $tableName, string $type) : string
-    {
-        return $this->resourceConnection->getTableName([$tableName, $type]);
+        $this->attributeQueryFactory = $attributeQueryFactory
+            ?? ObjectManager::getInstance()->get(EavAttributeQueryBuilderFactory::class);
     }
 
     /**
@@ -72,10 +72,13 @@ class ProductAttributeQuery
      *
      * @return array
      */
-    private function getUserDefinedAttributeIds() : array
+    private function getUserDefinedAttributes() : array
     {
+        if (isset($this->userDefinedAttributes)) {
+            return $this->userDefinedAttributes;
+        }
         $connection = $this->resourceConnection->getConnection();
-        return $connection->fetchCol(
+        $attributes = $connection->fetchCol(
             $connection->select()
                 ->from(['a' => $this->getTable('eav_attribute')], [])
                 ->join(
@@ -88,65 +91,36 @@ class ProductAttributeQuery
                 ->where('a.backend_type != ?', 'static')
                 ->columns(
                     [
-                        'id' => 'a.attribute_id',
+                        'code' => 'a.attribute_code',
                     ]
                 )
         );
+        $this->userDefinedAttributes = array_combine($attributes, $attributes);
+
+        return $this->userDefinedAttributes;
     }
 
     /**
      * Get query for provider
      *
      * @param array $arguments
-     * @return Select
+     * @return Select|null
      * @throws \Zend_Db_Select_Exception
      */
-    public function getQuery(array $arguments) : Select
+    public function getQuery(array $arguments) : ?Select
     {
         $productIds = isset($arguments['productId']) ? $arguments['productId'] : [];
         $storeViewCode = isset($arguments['storeViewCode']) ? $arguments['storeViewCode'] : [];
-        $connection = $this->resourceConnection->getConnection();
-        $joinField = $connection->getAutoIncrementField($this->getTable($this->mainTable));
 
-        $userDefinedAttributeIds = $this->getUserDefinedAttributeIds();
+        $userDefinedAttributeIds = $this->getUserDefinedAttributes();
+        $attributeQueryBuilder = $this->attributeQueryFactory->create(
+            [
+                'entityType' => ProductInterface::class,
+            ]
+        );
 
-        $selects = [];
-        foreach ($this->attributeTypes as $type) {
-            $selects[$type] = $connection->select()
-                ->from(['cpe' => $this->getTable($this->mainTable)], [])
-                ->join(
-                    ['s' => $this->getTable('store')],
-                    '1 = 1',
-                    ['storeViewCode' => 's.code']
-                )
-                ->join(
-                    ['cpa' => $this->getAttributeTable($this->mainTable, $type)],
-                    sprintf(
-                        'cpa.%1$s = cpe.%1$s AND cpa.attribute_id IN (%2$s) AND cpa.store_id = s.store_id',
-                        $joinField,
-                        implode(',', $userDefinedAttributeIds)
-                    ),
-                    []
-                )
-                ->join(
-                    ['a' => $this->getTable('eav_attribute')],
-                    'a.attribute_id = cpa.attribute_id',
-                    []
-                )
-                ->columns(
-                    [
-                        'productId' => 'cpe.entity_id',
-                        'sku' => 'cpe.sku',
-                        'storeViewCode' => 's.code',
-                        'attributeCode' => 'a.attribute_code',
-                        'frontendInput' => 'a.frontend_input',
-                        'value' => 'cpa.value'
-                    ]
-                )
-                ->where('s.code IN (?)', ['admin', $storeViewCode])
-                ->where('cpe.entity_id IN (?)', $productIds);
-        }
-
-        return $connection->select()->union($selects, Select::SQL_UNION_ALL);
+        return !empty($userDefinedAttributeIds)
+            ? $attributeQueryBuilder->build($productIds, $userDefinedAttributeIds, $storeViewCode)
+            : null;
     }
 }
