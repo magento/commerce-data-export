@@ -188,19 +188,4 @@ class PartialReindexCheckTest extends AbstractInventoryTestHelper
             ]
         );
     }
-
-    /**
-     * @param array $skus
-     * @return array[stock][sku]
-     */
-    private function getFeedData(array $skus): array
-    {
-        $output = [];
-        foreach ($this->stockStatusFeed->getFeedSince('1')['feed'] as $item) {
-            if (in_array($item['sku'], $skus, true)) {
-                $output[$item['stockId']][$item['sku']] = $item;
-            }
-        }
-        return $output;
-    }
 }

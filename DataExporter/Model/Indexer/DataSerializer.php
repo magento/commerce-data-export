@@ -119,13 +119,6 @@ class DataSerializer implements DataSerializerInterface
             foreach ($this->unserializeKeys as $unserializeKey) {
                 $feedData[$unserializeKey] = $this->serializer->unserialize($feedData[$unserializeKey]);
             }
-            if (!array_key_exists($metadata->getFeedIdentity(), $feedData)) {
-                throw new UnableRetrieveData(sprintf(
-                    'Source entity id not found in feed data. field: %s, Feed data: %s',
-                    $metadata->getFeedIdentity(),
-                    var_export($feedData, true)
-                ));
-            }
             $sourceEntityId = $feedData[$metadata->getFeedIdentity()] ?? null;
             if ($sourceEntityId === null) {
                 $this->logger->warning(
