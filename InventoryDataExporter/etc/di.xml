@@ -40,6 +40,11 @@
             <argument name="minimalPayload" xsi:type="array">
                 <item name="stockId" xsi:type="string">stockId</item>
                 <item name="sku" xsi:type="string">sku</item>
+                <item name="isSalable" xsi:type="string">isSalable</item>
+                <item name="qty" xsi:type="string">qty</item>
+                <item name="qtyForSale" xsi:type="string">qtyForSale</item>
+                <item name="infiniteStock" xsi:type="string">infiniteStock</item>
+                <item name="updatedAt" xsi:type="string">updatedAt</item>
             </argument>
             <argument name="feedItemIdentifiers" xsi:type="array">
                 <item name="stock_id" xsi:type="string">stockId</item>

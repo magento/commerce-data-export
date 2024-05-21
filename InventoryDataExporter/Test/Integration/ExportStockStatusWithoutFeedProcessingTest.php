@@ -18,6 +18,11 @@ use Magento\TestFramework\Helper\Bootstrap;
 class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHelper
 {
     /**
+     * @var string
+     */
+    private const EXPECTED_DATE_TIME_FORMAT = '%d-%d-%d %d:%d:%d';
+
+    /**
      * Setup tests
      */
     protected function setUp(): void
@@ -52,6 +57,7 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
         ];
 
         $productIds = [];
+        $updatedAt = (new \DateTime())->getTimestamp();
         foreach ($productsSkus as $sku) {
             $productIds[$sku] = $this->getProductId($sku);
         }
@@ -64,7 +70,14 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                     self::fail("Cannot find stock status for stock $stockId & sku $sku");
                 }
                 $actualStockStatus = $actualStockStatuses[$stockId][$sku];
-
+                $this->assertNotEmpty($actualStockStatus['updatedAt']);
+                $this->assertStringMatchesFormat(
+                    self::EXPECTED_DATE_TIME_FORMAT,
+                    $actualStockStatus['updatedAt'],
+                );
+                $dateTimeFromFeed = (new \DateTime($actualStockStatus['updatedAt']))->getTimestamp();
+                $this->assertEqualsWithDelta($updatedAt, $dateTimeFromFeed, 3);
+                unset($actualStockStatus['updatedAt']);
                 self::assertEquals(
                     $stockStatus,
                     $actualStockStatus,
@@ -94,6 +107,7 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
         ];
 
         $productIds = [];
+        $updatedAt = (new \DateTime())->getTimestamp();
         foreach ($productsSkus as $sku) {
             $productId = $this->getProductId($sku);
             $productIds[$sku] = $productId;
@@ -109,6 +123,14 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                     self::fail("Cannot find stock status for stock $stockId & sku $sku");
                 }
                 $actualStockStatus = $actualStockStatuses[$stockId][$sku];
+                $this->assertNotEmpty($actualStockStatus['updatedAt']);
+                $this->assertStringMatchesFormat(
+                    self::EXPECTED_DATE_TIME_FORMAT,
+                    $actualStockStatus['updatedAt'],
+                );
+                $dateTimeFromFeed = (new \DateTime($actualStockStatus['updatedAt']))->getTimestamp();
+                $this->assertEqualsWithDelta($updatedAt, $dateTimeFromFeed, 3);
+                unset($actualStockStatus['updatedAt']);
 
                 self::assertEquals(
                     $stockStatus,
@@ -130,21 +152,37 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                 'product_with_default_stock_only' => [
                     'stockId' => '1',
                     'sku' => 'product_with_default_stock_only',
+                    'isSalable' => true,
+                    'qty' => 8.5,
+                    'qtyForSale' => 8.5,
+                    'infiniteStock' => false,
                     'deleted' => false,
                 ],
                 'product_in_default_and_2_EU_sources' => [
                     'stockId' => '1',
                     'sku' => 'product_in_default_and_2_EU_sources',
+                    'isSalable' => true,
+                    'qty' => 2,
+                    'qtyForSale' => 2,
+                    'infiniteStock' => false,
                     'deleted' => false,
                 ],
                 'product_with_disabled_manage_stock' => [
                     'stockId' => '1',
                     'sku' => 'product_with_disabled_manage_stock',
+                    'isSalable' => true,
+                    'qty' => 0,
+                    'qtyForSale' => 0,
+                    'infiniteStock' => true,
                     'deleted' => false,
                 ],
                 'product_with_enabled_backorders' => [
                     'stockId' => '1',
                     'sku' => 'product_with_enabled_backorders',
+                    'isSalable' => true,
+                    'qty' => 5,
+                    'qtyForSale' => 5,
+                    'infiniteStock' => true,
                     'deleted' => false,
                 ],
             ],
@@ -153,16 +191,28 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                 'product_in_EU_stock_with_2_sources' => [
                     'stockId' => '10',
                     'sku' => 'product_in_EU_stock_with_2_sources',
+                    'isSalable' => true,
+                    'qty' => 9.5,
+                    'qtyForSale' => 9.5,
+                    'infiniteStock' => false,
                     'deleted' => false,
                 ],
                 'product_in_Global_stock_with_3_sources' => [
                     'stockId' => '10',
                     'sku' => 'product_in_Global_stock_with_3_sources',
+                    'isSalable' => true,
+                    'qty' => 3,
+                    'qtyForSale' => 3,
+                    'infiniteStock' => false,
                     'deleted' => false,
                 ],
                 'product_in_default_and_2_EU_sources' => [
                     'stockId' => '10',
                     'sku' => 'product_in_default_and_2_EU_sources',
+                    'isSalable' => true,
+                    'qty' => 9.5,
+                    'qtyForSale' => 9.5,
+                    'infiniteStock' => false,
                     'deleted' => false,
                 ],
             ],
@@ -171,11 +221,19 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                 'product_in_Global_stock_with_3_sources' => [
                     'stockId' => '20',
                     'sku' => 'product_in_Global_stock_with_3_sources',
+                    'isSalable' => true,
+                    'qty' => 4,
+                    'qtyForSale' => 4,
+                    'infiniteStock' => false,
                     'deleted' => false,
                 ],
                 'product_in_US_stock_with_disabled_source' => [
                     'stockId' => '20',
                     'sku' => 'product_in_US_stock_with_disabled_source',
+                    'isSalable' => false,
+                    'qty' => 0,
+                    'qtyForSale' => 0,
+                    'infiniteStock' => false,
                     'deleted' => false,
                 ],
             ],
@@ -184,11 +242,19 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                 'product_in_Global_stock_with_3_sources' => [
                     'stockId' => '30',
                     'sku' => 'product_in_Global_stock_with_3_sources',
+                    'isSalable' => true,
+                    'qty' => 5,
+                    'qtyForSale' => 5,
+                    'infiniteStock' => false,
                     'deleted' => false,
                 ],
                 'product_in_EU_stock_with_2_sources' => [
                     'stockId' => '30',
                     'sku' => 'product_in_EU_stock_with_2_sources',
+                    'isSalable' => true,
+                    'qty' => 5.5,
+                    'qtyForSale' => 5.5,
+                    'infiniteStock' => false,
                     'deleted' => false,
                 ],
             ],
@@ -206,21 +272,37 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                 'product_with_default_stock_only' => [
                     'stockId' => '1',
                     'sku' => 'product_with_default_stock_only',
+                    'isSalable' => true,
+                    'qty' => 8.5,
+                    'qtyForSale' => 8.5,
+                    'infiniteStock' => false,
                     'deleted' => true,
                 ],
                 'product_in_default_and_2_EU_sources' => [
                     'stockId' => '1',
                     'sku' => 'product_in_default_and_2_EU_sources',
+                    'isSalable' => true,
+                    'qty' => 2,
+                    'qtyForSale' => 2,
+                    'infiniteStock' => false,
                     'deleted' => true,
                 ],
                 'product_with_disabled_manage_stock' => [
                     'stockId' => '1',
                     'sku' => 'product_with_disabled_manage_stock',
+                    'isSalable' => true,
+                    'qty' => 0,
+                    'qtyForSale' => 0,
+                    'infiniteStock' => true,
                     'deleted' => true,
                 ],
                 'product_with_enabled_backorders' => [
                     'stockId' => '1',
                     'sku' => 'product_with_enabled_backorders',
+                    'isSalable' => true,
+                    'qty' => 5,
+                    'qtyForSale' => 5,
+                    'infiniteStock' => true,
                     'deleted' => true,
                 ],
             ],
@@ -229,16 +311,28 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                 'product_in_EU_stock_with_2_sources' => [
                     'stockId' => '10',
                     'sku' => 'product_in_EU_stock_with_2_sources',
+                    'isSalable' => true,
+                    'qty' => 9.5,
+                    'qtyForSale' => 9.5,
+                    'infiniteStock' => false,
                     'deleted' => true,
                 ],
                 'product_in_Global_stock_with_3_sources' => [
                     'stockId' => '10',
                     'sku' => 'product_in_Global_stock_with_3_sources',
+                    'isSalable' => true,
+                    'qty' => 3,
+                    'qtyForSale' => 3,
+                    'infiniteStock' => false,
                     'deleted' => true,
                 ],
                 'product_in_default_and_2_EU_sources' => [
                     'stockId' => '10',
                     'sku' => 'product_in_default_and_2_EU_sources',
+                    'isSalable' => true,
+                    'qty' => 9.5,
+                    'qtyForSale' => 9.5,
+                    'infiniteStock' => false,
                     'deleted' => true,
                 ],
             ],
@@ -247,11 +341,19 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                 'product_in_Global_stock_with_3_sources' => [
                     'stockId' => '20',
                     'sku' => 'product_in_Global_stock_with_3_sources',
+                    'isSalable' => true,
+                    'qty' => 4,
+                    'qtyForSale' => 4,
+                    'infiniteStock' => false,
                     'deleted' => true,
                 ],
                 'product_in_US_stock_with_disabled_source' => [
                     'stockId' => '20',
                     'sku' => 'product_in_US_stock_with_disabled_source',
+                    'isSalable' => false,
+                    'qty' => 0,
+                    'qtyForSale' => 0,
+                    'infiniteStock' => false,
                     'deleted' => true,
                 ],
             ],
@@ -260,11 +362,19 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                 'product_in_Global_stock_with_3_sources' => [
                     'stockId' => '30',
                     'sku' => 'product_in_Global_stock_with_3_sources',
+                    'isSalable' => true,
+                    'qty' => 5,
+                    'qtyForSale' => 5,
+                    'infiniteStock' => false,
                     'deleted' => true,
                 ],
                 'product_in_EU_stock_with_2_sources' => [
                     'stockId' => '30',
                     'sku' => 'product_in_EU_stock_with_2_sources',
+                    'isSalable' => true,
+                    'qty' => 5.5,
+                    'qtyForSale' => 5.5,
+                    'infiniteStock' => false,
                     'deleted' => true,
                 ],
             ],

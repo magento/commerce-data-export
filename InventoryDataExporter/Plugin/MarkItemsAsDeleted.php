@@ -85,7 +85,7 @@ class MarkItemsAsDeleted
                     $stocksToDelete[$stockStatusId] = [
                         'stockId' => (string)$fetchedItemStockId,
                         'sku' => $deletedItemSku,
-                        'productId' => $fetchedSourceItems[$deletedItemSku]['product_id'],
+                        'productId' => (int)$fetchedSourceItems[$deletedItemSku]['product_id'],
                     ];
                 }
             }

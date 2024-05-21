@@ -216,8 +216,11 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
         $selects = [];
         $linkField = $metadata->getLinkField();
         foreach ($eavAttributesMetaData as $attributeTable => $eavAttributes) {
-            $attributeCodeExpression = $this->buildAttributeCodeExpression($eavAttributes);
             $eavAttributeTable = $this->resourceConnection->getTableName($attributeTable);
+
+            $valueExpr = stripos($eavAttributeTable, '_int', -4)
+                ? new \Zend_Db_Expr('CAST(eav.value as CHAR)')
+                : 'eav.value';
 
             $selects[] = $connection->select()
                 ->from(['e' => $entityTableName], ['entity_id'])
@@ -231,11 +234,14 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
                     ),
                     ['store_id']
                 )
+                ->join(['a' => $this->resourceConnection->getTableName('eav_attribute')],
+                    'eav.attribute_id = a.attribute_id',
+                    ['attribute_code']
+                )
                 ->where('e.entity_id IN (?)', $entityIds)
                 ->columns(
                     [
-                        'attribute_code' => $attributeCodeExpression,
-                        'value' => new \Zend_Db_Expr('CAST(eav.value as CHAR)')
+                        'value' => $valueExpr
                     ]
                 );
         }
@@ -260,37 +266,6 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
             $this->storeCodeToStoreIdMap[$storeCode] = $storeId;
         }
         return $this->storeCodeToStoreIdMap[$storeCode];
-    }
-
-    /**
-     * Build expression for attribute code field.
-     *
-     * An example:
-     *
-     * ```
-     * CASE
-     * WHEN eav.attribute_id = '73' THEN 'name'
-     * WHEN eav.attribute_id = '121' THEN 'url_key'
-     * END
-     * ```
-     *
-     * @param array $eavAttributes
-     * @return \Zend_Db_Expr
-     */
-    private function buildAttributeCodeExpression(array $eavAttributes): \Zend_Db_Expr
-    {
-        $dbConnection = $this->resourceConnection->getConnection();
-        $expressionParts = ['CASE'];
-
-        foreach ($eavAttributes as $attributeCode => $attributeId) {
-            $expressionParts[]=
-                $dbConnection->quoteInto('WHEN eav.attribute_id = ?', $attributeId, \Zend_Db::INT_TYPE) .
-                $dbConnection->quoteInto(' THEN ?', $attributeCode, 'string');
-        }
-
-        $expressionParts[]= 'END';
-
-        return new \Zend_Db_Expr(implode(' ', $expressionParts));
     }
 
     /**
