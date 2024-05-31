@@ -283,25 +283,6 @@ class CreateOrderTest extends AbstractOrderFeedTest
     }
 
     /**
-     * Returns orderFeeds by IDs
-     *
-     * @param array $ids
-     * @param bool $excludeDeleted
-     * @return array
-     * @throws \Zend_Db_Statement_Exception
-     */
-    private function getOrderFeedByIds(array $ids, bool $excludeDeleted = false): array
-    {
-        $filteredFeed = array_filter(
-            $this->ordersFeed->getFeedSince('1')['feed'],
-            function ($item) use ($ids, $excludeDeleted) {
-                return (!$excludeDeleted || !$item['deleted']) && in_array($item['commerceOrderId'], $ids);
-            }
-        );
-        return array_values($filteredFeed);
-    }
-
-    /**
      * Verify only order State available in Magento. Return null if state does not exist to generate error
      *
      * @param string $orderState

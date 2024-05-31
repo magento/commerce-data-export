@@ -385,7 +385,7 @@ class FeedIndexMetadata
     }
 
     /**
-     * Determine if need to truncate feed indexer during full reindex
+     * Determine if you need to truncate feed indexer during full reindex
      *
      * @return bool
      */

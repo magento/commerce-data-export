@@ -40,6 +40,23 @@ class ExportStatusCode
     }
 
     /**
+     * Return true regardless of the response status code
+     *
+     * @return bool
+     */
+    public function isSent(): bool
+    {
+        return !in_array(
+            $this->statusCode,
+            [
+                ExportStatusCodeProvider::APPLICATION_ERROR,
+                ExportStatusCodeProvider::FEED_SUBMIT_SKIPPED
+            ],
+            true
+        );
+    }
+
+    /**
      * Get value
      *
      * @return int

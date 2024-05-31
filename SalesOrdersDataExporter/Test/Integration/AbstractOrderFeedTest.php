@@ -121,4 +121,23 @@ abstract class AbstractOrderFeedTest extends TestCase
             throw new RuntimeException('Could not reindex orders data', $e);
         }
     }
+
+    /**
+     * Returns orderFeeds by IDs
+     *
+     * @param array $ids
+     * @param bool $excludeDeleted
+     * @return array
+     * @throws \Zend_Db_Statement_Exception
+     */
+    protected function getOrderFeedByIds(array $ids, bool $excludeDeleted = false): array
+    {
+        $filteredFeed = array_filter(
+            $this->ordersFeed->getFeedSince('1')['feed'],
+            function ($item) use ($ids, $excludeDeleted) {
+                return (!$excludeDeleted || !$item['deleted']) && in_array($item['commerceOrderId'], $ids);
+            }
+        );
+        return array_values($filteredFeed);
+    }
 }
