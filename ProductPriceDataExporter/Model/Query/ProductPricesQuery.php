@@ -39,6 +39,7 @@ class ProductPricesQuery
     /**
      * @param ResourceConnection $resourceConnection
      * @param MetadataPool $metadataPool
+     * @param Config|null $eavConfig
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -70,28 +71,11 @@ class ProductPricesQuery
                 ['product' => $this->resourceConnection->getTableName('catalog_product_entity')],
                 [
                     'sku',
+                    'type_id',
                     'entity_id',
-                    'type_id'
                 ]
             )
-            ->joinInner(
-                ['product_website' => $this->resourceConnection->getTableName('catalog_product_website')],
-                'product_website.product_id = product.entity_id',
-                ['website_id']
-            )
-            // TODO: get website code default store ID from \Magento\Store\Model\StoreManagerInterface to avoid joins
-            ->joinInner(
-                ['store_website' => $this->resourceConnection->getTableName('store_website')],
-                'store_website.website_id = product_website.website_id',
-                ['websiteCode' => 'code']
-            )
-            ->joinInner(
-                ['store_group' => $this->resourceConnection->getTableName('store_group')],
-                'store_group.website_id = store_website.website_id',
-                []
-            )
-            ->where('product.entity_id IN (?)', $productIds)
-            ->where('product.type_id NOT IN (?)', self::IGNORED_TYPES);
+            ->where('product.entity_id IN (?)', $productIds);
 
         $eavAttributeTable = $this->resourceConnection->getTableName('catalog_product_entity_decimal');
         foreach ($priceAttributes as $attributeId => $attributeCode) {
@@ -99,14 +83,14 @@ class ProductPricesQuery
             $select->joinLeft(
                 [$alias => $eavAttributeTable],
                 \sprintf('product.%1$s = %2$s.%1$s', $linkField, $alias) .
-                $connection->quoteInto(" AND $alias.attribute_id = ?", $attributeId) .
-                " AND $alias.store_id IN (store_group.default_store_id, 0)",
+                $connection->quoteInto(" AND $alias.attribute_id = ?", $attributeId),
                 [
                     $attributeCode => 'value',
                     $attributeCode . '_storeId' => 'store_id',
                 ]
             );
         }
+
         if ($this->getPriceTypeAttributeId()) {
             $select->joinLeft(
                 ['price_type' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
@@ -117,6 +101,57 @@ class ProductPricesQuery
             );
         }
         return $select;
+    }
+
+    /**
+     * Fetch the websites associated with the given product IDs.
+     *
+     * @param array $productIds
+     * @return Select
+     */
+    public function getProductWebsiteAssociations(array $productIds): Select
+    {
+        $connection = $this->resourceConnection->getConnection();
+
+        return $connection->select()
+            ->from(
+                ['product' => $this->resourceConnection->getTableName('catalog_product_entity')],
+                [
+                    'sku',
+                    'entity_id',
+                    'type_id'
+                ]
+            )
+            ->joinInner(
+                ['product_website' => $this->resourceConnection->getTableName('catalog_product_website')],
+                'product_website.product_id = product.entity_id',
+                ['website_id']
+            )
+            ->joinInner(
+                ['store_website' => $this->resourceConnection->getTableName('store_website')],
+                'store_website.website_id = product_website.website_id',
+                ['websiteCode' => 'code']
+            )
+            ->where('product.entity_id IN (?)', $productIds)
+            ->where('product.type_id NOT IN (?)', self::IGNORED_TYPES);
+    }
+
+    /**
+     * @return Select
+     */
+    public function getWebsitesQuery(): Select
+    {
+        $connection = $this->resourceConnection->getConnection();
+
+        return $connection->select()
+            ->from(
+                ['s' => $this->resourceConnection->getTableName('store')],
+                ['store_id']
+            )->joinInner(
+                ['w' => $this->resourceConnection->getTableName('store_website')],
+                's.website_id = w.website_id',
+                ['code', 'website_id']
+            );
     }
 
     /**

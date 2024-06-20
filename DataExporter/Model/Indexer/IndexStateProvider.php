@@ -9,6 +9,9 @@ namespace Magento\DataExporter\Model\Indexer;
 
 class IndexStateProvider
 {
+    public const INSERT_OPERATION = 1;
+    public const UPDATE_OPERATION = 2;
+
     /**
      * @param int $batchSize
      */
@@ -30,28 +33,59 @@ class IndexStateProvider
     /**
      * @var array
      */
+    private array $feedItemsUpdates = [];
+
+    /**
+     * @var array
+     */
     private array $processedHashes = [];
 
     /**
+     * Add new feed items suitable for insert operation
+     *
      * @param array $feedItems
      * @return void
      */
     public function addItems(array $feedItems): void
     {
-        $this->feedItems += $feedItems;
+        $this->feedItems = array_merge($this->feedItems, $feedItems);
+    }
+
+    /**
+     * Add updated feed items suitable for update operation
+     *
+     * @param array $feedItems
+     * @return void
+     */
+    public function addUpdates(array $feedItems): void
+    {
+        $this->feedItemsUpdates = array_merge($this->feedItemsUpdates, $feedItems);
     }
 
     /**
      * Warming: this function is NOT idempotent
+     *
      * @return array
      */
     public function getFeedItems(): array
     {
         $feedItems = [];
+        $batchLimitReached = false;
         while ($item = array_shift($this->feedItems)) {
+            $item['operation'] = self::INSERT_OPERATION;
             $feedItems[] = $item;
             if (count($feedItems) === $this->batchSize) {
+                $batchLimitReached = true;
                 break;
+            }
+        }
+        if (!$batchLimitReached) {
+            while ($item = array_shift($this->feedItemsUpdates)) {
+                $item['operation'] = self::UPDATE_OPERATION;
+                $feedItems[] = $item;
+                if (count($feedItems) === $this->feedItemsUpdates) {
+                    break;
+                }
             }
         }
         return $feedItems;
@@ -62,7 +96,8 @@ class IndexStateProvider
      */
     public function isBatchLimitReached(): bool
     {
-        return count($this->feedItems) >= $this->batchSize;
+        $batchSize = count($this->feedItems) + count($this->feedItemsUpdates);
+        return $batchSize >= $this->batchSize;
     }
 
     /**
@@ -82,5 +117,16 @@ class IndexStateProvider
     public function addProcessedHash(string $hash): void
     {
         $this->processedHashes[$hash] = true;
+    }
+
+    /**
+     * Check operation type
+     *
+     * @param array $item
+     * @return bool
+     */
+    public static function isUpdate(array $item): bool
+    {
+        return $item['operation'] === self::UPDATE_OPERATION;
     }
 }

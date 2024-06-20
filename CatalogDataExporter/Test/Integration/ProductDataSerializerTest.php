@@ -11,6 +11,7 @@ use Magento\DataExporter\Model\FeedExportStatus;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\DataExporter\Model\Indexer\DataSerializer;
+use Magento\DataExporter\Model\Indexer\IndexStateProvider;
 use Magento\DataExporter\Status\ExportStatusCodeProvider;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\DataExporter\Model\FeedExportStatusBuilder;
@@ -78,6 +79,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_1',
+                'operation' => IndexStateProvider::INSERT_OPERATION
             ],
             [
                 'feed_data' => [
@@ -91,6 +93,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_2',
+                'operation' => IndexStateProvider::INSERT_OPERATION
             ],
             [
                 'feed_data' => [
@@ -104,6 +107,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_3',
+                'operation' => IndexStateProvider::INSERT_OPERATION
             ],
         ];
 
@@ -118,7 +122,11 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
             ]
         );
-        $actual = $this->testUnit->serialize($feedItems, $exportStatus, $this->productFeed->getFeedMetadata());
+        $actual = $this->testUnit->serialize(
+            $feedItems,
+            $exportStatus,
+            $this->productFeed->getFeedMetadata()
+        )[IndexStateProvider::INSERT_OPERATION];
         foreach ($actual as &$feed) {
             $this->assertNotEmpty($feed['modified_at']);
             $this->assertStringMatchesFormat(self::EXPECTED_DATE_TIME_FORMAT, $feed['modified_at']);
@@ -154,6 +162,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_1',
+                'operation' => IndexStateProvider::INSERT_OPERATION
             ],
             [
                 'feed_data' => [
@@ -167,6 +176,8 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_2',
+                'operation' => IndexStateProvider::INSERT_OPERATION
+
             ],
             [
                 'feed_data' => [
@@ -180,6 +191,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_3',
+                'operation' => IndexStateProvider::INSERT_OPERATION
             ],
         ];
 
@@ -187,7 +199,11 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
             501,
             'Failed to save feed'
         );
-        $actual = $this->testUnit->serialize($feedItems, $exportStatus, $this->productFeed->getFeedMetadata());
+        $actual = $this->testUnit->serialize(
+            $feedItems,
+            $exportStatus,
+            $this->productFeed->getFeedMetadata()
+        )[IndexStateProvider::INSERT_OPERATION];
         foreach ($actual as &$feed) {
             $this->assertNotEmpty($feed['modified_at']);
             $this->assertStringMatchesFormat(self::EXPECTED_DATE_TIME_FORMAT, $feed['modified_at']);

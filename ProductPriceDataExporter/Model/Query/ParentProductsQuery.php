@@ -43,7 +43,6 @@ class ParentProductsQuery
     /**
      * @param array $productIds
      * @return Select
-     * @throws \Exception
      */
     public function getQuery(array $productIds): Select
     {

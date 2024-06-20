@@ -170,15 +170,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     //allows to execute plugins on Process method when callbacks are in place
                     $feedItems = $this->exportProcessor->process($metadata->getFeedName(), $chunk, $feedItems);
                     $feedItems = $this->addHashesAndModifiedAt($feedItems, $metadata);
-                    $data = $this->filterFeedItems($feedItems, $metadata, $indexState);
-                    if (empty($data)) {
-                        return;
-                    }
-                    $indexState->addItems($data);
-
-                    if ($indexState->isBatchLimitReached()) {
-                        $this->exportFeedItemsAndLogStatus($indexState, $metadata, $serializer);
-                    }
+                    $this->processFeedItems($feedItems, $metadata, $indexState, $serializer);
                 };
                 $this->exportProcessor->processWithCallback($metadata, $chunk, $dataProcessorCallback);
 
@@ -316,15 +308,17 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         IndexStateProvider $indexStateProvider = null
     ) : array {
         if (empty($feedItems)) {
-            return [];
+            return [[], []];
         }
         $connection = $this->resourceConnection->getConnection();
         $feedIdsValues =  \array_keys($feedItems);
 
+        $updates = [];
         $select = $connection->select()
             ->from(
                 ['f' => $this->resourceConnection->getTableName($metadata->getFeedTableName())],
                 [
+                    FeedIndexMetadata::FEED_TABLE_FIELD_PK,
                     FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID,
                     FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH,
                     FeedIndexMetadata::FEED_TABLE_FIELD_STATUS
@@ -340,18 +334,24 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             if ($indexStateProvider !== null) {
                 $indexStateProvider->addProcessedHash($feedHash);
             }
-            if (isset($feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH])
-                && \in_array(
+            if (isset($feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH])) {
+                if (\in_array(
                     (int)$row[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS],
                     ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE,
                     true
-                )
-                && $feedHash == $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH]
-            ) {
-                unset($feedItems[$identifier]);
+                    )
+                    && $feedHash == $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH]
+                ) {
+                    unset($feedItems[$identifier]);
+                } else {
+                    $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_PK]
+                        = $row[FeedIndexMetadata::FEED_TABLE_FIELD_PK];
+                    $updates[] = $feedItems[$identifier];
+                    unset($feedItems[$identifier]);
+                }
             }
         }
-        return $feedItems;
+        return [$feedItems, $updates];
     }
 
     /**
@@ -433,15 +433,38 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             $recentTimeStamp
         ) as $feedItems) {
             $feedItems = $this->addHashesAndModifiedAt($feedItems, $metadata, true);
-            $data = $this->filterFeedItems($feedItems, $metadata);
+            $this->processFeedItems($feedItems, $metadata, $indexStateProvider, $serializer);
+        }
+    }
 
-            if (empty($data)) {
-                continue;
-            }
-            $indexStateProvider->addItems($data);
-            if ($indexStateProvider->isBatchLimitReached()) {
-                $this->exportFeedItemsAndLogStatus($indexStateProvider, $metadata, $serializer);
-            }
+    /**
+     * Process feed items
+     *
+     * @param array $feedItems
+     * @param FeedIndexMetadata $metadata
+     * @param IndexStateProvider|null $indexState
+     * @param DataSerializerInterface $serializer
+     * @return void
+     * @throws \Zend_Db_Statement_Exception
+     */
+    private function processFeedItems(
+        array $feedItems,
+        FeedIndexMetadata $metadata,
+        ?IndexStateProvider $indexState,
+        DataSerializerInterface $serializer
+    ): void {
+        [$inserts, $updates] = $this->filterFeedItems($feedItems, $metadata, $indexState);
+        if (empty($inserts) && empty($updates)) {
+            return;
+        }
+        if ($inserts) {
+            $indexState->addItems($inserts);
+        }
+        if ($updates) {
+            $indexState->addUpdates($updates);
+        }
+        if ($indexState->isBatchLimitReached()) {
+            $this->exportFeedItemsAndLogStatus($indexState, $metadata, $serializer);
         }
     }
 }

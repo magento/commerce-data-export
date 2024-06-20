@@ -109,6 +109,44 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/configure_website_scope_price.php
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/catalog_data_exporter_product_prices_indexer_update_on_schedule.php
      * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products_all_websites_grouped_price.php
+     * @dataProvider expectedSimpleProductEnabledOneStoreDataProvider
+     * @param array $expectedSimpleProductPrices
+     * @throws CouldNotSaveException
+     * @throws InputException
+     * @throws NoSuchEntityException
+     * @throws StateException
+     * @throws StoreIsInactiveException
+     */
+    public function testUpdateProductPriceOnSecondStore(array $expectedSimpleProductPrices): void
+    {
+        //Get product for edit in general scope (all websites)
+        $storeRepository = $this->objectManager->get(StoreRepositoryInterface::class);
+        $store = $storeRepository->getActiveStoreByCode('fixture_second_store');
+        $secondWebsiteStoreId = $store->getId();
+        //Get product for edit in general scope (all websites)
+        $secondStoreProduct = $this->productRepository->get(
+            'simple_product_with_tier_price',
+            true,
+            $secondWebsiteStoreId
+        );
+        //Change price for second store
+        $secondStoreProduct->setPrice('30.5');
+        $this->productRepository->save($secondStoreProduct);
+        $this->changeExpectedPriceForWebsite($expectedSimpleProductPrices, 'test', '30.5');
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
+        //Change price for second store again
+        $secondStoreProduct->setPrice('20.5');
+        $this->changeExpectedPriceForWebsite($expectedSimpleProductPrices, 'test', '20.5');
+        $this->productRepository->save($secondStoreProduct);
+
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
+    }
+
+    /**
+     * @magentoConfigFixture current_store catalog/price/scope 1
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/configure_website_scope_price.php
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/catalog_data_exporter_product_prices_indexer_update_on_schedule.php
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products_all_websites_grouped_price.php
      * @dataProvider expectedSimpleProductPricesReassignProductsToWebsiteDataProvider
      * @param array $expectedSimpleProductPrices
      * @throws CouldNotSaveException
@@ -446,5 +484,25 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
                 ]
             ]
         ];
+    }
+
+    /**
+     * @param array $expectedSimpleProductPrices
+     * @param string $websiteCode
+     * @param string $price
+     * @return array
+     */
+    private function changeExpectedPriceForWebsite(
+        array &$expectedSimpleProductPrices,
+        string $websiteCode,
+        string $price
+    ): array {
+        foreach ($expectedSimpleProductPrices as &$expectedSimpleProductPrice) {
+            if ($expectedSimpleProductPrice['websiteCode'] === $websiteCode) {
+                $expectedSimpleProductPrice['regular'] = $price;
+            }
+        }
+
+        return $expectedSimpleProductPrices;
     }
 }

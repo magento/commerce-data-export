@@ -16,6 +16,7 @@ use Magento\Framework\App\ObjectManager;
  */
 class FeedIndexMetadata
 {
+    public const FEED_TABLE_FIELD_PK = 'id';
     public const FEED_TABLE_FIELD_SOURCE_ENTITY_ID = 'source_entity_id';
     public const FEED_TABLE_FIELD_IS_DELETED = 'is_deleted';
     public const FEED_TABLE_FIELD_MODIFIED_AT = 'modified_at';
@@ -28,6 +29,7 @@ class FeedIndexMetadata
      * Default columns that must be updated each time when feed persisted to storage
      */
     private const FEED_TABLE_MUTABLE_COLUMNS_DEFAULT = [
+        self::FEED_TABLE_FIELD_SOURCE_ENTITY_ID => self::FEED_TABLE_FIELD_SOURCE_ENTITY_ID,
         self::FEED_TABLE_FIELD_FEED_DATA => self::FEED_TABLE_FIELD_FEED_DATA,
         self::FEED_TABLE_FIELD_IS_DELETED => self::FEED_TABLE_FIELD_IS_DELETED,
         self::FEED_TABLE_FIELD_FEED_HASH => self::FEED_TABLE_FIELD_FEED_HASH,
@@ -150,8 +152,14 @@ class FeedIndexMetadata
      */
     private ?string $dateTimeFormat;
 
+    /**
+     * @var string|null
+     */
     private ?string $viewSourceLinkField;
 
+    /**
+     * @var array
+     */
     private array $feedItemIdentifiers;
 
     /**

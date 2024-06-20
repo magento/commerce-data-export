@@ -11,9 +11,12 @@ use Magento\DataExporter\Model\FeedExportStatus;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\DataExporter\Status\ExportStatusCodeProvider;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Adapter\DeadlockException;
 
 class FeedUpdater
 {
+    private const RETRY_ATTEMPTS = 2;
+
     /**
      * @var ResourceConnection
      */
@@ -23,6 +26,10 @@ class FeedUpdater
      * @var array
      */
     private array $feedTableColumns = [];
+
+    /**
+     * @var CommerceDataExportLoggerInterface
+     */
     private CommerceDataExportLoggerInterface $logger;
 
     /**
@@ -51,38 +58,82 @@ class FeedUpdater
         FeedIndexMetadata $metadata,
         DataSerializerInterface $serializer
     ): void {
-        try {
-            $connection = $this->resourceConnection->getConnection();
+        for ($i = 1; $i <= self::RETRY_ATTEMPTS; $i++) {
+            $lastAttempt = $i === self::RETRY_ATTEMPTS;
+            if ($this->insertUpdateWithRetry($feedData, $exportStatus, $metadata, $serializer, $lastAttempt)) {
+                break;
+            }
+        }
+    }
 
+    /**
+     * Insert or update feed data with retry if deadlock exception occurred
+     *
+     * @param array $feedData
+     * @param FeedExportStatus|null $exportStatus
+     * @param FeedIndexMetadata $metadata
+     * @param DataSerializerInterface $serializer
+     * @param bool $lastAttempt
+     * @return bool
+     */
+    private function insertUpdateWithRetry(
+        array $feedData,
+        ?FeedExportStatus $exportStatus,
+        FeedIndexMetadata $metadata,
+        DataSerializerInterface $serializer,
+        bool $lastAttempt
+    ): bool {
+        try {
             $dataForInsert = $serializer->serialize($feedData, $exportStatus, $metadata);
             if (!empty($dataForInsert)) {
-                $fieldsToUpdateOnDuplicate = array_intersect_key(
-                    $metadata->getFeedTableMutableColumns(),
-                    $this->getFeedTableColumns($metadata)
-                );
                 // Skip data insert if feed submit was skipped
                 if (null !== $exportStatus
                     && $exportStatus->getStatus()->getValue() === ExportStatusCodeProvider::FEED_SUBMIT_SKIPPED) {
-                    return;
+                    return true;
                 }
-                $connection->insertOnDuplicate(
-                    $this->resourceConnection->getTableName($metadata->getFeedTableName()),
-                    $dataForInsert,
-                    $fieldsToUpdateOnDuplicate
-                );
-                $this->logger->logProgress(null, count($dataForInsert));
+
+                $submitted = 0;
+                $this->saveFeedData($dataForInsert, $metadata, $submitted);
+
+                $this->logger->logProgress(null, $submitted);
             }
+        } catch (DeadlockException $deadlockException) {
+            if ($lastAttempt) {
+                $this->logError($deadlockException, $metadata, $dataForInsert);
+            }
+            return false;
         } catch (\Throwable $e) {
-            $this->logger->error(
-                'Cannot log export status to feed table',
-                [
-                    'export_status' => $exportStatus->getStatus(),
-                    'export_failed_items' => $exportStatus->getFailedItems(),
-                    'export_phrase' => $exportStatus->getReasonPhrase(),
-                    'error' => $e->getMessage()
-                ]
-            );
+            $this->logError($e, $metadata, $dataForInsert);
         }
+        return true;
+    }
+
+    /**
+     * Log error
+     *
+     * @param \Throwable $exception
+     * @param FeedIndexMetadata $metadata
+     * @param array $dataForInsert
+     * @return void
+     */
+    private function logError(\Throwable $exception, FeedIndexMetadata $metadata, array $dataForInsert): void
+    {
+        $feedItems = array_merge(
+            $dataForInsert[IndexStateProvider::INSERT_OPERATION] ?? [],
+            $dataForInsert[IndexStateProvider::UPDATE_OPERATION] ?? []
+        );
+        $this->logger->error(
+            'Cannot persist export status to feed table',
+            [
+                'feed' => $metadata->getFeedName(),
+                'source_ids' => \array_unique(
+                    array_column($feedItems, FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID)
+                ),
+                'feed_ids' => array_column($feedItems, FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID),
+                'error' => $exception->getMessage(),
+                'error_class' => get_class($exception)
+            ]
+        );
     }
 
     /**
@@ -102,5 +153,57 @@ class FeedUpdater
             $this->feedTableColumns[$metadata->getFeedName()] = array_combine($columns, $columns);
         }
         return $this->feedTableColumns[$metadata->getFeedName()];
+    }
+
+    /**
+     * Save feed data into database
+     *
+     * @param array $dataForInsert
+     * @param FeedIndexMetadata $metadata
+     * @param int $submitted
+     * @return void
+     */
+    private function saveFeedData(array $dataForInsert, FeedIndexMetadata $metadata, int &$submitted): void
+    {
+        $connection = $this->resourceConnection->getConnection();
+        $tableName = $this->resourceConnection->getTableName($metadata->getFeedTableName());
+
+        // Insert data for legacy feeds. Also supports third-party implementations based on legacy approach
+        if (!$metadata->isExportImmediately()) {
+            $fieldsToUpdateOnDuplicate = array_intersect_key(
+                $metadata->getFeedTableMutableColumns(),
+                $this->getFeedTableColumns($metadata)
+            );
+
+            $connection->insertOnDuplicate(
+                $tableName,
+                $dataForInsert,
+                $fieldsToUpdateOnDuplicate
+            );
+
+            $submitted += count($dataForInsert);
+        } else {
+            if (!empty($dataForInsert[IndexStateProvider::UPDATE_OPERATION])) {
+                $fieldsToUpdateOnDuplicate = array_intersect_key(
+                    $metadata->getFeedTableMutableColumns(),
+                    $this->getFeedTableColumns($metadata)
+                );
+                $connection->insertOnDuplicate(
+                    $tableName,
+                    $dataForInsert[IndexStateProvider::UPDATE_OPERATION],
+                    $fieldsToUpdateOnDuplicate
+                );
+                $submitted += count($dataForInsert[IndexStateProvider::UPDATE_OPERATION]);
+            }
+            if (!empty($dataForInsert[IndexStateProvider::INSERT_OPERATION])) {
+                $columns = array_keys($dataForInsert[IndexStateProvider::INSERT_OPERATION][0]);
+                $connection->insertArray(
+                    $tableName,
+                    $columns,
+                    $dataForInsert[IndexStateProvider::INSERT_OPERATION],
+                );
+                $submitted += count($dataForInsert[IndexStateProvider::INSERT_OPERATION]);
+            }
+        }
     }
 }

@@ -40,6 +40,10 @@ class DataSerializer implements DataSerializerInterface
      * @var array
      */
     private array $unserializeKeys;
+
+    /**
+     * @var CommerceDataExportLoggerInterface
+     */
     private CommerceDataExportLoggerInterface $logger;
 
     /**
@@ -154,12 +158,17 @@ class DataSerializer implements DataSerializerInterface
                 $feedData = \array_intersect_key($feedData, $feedItemFieldsToPersist);
             }
             $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA] = $this->serializer->serialize($feedData);
-            $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID] = $row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID];
             $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH] = $row[
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH
             ];
-
-            $output[] = $outputRow;
+            if (IndexStateProvider::isUpdate($row)) {
+                $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_PK] = $row[FeedIndexMetadata::FEED_TABLE_FIELD_PK];
+                $output[IndexStateProvider::UPDATE_OPERATION][] = $outputRow;
+            } else {
+                $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID]
+                    = $row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID];
+                $output[IndexStateProvider::INSERT_OPERATION][] = $outputRow;
+            }
         }
         return $output;
     }
