@@ -26,4 +26,5 @@ return [
     'app/code/Magento/DataExporter/Model/Batch/Feed/Generator.php' => ['Magento\ResourceConnections'],
     'app/code/Magento/DataExporter/Model/Batch/FeedChangeLog/Generator.php' => ['Magento\ResourceConnections'],
     'app/code/Magento/DataExporter/Model/Batch/FeedSource/Generator.php' => ['Magento\ResourceConnections'],
+    'app/code/Magento/CatalogInventoryDataExporter/Model/InventoryHelper.php'  => ['Magento\InventoryIndexer']
 ];
