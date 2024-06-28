@@ -7,19 +7,27 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurableProductDataExporter\Model\Provider\Product;
 
+use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\CatalogDataExporter\Model\Provider\Product\OptionProviderInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionQuery;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionValueQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
+use Magento\Eav\Model\Config;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Sql\ColumnValueExpression;
+use Magento\Framework\DB\Sql\Expression;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Swatches\Helper\Media as MediaHelper;
 use Magento\Swatches\Model\Swatch;
 
 /**
  * Configurable product options data provider
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Options implements OptionProviderInterface
 {
@@ -50,9 +58,19 @@ class Options implements OptionProviderInterface
     private $optionValueUid;
 
     /**
+     * @var Config
+     */
+    private Config $eavConfig;
+
+    /**
      * @var MediaHelper
      */
     private $mediaHelper;
+
+    /**
+     * @var ?int
+     */
+    private ?int $statusAttributeId = null;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -60,6 +78,7 @@ class Options implements OptionProviderInterface
      * @param ProductOptionValueQuery $productOptionValueQuery
      * @param ConfigurableOptionValueUid $optionValueUid
      * @param MediaHelper $mediaHelper
+     * @param Config $eavConfig
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -68,6 +87,7 @@ class Options implements OptionProviderInterface
         ProductOptionValueQuery $productOptionValueQuery,
         ConfigurableOptionValueUid $optionValueUid,
         MediaHelper $mediaHelper,
+        ?Config $eavConfig,
         LoggerInterface $logger
     ) {
         $this->resourceConnection = $resourceConnection;
@@ -75,6 +95,7 @@ class Options implements OptionProviderInterface
         $this->productOptionValueQuery = $productOptionValueQuery;
         $this->optionValueUid = $optionValueUid;
         $this->mediaHelper = $mediaHelper;
+        $this->eavConfig = $eavConfig ?? ObjectManager::getInstance()->get(Config::class);
         $this->logger = $logger;
     }
 
@@ -94,9 +115,10 @@ class Options implements OptionProviderInterface
      *
      * @param int $entityId
      * @param int $attributeId
+     * @param string $storeCode
      * @return array
      */
-    private function getPossibleAttributeValues($entityId, $attributeId)
+    private function getPossibleAttributeValues(int $entityId, int $attributeId, string $storeCode): array
     {
         $connection = $this->resourceConnection->getConnection();
         $joinField = $connection->getAutoIncrementField($this->getTable('catalog_product_entity'));
@@ -125,6 +147,35 @@ class Options implements OptionProviderInterface
             ->columns(
                 new ColumnValueExpression('DISTINCT cpi.value')
             );
+
+        $statusAttributeId = $this->getStatusAttributeId();
+        if (null !== $statusAttributeId) {
+            $select->joinInner(
+                ['s' => $this->resourceConnection->getTableName('store')],
+                $connection->quoteInto('s.code =  ?', $storeCode),
+                []
+            )
+            ->joinLeft(
+                ['eav' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
+                \sprintf('cpc.%1$s = eav.%1$s', $joinField) .
+                $connection->quoteInto(' AND eav.attribute_id = ?', $statusAttributeId) .
+                ' AND eav.store_id = 0',
+                []
+            )
+            ->joinLeft(
+                ['eav_store' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
+                \sprintf('cpc.%1$s = eav_store.%1$s', $joinField) .
+                ' AND eav_store.attribute_id = eav.attribute_id' .
+                ' AND eav_store.store_id = s.store_id',
+                [
+                    'status' => new Expression(
+                        'IF (eav_store.value_id, eav_store.value, eav.value)'
+                    ),
+                ]
+            )
+            ->having('status != ?', Status::STATUS_DISABLED);
+        }
+
         return $connection->fetchCol($select);
     }
 
@@ -229,8 +280,6 @@ class Options implements OptionProviderInterface
      */
     public function get(array $values): array
     {
-        $temp = [];
-
         $queryArguments = [];
         foreach ($values as $value) {
             if (!isset($value['productId'], $value['type'], $value['storeViewCode'])
@@ -250,7 +299,7 @@ class Options implements OptionProviderInterface
             $select = $this->productOptionQuery->getQuery($queryArguments);
             $cursor = $this->resourceConnection->getConnection()->query($select);
             while ($row = $cursor->fetch()) {
-                $options = $this->getOptions($row, $temp, $options, $optionValuesData);
+                $options = $this->getOptions($row, $options, $optionValuesData);
             }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage(), ['exception' => $exception]);
@@ -277,19 +326,18 @@ class Options implements OptionProviderInterface
      * Get Options
      *
      * @param mixed $row
-     * @param array $temp
      * @param array $options
      * @param array $optionValuesData
      * @return array
      */
-    private function getOptions(mixed $row, array $temp, array $options, array $optionValuesData): array
+    private function getOptions(mixed $row, array $options, array $optionValuesData): array
     {
         try {
-            $key = $row['productId'] . '-' . $row['attribute_id'];
-            if (!isset($temp[$key])) {
-                $temp[$key] = $this->getPossibleAttributeValues($row['productId'], $row['attribute_id']);
-            }
-            $filter = $temp[$key];
+            $filter = $this->getPossibleAttributeValues(
+                (int)$row['productId'],
+                (int)$row['attribute_id'],
+                $row['storeViewCode']
+            );
 
             $key = $this->getOptionKey($row);
             $options[$key] = $options[$key] ?? $this->formatOptionsRow($row);
@@ -313,5 +361,23 @@ class Options implements OptionProviderInterface
             );
         }
         return $options;
+    }
+
+    /**
+     * Get status attribute id and cache it
+     */
+    private function getStatusAttributeId(): ?int
+    {
+        try {
+            if ($this->statusAttributeId === null) {
+                $attribute = $this->eavConfig->getAttribute(Product::ENTITY, 'status');
+                $this->statusAttributeId = $attribute ? (int)$attribute->getId() : null;
+            }
+        } catch (LocalizedException $exception) {
+            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
+
+        }
+
+        return $this->statusAttributeId;
     }
 }

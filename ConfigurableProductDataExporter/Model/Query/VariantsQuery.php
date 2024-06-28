@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace Magento\ConfigurableProductDataExporter\Model\Query;
 
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
+use Magento\Framework\DB\Sql\Expression;
 
 /**
  * Product variant query builder
@@ -33,9 +35,10 @@ class VariantsQuery
      * Get query for provider
      *
      * @param array $arguments
+     * @param ?int $statusAttributeId
      * @return Select
      */
-    public function getQuery(array $arguments) : Select
+    public function getQuery(array $arguments, ?int $statusAttributeId = null) : Select
     {
         $productIds = $arguments['productId'] ?? [];
         $connection = $this->resourceConnection->getConnection();
@@ -76,6 +79,28 @@ class VariantsQuery
             )
             ->where('cpeParent.entity_id IN (?)', $productIds)
             ->distinct();
+
+        if ($statusAttributeId) {
+            $select->joinLeft(
+                ['eav' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
+                \sprintf('cpe.%1$s = eav.%1$s', $joinField) .
+                $connection->quoteInto(' AND eav.attribute_id = ?', $statusAttributeId) .
+                ' AND eav.store_id = 0',
+                []
+            )
+            ->joinLeft(
+                ['eav_store' => $this->resourceConnection->getTableName('catalog_product_entity_int')],
+                \sprintf('cpe.%1$s = eav_store.%1$s', $joinField) .
+                ' AND eav_store.attribute_id = eav.attribute_id' .
+                ' AND eav_store.store_id = s.store_id',
+                [
+                    'status' => new Expression(
+                        'IF (eav_store.value_id, eav_store.value, eav.value)'
+                    ),
+                ]
+            )
+            ->having('status != ?', Status::STATUS_DISABLED);
+        }
 
         return $select;
     }
