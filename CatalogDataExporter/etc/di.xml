@@ -531,4 +531,13 @@
         </arguments>
     </type>
 
+    <type name="Magento\CatalogDataExporter\Model\Query\ProductAttributeQuery">
+        <arguments>
+            <argument name="systemAttributes" xsi:type="array">
+                <item name="news_from_date" xsi:type="string">news_from_date</item>
+                <item name="news_to_date" xsi:type="string">news_to_date</item>
+            </argument>
+        </arguments>
+    </type>
+
 </config>

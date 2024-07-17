@@ -34,6 +34,11 @@ class ProductAttributeQuery
     private array $userDefinedAttributes;
 
     /**
+     * @var array
+     */
+    private array $systemAttributes;
+
+    /**
      * @var EavAttributeQueryBuilderFactory
      */
     private ?EavAttributeQueryBuilderFactory $attributeQueryFactory;
@@ -44,16 +49,19 @@ class ProductAttributeQuery
      * @param ResourceConnection $resourceConnection
      * @param string $mainTable
      * @param EavAttributeQueryBuilderFactory|null $attributeQueryFactory
+     * @param array $systemAttributes
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         string $mainTable = 'catalog_product_entity',
-        EavAttributeQueryBuilderFactory $attributeQueryFactory = null
+        EavAttributeQueryBuilderFactory $attributeQueryFactory = null,
+        array $systemAttributes = []
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->mainTable = $mainTable;
         $this->attributeQueryFactory = $attributeQueryFactory
             ?? ObjectManager::getInstance()->get(EavAttributeQueryBuilderFactory::class);
+        $this->systemAttributes = $systemAttributes;
     }
 
     /**
@@ -112,15 +120,28 @@ class ProductAttributeQuery
         $productIds = isset($arguments['productId']) ? $arguments['productId'] : [];
         $storeViewCode = isset($arguments['storeViewCode']) ? $arguments['storeViewCode'] : [];
 
-        $userDefinedAttributeIds = $this->getUserDefinedAttributes();
+        $attributesToSearch = array_merge(
+            $this->getUserDefinedAttributes(),
+            $this->getSystemAttributes()
+        );
         $attributeQueryBuilder = $this->attributeQueryFactory->create(
             [
                 'entityType' => ProductInterface::class,
             ]
         );
 
-        return !empty($userDefinedAttributeIds)
-            ? $attributeQueryBuilder->build($productIds, $userDefinedAttributeIds, $storeViewCode)
+        return !empty($attributesToSearch)
+            ? $attributeQueryBuilder->build($productIds, $attributesToSearch, $storeViewCode)
             : null;
+    }
+
+    /**
+     * Get system EAV attributes codes
+     *
+     * @return array
+     */
+    private function getSystemAttributes(): array
+    {
+        return $this->systemAttributes;
     }
 }

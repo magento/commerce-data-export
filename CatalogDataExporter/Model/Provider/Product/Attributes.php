@@ -96,13 +96,7 @@ class Attributes
                                 $row['attribute_code'],
                                 $storeViewCode,
                                 $row['value']
-                            ) : null,
-                        'valueId' => ($row['value'] != null) ?
-                            $this->attributeMetadata->getAttributeValueId(
-                                $row['attribute_code'],
-                                $storeViewCode,
-                                $row['value']
-                            ) : null,
+                            ) : null
                     ];
                 }
             }

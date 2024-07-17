@@ -66,6 +66,8 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setImage('/m/a/magento_image.jpg')
     ->setSmallImage('/m/a/magento_small_image.jpg')
     ->setThumbnail('/m/a/magento_thumbnail.jpg')
+    ->setNewsFromDate(date('Y-m-d H:i:s', strtotime('-2 day')))
+    ->setNewsToDate(date('Y-m-d H:i:s', strtotime('+2 day')))
     ->setCustomAttribute('custom_label', 'comma, separated, values')
     ->setCustomAttribute('custom_description', 'description1')
     ->setCustomSelect($optionIds[0])
@@ -132,4 +134,3 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setCustomAttribute('custom_description', 'description1')
     ->save();
 $categoryLinkManagement->assignProductToCategories($product->getSku(), [100, 200]);
-

@@ -346,27 +346,25 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $customDescription = $product->getCustomAttribute('custom_description');
         $customSelect = $product->getCustomAttribute('custom_select');
         $yesNo = $product->getCustomAttribute('yes_no_attribute');
-
+        $newsFromDate = $product->getNewsFromDate();
+        $newsToDate = $product->getNewsToDate();
         $attributes = null;
         if ($customLabel) {
             $attributes[$customLabel->getAttributeCode()] = [
                 'attributeCode' => $customLabel->getAttributeCode(),
-                'value' => [$customLabel->getValue()],
-                'valueId' => null
+                'value' => [$customLabel->getValue()]
             ];
         }
         if ($customDescription) {
             $attributes[$customDescription->getAttributeCode()] = [
                 'attributeCode' => $customDescription->getAttributeCode(),
-                'value' => [$customDescription->getValue()],
-                'valueId' => null
+                'value' => [$customDescription->getValue()]
             ];
         }
         if ($customSelect) {
             $attributes[$customSelect->getAttributeCode()] = [
                 'attributeCode' => $customSelect->getAttributeCode(),
-                'value' => [$product->getAttributeText('custom_select')],
-                'valueId' => [$product->getData('custom_select')]
+                'value' => [$product->getAttributeText('custom_select')]
             ];
         }
         if ($yesNo) {
@@ -374,8 +372,19 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
             $yesNoActualValue = $product->getData('yes_no_attribute');
             $attributes[$yesNo->getAttributeCode()] = [
                 'attributeCode' => $yesNo->getAttributeCode(),
-                'value' => [$yesNoValues[$yesNoActualValue] ?? null],
-                'valueId' => [$yesNoActualValue]
+                'value' => [$yesNoValues[$yesNoActualValue] ?? null]
+            ];
+        }
+        if ($newsFromDate) {
+            $attributes['news_from_date'] = [
+                'attributeCode' => 'news_from_date',
+                'value' => [$newsFromDate]
+            ];
+        }
+        if ($newsToDate) {
+            $attributes['news_to_date'] = [
+                'attributeCode' => 'news_to_date',
+                'value' => [$newsToDate]
             ];
         }
         $feedAttributes = null;
@@ -384,8 +393,7 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
             foreach ($feedAttributesData as $feed) {
                 $feedAttributes[$feed['attributeCode']] = [
                     'attributeCode' => $feed['attributeCode'],
-                    'value' => $feed['value'],
-                    'valueId' => $feed['valueId'],
+                    'value' => $feed['value']
                 ];
             }
         }

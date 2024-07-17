@@ -180,4 +180,17 @@ For example:
 ```bash
 bin/magento indexer:reindex catalog_data_exporter_products --thread-count=5 --batch-size=400
 ```
+### Product Feed: extend exported attributes list
+Not all system product attributes are exported by default. To extend the list of exported attributes, you need to add needed attribute codes as `systemAttributes` arguments of the `Magento\CatalogDataExporter\Model\Query\ProductAttributeQuery` configuration in `di.xml` file, for example:
 
+```xml
+    <type name="Magento\CatalogDataExporter\Model\Query\ProductAttributeQuery">
+        <arguments>
+            <argument name="systemAttributes" xsi:type="array">
+                <item name="news_from_date" xsi:type="string">news_from_date</item>
+                ...
+                <item name="some_system_attribute_code">some_system_attribute_code</item>
+            </argument>
+        </arguments>
+    </type>
+```
