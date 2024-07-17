@@ -173,52 +173,101 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
      * @magentoDataFixture Magento/ConfigurableProduct/_files/product_configurable_sku.php
      *
      * @return void
+     * @throws NoSuchEntityException
+     * @throws \Zend_Db_Statement_Exception
      */
     public function testDisabledAndReanableChildFromConfigurableProductVariants(): void
     {
-        try {
-            $configurable = $this->productRepository->get('configurable');
-            $configurableId = $configurable->getId();
+        $configurable = $this->productRepository->get('configurable');
+        $configurableId = $configurable->getId();
+        $simple10 = $this->productRepository->get('simple_10');
 
-            $simple10 = $this->productRepository->get('simple_10');
+        $variantSimple10 = $this->idResolver->resolve([
+            ConfigurableId::PARENT_SKU_KEY => 'configurable',
+            ConfigurableId::CHILD_SKU_KEY => 'simple_10'
+        ]);
+        $variantSimple20 = $this->idResolver->resolve([
+            ConfigurableId::PARENT_SKU_KEY => 'configurable',
+            ConfigurableId::CHILD_SKU_KEY => 'simple_20'
+        ]);
 
-            $variantSimple10 = $this->idResolver->resolve([
-                ConfigurableId::PARENT_SKU_KEY => 'configurable',
-                ConfigurableId::CHILD_SKU_KEY => 'simple_10'
-            ]);
-            $variantSimple20 = $this->idResolver->resolve([
-                ConfigurableId::PARENT_SKU_KEY => 'configurable',
-                ConfigurableId::CHILD_SKU_KEY => 'simple_20'
-            ]);
+        // initiate feed state
+        $this->runIndexer([$configurableId]);
 
-            // initiate feed state
-            $this->runIndexer([$configurableId, $simple10->getId()]);
+        // disable variant && verify "deleted" is set to true
+        $this->changeProductStatusProduct('simple_10', Status::STATUS_DISABLED);
+        $this->runIndexer([$simple10->getId()]);
 
-            // disable variant && verify "deleted" is set to true
-            $this->changeProductStatusProduct('simple_10', Status::STATUS_DISABLED);
-            $this->runIndexer([$configurableId, $simple10->getId()]);
+        $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
+        $this->assertCount(2, $variantsData); //id20, id10 (disabled)
+        $this->assertEquals('simple_10', $variantsData[0]['productSku']);
+        $this->assertFalse($variantsData[0]['deleted'], "simple_10 should not have been flag as deleted");
 
-            $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
-            $this->assertCount(2, $variantsData); //id20, id10 (disabled)
-            $this->assertEquals('simple_10', $variantsData[0]['productSku']);
-            $this->assertFalse($variantsData[0]['deleted'], "simple_10 should not have been flag as deleted");
+        $this->assertEquals('simple_20', $variantsData[1]['productSku']);
+        $this->assertFalse($variantsData[1]['deleted'], "simple_20 should not not have been flag as deleted");
 
-            $this->assertEquals('simple_20', $variantsData[1]['productSku']);
-            $this->assertFalse($variantsData[1]['deleted'], "simple_20 should not not have been flag as deleted");
+        // enable variant && verify "deleted" is set to false
+        // verify enabling child product back works
+        $this->changeProductStatusProduct('simple_10', Status::STATUS_ENABLED);
+        $this->runIndexer([$simple10->getId()]);
 
-            // enable variant && verify "deleted" is set to false
-            // verify enabling child product back works
-            $this->changeProductStatusProduct('simple_10', Status::STATUS_ENABLED);
-            $this->runIndexer([$configurableId, $simple10->getId()]);
+        $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
+        $this->assertCount(2, $variantsData); //id20, id10 (re-enabled)
+        $this->assertEquals('simple_10', $variantsData[0]['productSku']);
+        $this->assertFalse($variantsData[0]['deleted'], "simple_10 should not have flag 'deleted'");
+    }
 
-            $variantsData = $this->getVariantByIds([$variantSimple10, $variantSimple20]);
-            $this->assertCount(2, $variantsData); //id20, id10 (re-enabled)
-            $this->assertEquals('simple_10', $variantsData[0]['productSku']);
-            $this->assertFalse($variantsData[0]['deleted'], "simple_10 should not have flag 'deleted'");
+    /**
+     * Test that product virtual variant can be disabled and re-enabled
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture Magento_ProductVariantDataExporter::Test/_files/product_configurable_with_virtual_sku.php
+     *
+     * @return void
+     * @throws NoSuchEntityException
+     * @throws \Zend_Db_Statement_Exception
+     */
+    public function testDisabledAndReanableVirtualChildFromConfigurableProductVariants(): void
+    {
+        $configurable = $this->productRepository->get('configurable');
+        $configurableId = $configurable->getId();
 
-        } catch (Throwable $e) {
-            $this->fail($e->getMessage());
-        }
+        $virtual10 = $this->productRepository->get('virtual_10');
+
+        $variantVirtual10 = $this->idResolver->resolve([
+            ConfigurableId::PARENT_SKU_KEY => 'configurable',
+            ConfigurableId::CHILD_SKU_KEY => 'virtual_10'
+        ]);
+        $variantVirtual20 = $this->idResolver->resolve([
+            ConfigurableId::PARENT_SKU_KEY => 'configurable',
+            ConfigurableId::CHILD_SKU_KEY => 'virtual_20'
+        ]);
+
+        // initiate feed state
+        $this->runIndexer([$configurableId]);
+
+        // disable variant && verify "deleted" is set to true
+        $this->changeProductStatusProduct('virtual_10', Status::STATUS_DISABLED);
+        $this->runIndexer([$virtual10->getId()]);
+
+        $variantsData = $this->getVariantByIds([$variantVirtual10, $variantVirtual20]);
+        $this->assertCount(2, $variantsData); //id20, id10 (disabled)
+        $this->assertEquals('virtual_10', $variantsData[0]['productSku']);
+        $this->assertFalse($variantsData[0]['deleted'], "virtual_10 should not have been flag as deleted");
+
+        $this->assertEquals('virtual_20', $variantsData[1]['productSku']);
+        $this->assertFalse($variantsData[1]['deleted'], "virtual_20 should not not have been flag as deleted");
+
+        // enable variant && verify "deleted" is set to false
+        // verify enabling child product back works
+        $this->changeProductStatusProduct('virtual_10', Status::STATUS_ENABLED);
+        $this->runIndexer([$virtual10->getId()]);
+
+        $variantsData = $this->getVariantByIds([$variantVirtual10, $variantVirtual20]);
+        $this->assertCount(2, $variantsData); //id20, id10 (re-enabled)
+        $this->assertEquals('virtual_10', $variantsData[0]['productSku']);
+        $this->assertFalse($variantsData[0]['deleted'], "virtual_10 should not have flag 'deleted'");
     }
 
     /**
@@ -260,20 +309,23 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
      * @param $childSku
      * @param $status
      * @return void
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     private function changeProductStatusProduct($childSku, $status)
     {
-        $objectManager = Bootstrap::getObjectManager();
-        /** @var ProductRepositoryInterface $productRepository */
-        $productRepository = $objectManager->create(ProductRepositoryInterface::class);
-        $childProduct = $productRepository->get($childSku);
-        $productAction = Bootstrap::getObjectManager()->get(Action::class);
-        $productAction->updateAttributes(
-            [$childProduct->getEntityId()],
-            [ProductAttributeInterface::CODE_STATUS => $status],
-            $childProduct->getStoreId()
-        );
+        try {
+            $objectManager = Bootstrap::getObjectManager();
+            /** @var ProductRepositoryInterface $productRepository */
+            $productRepository = $objectManager->create(ProductRepositoryInterface::class);
+            $childProduct = $productRepository->get($childSku);
+            $productAction = Bootstrap::getObjectManager()->get(Action::class);
+            $productAction->updateAttributes(
+                [$childProduct->getEntityId()],
+                [ProductAttributeInterface::CODE_STATUS => $status],
+                $childProduct->getStoreId()
+            );
+        } catch (Throwable $e) {
+            $this->fail($e->getMessage());
+        }
     }
 
     /**

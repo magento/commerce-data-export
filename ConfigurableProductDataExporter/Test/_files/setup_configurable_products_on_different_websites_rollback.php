@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\ObjectManagerInterface;
@@ -64,8 +65,12 @@ if ($product->getId()) {
 $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', false);
 
-Resolver::getInstance()->requireDataFixture('Magento_ConfigurableProductDataExporter::Test/_files/setup_configurable_attribute_rollback.php'
+Resolver::getInstance()->requireDataFixture(
+    'Magento_ConfigurableProductDataExporter::Test/_files/setup_configurable_attribute_rollback.php'
 );
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_categories_rollback.php');
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_two_stores_and_two_websites_rollback.php'
+Resolver::getInstance()->requireDataFixture(
+    'Magento_CatalogDataExporter::Test/_files/setup_categories_rollback.php'
+);
+Resolver::getInstance()->requireDataFixture(
+    'Magento_CatalogDataExporter::Test/_files/setup_two_stores_and_two_websites_rollback.php'
 );

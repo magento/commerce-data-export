@@ -195,6 +195,14 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         }
     }
 
+    /*
+     * Make partial reindex
+     */
+    protected function partialReindex($productIds) : void
+    {
+        $this->indexer->reindexList($productIds);
+    }
+
     /**
      * Validate pricing data in extracted product data
      *

@@ -72,7 +72,7 @@ foreach ($attributes as $attributeCode => $productIds) {
             ->setId($productId)
             ->setAttributeSetId($attributeSetId)
             ->setName('Configurable Option' . $option->getLabel())
-            ->setSku('simple_option_' . $productId)
+            ->setSku('virtual_option_' . $productId)
             ->setTaxClassId('none')
             ->setDescription('description')
             ->setShortDescription('short description')

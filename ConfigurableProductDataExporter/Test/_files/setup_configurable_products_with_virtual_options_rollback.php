@@ -22,32 +22,32 @@ $registry->register('isSecureArea', true);
 /** @var ProductRepositoryInterface $productInterface */
 $productInterface = $objectManager->create(ProductRepositoryInterface::class);
 
-$product = $productInterface->get('simple_option_50');
+$product = $productInterface->get('virtual_option_50');
 if ($product->getId()) {
     $productInterface->delete($product);
 }
 
-$product = $productInterface->get('simple_option_60');
+$product = $productInterface->get('virtual_option_60');
 if ($product->getId()) {
     $productInterface->delete($product);
 }
 
-$product = $productInterface->get('simple_option_70');
+$product = $productInterface->get('virtual_option_70');
 if ($product->getId()) {
     $productInterface->delete($product);
 }
 
-$product = $productInterface->get('simple_option_55');
+$product = $productInterface->get('virtual_option_55');
 if ($product->getId()) {
     $productInterface->delete($product);
 }
 
-$product = $productInterface->get('simple_option_59');
+$product = $productInterface->get('virtual_option_59');
 if ($product->getId()) {
     $productInterface->delete($product);
 }
 
-$product = $productInterface->get('simple_option_65');
+$product = $productInterface->get('virtual_option_65');
 if ($product->getId()) {
     $productInterface->delete($product);
 }
@@ -63,5 +63,9 @@ $registry->register('isSecureArea', false);
 Resolver::getInstance()->requireDataFixture(
     'Magento_ConfigurableProductDataExporter::Test/_files/setup_configurable_attribute_rollback.php'
 );
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_categories_rollback.php');
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_stores_rollback.php');
+Resolver::getInstance()->requireDataFixture(
+    'Magento_CatalogDataExporter::Test/_files/setup_categories_rollback.php'
+);
+Resolver::getInstance()->requireDataFixture(
+    'Magento_CatalogDataExporter::Test/_files/setup_stores_rollback.php'
+);
