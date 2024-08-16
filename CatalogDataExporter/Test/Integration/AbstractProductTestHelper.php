@@ -17,12 +17,15 @@ declare(strict_types=1);
 namespace Magento\CatalogDataExporter\Test\Integration;
 
 use Magento\Catalog\Api\CategoryRepositoryInterface;
+use Magento\Catalog\Api\Data\ProductCustomOptionInterface;
+use Magento\Catalog\Api\Data\ProductCustomOptionValuesInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Helper\Category as CategoryHelper;
 use Magento\Catalog\Helper\Product as ProductHelper;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
+use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableSelectedOptionValueUid;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
@@ -37,6 +40,7 @@ use Magento\Store\Api\GroupRepositoryInterface;
 use Magento\Tax\Model\TaxClass\Source\Product as TaxClassSource;
 use Magento\TestFramework\Helper\Bootstrap;
 use function PHPUnit\Framework\assertEmpty;
+use function PHPUnit\Framework\assertEquals;
 
 /**
  * Abstract Class AbstractProductTestHelper
@@ -54,6 +58,22 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
      * Catalog Data Exporter feed table
      */
     public const CATALOG_DATA_EXPORTER_TABLE = 'cde_products_feed';
+
+    /**
+     * Custom option type name
+     */
+    private const OPTION_TYPE = 'custom-option';
+
+    /**
+     * Selectable option types
+     * @var string[]
+     */
+    private array $selectableOptionsType = [
+        'drop_down',
+        'radio',
+        'checkbox',
+        'multiple',
+    ];
 
     /**
      * @var ProductRepositoryInterface
@@ -121,6 +141,11 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     private $storeGroupRepositoryInterface;
 
     /**
+     * @var CustomizableSelectedOptionValueUid
+     */
+    private $optionValueUid;
+
+    /**
      * Setup tests
      */
     protected function setUp(): void
@@ -139,7 +164,7 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $this->storeGroupRepositoryInterface = Bootstrap::getObjectManager()->create(GroupRepositoryInterface::class);
         $this->websiteRepositoryInterface = Bootstrap::getObjectManager()->create(WebsiteRepositoryInterface::class);
         $this->taxClassSource = Bootstrap::getObjectManager()->create(TaxClassSource::class);
-
+        $this->optionValueUid = Bootstrap::getObjectManager()->create(CustomizableSelectedOptionValueUid::class);
         $this->jsonSerializer = Bootstrap::getObjectManager()->create(Json::class);
 
         $this->indexer->load(self::CATALOG_DATA_EXPORTER);
@@ -542,6 +567,48 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @param ProductInterface $product
+     * @param array $extractedProduct
+     * @return void
+     */
+    protected function validateCustomOptionsData(ProductInterface $product, array $extractedProduct) : void
+    {
+        $customOptions = $product->getOptions();
+        $feedCustomOptions = array_merge(
+            $extractedProduct['feedData']['optionsV2'] ?? [],
+            $extractedProduct['feedData']['shopperInputOptions'] ?? []
+        );
+        $this->assertCount(\count($customOptions), $feedCustomOptions);
+        foreach ($customOptions as $customOption) {
+            $expectedCustomOption = $this->formatCustomOption($customOption);
+            if (!\in_array($expectedCustomOption['id'], \array_column($feedCustomOptions, 'id'), true)) {
+                $this->fail('Custom option with id ' . $expectedCustomOption['id'] . ' is not found in feed data.');
+            }
+            foreach ($feedCustomOptions as $feedCustomOption) {
+                if ($feedCustomOption['id'] === $expectedCustomOption['id']) {
+                    foreach ($expectedCustomOption as $expectedKey => $expectedValue) {
+                        if ($expectedKey === 'values') {
+                            $this->assertCount(\count($expectedValue), $feedCustomOption['values']);
+                            foreach ($feedCustomOption['values'] as $feedCustomOptionValue) {
+                                $this->assertNotEmpty($feedCustomOptionValue['id']);
+                                $this->assertNotEmpty($expectedValue[$feedCustomOptionValue['id']]);
+                                foreach ($expectedValue[$feedCustomOptionValue['id']] as $valueKey => $valueField) {
+                                    $this->assertEquals(
+                                        $valueField,
+                                        $feedCustomOptionValue[$valueKey]
+                                    );
+                                }
+                            }
+                            continue;
+                        }
+                        $this->assertEquals($expectedValue, $feedCustomOption[$expectedKey]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Wait one second before test execution after fixtures created.
      *
      * @return void
@@ -583,5 +650,67 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $connection = $this->resource->getConnection();
         $feedTable = $this->resource->getTableName(self::CATALOG_DATA_EXPORTER_TABLE);
         $connection->truncateTable($feedTable);
+    }
+
+    private function formatCustomOption(ProductCustomOptionInterface $customOption): array
+    {
+        $optionType = $customOption->getType();
+        if (in_array($optionType, $this->selectableOptionsType)) {
+            $result = [
+                'id' => $customOption->getOptionId(),
+                'label' => $customOption->getTitle(),
+                'type' => 'custom_option',
+                'required' => (bool)$customOption->getIsRequire(),
+                'renderType' => $customOption->getType(),
+                'sortOrder' => $customOption->getSortOrder(),
+                'values' => $this->formatValues($customOption->getValues(), (int)$customOption->getOptionId()),
+            ];
+        } else {
+            $result = [
+                'id' => $this->buildUid((string)$customOption->getOptionId()),
+                'label' => $customOption->getTitle(),
+                'sortOrder' => (string)$customOption->getSortOrder(),
+                'required' => (bool)$customOption->getIsRequire(),
+                'renderType' => $customOption->getType(),
+                'price' => $customOption->getPrice(),
+                'range' => [
+                    'from' => null,
+                    'to' => $customOption->getMaxCharacters(),
+                ]
+            ];
+        }
+        return $result;
+    }
+
+    private function formatValues(?array $values, int $optionId): array
+    {
+        $result = [];
+        /** @var ProductCustomOptionValuesInterface $value */
+        foreach ($values as $value) {
+            $valueId = $this->optionValueUid->resolve([
+                CustomizableSelectedOptionValueUid::OPTION_ID => $optionId,
+                CustomizableSelectedOptionValueUid::OPTION_VALUE_ID => $value->getOptionTypeId()
+            ]);
+            $result[$valueId] = [
+                'id' => $valueId,
+                'label' => $value->getTitle(),
+                'sortOrder' => $value->getSortOrder(),
+                'price' => $value->getPrice(),
+                'priceType' => $value->getPriceType(),
+                'sku' => $value->getSku(),
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * Build the UID for the shopper input option
+     *
+     * @param string $optionId
+     * @return string
+     */
+    private function buildUid(string $optionId): string
+    {
+        return base64_encode(implode('/', [self::OPTION_TYPE, $optionId]));
     }
 }

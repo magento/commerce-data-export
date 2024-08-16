@@ -30,7 +30,7 @@ class SelectableOptions implements ProductOptionProviderInterface
      *
      * @var string[]
      */
-    private $optionTypes = [
+    private array $optionTypes = [
         'drop_down',
         'radio',
         'checkbox',
@@ -71,30 +71,53 @@ class SelectableOptions implements ProductOptionProviderInterface
     public function get(array $values) : array
     {
         $productIds = [];
-        $storeViewCode = current($values)['storeViewCode'];
+        $storeViewCodes = [];
         foreach ($values as $value) {
+            if (!\in_array($value['storeViewCode'], $storeViewCodes, true)) {
+                $storeViewCodes[] = $value['storeViewCode'];
+            }
             $productIds[] = $value['productId'];
         }
-
-        $filteredProductOptions = $this->customOptionsRepository->get($productIds, $this->optionTypes, $storeViewCode);
         $output = [];
-        foreach ($filteredProductOptions as $productId => $productOptions) {
-            foreach ($productOptions as $key => $option) {
-                $key = $productId . $storeViewCode . $option['option_id'];
-                $output[$key] = [
-                    'productId' => (string)$productId,
-                    'storeViewCode' => $storeViewCode,
-                    'optionsV2' => [
-                        'id' => $option['option_id'],
-                        'label' => $option['title'],
-                        'sortOrder' => $option['sort_order'],
-                        'required' => $option['is_require'],
-                        'renderType' => $option['type'],
-                        'type' => self::SELECTABLE_OPTION_TYPE
-                    ],
-                ];
 
-                $output[$key]['optionsV2']['values'] = $this->processOptionValues($option);
+        $defaultFilteredProductOptions = $this->customOptionsRepository->get($productIds, $this->optionTypes);
+        $storeOptions = [];
+        foreach ($storeViewCodes as $storeViewCode) {
+            $filteredProductOptions = $this->customOptionsRepository->get(
+                $productIds,
+                $this->optionTypes,
+                $storeViewCode,
+                false
+            );
+            $storeViewOptionValues = $this->customOptionsRepository->getValuesByProductIds(
+                $productIds,
+                $this->optionTypes,
+                $storeViewCode
+            );
+            foreach ($filteredProductOptions as $productId => $productOptions) {
+                foreach ($productOptions as $option) {
+                    $key = $productId . $storeViewCode . $option['option_id'];
+                    $storeOptions[$key] = [
+                        'product_id' => $productId,
+                        'store_view_code' => $storeViewCode,
+                        'option' => $this->replaceDefaultOptionData(
+                            $defaultFilteredProductOptions[$productId][$option['option_id']],
+                            $option ?? []
+                        )
+                    ];
+                }
+            }
+            foreach ($defaultFilteredProductOptions as $productId => $defaultOptions) {
+                foreach ($defaultOptions as $defaultOption) {
+                    $key = $productId . $storeViewCode . $defaultOption['option_id'];
+                    $storeOption = $storeOptions[$key]['option'] ?? $defaultOption;
+                    $storeOption['values'] = $this->replaceDefaultOptionData(
+                        $defaultOption['values'],
+                        $storeViewOptionValues[$key] ?? []
+                    );
+
+                    $output[$key] = $this->formatOption((string)$productId, $storeViewCode, $storeOption);
+                }
             }
         }
 
@@ -135,5 +158,45 @@ class SelectableOptions implements ProductOptionProviderInterface
             ];
         }
         return $resultValues;
+    }
+
+    /**
+     * @param string $productId
+     * @param string $storeViewCode
+     * @param array $option
+     * @return array
+     */
+    private function formatOption(string $productId, string $storeViewCode, array $option): array
+    {
+        return [
+            'productId' => $productId,
+            'storeViewCode' => $storeViewCode,
+            'optionsV2' => [
+                'id' => $option['option_id'],
+                'label' => $option['title'],
+                'sortOrder' => $option['sort_order'],
+                'required' => $option['is_require'],
+                'renderType' => $option['type'],
+                'type' => self::SELECTABLE_OPTION_TYPE,
+                'values' => $this->processOptionValues($option)
+            ],
+        ];
+    }
+
+    /**
+     * @param array $defaultOption
+     * @param array $storeOption
+     * @return array
+     */
+    private function replaceDefaultOptionData(array $defaultOption, array $storeOption): array
+    {
+        foreach ($storeOption as $key => $value) {
+            if (\is_array($value) && isset($defaultOption[$key]) && \is_array($defaultOption[$key])) {
+                $defaultOption[$key] = $this->replaceDefaultOptionData($defaultOption[$key], $value);
+            } elseif (null !== $value) {
+                $defaultOption[$key] = $value;
+            }
+        }
+        return $defaultOption;
     }
 }

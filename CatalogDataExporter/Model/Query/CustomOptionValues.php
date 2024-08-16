@@ -16,9 +16,14 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Query;
 
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
+use Magento\Framework\EntityManager\EntityMetadataInterface;
+use Magento\Framework\EntityManager\MetadataPool;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreRepository;
 
 /**
@@ -39,15 +44,24 @@ class CustomOptionValues
     private $storeRepository;
 
     /**
+     * @var MetadataPool
+     */
+    private $metadataPool;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param StoreRepository $storeRepository
+     * @param MetadataPool|null $metadataPool
      */
     public function __construct(
         ResourceConnection $resourceConnection,
-        StoreRepository $storeRepository
+        StoreRepository $storeRepository,
+        ?MetadataPool $metadataPool
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->storeRepository = $storeRepository;
+        $this->metadataPool = $metadataPool
+            ?? ObjectManager::getInstance()->get(MetadataPool::class);
     }
 
     /**
@@ -61,11 +75,59 @@ class CustomOptionValues
     {
         $mainTable = $this->resourceConnection->getTableName('catalog_product_option_type_value');
         $connection = $this->resourceConnection->getConnection();
-        $storeId = (int) $this->storeRepository->get($arguments['storeViewCode'])->getId();
+        $storeId = null !== $arguments['storeViewCode']
+            ? (int)$this->storeRepository->get($arguments['storeViewCode'])->getId()
+            // Default store ID if nothing is provided
+            : (int)$this->storeRepository->getById(0)->getId();
         $optionIds = $arguments['option_ids'];
         $select = $connection->select()
-            ->from(['main_table' => $mainTable], ['option_id', 'option_type_id', 'sort_order', 'sku']);
+            ->from(['custom_option_value' => $mainTable], ['option_id', 'option_type_id', 'sort_order', 'sku']);
         $select->where('option_id IN(?)', $optionIds);
+        $this->addTitleToSelect($select, $storeId);
+        $this->addPriceToSelect($select, $storeId);
+        return $select;
+    }
+
+    /**
+     * Retrieve product options select with titles and prices
+     *
+     * @param array $arguments
+     * @return Select
+     * @throws NoSuchEntityException
+     */
+    public function queryValuesByProductIds(array $arguments): Select
+    {
+        $optionValueTableName = $this->resourceConnection->getTableName('catalog_product_option_type_value');
+        $optionTableName = $this->resourceConnection->getTableName('catalog_product_option');
+        $productTable = $this->resourceConnection->getTableName('catalog_product_entity');
+        /** @var EntityMetadataInterface $metadata */
+        $metadata = $this->metadataPool->getMetadata(ProductInterface::class);
+        $linkField = $metadata->getLinkField();
+        $connection = $this->resourceConnection->getConnection();
+        $storeId = !isset($arguments['storeViewCode'])
+            // Default store ID if nothing is provided
+            ? (int)$this->storeRepository->getById(Store::DEFAULT_STORE_ID)->getId()
+            : (int)$this->storeRepository->get($arguments['storeViewCode'])->getId();
+        $productIds = $arguments['productIds'];
+        // If product will have different options for it versions (see Staging functionality for details)
+        // it may have all versions options values in results
+        $select = $connection->select()
+            ->from(
+                ['product' => $productTable],
+                ['product_id' => 'entity_id']
+            )
+            ->joinInner(
+                ['custom_option' => $optionTableName],
+                \sprintf('custom_option.product_id = product.%s', $linkField),
+                ['option_type' => 'type']
+            )
+            ->joinInner(
+                ['custom_option_value' => $optionValueTableName],
+                'custom_option_value.option_id = custom_option.option_id',
+                ['option_id', 'option_type_id', 'sort_order' , 'sku']
+            );
+
+        $select->where('product.entity_id IN (?)', $productIds);
         $this->addTitleToSelect($select, $storeId);
         $this->addPriceToSelect($select, $storeId);
         return $select;
@@ -82,36 +144,18 @@ class CustomOptionValues
     {
         $connection = $this->resourceConnection->getConnection();
         $optionTypeTable = $this->resourceConnection->getTableName('catalog_product_option_type_price');
-        $priceExpr = $connection->getCheckSql(
-            'store_value_price.price IS NULL',
-            'default_value_price.price',
-            'store_value_price.price'
-        );
-        $priceTypeExpr = $connection->getCheckSql(
-            'store_value_price.price_type IS NULL',
-            'default_value_price.price_type',
-            'store_value_price.price_type'
-        );
 
-        $joinExprDefault = 'default_value_price.option_type_id = main_table.option_type_id AND ' .
+        $joinExpr = 'value_price.option_type_id = custom_option_value.option_type_id AND ' .
             $connection->quoteInto(
-                'default_value_price.store_id = ?',
-                \Magento\Store\Model\Store::DEFAULT_STORE_ID
+                'value_price.store_id = ?',
+                $storeId
             );
-        $joinExprStore = 'store_value_price.option_type_id = main_table.option_type_id AND ' .
-            $connection->quoteInto('store_value_price.store_id = ?', $storeId);
         $select->joinLeft(
-            ['default_value_price' => $optionTypeTable],
-            $joinExprDefault,
-            ['default_price' => 'price', 'default_price_type' => 'price_type']
-        )->joinLeft(
-            ['store_value_price' => $optionTypeTable],
-            $joinExprStore,
+            ['value_price' => $optionTypeTable],
+            $joinExpr,
             [
-                'store_price' => 'price',
-                'store_price_type' => 'price_type',
-                'price' => $priceExpr,
-                'price_type' => $priceTypeExpr
+                'price',
+                'price_type'
             ]
         );
     }
@@ -125,27 +169,15 @@ class CustomOptionValues
      */
     private function addTitleToSelect(Select $select, int $storeId): void
     {
-        $connection = $this->resourceConnection->getConnection();
         $optionTitleTable = $this->resourceConnection->getTableName('catalog_product_option_type_title');
-        $titleExpr = $connection->getCheckSql(
-            'store_value_title.title IS NULL',
-            'default_value_title.title',
-            'store_value_title.title'
-        );
 
-        $joinExpr = 'store_value_title.option_type_id = main_table.option_type_id AND ' .
-            $connection->quoteInto('store_value_title.store_id = ?', $storeId);
         $select->join(
-            ['default_value_title' => $optionTitleTable],
-            'default_value_title.option_type_id = main_table.option_type_id',
-            ['default_title' => 'title']
-        )->joinLeft(
-            ['store_value_title' => $optionTitleTable],
-            $joinExpr,
-            ['store_title' => 'title', 'title' => $titleExpr]
+            ['value_title' => $optionTitleTable],
+            'value_title.option_type_id = custom_option_value.option_type_id',
+            ['title']
         )->where(
-            'default_value_title.store_id = ?',
-            \Magento\Store\Model\Store::DEFAULT_STORE_ID
+            'value_title.store_id = ?',
+            $storeId
         );
     }
 }

@@ -61,12 +61,17 @@ class CustomOptions
      *
      * @param array $productIds
      * @param array $optionTypes
-     * @param string $storeViewCode
+     * @param ?string $storeViewCode
+     * @param bool $addOptionValues
      * @return array
      * @throws NoSuchEntityException
      */
-    public function get(array $productIds, array $optionTypes, string $storeViewCode): array
-    {
+    public function get(
+        array $productIds,
+        array $optionTypes,
+        string $storeViewCode = null,
+        bool $addOptionValues = true
+    ): array {
         $connection = $this->resourceConnection->getConnection();
         $filteredProductOptions = [];
         $productOptionsSelect = $this->customOptions->query([
@@ -74,11 +79,13 @@ class CustomOptions
             'storeViewCode' => $storeViewCode
         ]);
         $productOptions = $connection->fetchAssoc($productOptionsSelect);
-        $productOptions = $this->addValues($productOptions, $storeViewCode);
+        if (true === $addOptionValues) {
+            $productOptions = $this->addValues($productOptions, $storeViewCode);
+        }
 
-        foreach ($productOptions as $option) {
-            if (in_array($option['type'], $optionTypes)) {
-                $filteredProductOptions[$option['entity_id']][] = $option;
+        foreach ($productOptions as $optionId => $option) {
+            if (\in_array($option['type'], $optionTypes, true)) {
+                $filteredProductOptions[$option['entity_id']][$optionId] = $option;
             }
         }
 
@@ -89,11 +96,11 @@ class CustomOptions
      * Adding values to product options array
      *
      * @param array $productOptions
-     * @param string $storeViewCode
+     * @param null|string $storeViewCode
      * @return array
      * @throws NoSuchEntityException
      */
-    private function addValues(array $productOptions, string $storeViewCode): array
+    private function addValues(array $productOptions, ?string $storeViewCode): array
     {
         $optionIds = [];
 
@@ -111,8 +118,43 @@ class CustomOptions
 
         foreach ($optionValues as $optionValue) {
             if (isset($productOptions[$optionValue['option_id']])) {
-                $productOptions[$optionValue['option_id']]['values'][] = $optionValue;
+                $productOptions[$optionValue['option_id']]['values'][$optionValue['option_type_id']] = $optionValue;
             }
+        }
+
+        return $productOptions;
+    }
+
+    /**
+     * Get product options values by product ids and store view code
+     *
+     * @param array $productIds
+     * @param array $optionTypes
+     * @param ?string $storeViewCode
+     * @return array
+     * @throws NoSuchEntityException
+     */
+    public function getValuesByProductIds(
+        array $productIds,
+        array $optionTypes = [],
+        ?string $storeViewCode = null
+    ): array {
+        $productOptions = [];
+        $optionValues = $this->customOptionValues->queryValuesByProductIds(
+            [
+                'productIds' => $productIds,
+                'storeViewCode' => $storeViewCode
+            ]
+        );
+        $optionValues = $this->resourceConnection->getConnection()
+            ->fetchAll($optionValues);
+
+        foreach ($optionValues as $optionValue) {
+            if (!empty($optionTypes) && !\in_array($optionValue['option_type'], $optionTypes, true)) {
+                continue;
+            }
+            $key = $optionValue['product_id'] . $storeViewCode . $optionValue['option_id'];
+            $productOptions[$key][$optionValue['option_type_id']] = $optionValue;
         }
 
         return $productOptions;

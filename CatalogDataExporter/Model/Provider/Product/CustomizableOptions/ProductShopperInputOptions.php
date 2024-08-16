@@ -65,43 +65,48 @@ class ProductShopperInputOptions implements ProductShopperInputOptionProviderInt
     {
         $productIds = [];
         $output = [];
-        $storeViewCode = current($values)['storeViewCode'];
+        $storeViewCodes = [];
         foreach ($values as $value) {
+            if (!\in_array($value['storeViewCode'], $storeViewCodes, true)) {
+                $storeViewCodes[] = $value['storeViewCode'];
+            }
             $productIds[] = $value['productId'];
         }
-        $filteredProductOptions = $this->customOptions->get(
-            $productIds,
-            $this->productShopperInputOptionsTypes,
-            $storeViewCode
-        );
-        /** @var ProductInterface $product */
-        foreach ($filteredProductOptions as $productId => $productOptions) {
-            /** @var CustomOption $option */
-            foreach ($productOptions as $key => $option) {
-                $key = $productId . $storeViewCode . $option['option_id'];
-                $output[$key] = [
-                    'productId' => (string)$productId,
-                    'storeViewCode' => $storeViewCode,
-                    'shopperInputOptions' => [
-                        'id' => $this->buildUid($option['option_id']),
-                        'label' => $option['title'],
-                        'required' => $option['is_require'],
-                        'productSku' => $option['product_sku'],
-                        'sortOrder' => $option['sort_order'],
-                        'renderType' => $option['type'],
-                        'price' => $option['price'],
-                        'sku' => $option['sku'],
-                        'fileExtension' => $option['file_extension'],
-                        'range' => [
-                            'to' => $option['max_characters']
+        $defaultFilteredProductOptions = $this->customOptions->get($productIds, $this->productShopperInputOptionsTypes);
+        foreach ($storeViewCodes as $storeViewCode) {
+            $filteredProductOptions = $this->customOptions->get(
+                $productIds,
+                $this->productShopperInputOptionsTypes,
+                $storeViewCode
+            );
+            /** @var ProductInterface $product */
+            foreach ($defaultFilteredProductOptions as $productId => $productOptions) {
+                foreach ($productOptions as $defaultOption) {
+                    $storeViewOption = $filteredProductOptions[$productId][$defaultOption['option_id']] ?? [];
+                    $key = $productId . $storeViewCode . $defaultOption['option_id'];
+                    $output[$key] = [
+                        'productId' => (string)$productId,
+                        'storeViewCode' => $storeViewCode,
+                        'shopperInputOptions' => [
+                            'id' => $this->buildUid($defaultOption['option_id']),
+                            'label' => $storeViewOption['title'] ?? $defaultOption['title'],
+                            'required' => $storeViewOption['is_require'] ?? $defaultOption['is_require'],
+                            'productSku' => $storeViewOption['product_sku'] ?? $defaultOption['product_sku'],
+                            'sortOrder' => $storeViewOption['sort_order'] ?? $defaultOption['sort_order'],
+                            'renderType' => $storeViewOption['type'] ?? $defaultOption['type'],
+                            'price' => $storeViewOption['price'] ?? $defaultOption['price'],
+                            'sku' => $storeViewOption['sku'] ?? $defaultOption['sku'],
+                            'fileExtension' => $storeViewOption['file_extension'] ?? $defaultOption['file_extension'],
+                            'range' => [
+                                'to' => $storeViewOption['max_characters'] ?? $defaultOption['max_characters']
+                            ],
+                            'imageSizeX' => $storeViewOption['image_size_x'] ?? $defaultOption['image_size_x'],
+                            'imageSizeY' => $storeViewOption['image_size_y'] ?? $defaultOption['image_size_y']
                         ],
-                        'imageSizeX' => $option['image_size_x'],
-                        'imageSizeY' => $option['image_size_y']
-                    ],
-                ];
+                    ];
+                }
             }
         }
-
         return $output;
     }
 
