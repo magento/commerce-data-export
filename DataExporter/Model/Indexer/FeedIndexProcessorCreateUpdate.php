@@ -19,7 +19,7 @@ namespace Magento\DataExporter\Model\Indexer;
 use Magento\DataExporter\Model\Batch\BatchGeneratorInterface;
 use Magento\DataExporter\Model\Batch\FeedSource\Generator as FeedSourceBatchGenerator;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
-use Magento\DataExporter\Status\ExportStatusCodeProvider;
+use Magento\DataExporter\Status\ExportStatusCodeProvider as ExportStatusCode;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Export\Processor as ExportProcessor;
@@ -35,59 +35,16 @@ use Magento\Indexer\Model\ProcessManagerFactory;
  */
 class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
 {
-    /**
-     * @var ResourceConnection
-     */
     private ResourceConnection $resourceConnection;
-
-    /**
-     * @var ExportProcessor
-     */
     private ExportProcessor $exportProcessor;
-
-    /**
-     * @var CommerceDataExportLoggerInterface
-     */
     private CommerceDataExportLoggerInterface $logger;
-
-    /**
-     * @var ExportFeedInterface
-     */
-    private $exportFeedProcessor;
-
-    /**
-     * @var FeedUpdater
-     */
+    private ExportFeedInterface $exportFeedProcessor;
     private FeedUpdater $feedUpdater;
-
-    /**
-     * @var FeedHashBuilder
-     */
     private FeedHashBuilder $hashBuilder;
-
-    /**
-     * @var SerializerInterface
-     */
     private SerializerInterface $serializer;
-
-    /**
-     * @var DeletedEntitiesProviderInterface
-     */
     private DeletedEntitiesProviderInterface $deletedEntitiesProvider;
-
-    /**
-     * @var ProcessManagerFactory
-     */
     private ProcessManagerFactory $processManagerFactory;
-
-    /**
-     * @var BatchGeneratorInterface
-     */
     private BatchGeneratorInterface $batchGenerator;
-
-    /**
-     * @var IndexStateProviderFactory
-     */
     private IndexStateProviderFactory $indexStateProviderFactory;
 
     /**
@@ -330,7 +287,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     FeedIndexMetadata::FEED_TABLE_FIELD_PK,
                     FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID,
                     FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH,
-                    FeedIndexMetadata::FEED_TABLE_FIELD_STATUS
+                    FeedIndexMetadata::FEED_TABLE_FIELD_STATUS,
                 ]
             )->where(sprintf('f.%s IN (?)', FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID), $feedIdsValues);
 
@@ -340,27 +297,55 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             $identifier = $row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID];
             $feedHash = $row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH];
 
-            if ($indexStateProvider !== null) {
-                $indexStateProvider->addProcessedHash($feedHash);
-            }
+            $indexStateProvider?->addProcessedHash($feedHash);
             if (isset($feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH])) {
-                if (\in_array(
-                    (int)$row[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS],
-                    ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE,
-                    true
-                    )
-                    && $feedHash == $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH]
-                ) {
-                    unset($feedItems[$identifier]);
-                } else {
+                if ($this->isSendNeeded(
+                    $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH],
+                    $feedHash,
+                    (int)$row[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS]
+                )) {
                     $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_PK]
                         = $row[FeedIndexMetadata::FEED_TABLE_FIELD_PK];
+                    $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_STATUS]
+                        = $row[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS];
                     $updates[] = $feedItems[$identifier];
-                    unset($feedItems[$identifier]);
                 }
+                unset($feedItems[$identifier]);
             }
         }
         return [$feedItems, $updates];
+    }
+
+    /**
+     * Determines if data should be sent based on status and feed changes.
+     *
+     * @example
+     * | Status | Feed Changed = Yes | Feed Changed = No  |
+     * |--------|--------------------|--------------------|
+     * | -1     | Send               | Send               |
+     * | 0      | Send               | Send               |
+     * | 1      | Send               | Do not send        |
+     * | 200    | Send               | Do not send        |
+     * | 400    | Send               | Do not send        |
+     * | 500    | Send               | Send               |
+     * | 403    | Send               | Send               |
+     *
+     * @param string $oldFeedHash
+     * @param string $newFeedHash
+     * @param int $feedStatus
+     * @return bool
+     */
+    private function isSendNeeded(string $oldFeedHash, string $newFeedHash, int $feedStatus): bool
+    {
+        return $oldFeedHash !== $newFeedHash
+        || (
+            !\in_array(
+                $feedStatus,
+                ExportStatusCode::NON_RETRYABLE_HTTP_STATUS_CODE,
+                true
+            )
+            && $feedStatus !== ExportStatusCode::FAILED_ITEM_ERROR
+        );
     }
 
     /**
@@ -399,7 +384,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     'Identifier for feed item is empty. Skip sync for entity',
                     [
                         'feed' => $metadata->getFeedName(),
-                        'item' => var_export($row, true)
+                        'item' => var_export($row, true),
                     ]
                 );
                 continue;
@@ -409,7 +394,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID => $identifier,
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH => $hash,
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA => $row,
-                FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED => $deleted
+                FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED => $deleted,
             ];
         }
         return $data;

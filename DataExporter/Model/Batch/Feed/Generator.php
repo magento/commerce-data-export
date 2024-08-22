@@ -210,6 +210,10 @@ class Generator implements BatchGeneratorInterface
     ): Select {
         $connection = $this->resourceConnection->getConnection();
         $sinceTimestamp = $sinceTimestamp === '1' ? (int)$sinceTimestamp : $sinceTimestamp;
+        $skipStatus = array_merge(
+            ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE,
+            (array)ExportStatusCodeProvider::FAILED_ITEM_ERROR
+        );
 
         $subSelect = $this->resourceConnection->getConnection()
             ->select()
@@ -219,7 +223,7 @@ class Generator implements BatchGeneratorInterface
             );
         if ($isExportImmediately) {
             $subSelect->distinct(true);
-            $subSelect->where('st.status NOT IN (?)', ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE);
+            $subSelect->where('st.status NOT IN (?)', $skipStatus);
         } else {
             $subSelect->where('st.modified_at > ?', $sinceTimestamp);
         }
