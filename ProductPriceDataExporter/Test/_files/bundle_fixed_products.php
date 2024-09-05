@@ -215,43 +215,44 @@ $bundleFixedTierPrice = $createBundleProduct(
 );
 
 // Create TierPrice
-$tierPriceExtensionAttributesFirstWs = $tierPriceExtensionAttributesFactory->create()->setWebsiteId($firstWebsiteId);
-$tierPriceExtensionAttributesSecondWs = $tierPriceExtensionAttributesFactory->create()->setWebsiteId($secondWebsiteId);
-$tierPriceExtensionAttributesSecondWs->setPercentageValue(10);
-
 /** First website tier prices */
+$tierPriceExtensionAttributesFirstWsAll = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($firstWebsiteId)
+    ->setPercentageValue(16.16);
+$tierPriceExtensionAttributesFirstWsNotLogged = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($firstWebsiteId)
+    ->setPercentageValue(15.15);
 $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => \Magento\Customer\Model\Group::CUST_GROUP_ALL,
-        'percentage_value'=> null,
-        'qty'=> 1,
-        'value'=> 16.16
+        'qty'=> 1
     ]
-])->setExtensionAttributes($tierPriceExtensionAttributesFirstWs);
+])->setExtensionAttributes($tierPriceExtensionAttributesFirstWsAll);
 $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => \Magento\Customer\Model\Group::NOT_LOGGED_IN_ID,
-        'percentage_value'=> null,
-        'qty'=> 1,
-        'value'=> 15.15
+        'qty'=> 1
     ]
-])->setExtensionAttributes($tierPriceExtensionAttributesFirstWs);
+])->setExtensionAttributes($tierPriceExtensionAttributesFirstWsNotLogged);
 
 /** Second website tier prices */
+$tierPriceExtensionAttributesSecondWsAll = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($secondWebsiteId)
+    ->setPercentageValue(14.14);
+$tierPriceExtensionAttributesSecondWsNotLogged = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($secondWebsiteId)
+    ->setPercentageValue(13.13);
 $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => \Magento\Customer\Model\Group::CUST_GROUP_ALL,
-        'qty'=> 1,
-        'value'=> 14.14
+        'qty'=> 1
     ]
-])->setExtensionAttributes($tierPriceExtensionAttributesSecondWs);
+])->setExtensionAttributes($tierPriceExtensionAttributesSecondWsAll);
 $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => \Magento\Customer\Model\Group::NOT_LOGGED_IN_ID,
-        'qty'=> 1,
-        'value'=> 13.13
+        'qty'=> 1
     ]
-])->setExtensionAttributes($tierPriceExtensionAttributesSecondWs);
-
+])->setExtensionAttributes($tierPriceExtensionAttributesSecondWsNotLogged);
 $bundleFixedTierPrice->setTierPrices($productTierPrices);
 $productRepository->save($bundleFixedTierPrice);

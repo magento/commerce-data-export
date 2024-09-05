@@ -144,7 +144,7 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'websiteCode' => 'base',
                         'regular' => 100.1,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 16.16]],
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_tier_price_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -153,7 +153,7 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'websiteCode' => 'base',
                         'regular' => 100.1,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 15.15]],
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_tier_price_test_0' => [
@@ -162,7 +162,7 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'websiteCode' => 'test',
                         'regular' => 100.1,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 14.14]],
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_tier_price_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -171,7 +171,7 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'websiteCode' => 'test',
                         'regular' => 100.1,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 13.13]],
                         'type' => 'BUNDLE_FIXED'
                     ],
                 ]
@@ -367,6 +367,78 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                             ]
                         ],
                         'type' => 'SIMPLE'
+                    ],
+                    'bundle_dynamic_product_with_regular_price_base_0' => [
+                        'sku' => 'bundle_dynamic_product_with_regular_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 0,
+                        'deleted' => false,
+                        'discounts' => null,
+                        'type' => 'BUNDLE_DYNAMIC'
+                    ],
+                    'bundle_dynamic_product_with_regular_price_test_0' => [
+                        'sku' => 'bundle_dynamic_product_with_regular_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 0,
+                        'deleted' => false,
+                        'discounts' => null,
+                        'type' => 'BUNDLE_DYNAMIC'
+                    ],
+                    'bundle_dynamic_product_with_special_price_base_0' => [
+                        'sku' => 'bundle_dynamic_product_with_special_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 0,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'special_price', 'percentage' => 55.55]],
+                        'type' => 'BUNDLE_DYNAMIC'
+                    ],
+                    'bundle_dynamic_product_with_special_price_test_0' => [
+                        'sku' => 'bundle_dynamic_product_with_special_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 0,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'special_price', 'percentage' => 55.55]],
+                        'type' => 'BUNDLE_DYNAMIC'
+                    ],
+                    'bundle_dynamic_product_with_tier_price_base_0' => [
+                        'sku' => 'bundle_dynamic_product_with_tier_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 0,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 16.16]],
+                        'type' => 'BUNDLE_DYNAMIC'
+                    ],
+                    'bundle_dynamic_product_with_tier_price_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
+                        'sku' => 'bundle_dynamic_product_with_tier_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 0,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 15.15]],
+                        'type' => 'BUNDLE_DYNAMIC'
+                    ],
+                    'bundle_dynamic_product_with_tier_price_test_0' => [
+                        'sku' => 'bundle_dynamic_product_with_tier_price',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 0,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 14.14]],
+                        'type' => 'BUNDLE_DYNAMIC'
+                    ],
+                    'bundle_dynamic_product_with_tier_price_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
+                        'sku' => 'bundle_dynamic_product_with_tier_price',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'test',
+                        'regular' => 0,
+                        'deleted' => false,
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 13.13]],
+                        'type' => 'BUNDLE_DYNAMIC'
                     ],
                 ]
             ]

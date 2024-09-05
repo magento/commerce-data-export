@@ -224,6 +224,16 @@ $bundleDynamicSpecialPrice = $createBundleProduct(
     ['simple_option_3', 'simple_option_4']
 );
 
+// Update product special prices
+$productRepository->save(
+    $productRepository->get('bundle_dynamic_product_with_special_price', true, $firstWebsiteStoreId)
+        ->setData('special_price', 50.50)
+);
+$productRepository->save(
+    $productRepository->get('bundle_dynamic_product_with_special_price', true, $secondWebsiteStoreId)
+        ->setData('special_price', 55.55)
+);
+
 // Create bundle product with tier price simple
 $product5 = $productRepository->get('simple_option_5');
 $product5->setPrice(20.20)
@@ -278,3 +288,46 @@ $bundleDynamicTierPrice = $createBundleProduct(
     [1, $secondWebsiteId],
     ['simple_option_5']
 );
+
+// Create TierPrice
+/** First website tier prices */
+$tierPriceExtensionAttributesFirstWsAll = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($firstWebsiteId)
+    ->setPercentageValue(16.16);
+$tierPriceExtensionAttributesFirstWsNotLogged = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($firstWebsiteId)
+    ->setPercentageValue(15.15);
+$productTierPrices[] = $tierPriceFactory->create([
+    'data' => [
+        'customer_group_id' => \Magento\Customer\Model\Group::CUST_GROUP_ALL,
+        'qty'=> 1
+    ]
+])->setExtensionAttributes($tierPriceExtensionAttributesFirstWsAll);
+$productTierPrices[] = $tierPriceFactory->create([
+    'data' => [
+        'customer_group_id' => \Magento\Customer\Model\Group::NOT_LOGGED_IN_ID,
+        'qty'=> 1
+    ]
+])->setExtensionAttributes($tierPriceExtensionAttributesFirstWsNotLogged);
+
+/** Second website tier prices */
+$tierPriceExtensionAttributesSecondWsAll = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($secondWebsiteId)
+    ->setPercentageValue(14.14);
+$tierPriceExtensionAttributesSecondWsNotLogged = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($secondWebsiteId)
+    ->setPercentageValue(13.13);
+$productTierPrices[] = $tierPriceFactory->create([
+    'data' => [
+        'customer_group_id' => \Magento\Customer\Model\Group::CUST_GROUP_ALL,
+        'qty'=> 1
+    ]
+])->setExtensionAttributes($tierPriceExtensionAttributesSecondWsAll);
+$productTierPrices[] = $tierPriceFactory->create([
+    'data' => [
+        'customer_group_id' => \Magento\Customer\Model\Group::NOT_LOGGED_IN_ID,
+        'qty'=> 1
+    ]
+])->setExtensionAttributes($tierPriceExtensionAttributesSecondWsNotLogged);
+$bundleDynamicTierPrice->setTierPrices($productTierPrices);
+$productRepository->save($bundleDynamicTierPrice);

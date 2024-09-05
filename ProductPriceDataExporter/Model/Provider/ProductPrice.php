@@ -34,6 +34,7 @@ use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\ProductPriceDataExporter\Model\Query\CustomerGroupPricesQuery;
 use Magento\ProductPriceDataExporter\Model\Query\ParentProductsQuery;
 use Magento\ProductPriceDataExporter\Model\Query\ProductPricesQuery;
+use Magento\Framework\DB\Select;
 
 /**
  * Collect raw product prices: regular price and discounts: special price, customer group price, rule price, ...
@@ -73,14 +74,11 @@ class ProductPrice implements DataProcessorInterface
     private CommerceDataExportLoggerInterface $logger;
     private Config $eavConfig;
 
-    /**
-     * @var array|null
-     */
     private ?array $priceAttributes = null;
 
-    private array|null $websitesByStore = null;
+    private ?array $websitesByStore = null;
 
-    private array|null $websites = null;
+    private ?array $websites = null;
 
     /**
      * @var ParentProductsQuery
@@ -141,12 +139,47 @@ class ProductPrice implements DataProcessorInterface
         $ids = array_column($arguments, 'productId');
         $productPriceTemplate = $this->getProductPriceTemplate($ids);
 
-        $cursor = $this->resourceConnection->getConnection()->query(
-            $this->pricesQuery->getQuery($ids, $this->getPriceAttributes())
-        );
-        $pricesRawData = [];
-
+        $select = $this->pricesQuery->getQuery($ids, $this->getPriceAttributes());
         // update price template: set price if global price set, set bundle price type
+        $pricesRawData = $this->updatePriceTemplate($select, $productPriceTemplate);
+
+        // build up fallback prices
+        $fallbackPrices = $this->buildFallbackPrices($pricesRawData, $productPriceTemplate);
+
+        // add prices to fallback prices that were set only on global level
+        foreach ($productPriceTemplate as $productId => $websites) {
+            foreach ($websites as $websiteId => $productTemplate) {
+                $key = $this->buildKey($productId, $websiteId, self::FALLBACK_CUSTOMER_GROUP);
+                $fallbackPrices[$key] = $productTemplate;
+            }
+        }
+
+        $filteredIds = array_unique(array_column($fallbackPrices, 'productId'));
+        // Add customer group prices to fallback records before processing
+        $this->addFallbackCustomerGroupPrices($fallbackPrices, $filteredIds);
+
+        // process fallback prices
+        $this->processFallbackPrices($fallbackPrices, $dataProcessorCallback, $metadata);
+
+        $this->addCustomerGroupPrices($fallbackPrices, $filteredIds, $dataProcessorCallback, $metadata);
+    }
+
+    /**
+     * Update price template
+     *
+     * @param Select $select
+     * @param array $productPriceTemplate
+     * @return array
+     * @throws LocalizedException
+     * @throws UnableRetrieveData
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    private function updatePriceTemplate(Select $select, array &$productPriceTemplate): array
+    {
+        $cursor = $this->resourceConnection->getConnection()->query($select);
+
+        $pricesRawData = [];
         while ($row = $cursor->fetch()) {
             $percentageDiscount = null;
             $productId = $row['entity_id'];
@@ -191,9 +224,22 @@ class ProductPrice implements DataProcessorInterface
                 }
             }
         }
+        return $pricesRawData;
+    }
 
+    /**
+     * Build fallback prices for each product and website combination
+     *
+     * @param array $pricesRawData
+     * @param array $productPriceTemplate
+     * @return array
+     * @throws LocalizedException
+     * @throws UnableRetrieveData
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    private function buildFallbackPrices(array $pricesRawData, array &$productPriceTemplate): array
+    {
         $fallbackPrices = [];
-
         // build up fallback prices
         foreach ($pricesRawData as $row) {
             $percentageDiscount = null;
@@ -224,31 +270,40 @@ class ProductPrice implements DataProcessorInterface
                     if ($this->shouldOverrideGlobalPrice($fallbackPrices[$key], self::REGULAR_PRICE, $row)) {
                         $fallbackPrices[$key][self::REGULAR_PRICE] = (float)$price;
                     }
-                } else {
-                    if ($this->shouldOverrideGlobalPrice($fallbackPrices[$key], $attributeCode, $row)) {
-                        if ($price === null) {
-                            // cover case when special price was set on global level but unset on store level
-                            $fallbackPrices[$key]['discounts'] = [];
-                        } else {
-                            $this->addDiscountPrice($fallbackPrices[$key], $attributeCode, $price, $percentageDiscount);
+                } elseif ($this->shouldOverrideGlobalPrice($fallbackPrices[$key], $attributeCode, $row)) {
+                    if ($price === null) {
+                        // cover case when special price was set on global level but unset on store level
+                        $fallbackPrices[$key]['discounts'] = [];
+                    } else {
+                        if ($attributeCode === 'special_price'
+                            && \in_array(
+                                $fallbackPrices[$key]['type'],
+                                [self::BUNDLE_DYNAMIC, self::BUNDLE_FIXED],
+                                true
+                            )) {
+                            $percentageDiscount = $price;
                         }
+                        $this->addDiscountPrice($fallbackPrices[$key], $attributeCode, $price, $percentageDiscount);
                     }
                 }
             }
         }
+        return $fallbackPrices;
+    }
 
-        // add prices to fallback prices that were set only on global level
-        foreach ($productPriceTemplate as $productId => $websites) {
-            foreach ($websites as $websiteId => $productTemplate) {
-                $key = $this->buildKey($productId, $websiteId, self::FALLBACK_CUSTOMER_GROUP);
-                $fallbackPrices[$key] = $productTemplate;
-            }
-        }
-
-        $filteredIds = array_unique(array_column($fallbackPrices, 'productId'));
-        // Add customer group prices to fallback records before processing
-        $this->addFallbackCustomerGroupPrices($fallbackPrices, $filteredIds);
-
+    /**
+     * Process fallback prices in batches
+     *
+     * @param array $fallbackPrices
+     * @param callable $dataProcessorCallback
+     * @param FeedIndexMetadata $metadata
+     * @return void
+     */
+    private function processFallbackPrices(
+        array $fallbackPrices,
+        callable $dataProcessorCallback,
+        FeedIndexMetadata $metadata
+    ): void {
         $itemN = 0;
         $prices = [];
         foreach ($fallbackPrices as $fallbackPrice) {
@@ -262,8 +317,6 @@ class ProductPrice implements DataProcessorInterface
         if ($prices) {
             $dataProcessorCallback($this->get($prices));
         }
-
-        $this->addCustomerGroupPrices($fallbackPrices, $filteredIds, $dataProcessorCallback, $metadata);
     }
 
     /**
@@ -373,6 +426,7 @@ class ProductPrice implements DataProcessorInterface
 
     /**
      * SQL query may return multiple rows for the same product but with different price per price attribute.
+     *
      * Website-specific price must override global price
      *
      * @param array $fallbackPrice
@@ -578,6 +632,8 @@ class ProductPrice implements DataProcessorInterface
     }
 
     /**
+     * Get Parent Product Skus by product ids
+     *
      * @param array $productIds
      * @return array
      * @throws \Zend_Db_Statement_Exception
@@ -606,7 +662,7 @@ class ProductPrice implements DataProcessorInterface
      */
     private function convertProductType(string $typeId): string
     {
-        $productType = in_array($typeId, self::PRODUCT_TYPE, true) ? $typeId : Type::TYPE_SIMPLE;
+        $productType = \in_array($typeId, self::PRODUCT_TYPE, true) ? $typeId : Type::TYPE_SIMPLE;
 
         return strtoupper($productType);
     }
