@@ -24,15 +24,27 @@ use Monolog\DateTimeImmutable;
 /**
  * Proxy class to allow to instantiate custom Logger Interface
  */
-class Monolog extends \Magento\Framework\Logger\Monolog implements CommerceDataExportLoggerInterface {
-
+class Monolog extends \Magento\Framework\Logger\Monolog implements CommerceDataExportLoggerInterface
+{
+    /**
+     * @var LogRegistry
+     */
     private LogRegistry $logRegistry;
 
+    /**
+     * @param LogRegistry $logRegistry
+     * @param string $name
+     * @param array $handlers
+     * @param array $processors
+     * @param DateTimeZone|null $timezone
+     */
     public function __construct(
         LogRegistry   $logRegistry,
-        string        $name, array $handlers = [],
+        string        $name,
+        array $handlers = [],
         array         $processors = [],
-        ?DateTimeZone $timezone = null) {
+        ?DateTimeZone $timezone = null
+    ) {
         parent::__construct($name, $handlers, $processors, $timezone);
         $this->logRegistry = $logRegistry;
     }
@@ -74,9 +86,28 @@ class Monolog extends \Magento\Framework\Logger\Monolog implements CommerceDataE
     /**
      * @inheritDoc
      */
-    public function addRecord(int $level, string $message, array $context = [], DateTimeImmutable $datetime = null): bool
-    {
-        return parent::addRecord($level, $this->logRegistry->prepareMessage($message, []), $context, $datetime);
+    public function addRecord(
+        $level,
+        string $message,
+        array $context = [],
+        DateTimeImmutable $datetime = null
+    ): bool {
+        // Check if Monolog\Level class exists (for Monolog 3.x+ compatibility)
+        if (class_exists('\Monolog\Level')) {
+            // If it exists, use it as type hint
+            if (!($level instanceof \Monolog\Level) && !\is_int($level)) {
+                throw new \InvalidArgumentException('$level must be an instance of Monolog\Level or an integer');
+            }
+        // If it doesn't exist, only accept integers
+        } elseif (!\is_int($level)) {
+            throw new \InvalidArgumentException('$level must be an integer');
+        }
+        return parent::addRecord(
+            $level,
+            $this->logRegistry->prepareMessage($message, []),
+            $context,
+            $datetime
+        );
     }
 
     /**
