@@ -22,7 +22,7 @@
             </filter>
             <link-source name="catalog_product_entity" link-type="inner" alias="simple_product">
                 <using glue="and">
-                    <condition attribute="type_id" operator="eq" type="variable">'simple' OR 'virtual'</condition>
+                    <condition attribute="type_id" operator="in" type="variable">'simple','virtual'</condition>
                     <condition attribute="entity_id" operator="eq" type="identifier">product_id</condition>
                 </using>
             </link-source>
@@ -39,7 +39,7 @@
             <link-source name="catalog_product_entity" link-type="inner" alias="simple_product">
                 <attribute name="entity_id" alias="productId" group="true"/>
                 <using glue="and">
-                    <condition attribute="type_id" operator="eq" type="variable">'simple' OR 'virtual'</condition>
+                    <condition attribute="type_id" operator="in" type="variable">'simple','virtual'</condition>
                     <condition attribute="entity_id" operator="eq" type="identifier">product_id</condition>
                 </using>
             </link-source>

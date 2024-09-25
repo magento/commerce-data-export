@@ -65,10 +65,11 @@ class EntityIdsProvider implements EntityIdsProviderInterface
     public function getAffectedIds(FeedIndexMetadata $metadata, array $ids): array
     {
         $resolvers = $this->affectedIdsResolverPool->getIdsResolversForFeed($metadata->getFeedName());
+        $affectedIds = [];
         foreach ($resolvers as $resolver) {
-            $ids = array_merge($ids, $resolver->getAllAffectedIds($ids));
+            $affectedIds[] = $resolver->getAllAffectedIds($ids);
         }
-        return $ids;
+        return array_unique(array_merge($ids, ...$affectedIds));
     }
 
     /**
