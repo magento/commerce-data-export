@@ -21,7 +21,7 @@ use Magento\Framework\DB\Select;
 use Magento\Framework\DB\Sql\Expression;
 
 /**
- * Configurable option values data query for product data exporter
+ * Query obtains attribute option values used in configurable products.
  */
 class ProductOptionValueQuery
 {
@@ -90,8 +90,11 @@ class ProductOptionValueQuery
                     'swatchType' => new Expression('CASE WHEN aos.value IS NULL THEN aod.type ELSE aos.type END'),
                 ]
             )
-            ->where('eao.attribute_id IN (?)', $attributeIds)
-            ->where('s.code IN (?)', $storeViewCodes);
+            ->where('eao.attribute_id IN (?)', $attributeIds);
+
+        if ($storeViewCodes) {
+            $select->where('s.code IN (?)', $storeViewCodes);
+        }
         return $select;
     }
 }

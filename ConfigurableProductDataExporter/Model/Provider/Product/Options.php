@@ -82,6 +82,12 @@ class Options implements OptionProviderInterface
     private ?int $statusAttributeId = null;
 
     /**
+     * Local cache for attribute option values data without filtration by product ids
+     * @var array
+     */
+    private static array $optionValuesPerAttributesCache = [];
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param ProductOptionQuery $productOptionQuery
      * @param ProductOptionValueQuery $productOptionValueQuery
@@ -197,14 +203,31 @@ class Options implements OptionProviderInterface
      */
     private function getOptionValuesData(array $arguments): array
     {
-        $arguments['attributes'] = $this->getAttributeIds($arguments);
+        $attributeIdsAssignedToProduct = $this->getAttributeIds($arguments);
+        $attributeIds = array_combine($attributeIdsAssignedToProduct, $attributeIdsAssignedToProduct);
+
+        // we should verify that attribute ids cached with requested store view code
+        // possible further  optimization - fetch attributes from DB only for requested store view code
+        foreach (self::$optionValuesPerAttributesCache as $attributeId => $dataByStore) {
+            foreach (array_keys($dataByStore) as $storeCode) {
+                if (in_array($storeCode, $arguments['storeViewCode'])) {
+                    unset($attributeIds[$attributeId]);
+                }
+            }
+        }
+
+        if (!$attributeIds) {
+            // all attributes already in cache - retrieve it
+            return $this->getOptionValuesFromCache($attributeIdsAssignedToProduct);
+        }
+        $arguments['attributes'] = $attributeIds;
+        // attribute option values are selected without restrictions by product ids
+        unset($arguments['productId']);
         $select = $this->productOptionValueQuery->getQuery($arguments);
 
         $cursor = $this->resourceConnection->getConnection()->query($select);
-
-        $data = [];
         while ($row = $cursor->fetch()) {
-            $data[$row['attribute_id']][$row['storeViewCode']][$row['optionId']] = [
+            self::$optionValuesPerAttributesCache[$row['attribute_id']][$row['storeViewCode']][$row['optionId']] = [
                 'id' => $this->optionValueUid->resolve($row['attribute_id'], $row['optionId']),
                 'label' => $row['label'],
                 'sortOrder' => $row['sortOrder'],
@@ -218,7 +241,19 @@ class Options implements OptionProviderInterface
                 ) ? $row['swatchValue'] : null
             ];
         }
-        return $data;
+
+        return $this->getOptionValuesFromCache($attributeIdsAssignedToProduct);
+    }
+
+    /**
+     * Get option values from cache
+     *
+     * @param array $attributeIds
+     * @return array
+     */
+    private function getOptionValuesFromCache(array $attributeIds): array
+    {
+        return \array_intersect_key(self::$optionValuesPerAttributesCache, \array_flip(array_filter($attributeIds)));
     }
 
     /**
@@ -326,7 +361,10 @@ class Options implements OptionProviderInterface
      */
     private function getAssignedAttributeValues(array $attributeValuesList, array $assignedAttributeValuesId): array
     {
-        $assignedAttributeValues = array_intersect_key($attributeValuesList, array_flip($assignedAttributeValuesId));
+        $assignedAttributeValues = array_intersect_key(
+            $attributeValuesList,
+            array_flip(array_filter($assignedAttributeValuesId))
+        );
 
         return !empty($assignedAttributeValues) ? \array_values($assignedAttributeValues) : [];
     }
