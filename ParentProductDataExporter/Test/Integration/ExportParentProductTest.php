@@ -100,14 +100,14 @@ class ExportParentProductTest extends AbstractProductTestHelper
                         'sku' => 'simple_product_parent_product_test_1',
                         'type' => 'SIMPLE',
                         'parents' => [
-                            2 => ['sku' => 'grouped-product-parent-product-test', 'productType' => 'grouped']
+                            0 => ['sku' => 'grouped-product-parent-product-test', 'productType' => 'grouped']
                         ],
                     ],
                     [
                         'sku' => 'simple_product_parent_product_test_2',
                         'type' => 'SIMPLE',
                         'parents' => [
-                            1 => ['sku' => 'grouped-product-parent-product-test', 'productType' => 'grouped']
+                            0 => ['sku' => 'grouped-product-parent-product-test', 'productType' => 'grouped']
                         ],
                     ],
                     [
