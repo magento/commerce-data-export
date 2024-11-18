@@ -23,6 +23,7 @@ use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as Logg
 
 /**
  * Attribute options data provider
+ * @deprecared 103.3.15 Will be removed in 104.* release
  */
 class AttributeOptions
 {

@@ -22,6 +22,7 @@ use Magento\Framework\DB\Sql\Expression;
 
 /**
  * Attribute options query for catalog data exporter
+ * @deprecared 103.3.15 Will be removed in 104.* release
  */
 class AttributeOptionsQuery
 {
