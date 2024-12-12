@@ -108,11 +108,11 @@ class FeedUpdater
             }
         } catch (DeadlockException $deadlockException) {
             if ($lastAttempt) {
-                $this->logError($deadlockException, $metadata, $dataForInsert);
+                $this->logError($deadlockException, $metadata, $dataForInsert ?? []);
             }
             return false;
         } catch (\Throwable $e) {
-            $this->logError($e, $metadata, $dataForInsert);
+            $this->logError($e, $metadata, $dataForInsert ?? []);
         }
         return true;
     }
