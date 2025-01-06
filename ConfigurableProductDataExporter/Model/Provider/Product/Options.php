@@ -204,27 +204,30 @@ class Options implements OptionProviderInterface
     private function getOptionValuesData(array $arguments): array
     {
         $attributeIdsAssignedToProduct = $this->getAttributeIds($arguments);
-        $attributeIds = array_combine($attributeIdsAssignedToProduct, $attributeIdsAssignedToProduct);
 
-        // we should verify that attribute ids cached with requested store view code
-        // possible further  optimization - fetch attributes from DB only for requested store view code
-        foreach (self::$optionValuesPerAttributesCache as $attributeId => $dataByStore) {
-            foreach (array_keys($dataByStore) as $storeCode) {
-                if (in_array($storeCode, $arguments['storeViewCode'])) {
-                    unset($attributeIds[$attributeId]);
+        foreach ($arguments['storeViewCode'] as $storeViewCode) {
+            foreach ($attributeIdsAssignedToProduct as $attributeId) {
+                if (!isset(self::$optionValuesPerAttributesCache[$attributeId][$storeViewCode])) {
+                    $this->fulfillOptionValuesCache((int) $attributeId, $storeViewCode);
                 }
             }
         }
 
-        if (!$attributeIds) {
-            // all attributes already in cache - retrieve it
-            return $this->getOptionValuesFromCache($attributeIdsAssignedToProduct);
-        }
-        $arguments['attributes'] = $attributeIds;
-        // attribute option values are selected without restrictions by product ids
-        unset($arguments['productId']);
-        $select = $this->productOptionValueQuery->getQuery($arguments);
+        return $this->getOptionValuesFromCache($attributeIdsAssignedToProduct);
+    }
 
+    /**
+     * Fulfill option value cache
+     *
+     * @param int $attributeId
+     * @param string $storeViewCode
+     */
+    private function fulfillOptionValuesCache(int $attributeId, string $storeViewCode): void
+    {
+        $select = $this->productOptionValueQuery->getQuery([
+            'attributes' => [$attributeId],
+            'storeViewCode' => [$storeViewCode]
+        ]);
         $cursor = $this->resourceConnection->getConnection()->query($select);
         while ($row = $cursor->fetch()) {
             self::$optionValuesPerAttributesCache[$row['attribute_id']][$row['storeViewCode']][$row['optionId']] = [
@@ -241,8 +244,6 @@ class Options implements OptionProviderInterface
                 ) ? $row['swatchValue'] : null
             ];
         }
-
-        return $this->getOptionValuesFromCache($attributeIdsAssignedToProduct);
     }
 
     /**
