@@ -91,7 +91,7 @@ class ProductMetadataQuery
                     'required' => 'eav.is_required',
                     'unique' => 'eav.is_unique',
                     'global' => 'cea.is_global',
-                    'visible' => 'cea.is_visible',
+                    'visible' => 'cea.is_visible_on_front',
                     'searchable' => 'cea.is_searchable',
                     'filterable' => 'cea.is_filterable',
                     'visibleInCompareList' => 'cea.is_comparable',
