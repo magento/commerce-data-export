@@ -1,14 +1,13 @@
 {
     "name": "magento/commerce-data-export",
     "description": "Commerce data export tool",
-    "_comment": "Minimum Magento version is 2.3.2",
+    "_comment": "Minimum Magento version is 2.4.4",
     "license": [
         "OSL-3.0",
         "AFL-3.0"
     ],
     "type": "metapackage",
     "require": {
-        "php": "~8.1.0||~8.2.0||~8.3.0",
         "magento/module-bundle-product-data-exporter": "self.version",
         "magento/module-catalog-data-exporter": "self.version",
         "magento/module-catalog-inventory-data-exporter": "self.version",
