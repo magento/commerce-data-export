@@ -54,7 +54,7 @@ class FeedQuery
         FeedIndexMetadata $metadata,
         string $modifiedAt,
         int $offset,
-        array $ignoredExportStatus = null
+        ?array $ignoredExportStatus = null
     ): Select {
         $modifiedAt = $modifiedAt === '1' ? (int)$modifiedAt : $modifiedAt;
         $connection = $this->resourceConnection->getConnection();
@@ -84,7 +84,7 @@ class FeedQuery
         FeedIndexMetadata $metadata,
         string $modifiedAt,
         ?string $limit,
-        array $ignoredExportStatus = null
+        ?array $ignoredExportStatus = null
     ): Select {
         $modifiedAt = $modifiedAt === '1' ? (int)$modifiedAt : $modifiedAt;
         $connection = $this->resourceConnection->getConnection();

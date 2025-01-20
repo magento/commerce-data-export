@@ -34,7 +34,7 @@ interface FeedInterface
      * @throws \Zend_Db_Statement_Exception
      * @see \Magento\DataExporter\Status\ExportStatusCode
      */
-    public function getFeedSince(string $timestamp, array $ignoredExportStatus = null): array;
+    public function getFeedSince(string $timestamp, ?array $ignoredExportStatus = null): array;
 
     /**
      * Get feed metadata

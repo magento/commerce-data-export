@@ -96,8 +96,8 @@ class FeedIndexProcessorCreateUpdateDelete extends FeedIndexProcessorCreateUpdat
         DataSerializerInterface $serializer,
         EntityIdsProviderInterface $idsProvider,
         array $ids = [],
-        callable $callback = null,
-        IndexStateProvider $indexState = null
+        ?callable $callback = null,
+        ?IndexStateProvider $indexState = null
     ): void {
         parent::partialReindex($metadata, $serializer, $idsProvider, $ids, $callback, $indexState);
         if (!$metadata->isExportImmediately()) {

@@ -78,7 +78,7 @@ class Feed implements FeedInterface
     /**
      * @inheritDoc
      */
-    public function getFeedSince(string $timestamp, array $ignoredExportStatus = null): array
+    public function getFeedSince(string $timestamp, ?array $ignoredExportStatus = null): array
     {
         $connection = $this->resourceConnection->getConnection();
         $limit = $connection->fetchOne(

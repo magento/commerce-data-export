@@ -204,7 +204,7 @@ class FeedIndexMetadata
         string $feedTableName,
         string $feedTableField = self::FEED_TABLE_FIELD_SOURCE_ENTITY_ID,
         array $feedTableMutableColumns = [],
-        string $sourceTableIdentityField = null,
+        ?string $sourceTableIdentityField = null,
         int $fullReIndexSecondsLimit = 0,
         string $sourceTableFieldOnFullReIndexLimit = 'updated_at',
         bool $truncateFeedOnFullReindex = true,

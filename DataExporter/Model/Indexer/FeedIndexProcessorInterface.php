@@ -39,7 +39,7 @@ interface FeedIndexProcessorInterface
         EntityIdsProviderInterface $idsProvider,
         array $ids = [],
         ?callable $callback = null,
-        IndexStateProvider $indexState = null
+        ?IndexStateProvider $indexState = null
     ): void;
 
     /**

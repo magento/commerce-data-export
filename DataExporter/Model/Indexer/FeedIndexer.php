@@ -72,7 +72,7 @@ class FeedIndexer implements IndexerActionInterface, MviewActionInterface, FeedI
         FeedIndexMetadata $feedIndexMetadata,
         EntityIdsProviderInterface $entityIdsProvider,
         ?CommerceDataExportLoggerInterface $logger = null,
-        FeedLockManager $lockManager = null
+        ?FeedLockManager $lockManager = null
     ) {
         $this->processor = $processor;
         $this->feedIndexMetadata = $feedIndexMetadata;

@@ -90,7 +90,7 @@ class Monolog extends \Magento\Framework\Logger\Monolog implements CommerceDataE
         $level,
         string $message,
         array $context = [],
-        DateTimeImmutable $datetime = null
+        ?DateTimeImmutable $datetime = null
     ): bool {
         // Check if Monolog\Level class exists (for Monolog 3.x+ compatibility)
         if (class_exists('\Monolog\Level')) {

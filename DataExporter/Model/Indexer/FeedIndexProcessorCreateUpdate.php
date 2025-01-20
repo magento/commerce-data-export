@@ -109,8 +109,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         DataSerializerInterface $serializer,
         EntityIdsProviderInterface $idsProvider,
         array $ids = [],
-        callable $callback = null,
-        IndexStateProvider $indexState = null
+        ?callable $callback = null,
+        ?IndexStateProvider $indexState = null
     ): void {
         $isPartialReindex = $indexState === null;
         if ($isPartialReindex) {
@@ -271,7 +271,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     private function filterFeedItems(
         array $feedItems,
         FeedIndexMetadata $metadata,
-        IndexStateProvider $indexStateProvider = null
+        ?IndexStateProvider $indexStateProvider = null
     ) : array {
         if (empty($feedItems)) {
             return [[], []];
