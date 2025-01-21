@@ -43,7 +43,7 @@ class Orders extends \Magento\DataExporter\Model\Provider\QueryDataProvider
     public function __construct(
         CommerceDataExportLoggerInterface $logger,
         QueryProcessor $queryProcessor,
-        string $queryName = null,
+        ?string $queryName = null,
         array $queryArguments = []
     ) {
         parent::__construct($queryProcessor, $queryName, $queryArguments);

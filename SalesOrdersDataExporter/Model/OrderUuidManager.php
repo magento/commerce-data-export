@@ -100,8 +100,8 @@ class OrderUuidManager
      */
     public function assignByDate(
         int $batchSize,
-        string $from = null,
-        string $to = null,
+        ?string $from = null,
+        ?string $to = null,
         string $state = ''
     ): int {
         $updatedEntities = 0;
@@ -141,8 +141,8 @@ class OrderUuidManager
      */
     private function getOrders(
         int    $batchSize,
-        string $from = null,
-        string $to = null,
+        ?string $from = null,
+        ?string $to = null,
         string $state = '',
         array  $orderIds = []
     ): Generator {

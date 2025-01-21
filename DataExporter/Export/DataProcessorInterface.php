@@ -36,7 +36,7 @@ interface DataProcessorInterface
         array $arguments,
         callable $dataProcessorCallback,
         FeedIndexMetadata $metadata,
-        Node $node = null,
-        Info $info = null
+        ?Node $node = null,
+        ?Info $info = null
     ): void;
 }

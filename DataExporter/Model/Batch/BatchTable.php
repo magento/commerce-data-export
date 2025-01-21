@@ -87,7 +87,7 @@ class BatchTable
      * @throws \Zend_Db_Exception
      * @throws \Zend_Db_Statement_Exception
      */
-    public function create(string $insertDataQuery, bool $initializeCreate = null): int
+    public function create(string $insertDataQuery, ?bool $initializeCreate = null): int
     {
         $connection = $this->resourceConnection->getConnection();
         $batchTable = $connection->newTable()

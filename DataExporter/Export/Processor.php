@@ -118,7 +118,7 @@ class Processor
      * @param null|array $proxyData - added for backward compatibility with originally `processWithCallback` is called
      * @return array
      */
-    public function process(string $fieldName, array $arguments = [], array $proxyData = null) : array
+    public function process(string $fieldName, array $arguments = [], ?array $proxyData = null) : array
     {
         if ($proxyData !== null) {
             return $proxyData;

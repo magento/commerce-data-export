@@ -152,8 +152,8 @@ class Link extends Command
      */
     public function assignUuidsToOrderEntities(
         int $batchSize,
-        string $from = null,
-        string $to = null,
+        ?string $from = null,
+        ?string $to = null,
         string $state = ''
     ): int {
         return $this->orderUuidManager->assignByDate($batchSize, $from, $to, $state);

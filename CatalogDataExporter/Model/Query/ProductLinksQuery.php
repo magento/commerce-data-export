@@ -81,7 +81,7 @@ class ProductLinksQuery
      *
      * @return Select
      */
-    public function getQuery(array $productIds, string $storeViewCode, int $linkTypeId = null) : Select
+    public function getQuery(array $productIds, string $storeViewCode, ?int $linkTypeId = null) : Select
     {
         $connection = $this->resourceConnection->getConnection();
         $catalogProductTable = $this->resourceConnection->getTableName('catalog_product_entity');
@@ -171,7 +171,7 @@ class ProductLinksQuery
      * @param int|null $linkTypeId
      * @return array
      */
-    private function getProductLinkAttributesData(int $linkTypeId = null) : array
+    private function getProductLinkAttributesData(?int $linkTypeId = null) : array
     {
         if (null === $this->productLinkAttributesCache) {
             $connection = $this->resourceConnection->getConnection();

@@ -69,7 +69,7 @@ class CustomOptions
     public function get(
         array $productIds,
         array $optionTypes,
-        string $storeViewCode = null,
+        ?string $storeViewCode = null,
         bool $addOptionValues = true
     ): array {
         $connection = $this->resourceConnection->getConnection();

@@ -49,7 +49,7 @@ class QueryDataProvider
      */
     public function __construct(
         QueryProcessor $queryProcessor,
-        string $queryName = null,
+        ?string $queryName = null,
         array $queryArguments = []
     ) {
         $this->queryProcessor = $queryProcessor;

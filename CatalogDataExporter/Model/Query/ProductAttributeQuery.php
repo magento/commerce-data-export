@@ -63,7 +63,7 @@ class ProductAttributeQuery
     public function __construct(
         ResourceConnection $resourceConnection,
         string $mainTable = 'catalog_product_entity',
-        EavAttributeQueryBuilderFactory $attributeQueryFactory = null,
+        ?EavAttributeQueryBuilderFactory $attributeQueryFactory = null,
         array $systemAttributes = []
     ) {
         $this->resourceConnection = $resourceConnection;

@@ -611,8 +611,8 @@ class ProductPrice implements DataProcessorInterface
     private function addDiscountPrice(
         array &$priceFeedItem,
         string $code,
-        string $price = null,
-        string $percentage = null
+        ?string $price = null,
+        ?string $percentage = null
     ): void {
         foreach ($priceFeedItem['discounts'] as &$discount) {
             if ($discount['code'] === $code) {
@@ -686,7 +686,7 @@ class ProductPrice implements DataProcessorInterface
      * @param ?string $percent
      * @return void
      */
-    private function setPriceOrPercentageDiscount(array &$discount, string $price = null, string $percent = null): void
+    private function setPriceOrPercentageDiscount(array &$discount, ?string $price = null, ?string $percent = null): void
     {
         if (null !== $percent) {
             $discount['percentage'] = (float)$percent;

@@ -53,7 +53,7 @@ class ProductPricesQuery
     public function __construct(
         ResourceConnection $resourceConnection,
         MetadataPool $metadataPool,
-        Config $eavConfig = null
+        ?Config $eavConfig = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->metadataPool = $metadataPool;

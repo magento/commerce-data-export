@@ -272,8 +272,8 @@ class Generator implements BatchGeneratorInterface
         string $sourceTableField,
         string $batchNumField,
         int $batchNumberIncrement = 0,
-        int $startFrom = null,
-        int $maxLimit = null
+        ?int $startFrom = null,
+        ?int $maxLimit = null
     ): Select {
         $connection = $this->resourceConnection->getConnection();
         $tableFeed = $this->resourceConnection->getTableName($metadata->getFeedTableName());
