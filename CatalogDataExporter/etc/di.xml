@@ -497,6 +497,22 @@
     <type name="Magento\Config\Model\Config">
         <plugin name="invalidate_feed_index_on_config_change" type="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnConfigChange" />
     </type>
+    <!-- List of product entity related indexers that needs to be triggered for scheduled updates -->
+    <type name="Magento\CatalogDataExporter\Plugin\ProductScheduledUpdateExecute">
+        <arguments>
+            <argument name="indexersPool" xsi:type="array">
+                <item name="products" xsi:type="string">catalog_data_exporter_products</item>
+            </argument>
+        </arguments>
+    </type>
+    <!-- Run Catalog Data Export reindex for staging updates -->
+    <type name="Magento\CatalogStaging\Model\ProductApplier">
+        <plugin name="exporter-reindex-product-entities-on-staging-apply" type="Magento\CatalogDataExporter\Plugin\ProductScheduledUpdateExecute"/>
+    </type>
+    <type name="Magento\CatalogStaging\Model\CategoryApplier">
+        <plugin name="exporter-reindex-category-entities-on-staging-apply" type="Magento\CatalogDataExporter\Plugin\CategoryScheduledUpdateExecute"/>
+    </type>
+
     <type name="Magento\CatalogDataExporter\Model\Query\ProductExporterFeedQuery">
         <arguments>
             <argument name="feedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata</argument>

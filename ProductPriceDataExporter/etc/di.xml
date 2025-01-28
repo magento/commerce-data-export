@@ -72,4 +72,12 @@
         </arguments>
     </type>
 
+    <!-- List of product entity related indexers that needs to be triggered for scheduled updates -->
+    <type name="Magento\CatalogDataExporter\Plugin\ProductScheduledUpdateExecute">
+        <arguments>
+            <argument name="indexersPool" xsi:type="array">
+                <item name="prices" xsi:type="string">catalog_data_exporter_product_prices</item>
+            </argument>
+        </arguments>
+    </type>
 </config>
