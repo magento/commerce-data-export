@@ -83,6 +83,20 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     }
 
     /**
+     * Wait one second before test execution after fixtures created.
+     *
+     * @return void
+     */
+    protected function emulateCustomersBehaviorAfterDeleteAction(): void
+    {
+        // Avoid getFeed right after product was created.
+        // We have to emulate real customers behavior
+        // as it's possible that feed in test will be retrieved in same time as product created:
+        // \Magento\DataExporter\Model\Query\RemovedEntitiesByModifiedAtQuery::getQuery
+        sleep(1);
+    }
+
+    /**
      * @param array $expectedItems
      * @return void
      * @throws NoSuchEntityException

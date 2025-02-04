@@ -83,6 +83,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
         $rule->setIsActive(0);
         $this->catalogRuleRepository->save($rule);
         $ruleProductProcessor->getIndexer()->reindexAll();
+        $this->emulateCustomersBehaviorAfterDeleteAction();
         $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
     }
 
