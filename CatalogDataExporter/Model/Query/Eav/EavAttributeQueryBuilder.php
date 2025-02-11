@@ -30,30 +30,9 @@ use Magento\Store\Model\Store;
 class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
 {
     /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
-
-    /**
-     * @var MetadataPool
-     */
-    private $metadataPool;
-
-    /**
-     * @var string
-     */
-    private $entityType;
-
-    /**
      * List of attributes that need to be added/removed to fetch
-     *
-     * @var array
      */
-    private $linkedAttributes;
-
-    /**
-     * @var array
-     */
+    private array $linkedAttributes;
     private const SUPPORTED_BACKEND_TYPES = [
         'int',
         'decimal',
@@ -61,20 +40,11 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
         'varchar',
         'datetime',
     ];
-
-    /**
-     * @var int[]
-     */
-    private $entityTypeIdMap;
-
-    /**
-     * @var Config
-     */
-    private $eavConfig;
-
-    /**
-     * @var array
-     */
+    private ResourceConnection $resourceConnection;
+    private MetadataPool $metadataPool;
+    private string $entityType;
+    private array $entityTypeIdMap;
+    private Config $eavConfig;
     private array $attributesMetadata = [];
     private array $storeCodeToStoreIdMap = [];
 
@@ -138,7 +108,6 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
      * Form and return query to get entity $entityTableAttributes for given $entityIds
      *
      * @param AdapterInterface $connection
-     * @param array $entityTableAttributes
      * @param int[] $entityIds
      * @param string $entityTableName
      * @return Select
@@ -206,7 +175,6 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
      *
      * @param AdapterInterface $connection
      * @param EntityMetadataInterface $metadata
-     * @param array $entityTableAttributes
      * @param int[] $entityIds
      * @param array $eavAttributesMetaData
      * @param string $entityTableName
@@ -243,7 +211,8 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
                     ),
                     ['store_id']
                 )
-                ->join(['a' => $this->resourceConnection->getTableName('eav_attribute')],
+                ->join(
+                    ['a' => $this->resourceConnection->getTableName('eav_attribute')],
                     'eav.attribute_id = a.attribute_id',
                     ['attribute_code']
                 )
@@ -259,6 +228,8 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
     }
 
     /**
+     * Get store id by store code
+     *
      * @param string $storeCode
      * @return int
      */
@@ -283,10 +254,9 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
      * Add linked attributes to output
      *
      * @param array $attributes
-     * @param array $entityTableAttributes
      * @return array
      */
-    private function getEavAttributeCodes($attributes): array
+    private function getEavAttributeCodes(array $attributes): array
     {
         $unusedAttributeList = [];
         $newAttributes = [];

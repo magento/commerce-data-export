@@ -100,7 +100,7 @@ class Attributes
                     $output[$key]['storeViewCode'] = $storeViewCode;
                     $output[$key]['attributes'] = [
                         'attributeCode' => $row['attribute_code'],
-                        'value' => ($row['value'] != null) ?
+                        'value' => ($row['value'] !== null) ?
                             $this->attributeMetadata->getAttributeValue(
                                 $row['attribute_code'],
                                 $storeViewCode,

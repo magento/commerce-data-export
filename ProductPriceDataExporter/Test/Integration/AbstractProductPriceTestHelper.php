@@ -104,6 +104,7 @@ abstract class AbstractProductPriceTestHelper extends TestCase
      */
     protected function checkExpectedItemsAreExportedInFeed(array $expectedItems): void
     {
+        $this->emulateCustomersBehaviorAfterDeleteAction();
         $processor = $this->objectManager->create(Processor::class);
         $processor->updateMview();
         $processor->reindexAllInvalid();

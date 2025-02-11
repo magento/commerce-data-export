@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Test\Integration;
 
+use JsonException;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Api\Data\ProductCustomOptionInterface;
 use Magento\Catalog\Api\Data\ProductCustomOptionValuesInterface;
@@ -39,6 +40,7 @@ use Magento\Store\Api\WebsiteRepositoryInterface;
 use Magento\Store\Api\GroupRepositoryInterface;
 use Magento\Tax\Model\TaxClass\Source\Product as TaxClassSource;
 use Magento\TestFramework\Helper\Bootstrap;
+use PHPUnit\Event\Runtime\PHP;
 use function PHPUnit\Framework\assertEmpty;
 use function PHPUnit\Framework\assertEquals;
 
@@ -376,32 +378,30 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
      */
     protected function validateAttributeData(ProductInterface $product, array $extractedProduct) : void
     {
-        $customLabel = $product->getCustomAttribute('custom_label');
-        $customDescription = $product->getCustomAttribute('custom_description');
-        $customSelect = $product->getCustomAttribute('custom_select');
-        $yesNo = $product->getCustomAttribute('yes_no_attribute');
-        $newsFromDate = $product->getNewsFromDate();
-        $newsToDate = $product->getNewsToDate();
         $attributes = null;
-        if ($customLabel) {
+        if ($product->hasData('custom_label')) {
+            $customLabel = $product->getCustomAttribute('custom_label');
             $attributes[$customLabel->getAttributeCode()] = [
                 'attributeCode' => $customLabel->getAttributeCode(),
                 'value' => [$customLabel->getValue()]
             ];
         }
-        if ($customDescription) {
+        if ($product->hasData('custom_description')) {
+            $customDescription = $product->getCustomAttribute('custom_description');
             $attributes[$customDescription->getAttributeCode()] = [
                 'attributeCode' => $customDescription->getAttributeCode(),
                 'value' => [$customDescription->getValue()]
             ];
         }
-        if ($customSelect) {
+        if ($product->hasData('custom_select')) {
+            $customSelect = $product->getCustomAttribute('custom_select');
             $attributes[$customSelect->getAttributeCode()] = [
                 'attributeCode' => $customSelect->getAttributeCode(),
                 'value' => [$product->getAttributeText('custom_select')]
             ];
         }
-        if ($yesNo) {
+        if ($product->hasData('yes_no_attribute')) {
+            $yesNo = $product->getCustomAttribute('yes_no_attribute');
             $yesNoValues = [0 => 'no', 1 => 'yes'];
             $yesNoActualValue = $product->getData('yes_no_attribute');
             $attributes[$yesNo->getAttributeCode()] = [
@@ -409,30 +409,39 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
                 'value' => [$yesNoValues[$yesNoActualValue] ?? null]
             ];
         }
-        if ($newsFromDate) {
+        if ($product->hasData('news_from_date')) {
+            $newsFromDate = $product->getCustomAttribute('news_from_date');
             $attributes['news_from_date'] = [
-                'attributeCode' => 'news_from_date',
-                'value' => [$newsFromDate]
+                'attributeCode' => 'news_from_date'
             ];
+            if ($newsFromDate !== null) {
+                $attributes['news_from_date']['value'] = [$newsFromDate->getValue()];
+            }
         }
-        if ($newsToDate) {
+        if ($product->hasData('news_to_date')) {
+            $newsToDate = $product->getCustomAttribute('news_to_date');
             $attributes['news_to_date'] = [
-                'attributeCode' => 'news_to_date',
-                'value' => [$newsToDate]
+                'attributeCode' => 'news_to_date'
             ];
+            if ($newsToDate !== null) {
+                $attributes['news_to_date']['value'] = [$newsToDate->getValue()];
+            }
         }
         $feedAttributes = null;
         if (isset($extractedProduct['feedData']['attributes'])) {
-            $feedAttributesData = $extractedProduct['feedData']['attributes'];
-            foreach ($feedAttributesData as $feed) {
-                $feedAttributes[$feed['attributeCode']] = [
-                    'attributeCode' => $feed['attributeCode'],
-                    'value' => $feed['value']
-                ];
+            foreach ($extractedProduct['feedData']['attributes'] as $feed) {
+                $feedAttributes[$feed['attributeCode']] = $feed;
             }
         }
 
-        $this->assertEquals($attributes, $feedAttributes);
+        try {
+            $this->assertJsonStringEqualsJsonString(
+                json_encode($attributes, JSON_THROW_ON_ERROR),
+                json_encode($feedAttributes, JSON_THROW_ON_ERROR)
+            );
+        } catch (JsonException $e) {
+            $this->fail($e->getMessage());
+        }
     }
 
     /**
