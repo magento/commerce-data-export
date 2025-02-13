@@ -22,11 +22,11 @@ class IndexStateProvider
     public const UPDATE_OPERATION = 2;
 
     /**
-     * @param int $batchSize
+     * @param FeedIndexMetadata $metadata
      */
-    public function __construct(int $batchSize)
+    public function __construct(FeedIndexMetadata $metadata)
     {
-        $this->batchSize = $batchSize;
+        $this->batchSize = $metadata->getBatchSize();
     }
 
     /**

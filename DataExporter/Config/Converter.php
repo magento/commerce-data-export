@@ -62,16 +62,20 @@ class Converter implements ConverterInterface
             ];
             $idField = null;
             foreach ($queryData['field'] as $fieldData) {
+                $disabled = isset($fieldData['disabled']) && $fieldData['disabled'] == 'true';
+                if ($disabled) {
+                    continue;
+                }
                 $field = [
                     'name' => $fieldData['name'],
                     'type' => $fieldData['type'],
-                    'provider' => isset($fieldData['provider']) ? $fieldData['provider'] : null,
-                    'repeated' => (isset($fieldData['repeated']) && $fieldData['repeated'] == "true") ? true : false
+                    'provider' => isset($fieldData['provider']) && $fieldData['provider'] !== 'null' ? $fieldData['provider'] : null,
+                    'repeated' => isset($fieldData['repeated']) && $fieldData['repeated'] == 'true'
                 ];
                 if ($fieldData['type'] == 'ID') {
                     $idField = $fieldData['name'];
                 }
-                if (isset($fieldData['provider'])) {
+                if (isset($field['provider'])) {
                     if (isset($fieldData['using'])) {
                         foreach ($fieldData['using'] as $usingField) {
                             $field['using'][$usingField['field']] = $usingField;

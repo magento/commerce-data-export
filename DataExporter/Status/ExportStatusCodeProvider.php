@@ -19,7 +19,8 @@ namespace Magento\DataExporter\Status;
 class ExportStatusCodeProvider
 {
     /**
-     * List of non-retryable HTTP codes
+     * List of non-retryable HTTP status codes.
+     * Until item hash is changed, feed item will not be sent again on sync attempt
      */
     public const NON_RETRYABLE_HTTP_STATUS_CODE = [200, 400];
 
@@ -40,4 +41,9 @@ class ExportStatusCodeProvider
      * in case if FEED_SUBMIT_SKIPPED response status was returned - the DB feed saving process will be skipped
      */
     public const FEED_SUBMIT_SKIPPED = -1;
+
+    /**
+     * Custom code to identify retryable operation (for entire request or for specific item)
+     */
+    public const RETRYABLE = 2;
 }

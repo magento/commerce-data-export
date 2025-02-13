@@ -438,11 +438,7 @@ class FeedIndexMetadata
      */
     public function getMinimalPayloadFieldsList(): array
     {
-        return array_merge(
-            $this->minimalPayload,
-            // Feed identity is a required field to build feed item
-            [$this->getFeedIdentity() => $this->getFeedIdentity()]
-        );
+        return array_filter($this->minimalPayload);
     }
 
     /**

@@ -34,7 +34,7 @@ class FeedMetadataPool
     public function __construct(
         array $classMap = []
     ) {
-        $this->classMap = $classMap;
+        $this->classMap = array_filter($classMap, fn($feed) => $feed instanceof FeedIndexMetadata);
     }
 
     /**

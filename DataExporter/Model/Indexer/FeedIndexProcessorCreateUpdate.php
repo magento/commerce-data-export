@@ -114,7 +114,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     ): void {
         $isPartialReindex = $indexState === null;
         if ($isPartialReindex) {
-            $indexState = $this->indexStateProviderFactory->create(['batchSize' => $metadata->getBatchSize()]);
+            $indexState = $this->indexStateProviderFactory->create(['metadata' => $metadata]);
         }
 
         $feedIdentity = $metadata->getFeedIdentity();
@@ -178,7 +178,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             $userFunctions = [];
             for ($threadNumber = 1; $threadNumber <= $threadCount; $threadNumber++) {
                 $userFunctions[] = function () use ($batchIterator, $metadata, $serializer, $idsProvider) {
-                    $indexState = $this->indexStateProviderFactory->create(['batchSize' => $metadata->getBatchSize()]);
+                    $indexState = $this->indexStateProviderFactory->create(['metadata' => $metadata]);
                     try {
                         foreach ($batchIterator as $ids) {
                             $this->partialReindex($metadata, $serializer, $idsProvider, $ids, null, $indexState);
@@ -285,6 +285,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 ['f' => $this->resourceConnection->getTableName($metadata->getFeedTableName())],
                 [
                     FeedIndexMetadata::FEED_TABLE_FIELD_PK,
+                    FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID,
                     FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID,
                     FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH,
                     FeedIndexMetadata::FEED_TABLE_FIELD_STATUS,
@@ -306,6 +307,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 )) {
                     $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_PK]
                         = $row[FeedIndexMetadata::FEED_TABLE_FIELD_PK];
+                    $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID]
+                        = $row[FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID];
                     $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_STATUS]
                         = $row[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS];
                     $updates[] = $feedItems[$identifier];
@@ -391,6 +394,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             }
             $hash = $this->hashBuilder->buildHash($row, $metadata);
             $data[$identifier] = [
+                // source entity id required only to persist data to table, but we still may send feed item
+                FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID => $row[$metadata->getFeedIdentity()] ?? null,
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID => $identifier,
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH => $hash,
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA => $row,

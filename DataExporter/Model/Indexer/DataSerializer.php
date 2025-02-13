@@ -116,12 +116,7 @@ class DataSerializer implements DataSerializerInterface
         $output = [];
         $status = $exportStatus->getStatus();
         $exportFailedItems = $exportStatus->getFailedItems();
-        $feedItemFields = array_values($metadata->getFeedItemIdentifiers());
-        $feedItemFieldsToPersist = array_merge(
-            $metadata->getMinimalPayloadFieldsList(),
-            // required to build feed's table primary key if entity was deleted
-            array_combine($feedItemFields, $feedItemFields),
-        );
+        $feedItemFieldsToPersist = $metadata->getMinimalPayloadFieldsList();
         $rowModifiedAt = (new \DateTime())->format($metadata->getDbDateTimeFormat());
 
         $itemN = -1;
@@ -132,7 +127,7 @@ class DataSerializer implements DataSerializerInterface
             foreach ($this->unserializeKeys as $unserializeKey) {
                 $feedData[$unserializeKey] = $this->serializer->unserialize($feedData[$unserializeKey]);
             }
-            $sourceEntityId = $feedData[$metadata->getFeedIdentity()] ?? null;
+            $sourceEntityId = $row[FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID] ?? null;
             if ($sourceEntityId === null) {
                 $this->logger->warning(
                     'Source entity id is null. Check your data. field: %s, Feed data: %s',
@@ -148,12 +143,12 @@ class DataSerializer implements DataSerializerInterface
             $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS] = $status->getValue();
             $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_MODIFIED_AT] = $rowModifiedAt;
             if (!empty($exportFailedItems)) {
-                $failedFeedItem = $exportFailedItems[$itemN]['message'] ?? null;
-                $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_ERRORS] = $failedFeedItem ?? '';
+                $failedFeedItem = $exportFailedItems[$itemN] ?? null;
                 // if _specific_ item failed mark only that item as failed, otherwise set status successful
                 if ($failedFeedItem !== null) {
-                    $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS]
-                        = ExportStatusCodeProvider::FAILED_ITEM_ERROR;
+                    $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_ERRORS] = $failedFeedItem['message'] ?? '';
+                    $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS] = $failedFeedItem['status']
+                        ?? ExportStatusCodeProvider::FAILED_ITEM_ERROR;
                 }
             } elseif (!$status->isSuccess()) {
                 $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_ERRORS] = $exportStatus->getReasonPhrase();

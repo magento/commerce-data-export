@@ -16,6 +16,15 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Status;
 
+/**
+ * Original status (HTTP status or application) code is mapped to one of the following Export Status codes:
+ *  - HTTP status code 200 (success)
+ *  - HTTP status code 400 (user error)
+ *  - Application status "skip submission ("-1"), @see ExportStatusCodeProvider::FEED_SUBMIT_SKIPPED
+ *  - Application status "retryable ("2"), @see ExportStatusCodeProvider::RETRYABLE
+ *
+ * Note, any HTTP status code different from 200 or 400 will be considered as retryable
+ */
 class ExportStatusCode
 {
     /**
@@ -24,10 +33,17 @@ class ExportStatusCode
     private const SUCCESS = 200;
 
     /**
-     * Value of current status code
+     * Export operation status code
      * @var int
      */
     private int $statusCode;
+
+    /**
+     * Keeps original status code (HTTP status or application status code)
+     *
+     * @var int
+     */
+    private int $originalStatusCode;
 
     /**
      * @param int $statusCode
@@ -35,7 +51,8 @@ class ExportStatusCode
     public function __construct(
         int $statusCode
     ) {
-        $this->statusCode = $statusCode;
+        $this->originalStatusCode = $statusCode;
+        $this->statusCode = $this->mapStatus($statusCode);
     }
 
     /**
@@ -49,14 +66,14 @@ class ExportStatusCode
     }
 
     /**
-     * Return true regardless of the response status code
+     * Return true if data was sent outside AC regardless of the response status code
      *
      * @return bool
      */
     public function isSent(): bool
     {
         return !in_array(
-            $this->statusCode,
+            $this->originalStatusCode,
             [
                 ExportStatusCodeProvider::APPLICATION_ERROR,
                 ExportStatusCodeProvider::FEED_SUBMIT_SKIPPED
@@ -73,5 +90,21 @@ class ExportStatusCode
     public function getValue(): int
     {
         return $this->statusCode;
+    }
+
+    /**
+     * @param int $statusCode
+     * @return int
+     */
+    private function mapStatus(int $statusCode): int
+    {
+        return in_array($statusCode, ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE, true)
+        || in_array(
+            $statusCode,
+            [ExportStatusCodeProvider::RETRYABLE, ExportStatusCodeProvider::FEED_SUBMIT_SKIPPED],
+            true
+        )
+            ? $statusCode
+            : ExportStatusCodeProvider::RETRYABLE;
     }
 }
