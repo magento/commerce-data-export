@@ -116,24 +116,37 @@ class Products implements DataProcessorInterface
         }
 
         $connection = $this->resourceConnection->getConnection();
-        $itemN = 0;
+        $storeViewItemN = [];
         foreach ($queryArguments as $scopeId => $productData) {
             $cursor = $connection->query(
                 $this->productMainQuery->getQuery(\array_keys($productData), $scopeId ?: null)
             );
 
             while ($row = $cursor->fetch()) {
-                $itemN++;
-                $mappedProducts[$row['storeViewCode']][$row['productId']] = $row;
-                $attributesData[$row['storeViewCode']][$row['productId']] = $productData[$row['productId']];
-                if ($itemN % $metadata->getBatchSize() == 0) {
-                    $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback, $metadata);
-                    $mappedProducts = [];
-                    $attributesData = [];
+                $storeViewCode = $row['storeViewCode'];
+                $productId = $row['productId'];
+
+                if (!isset($storeViewItemN[$storeViewCode])) {
+                    $storeViewItemN[$storeViewCode] = 0;
+                }
+                $storeViewItemN[$storeViewCode]++;
+
+                $mappedProducts[$storeViewCode][$productId] = $row;
+                $attributesData[$storeViewCode][$productId] = $productData[$productId];
+
+                if ($storeViewItemN[$storeViewCode] % $metadata->getBatchSize() == 0
+                    || count($mappedProducts) % $metadata->getBatchSize() == 0) {
+                    $this->processProducts(
+                        ['storeViewCode' => $mappedProducts[$storeViewCode]],
+                        ['storeViewCode' => $attributesData[$storeViewCode]],
+                        $dataProcessorCallback,
+                        $metadata
+                    );
+                    unset($mappedProducts[$storeViewCode], $attributesData[$storeViewCode]);
                 }
             }
         }
-        if ($itemN === 0) {
+        if (empty($storeViewItemN)) {
             $productsIds = \implode(',', \array_unique(\array_column($arguments, 'productId')));
             $scopes = \implode(',', \array_unique(\array_column($arguments, 'scopeId')));
             $this->logger->info(
