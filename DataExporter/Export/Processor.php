@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Export;
 
+use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\DataExporter\Export\Request\InfoAssembler;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
@@ -101,12 +102,14 @@ class Processor
             // if error happened during data collecting we skip entire process
             $this->logger->error(
                 \sprintf(
-                    'Unable to collect data for provider %s, error: %s',
+                    'Unable to collect data for provider %s, error: %s, skipped IDs: [%s]',
                     $provider,
-                    $exception->getMessage()
+                    $exception->getMessage(),
+                    \implode(', ', array_column($arguments, $metadata->getFeedIdentity()))
                 ),
                 ['exception' => $exception]
             );
+            throw new UnableRetrieveData();
         }
     }
 

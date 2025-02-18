@@ -138,15 +138,22 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     $feedItems = $this->addHashesAndModifiedAt($feedItems, $metadata);
                     $this->processFeedItems($feedItems, $metadata, $indexState, $serializer);
                 };
-                $this->exportProcessor->processWithCallback($metadata, $chunk, $dataProcessorCallback);
-
-                $this->handleDeletedItems(
-                    array_column($chunk, $feedIdentity),
-                    $indexState,
-                    $metadata,
-                    $serializer,
-                    $chunkTimeStamp
-                );
+                try {
+                    // "delete" handler must not be called if error happened during exporting phase
+                    $this->exportProcessor->processWithCallback($metadata, $chunk, $dataProcessorCallback);
+                    $this->handleDeletedItems(
+                        array_column($chunk, $feedIdentity),
+                        $indexState,
+                        $metadata,
+                        $serializer,
+                        $chunkTimeStamp
+                    );
+                } catch (\Throwable $e) {
+                    // for partial reindex thrown exception to return un-processed IDs back to changelog
+                    if ($isPartialReindex) {
+                        throw $e;
+                    }
+                }
             } else {
                 $this->feedUpdater->execute(
                     $this->exportProcessor->process($metadata->getFeedName(), $chunk),
