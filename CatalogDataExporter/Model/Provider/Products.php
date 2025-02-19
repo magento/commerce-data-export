@@ -116,8 +116,8 @@ class Products implements DataProcessorInterface
         }
 
         $connection = $this->resourceConnection->getConnection();
-        $storeViewItemN = [];
         foreach ($queryArguments as $scopeId => $productData) {
+            $storeViewItemN = [];
             $cursor = $connection->query(
                 $this->productMainQuery->getQuery(\array_keys($productData), $scopeId ?: null)
             );
