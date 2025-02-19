@@ -192,7 +192,7 @@ class Products implements DataProcessorInterface
         $output = [];
         if (null === $storeViewCode) {
             foreach ($mappedProducts as $mappedStoreViewCode => $products) {
-                $this->formatOutput($products, $attributesData[$storeViewCode], $output, $mappedStoreViewCode);
+                $this->formatOutput($products, $attributesData[$mappedStoreViewCode], $output, $mappedStoreViewCode);
             }
         } else {
             $this->formatOutput(
