@@ -88,6 +88,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_1',
+                "source_entity_id" => 1,
                 'operation' => IndexStateProvider::INSERT_OPERATION
             ],
             [
@@ -102,6 +103,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_2',
+                "source_entity_id" => 2,
                 'operation' => IndexStateProvider::INSERT_OPERATION
             ],
             [
@@ -116,6 +118,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_3',
+                "source_entity_id" => 3,
                 'operation' => IndexStateProvider::INSERT_OPERATION
             ],
         ];
@@ -171,6 +174,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_1',
+                "source_entity_id" => 1,
                 'operation' => IndexStateProvider::INSERT_OPERATION
             ],
             [
@@ -185,6 +189,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_2',
+                "source_entity_id" => 2,
                 'operation' => IndexStateProvider::INSERT_OPERATION
 
             ],
@@ -200,6 +205,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 ],
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_3',
+                "source_entity_id" => 3,
                 'operation' => IndexStateProvider::INSERT_OPERATION
             ],
         ];
@@ -243,19 +249,21 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
         $status = $exportStatus->getStatus()->getValue();
         foreach ($feedItems as $position => $item) {
             $feed = $item['feed_data'];
+            $finalStatus = $failedSkuPosition === $position ? ExportStatusCodeProvider::FAILED_ITEM_ERROR : $status;
+            $errors = $failedSkuPosition === $position ? $failedStatus['message'] : '';
             $expected[] = [
                 'is_deleted' => $feed['deleted'],
-                'status' => $failedSkuPosition
-                    ? ($failedSkuPosition === $position ? ExportStatusCodeProvider::FAILED_ITEM_ERROR : $status)
-                    : $status,
-                'errors' => $failedSkuPosition
-                    ? ($failedSkuPosition === $position ? $failedStatus['message'] : '')
-                    : $exportStatus->getReasonPhrase(),
+                'status' => $failedSkuPosition ? $finalStatus : $status,
+                'errors' => $failedSkuPosition ? $errors : $exportStatus->getReasonPhrase(),
                 'feed_data' => $this->jsonSerializer->serialize($feed),
                 'feed_hash' => $item['feed_hash'],
                 'feed_id' => $item['feed_id'],
                 'source_entity_id' => $feed['productId']
             ];
+            $currentKey = array_key_last($expected);
+            if (empty($expected[$currentKey]['errors'])) {
+                unset($expected[$currentKey]['errors']);
+            }
         }
         return $expected;
     }

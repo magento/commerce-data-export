@@ -74,7 +74,6 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
         $actualStockStatuses = $this->getFeedData($productsSkus);
         foreach ($this->getExpectedStockStatusMandatoryFeedsOnly() as $stockId => $stockStatuses) {
             foreach ($stockStatuses as $sku => $stockStatus) {
-                $stockStatus['productId'] = $productIds[$sku] ?? null;
                 if (!isset($actualStockStatuses[$stockId][$sku])) {
                     self::fail("Cannot find stock status for stock $stockId & sku $sku");
                 }
@@ -127,7 +126,6 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
         $actualStockStatuses = $this->getFeedData($productsSkus);
         foreach ($this->getExpectedStockStatusMandatoryFeedsOnlyDeletedProducts() as $stockId => $stockStatuses) {
             foreach ($stockStatuses as $sku => $stockStatus) {
-                $stockStatus['productId'] = $productIds[$sku] ?? null;
                 if (!isset($actualStockStatuses[$stockId][$sku])) {
                     self::fail("Cannot find stock status for stock $stockId & sku $sku");
                 }
