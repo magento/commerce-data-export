@@ -20,6 +20,7 @@ namespace Magento\DataExporter\Plugin;
 
 use Magento\DataExporter\Model\Indexer\ViewMaterializer;
 use Magento\DataExporter\Model\Indexer\FeedIndexer;
+use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\Exception\BulkException;
 use Magento\Framework\Mview\Processor;
 use Magento\Framework\Mview\View\CollectionFactory;
@@ -30,26 +31,23 @@ use Magento\Framework\Exception\RuntimeException;
 
 class MviewUpdatePlugin
 {
-    /**
-     * @var CollectionFactory
-     */
     private CollectionFactory $viewsFactory;
-
-    /**
-     * @var ViewMaterializer
-     */
     private ViewMaterializer $viewMaterializer;
+    private CommerceDataExportLoggerInterface $logger;
 
     /**
      * @param CollectionFactory $viewsFactory
      * @param ViewMaterializer $viewMaterializer
+     * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
         CollectionFactory $viewsFactory,
-        ViewMaterializer $viewMaterializer
+        ViewMaterializer $viewMaterializer,
+        CommerceDataExportLoggerInterface $logger
     ) {
         $this->viewsFactory = $viewsFactory;
         $this->viewMaterializer = $viewMaterializer;
+        $this->logger = $logger;
     }
 
     /**
@@ -83,6 +81,12 @@ class MviewUpdatePlugin
         }
 
         if ($exception->wasErrorAdded()) {
+            foreach ($exception->getErrors() as $e) {
+                $this->logger->error(
+                    'Data Exporter exception has occurred: ' . $e->getMessage(),
+                    ['exception' => $e]
+                );
+            }
             throw $exception;
         }
     }
