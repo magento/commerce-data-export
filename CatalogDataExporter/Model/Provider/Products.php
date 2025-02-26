@@ -116,24 +116,37 @@ class Products implements DataProcessorInterface
         }
 
         $connection = $this->resourceConnection->getConnection();
-        $itemN = 0;
         foreach ($queryArguments as $scopeId => $productData) {
+            $storeViewItemN = [];
             $cursor = $connection->query(
                 $this->productMainQuery->getQuery(\array_keys($productData), $scopeId ?: null)
             );
 
             while ($row = $cursor->fetch()) {
-                $itemN++;
-                $mappedProducts[$row['storeViewCode']][$row['productId']] = $row;
-                $attributesData[$row['storeViewCode']][$row['productId']] = $productData[$row['productId']];
-                if ($itemN % $metadata->getBatchSize() == 0) {
-                    $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback, $metadata);
-                    $mappedProducts = [];
-                    $attributesData = [];
+                $storeViewCode = $row['storeViewCode'];
+                $productId = $row['productId'];
+
+                if (!isset($storeViewItemN[$storeViewCode])) {
+                    $storeViewItemN[$storeViewCode] = 0;
+                }
+                $storeViewItemN[$storeViewCode]++;
+
+                $mappedProducts[$storeViewCode][$productId] = $row;
+                $attributesData[$storeViewCode][$productId] = $productData[$productId];
+
+                if ($storeViewItemN[$storeViewCode] % $metadata->getBatchSize() == 0
+                    || count($mappedProducts) % $metadata->getBatchSize() == 0) {
+                    $this->processProducts(
+                        $mappedProducts,
+                        $attributesData,
+                        $dataProcessorCallback,
+                        $storeViewCode
+                    );
+                    unset($mappedProducts[$storeViewCode], $attributesData[$storeViewCode]);
                 }
             }
         }
-        if ($itemN === 0) {
+        if (empty($storeViewItemN)) {
             $productsIds = \implode(',', \array_unique(\array_column($arguments, 'productId')));
             $scopes = \implode(',', \array_unique(\array_column($arguments, 'scopeId')));
             $this->logger->info(
@@ -145,7 +158,7 @@ class Products implements DataProcessorInterface
                 )
             );
         } else {
-            $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback, $metadata);
+            $this->processProducts($mappedProducts, $attributesData, $dataProcessorCallback);
         }
     }
 
@@ -166,7 +179,7 @@ class Products implements DataProcessorInterface
      * @param array $mappedProducts
      * @param array $attributesData
      * @param callable $dataProcessorCallback
-     * @param FeedIndexMetadata $metadata
+     * @param string|null $storeViewCode
      * @return void
      * @throws UnableRetrieveData
      */
@@ -174,17 +187,20 @@ class Products implements DataProcessorInterface
         array $mappedProducts,
         array $attributesData,
         callable $dataProcessorCallback,
-        FeedIndexMetadata $metadata
+        string $storeViewCode = null
     ): void {
         $output = [];
-
-        foreach ($mappedProducts as $storeCode => $products) {
-            $output[] = \array_map(function ($row) {
-                return $this->formatter->format($row);
-            }, \array_replace_recursive(
-                $products,
-                $this->entityEavAttributesResolver->resolve($attributesData[$storeCode], $storeCode)
-            ));
+        if (null === $storeViewCode) {
+            foreach ($mappedProducts as $mappedStoreViewCode => $products) {
+                $this->formatOutput($products, $attributesData[$mappedStoreViewCode], $output, $mappedStoreViewCode);
+            }
+        } else {
+            $this->formatOutput(
+                $mappedProducts[$storeViewCode],
+                $attributesData[$storeViewCode],
+                $output,
+                $storeViewCode
+            );
         }
 
         $errorEntityIds = [];
@@ -204,5 +220,29 @@ class Products implements DataProcessorInterface
         }
 
         $dataProcessorCallback($this->get(\array_merge(...$output)));
+    }
+
+    /**
+     * Format output
+     *
+     * @param array $products
+     * @param array $attributesData
+     * @param array $output
+     * @param string $storeViewCode
+     * @return void
+     * @throws UnableRetrieveData
+     */
+    private function formatOutput(
+        array $products,
+        array $attributesData,
+        array &$output,
+        string $storeViewCode
+    ): void {
+        $output[] = \array_map(function ($row) {
+            return $this->formatter->format($row);
+        }, \array_replace_recursive(
+            $products,
+            $this->entityEavAttributesResolver->resolve($attributesData, $storeViewCode)
+        ));
     }
 }
