@@ -187,7 +187,7 @@ class Products implements DataProcessorInterface
         array $mappedProducts,
         array $attributesData,
         callable $dataProcessorCallback,
-        string $storeViewCode = null
+        ?string $storeViewCode = null
     ): void {
         $output = [];
         if (null === $storeViewCode) {
