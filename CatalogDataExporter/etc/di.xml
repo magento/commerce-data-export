@@ -257,6 +257,11 @@
                 <item name="sku" xsi:type="string">sku</item>
                 <item name="storeViewCode" xsi:type="string">storeViewCode</item>
             </argument>
+            <argument name="entityIdentifierMapping" xsi:type="array">
+                <item name="productId" xsi:type="string">entity_id</item>
+                <item name="sku" xsi:type="string">sku</item>
+                <item name="default" xsi:type="string">sku</item>
+            </argument>
         </arguments>
     </virtualType>
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexer" type="Magento\DataExporter\Model\Indexer\FeedIndexer">

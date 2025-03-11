@@ -172,6 +172,11 @@ class FeedIndexMetadata
     private array $feedItemIdentifiers;
 
     /**
+     * @var array
+     */
+    private array $entityIdentifierMapping;
+
+    /**
      * @param string $feedName
      * @param string $sourceTableName
      * @param string $sourceTableField
@@ -194,6 +199,7 @@ class FeedIndexMetadata
      * @param Config|null $config
      * @param string|null $feedSummary
      * @param string|null $viewSourceLinkField
+     * @param array $entityIdentifierMapping
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -218,7 +224,8 @@ class FeedIndexMetadata
         ?string $dateTimeFormat = null,
         ?Config $config = null,
         ?string $feedSummary = null,
-        ?string $viewSourceLinkField = null
+        ?string $viewSourceLinkField = null,
+        array $entityIdentifierMapping = []
     ) {
         $this->feedName = $feedName;
         $this->feedSummary = $feedSummary ?? '';
@@ -244,11 +251,12 @@ class FeedIndexMetadata
         ));
 
         $this->feedIdentifierMapping = $feedIdentifierMapping;
+        $this->feedItemIdentifiers = $feedItemIdentifiers;
         $this->dateTimeFormat = $dateTimeFormat;
         $this->entitiesRemovable = $entitiesRemovable;
         $this->viewSourceLinkField = $viewSourceLinkField;
         $this->config = $config ?? ObjectManager::getInstance()->get(Config::class);
-        $this->feedItemIdentifiers = $feedItemIdentifiers;
+        $this->entityIdentifierMapping = $entityIdentifierMapping;
     }
 
     /**
@@ -512,5 +520,16 @@ class FeedIndexMetadata
     public function getViewSourceLinkField(): ?string
     {
         return $this->viewSourceLinkField;
+    }
+
+    /**
+     * Get feed item identifier mapping to use with provided list of IDs for reindex
+     *
+     * @param string $identifierField
+     * @return string|null
+     */
+    public function getIdentifierMap(string $identifierField): ?string
+    {
+        return $this->entityIdentifierMapping[$identifierField] ?? null;
     }
 }
