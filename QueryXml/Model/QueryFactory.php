@@ -30,6 +30,10 @@ use Magento\QueryXml\Model\Config\ConfigInterface;
 class QueryFactory
 {
     /**
+     * Prefix for query cache to avoid collisions with other modules cache names
+     */
+    private const CACHE_PREFIX = 'commerce-export-';
+    /**
      * @var ConfigInterface
      */
     private $config;
@@ -138,7 +142,8 @@ class QueryFactory
      */
     public function create($queryName)
     {
-        $cached = $this->queryCache->load($queryName);
+        $queryCacheName = self::CACHE_PREFIX . $queryName;
+        $cached = $this->queryCache->load($queryCacheName);
         if ($cached) {
             $queryData = $this->jsonSerializer->unserialize($cached);
             return $this->createQueryObject(
@@ -150,7 +155,7 @@ class QueryFactory
         $query = $this->constructQuery($queryName);
         $this->queryCache->save(
             $this->jsonSerializer->serialize($query),
-            $queryName,
+            $queryCacheName,
             ['collections']
         );
         return $query;
