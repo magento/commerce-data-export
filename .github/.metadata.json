@@ -1,0 +1,25 @@
+{
+    "templateVersion": "0.2",
+    "product": {
+      "name": "magento/commerce-data-export",
+      "description": "Commerce data export tool"
+    },
+    "contacts": {
+      "team": {
+        "name": "Troll Team",
+        "DL": "GRP-AC-DS-TEAM-TROLL",
+        "slackChannel": "#commerce-team-troll"
+      }
+    },
+    "ticketTracker": {
+      "functionalJiraQueue": {
+        "projectKey": "MDEE",
+        "component": "Commerce Data Export Extension"
+      },
+      "securityJiraQueue": {
+        "projectKey": "MAGREQ",
+        "component": "Data Export Extension"
+      }
+    },
+    "productionCodeBranches": ["main"]
+  }
