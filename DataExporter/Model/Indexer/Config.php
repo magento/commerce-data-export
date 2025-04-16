@@ -155,4 +155,15 @@ class Config
         $configOptions = $this->configOptionsHandler->getConfigOptionsPool();
         return $configOptions->getFeedOption(self::EXPORTER_DRY_RUN) ?? false;
     }
+
+    /**
+     * Check if submitted items should be included in dry run mode
+     *
+     * @return bool
+     */
+    public function includeSubmittedInDryRun(): bool
+    {
+        $configOptions = $this->configOptionsHandler->getConfigOptionsPool();
+        return $this->isDryRun() && $configOptions->getFeedOption(self::EXPORTER_CLEAN_UP_FEED) ?? false;
+    }
 }

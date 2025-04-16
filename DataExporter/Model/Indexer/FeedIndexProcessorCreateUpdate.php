@@ -18,6 +18,7 @@ namespace Magento\DataExporter\Model\Indexer;
 
 use Magento\DataExporter\Model\Batch\BatchGeneratorInterface;
 use Magento\DataExporter\Model\Batch\FeedSource\Generator as FeedSourceBatchGenerator;
+use Magento\DataExporter\Model\Indexer\Config as IndexerConfig;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\DataExporter\Status\ExportStatusCodeProvider as ExportStatusCode;
 use Magento\Framework\App\ObjectManager;
@@ -47,6 +48,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     private BatchGeneratorInterface $batchGenerator;
     private IndexStateProviderFactory $indexStateProviderFactory;
 
+    private Config $indexerConfig;
+
     /**
      * @param ResourceConnection $resourceConnection
      * @param ExportProcessor $exportProcessor
@@ -59,6 +62,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * @param ProcessManagerFactory|null $processManagerFactory
      * @param BatchGeneratorInterface|null $batchGenerator
      * @param ?IndexStateProviderFactory $indexStateProviderFactory
+     * @param ?Config $indexerConfig
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -73,7 +77,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         ?DeletedEntitiesProviderInterface $deletedEntitiesProvider = null,
         ?ProcessManagerFactory $processManagerFactory = null,
         ?BatchGeneratorInterface $batchGenerator = null,
-        ?IndexStateProviderFactory $indexStateProviderFactory = null
+        ?IndexStateProviderFactory $indexStateProviderFactory = null,
+        ?IndexerConfig $indexerConfig = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->exportProcessor = $exportProcessor;
@@ -90,6 +95,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             ObjectManager::getInstance()->get(FeedSourceBatchGenerator::class);
         $this->indexStateProviderFactory = $indexStateProviderFactory ??
             ObjectManager::getInstance()->get(IndexStateProviderFactory::class);
+        $this->indexerConfig = $indexerConfig
+            ?? ObjectManager::getInstance()->get(IndexerConfig::class);
     }
 
     /**
@@ -355,7 +362,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 true
             )
             && $feedStatus !== ExportStatusCode::FAILED_ITEM_ERROR
-        );
+        )
+        || $this->indexerConfig->includeSubmittedInDryRun();
     }
 
     /**
