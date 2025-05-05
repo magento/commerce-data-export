@@ -74,6 +74,12 @@
                 nullable="true"
                 comment="Errors"
         />
+        <column
+                xsi:type="text"
+                name="metadata"
+                nullable="true"
+                comment="metadata info"
+        />
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>

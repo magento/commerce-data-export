@@ -165,6 +165,7 @@ class DataSerializer implements DataSerializerInterface
             $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH] = $row[
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH
             ];
+            $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_METADATA] = $exportStatus->getMetadata();
             if (IndexStateProvider::isUpdate($row)) {
                 $outputRow[FeedIndexMetadata::FEED_TABLE_FIELD_PK] = $row[FeedIndexMetadata::FEED_TABLE_FIELD_PK];
                 $output[IndexStateProvider::UPDATE_OPERATION][] = $outputRow;

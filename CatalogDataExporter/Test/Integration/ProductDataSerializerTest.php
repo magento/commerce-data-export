@@ -24,6 +24,7 @@ use Magento\DataExporter\Model\Indexer\IndexStateProvider;
 use Magento\DataExporter\Status\ExportStatusCodeProvider;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\DataExporter\Model\FeedExportStatusBuilder;
+use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 
 class ProductDataSerializerTest extends AbstractProductTestHelper
 {
@@ -255,6 +256,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 'is_deleted' => $feed['deleted'],
                 'status' => $failedSkuPosition ? $finalStatus : $status,
                 'errors' => $failedSkuPosition ? $errors : $exportStatus->getReasonPhrase(),
+                FeedIndexMetadata::FEED_TABLE_FIELD_METADATA => $exportStatus->getMetadata(),
                 'feed_data' => $this->jsonSerializer->serialize($feed),
                 'feed_hash' => $item['feed_hash'],
                 'feed_id' => $item['feed_id'],

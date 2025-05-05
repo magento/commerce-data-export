@@ -34,6 +34,7 @@ class FeedIndexMetadata
     public const FEED_TABLE_FIELD_FEED_DATA = 'feed_data';
     public const FEED_TABLE_FIELD_STATUS = 'status';
     public const FEED_TABLE_FIELD_ERRORS = 'errors';
+    public const FEED_TABLE_FIELD_METADATA = 'metadata';
     /**
      * Default columns that must be updated each time when feed persisted to storage
      */
@@ -44,6 +45,7 @@ class FeedIndexMetadata
         self::FEED_TABLE_FIELD_FEED_HASH => self::FEED_TABLE_FIELD_FEED_HASH,
         self::FEED_TABLE_FIELD_STATUS => self::FEED_TABLE_FIELD_STATUS,
         self::FEED_TABLE_FIELD_ERRORS => self::FEED_TABLE_FIELD_ERRORS,
+        self::FEED_TABLE_FIELD_METADATA => self::FEED_TABLE_FIELD_METADATA,
         self::FEED_TABLE_FIELD_MODIFIED_AT => self::FEED_TABLE_FIELD_MODIFIED_AT
     ];
 

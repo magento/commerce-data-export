@@ -58,19 +58,22 @@ class FeedExportStatusBuilder
      * @param int $status
      * @param string $reasonPhrase
      * @param array $failedItems
+     * @param array $metadata
      * @return FeedExportStatus
      */
     public function build(
         int $status,
         string $reasonPhrase = '',
-        array $failedItems = []
+        array $failedItems = [],
+        array $metadata = []
     ) : FeedExportStatus {
         try {
             return $this->feedExportStatusFactory->create(
                 [
                     'status' => $this->buildStatusCode($status),
                     'reasonPhrase' => $reasonPhrase,
-                    'failedItems' => $failedItems
+                    'failedItems' => $failedItems,
+                    'metadata' => $metadata
                 ]
             );
 
