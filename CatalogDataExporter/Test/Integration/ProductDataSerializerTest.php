@@ -90,6 +90,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_1',
                 "source_entity_id" => 1,
+                'errors' => '',
                 'operation' => IndexStateProvider::INSERT_OPERATION
             ],
             [
@@ -120,6 +121,7 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 'feed_hash' => 'hash',
                 'feed_id' => 'feed_id_3',
                 "source_entity_id" => 3,
+                'errors' => '',
                 'operation' => IndexStateProvider::INSERT_OPERATION
             ],
         ];
@@ -263,9 +265,6 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 'source_entity_id' => $feed['productId']
             ];
             $currentKey = array_key_last($expected);
-            if (empty($expected[$currentKey]['errors'])) {
-                unset($expected[$currentKey]['errors']);
-            }
         }
         return $expected;
     }
