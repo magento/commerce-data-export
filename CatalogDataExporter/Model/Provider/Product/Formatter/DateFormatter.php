@@ -19,7 +19,7 @@ namespace Magento\CatalogDataExporter\Model\Provider\Product\Formatter;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
 /**
- * Class DateFormatter
+ * Date formatter for product data
  */
 class DateFormatter implements FormatterInterface
 {
@@ -33,7 +33,8 @@ class DateFormatter implements FormatterInterface
     /**
      * @param TimezoneInterface $timezone
      */
-    public function __construct(TimezoneInterface $timezone){
+    public function __construct(TimezoneInterface $timezone)
+    {
         $this->timezone = $timezone;
     }
 
@@ -46,7 +47,6 @@ class DateFormatter implements FormatterInterface
     public function format(array $row): array
     {
         $now = $this->timezone->date()->format('Y-m-d H:i:s');
-
         if (isset($row['createdAt']) && $row['createdAt'] == self::INVALID_DATE) {
             $row['createdAt'] = $now;
         }

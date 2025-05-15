@@ -92,6 +92,8 @@ class ViewMaterializer
      * @param ViewInterface $view
      * @return void
      * @throws \Throwable
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
     public function execute(ViewInterface $view): void
     {
@@ -168,21 +170,21 @@ class ViewMaterializer
         $userFunctions = [];
         for ($threadNumber = 1; $threadNumber <= $threadCount; $threadNumber++) {
             $userFunctions[] = function () use ($action, $batchIterator) {
-                try {
-                    // phpcs:disable Generic.Formatting.DisallowMultipleStatements.SameLine
-                    // phpcs:ignore Generic.CodeAnalysis.ForLoopWithTestFunctionCall
-                    for ($batchIterator->rewind(); $batchIterator->valid(); $batchIterator->next()) {
+                // phpcs:disable Generic.Formatting.DisallowMultipleStatements.SameLine
+                // phpcs:ignore Generic.CodeAnalysis.ForLoopWithTestFunctionCall
+                for ($batchIterator->rewind(); $batchIterator->valid(); $batchIterator->next()) {
+                    try {
                         $ids = $batchIterator->current();
                         $action->execute($ids);
+                    } catch (\Throwable $e) {
+                        $batchIterator->markBatchForRetry();
+                        $this->logger->error(
+                            'Mview Data Exporter exception has occurred: ' . $e->getMessage(),
+                            ['exception' => $e]
+                        );
                     }
-                    // phpcs:enable Generic.Formatting.DisallowMultipleStatements.SameLine
-                } catch (\Throwable $e) {
-                    $batchIterator->markBatchForRetry();
-                    $this->logger->error(
-                        'Mview Data Exporter exception has occurred: ' . $e->getMessage(),
-                        ['exception' => $e]
-                    );
                 }
+                // phpcs:enable Generic.Formatting.DisallowMultipleStatements.SameLine
             };
         }
 

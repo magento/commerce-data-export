@@ -22,7 +22,9 @@ use Magento\CatalogDataExporter\Model\Provider\Product\Formatter\FormatterInterf
 use Magento\CatalogDataExporter\Model\Query\ProductMainQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\DataExporter\Export\DataProcessorInterface;
+use Magento\DataExporter\Model\FailedItemsRegistry;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
+use Magento\Framework\App\ObjectManager;
 use Magento\Store\Model\Store;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 use Magento\Framework\App\ResourceConnection;
@@ -61,6 +63,10 @@ class Products implements DataProcessorInterface
      * @var array required attributes for product export
      */
     private array $requiredAttributes;
+    /**
+     * @var FailedItemsRegistry|mixed
+     */
+    private mixed $failedItemsRegistry;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -69,6 +75,7 @@ class Products implements DataProcessorInterface
      * @param LoggerInterface $logger
      * @param EntityEavAttributesResolver $entityEavAttributesResolver
      * @param array $requiredAttributes
+     * @param FailedItemsRegistry|null $failedRegistry
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -76,7 +83,8 @@ class Products implements DataProcessorInterface
         FormatterInterface $formatter,
         LoggerInterface $logger,
         EntityEavAttributesResolver $entityEavAttributesResolver,
-        array $requiredAttributes = []
+        array $requiredAttributes = [],
+        ?FailedItemsRegistry $failedRegistry = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->productMainQuery = $productMainQuery;
@@ -84,6 +92,8 @@ class Products implements DataProcessorInterface
         $this->logger = $logger;
         $this->entityEavAttributesResolver = $entityEavAttributesResolver;
         $this->requiredAttributes = $requiredAttributes;
+        $this->failedItemsRegistry = $failedRegistry ??
+            ObjectManager::getInstance()->get(FailedItemsRegistry::class);
     }
 
     /**
@@ -203,20 +213,19 @@ class Products implements DataProcessorInterface
             );
         }
 
-        $errorEntityIds = [];
-        foreach ($output as $part) {
+        foreach ($output as &$part) {
             foreach ($part as $entityId => $attributes) {
-                if (array_diff($this->requiredAttributes, array_keys(array_filter($attributes)))) {
-                    $errorEntityIds[] = $entityId;
+                $missedAttributes = array_diff($this->requiredAttributes, array_keys(array_filter($attributes)));
+                if (!empty($missedAttributes)) {
+                    // remove product without attributes from output to prevent errors on downstream
+                    unset($part[$entityId]);
+                    $this->failedItemsRegistry->addFailed($attributes, new UnableRetrieveData(
+                        'One or more required EAV attributes ('
+                        . implode(',', $missedAttributes)
+                        . ") are not set for product: $entityId"
+                    ));
                 }
             }
-        }
-        if (!empty($errorEntityIds)) {
-            $this->logger->warning(
-                'One or more required EAV attributes ('
-                . implode(',', $this->requiredAttributes)
-                . ') are not set for products: ' . implode(',', $errorEntityIds)
-            );
         }
 
         $dataProcessorCallback($this->get(\array_merge(...$output)));

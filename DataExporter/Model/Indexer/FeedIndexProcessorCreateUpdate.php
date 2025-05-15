@@ -16,11 +16,14 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
+use DateTime;
 use Magento\DataExporter\Model\Batch\BatchGeneratorInterface;
 use Magento\DataExporter\Model\Batch\FeedSource\Generator as FeedSourceBatchGenerator;
+use Magento\DataExporter\Model\FailedItemsRegistry;
+use Magento\DataExporter\Model\FeedExportStatusBuilder;
 use Magento\DataExporter\Model\Indexer\Config as IndexerConfig;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
-use Magento\DataExporter\Status\ExportStatusCodeProvider as ExportStatusCode;
+use Magento\DataExporter\Status\ExportStatusCodeProvider;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Export\Processor as ExportProcessor;
@@ -28,6 +31,12 @@ use Magento\Framework\Serialize\SerializerInterface;
 use Magento\DataExporter\Model\ExportFeedInterface;
 use Magento\DataExporter\Model\FeedHashBuilder;
 use Magento\Indexer\Model\ProcessManagerFactory;
+use Throwable;
+use Zend_Db_Statement_Exception;
+use function array_chunk;
+use function array_key_exists;
+use function array_keys;
+use function in_array;
 
 /**
  * Base implementation of feed indexing behaviour, does not care about deleted entities
@@ -47,8 +56,9 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     private ProcessManagerFactory $processManagerFactory;
     private BatchGeneratorInterface $batchGenerator;
     private IndexStateProviderFactory $indexStateProviderFactory;
-
-    private Config $indexerConfig;
+    private FailedItemsRegistry $failedItemsRegistry;
+    private ?FeedExportStatusBuilder $feedExportStatusBuilder;
+    private IndexerConfig $indexerConfig;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -62,8 +72,9 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * @param ProcessManagerFactory|null $processManagerFactory
      * @param BatchGeneratorInterface|null $batchGenerator
      * @param ?IndexStateProviderFactory $indexStateProviderFactory
-     * @param ?Config $indexerConfig
-     *
+     * @param ?FeedExportStatusBuilder $feedExportStatusBuilder
+     * @param ?IndexerConfig $indexerConfig
+     * @param ?FailedItemsRegistry $failedItemsRegistry
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -78,7 +89,9 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         ?ProcessManagerFactory $processManagerFactory = null,
         ?BatchGeneratorInterface $batchGenerator = null,
         ?IndexStateProviderFactory $indexStateProviderFactory = null,
-        ?IndexerConfig $indexerConfig = null
+        ?FeedExportStatusBuilder $feedExportStatusBuilder = null,
+        ?IndexerConfig $indexerConfig = null,
+        ?FailedItemsRegistry $failedItemsRegistry = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->exportProcessor = $exportProcessor;
@@ -95,8 +108,12 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             ObjectManager::getInstance()->get(FeedSourceBatchGenerator::class);
         $this->indexStateProviderFactory = $indexStateProviderFactory ??
             ObjectManager::getInstance()->get(IndexStateProviderFactory::class);
-        $this->indexerConfig = $indexerConfig
-            ?? ObjectManager::getInstance()->get(IndexerConfig::class);
+        $this->feedExportStatusBuilder = $feedExportStatusBuilder ??
+            ObjectManager::getInstance()->get(FeedExportStatusBuilder::class);
+        $this->indexerConfig = $indexerConfig ??
+            ObjectManager::getInstance()->get(IndexerConfig::class);
+        $this->failedItemsRegistry = $failedItemsRegistry ??
+            ObjectManager::getInstance()->get(FailedItemsRegistry::class);
     }
 
     /**
@@ -108,7 +125,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * @param array $ids
      * @param callable|null $callback
      * @param IndexStateProvider|null $indexState
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function partialReindex(
@@ -129,19 +146,20 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         foreach ($idsProvider->getAffectedIds($metadata, $ids) as $id) {
             $arguments[] = [$feedIdentity => $id];
         }
-        foreach (\array_chunk($arguments, $metadata->getBatchSize()) as $chunk) {
+        foreach (array_chunk($arguments, $metadata->getBatchSize()) as $chunk) {
             $exportStatus = null;
             if ($metadata->isExportImmediately()) {
-                $chunkTimeStamp = (new \DateTime())->format($metadata->getDbDateTimeFormat());
-                $dataProcessorCallback = function ($feedItems) use (
+                $chunkTimeStamp = (new DateTime())->format($metadata->getDbDateTimeFormat());
+                $dataProcessorCallback = function ($feedItemsRaw) use (
                     $metadata,
                     $serializer,
                     $chunk,
                     $indexState
                 ) {
+                    $feedItemsRaw = array_merge($feedItemsRaw, $this->failedItemsRegistry->getFailed());
                     //for backward compatibility:
                     //allows to execute plugins on Process method when callbacks are in place
-                    $feedItems = $this->exportProcessor->process($metadata->getFeedName(), $chunk, $feedItems);
+                    $feedItems = $this->exportProcessor->process($metadata->getFeedName(), $chunk, $feedItemsRaw);
                     $feedItems = $this->addHashesAndModifiedAt($feedItems, $metadata);
                     $this->processFeedItems($feedItems, $metadata, $indexState, $serializer);
                 };
@@ -155,7 +173,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                         $serializer,
                         $chunkTimeStamp
                     );
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // for partial reindex thrown exception to return un-processed IDs back to changelog
                     if ($isPartialReindex) {
                         throw $e;
@@ -200,7 +218,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                             $this->logger->logProgress();
                         }
                         $this->exportFeedItemsAndLogStatus($indexState, $metadata, $serializer, true);
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         $this->logger->error(
                             'Data Exporter exception has occurred: ' . $e->getMessage(),
                             ['exception' => $e]
@@ -211,7 +229,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             }
             $processManager = $this->processManagerFactory->create(['threadsCount' => $threadCount]);
             $processManager->execute($userFunctions);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error(
                 'Data Exporter exception has occurred: ' . $e->getMessage(),
                 ['exception' => $e]
@@ -236,6 +254,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     ) {
         while ($indexStateProvider->isBatchLimitReached()) {
             $data = $indexStateProvider->getFeedItems();
+            $data = $this->processFailedFeedItems($data, $metadata, $serializer);
             $exportStatus = $this->exportFeedProcessor->export(
                 array_column($data, FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA),
                 $metadata
@@ -248,11 +267,14 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             if (!$data) {
                 return ;
             }
-            $exportStatus = $this->exportFeedProcessor->export(
-                array_column($data, FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA),
-                $metadata
-            );
-            $this->feedUpdater->execute($data, $exportStatus, $metadata, $serializer);
+            $data = $this->processFailedFeedItems($data, $metadata, $serializer);
+            if (!empty($data)) {
+                $exportStatus = $this->exportFeedProcessor->export(
+                    array_column($data, FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA),
+                    $metadata
+                );
+                $this->feedUpdater->execute($data, $exportStatus, $metadata, $serializer);
+            }
         }
     }
 
@@ -280,7 +302,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * @param FeedIndexMetadata $metadata
      * @param null|IndexStateProvider $indexStateProvider
      * @return array
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      */
     private function filterFeedItems(
         array $feedItems,
@@ -291,7 +313,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             return [[], []];
         }
         $connection = $this->resourceConnection->getConnection();
-        $feedIdsValues =  \array_keys($feedItems);
+        $feedIdsValues =  array_keys($feedItems);
 
         $updates = [];
         $select = $connection->select()
@@ -356,12 +378,12 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     {
         return $oldFeedHash !== $newFeedHash
         || (
-            !\in_array(
+            !in_array(
                 $feedStatus,
-                ExportStatusCode::NON_RETRYABLE_HTTP_STATUS_CODE,
+                ExportStatusCodeProvider::NON_RETRYABLE_HTTP_STATUS_CODE,
                 true
             )
-            && $feedStatus !== ExportStatusCode::FAILED_ITEM_ERROR
+            && $feedStatus !== ExportStatusCodeProvider::FAILED_ITEM_ERROR
         )
         || $this->indexerConfig->includeSubmittedInDryRun();
     }
@@ -387,14 +409,14 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 $row = $this->serializer->unserialize($row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA]);
                 $row['deleted'] = true;
             } else {
-                if (!\array_key_exists('deleted', $row)) {
+                if (!array_key_exists('deleted', $row)) {
                     $row['deleted'] = false;
                 }
                 $identifier = $this->hashBuilder->buildIdentifierFromFeedItem($row, $metadata);
             }
             //Assign updated modifiedAt value to the record if it's required for feed
-            if (\in_array('modifiedAt', $metadata->getMinimalPayloadFieldsList(), true)) {
-                $row['modifiedAt'] = (new \DateTime())->format($metadata->getDateTimeFormat());
+            if (in_array('modifiedAt', $metadata->getMinimalPayloadFieldsList(), true)) {
+                $row['modifiedAt'] = (new DateTime())->format($metadata->getDateTimeFormat());
             }
             unset($data[$key]);
             if (empty($identifier)) {
@@ -408,12 +430,19 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 continue;
             }
             $hash = $this->hashBuilder->buildHash($row, $metadata);
+            if (isset($row['errors'])) {
+                $errors = $row['errors'];
+                unset($row['errors']);
+            } else {
+                $errors = [];
+            }
             $data[$identifier] = [
                 // source entity id required only to persist data to table, but we still may send feed item
                 FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID => $row[$metadata->getFeedIdentity()] ?? null,
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID => $identifier,
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_HASH => $hash,
                 FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA => $row,
+                FeedIndexMetadata::FEED_TABLE_FIELD_ERRORS => $errors,
                 FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED => $deleted,
             ];
         }
@@ -431,7 +460,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * @param FeedIndexMetadata $metadata
      * @param DataSerializerInterface $serializer
      * @param string $recentTimeStamp
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      */
     private function handleDeletedItems(
         array                   $ids,
@@ -459,7 +488,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
      * @param IndexStateProvider|null $indexState
      * @param DataSerializerInterface $serializer
      * @return void
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      */
     private function processFeedItems(
         array $feedItems,
@@ -480,5 +509,38 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         if ($indexState->isBatchLimitReached()) {
             $this->exportFeedItemsAndLogStatus($indexState, $metadata, $serializer);
         }
+    }
+
+    /**
+     * Process failed feed items if there are any.
+     *
+     * Remove them from the main feed items array and return the rest.
+     *
+     * @param array $data
+     * @param FeedIndexMetadata $metadata
+     * @param DataSerializerInterface $serializer
+     * @return array
+     */
+    private function processFailedFeedItems(
+        array $data,
+        FeedIndexMetadata $metadata,
+        DataSerializerInterface $serializer
+    ): array {
+        $iterationFailedItems = [];
+        foreach ($data as $id => $item) {
+            if (!empty($item['errors'])) {
+                $iterationFailedItems[$item['errors']][] = $item;
+                unset($data[$id]);
+            }
+        }
+        foreach ($iterationFailedItems as $itemsError => $failedItems) {
+            $exportStatus = $this->feedExportStatusBuilder->build(
+                ExportStatusCodeProvider::FAILED_ITEM_ERROR,
+                $itemsError
+            );
+            $this->feedUpdater->execute($failedItems, $exportStatus, $metadata, $serializer);
+        }
+
+        return $data;
     }
 }

@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions;
 
 use Magento\CatalogDataExporter\Model\Provider\Product\CustomOptions as CustomOptionsRepository;
+use Magento\DataExporter\Model\FailedItemsRegistry;
+use Magento\Framework\App\ObjectManager;
 
 /**
  * Product options data provider, used for GraphQL resolver processing.
@@ -37,28 +39,25 @@ class SelectableOptions implements ProductOptionProviderInterface
         'multiple',
     ];
 
-    /**
-     * @var CustomOptionsRepository
-     */
-    private $customOptionsRepository;
-
-    /**
-     * @var CustomizableSelectedOptionValueUid
-     */
-    private $optionValueUid;
+    private CustomOptionsRepository $customOptionsRepository;
+    private CustomizableSelectedOptionValueUid $optionValueUid;
+    private FailedItemsRegistry $failedRegistry;
 
     /**
      * SelectableOptions constructor.
      *
      * @param CustomOptionsRepository $customOptionsRepository
      * @param CustomizableSelectedOptionValueUid $optionValueUid
+     * @param ?FailedItemsRegistry $failedRegistry
      */
     public function __construct(
         CustomOptionsRepository $customOptionsRepository,
-        CustomizableSelectedOptionValueUid $optionValueUid
+        CustomizableSelectedOptionValueUid $optionValueUid,
+        ?FailedItemsRegistry $failedRegistry = null
     ) {
         $this->customOptionsRepository = $customOptionsRepository;
         $this->optionValueUid = $optionValueUid;
+        $this->failedRegistry = $failedRegistry ?? ObjectManager::getInstance()->get(FailedItemsRegistry::class);
     }
 
     /**
@@ -108,15 +107,26 @@ class SelectableOptions implements ProductOptionProviderInterface
                 }
             }
             foreach ($defaultFilteredProductOptions as $productId => $defaultOptions) {
-                foreach ($defaultOptions as $defaultOption) {
-                    $key = $productId . $storeViewCode . $defaultOption['option_id'];
-                    $storeOption = $storeOptions[$key]['option'] ?? $defaultOption;
-                    $storeOption['values'] = $this->replaceDefaultOptionData(
-                        $defaultOption['values'],
-                        $storeViewOptionValues[$key] ?? []
-                    );
+                try {
+                    foreach ($defaultOptions as $defaultOption) {
+                        $key = $productId . $storeViewCode . $defaultOption['option_id'];
+                        $storeOption = $storeOptions[$key]['option'] ?? $defaultOption;
+                        $storeOption['values'] = $this->replaceDefaultOptionData(
+                            $defaultOption['values'],
+                            $storeViewOptionValues[$key] ?? []
+                        );
 
-                    $output[$key] = $this->formatOption((string)$productId, $storeViewCode, $storeOption);
+                        $output[$key] = $this->formatOption((string)$productId, $storeViewCode, $storeOption);
+                    }
+                } catch (\Throwable $e) {
+                    $this->failedRegistry->addFailed(
+                        [
+                            'productId' => $productId,
+                            'storeViewCode' => $storeViewCode,
+                            'sku' => $defaultOption['product_sku'] ?? null,
+                        ],
+                        $e
+                    );
                 }
             }
         }
@@ -161,6 +171,8 @@ class SelectableOptions implements ProductOptionProviderInterface
     }
 
     /**
+     * Format option data
+     *
      * @param string $productId
      * @param string $storeViewCode
      * @param array $option
@@ -184,6 +196,8 @@ class SelectableOptions implements ProductOptionProviderInterface
     }
 
     /**
+     * Replace default option data with store option data
+     *
      * @param array $defaultOption
      * @param array $storeOption
      * @return array

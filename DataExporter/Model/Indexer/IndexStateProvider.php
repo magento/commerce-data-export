@@ -16,6 +16,9 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Model\Indexer;
 
+use Magento\DataExporter\Model\FailedItemsRegistry;
+use Magento\Framework\App\ObjectManager;
+
 class IndexStateProvider
 {
     public const INSERT_OPERATION = 1;
@@ -23,10 +26,13 @@ class IndexStateProvider
 
     /**
      * @param FeedIndexMetadata $metadata
+     * @param ?FailedItemsRegistry $failedRegistry
      */
-    public function __construct(FeedIndexMetadata $metadata)
+    public function __construct(FeedIndexMetadata $metadata, ?FailedItemsRegistry $failedRegistry = null)
     {
         $this->batchSize = $metadata->getBatchSize();
+        $failedRegistry = $failedRegistry ?? ObjectManager::getInstance()->get(FailedItemsRegistry::class);
+        $failedRegistry->clear();
     }
 
     /**
@@ -101,6 +107,8 @@ class IndexStateProvider
     }
 
     /**
+     * Check if the batch limit is reached
+     *
      * @return bool
      */
     public function isBatchLimitReached(): bool
@@ -110,6 +118,8 @@ class IndexStateProvider
     }
 
     /**
+     * Get processed hashes from the registry
+     *
      * @return array
      */
     public function getProcessedHashes(): array
@@ -120,6 +130,8 @@ class IndexStateProvider
     }
 
     /**
+     * Add processed hash to the registry
+     *
      * @param string $hash
      * @return void
      */
