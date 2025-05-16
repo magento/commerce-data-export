@@ -34,7 +34,7 @@ class ProductShopperInputOptions implements ProductShopperInputOptionProviderInt
     public function __construct(
         array $providerFactories = []
     ) {
-        $this->providerFactories = $providerFactories;
+        $this->providerFactories = array_filter($providerFactories);
     }
 
     /**
