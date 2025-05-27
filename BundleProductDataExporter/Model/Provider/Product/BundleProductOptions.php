@@ -101,9 +101,12 @@ class BundleProductOptions implements OptionProviderInterface
                     $output[] = $this->formatBundleOptionsRow($row, $optionValues);
                 }
             }
-        } catch (Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve bundle product options data');
+        } catch (\Throwable $exception) {
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve bundle product options data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
 
         return $output;

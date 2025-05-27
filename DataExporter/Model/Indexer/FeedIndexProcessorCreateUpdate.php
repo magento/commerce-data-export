@@ -156,7 +156,8 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     $chunk,
                     $indexState
                 ) {
-                    $feedItemsRaw = array_merge($feedItemsRaw, $this->failedItemsRegistry->getFailed());
+                    $feedItemsRaw = $this->failedItemsRegistry->mergeFailedItemsWithFeed($feedItemsRaw, $metadata);
+
                     //for backward compatibility:
                     //allows to execute plugins on Process method when callbacks are in place
                     $feedItems = $this->exportProcessor->process($metadata->getFeedName(), $chunk, $feedItemsRaw);

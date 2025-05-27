@@ -68,8 +68,11 @@ class Buyable
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve stock data');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve "buyable" field: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
         return $result;
     }

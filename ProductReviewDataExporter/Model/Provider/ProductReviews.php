@@ -90,8 +90,11 @@ class ProductReviews
                 }
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve product reviews data');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve product reviews data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
 
         return \array_values($output);

@@ -110,8 +110,11 @@ class Attributes
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve attributes data', 0, $exception);
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve attributes data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
         return $output;
     }

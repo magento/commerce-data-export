@@ -113,9 +113,12 @@ class UrlRewrites
                     $output[] = $this->format($urlRewrite, $storeViewCode);
                 }
             }
-        } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve url rewrites data');
+        } catch (\Throwable $exception) {
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve url rewrites data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
 
         return $output;

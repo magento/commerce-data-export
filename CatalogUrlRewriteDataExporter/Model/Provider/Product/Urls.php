@@ -110,9 +110,12 @@ class Urls
             foreach ($output as &$product) {
                 $product['url'] = $baseUrls[$product['storeViewCode']] . $product['url'];
             }
-        } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve product URL data');
+        } catch (\Throwable $exception) {
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve product URL data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
         return $output;
     }

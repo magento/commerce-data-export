@@ -84,9 +84,12 @@ class CategoryData
                     $output[$key]['categoryData'] = $result;
                 }
             }
-        } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve category data for products');
+        } catch (\Throwable $exception) {
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve category data for products: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
         return $output;
     }

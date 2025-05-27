@@ -55,8 +55,11 @@ class InStock
                 $output[] = $stockItem;
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve stock data');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve InStock field data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
         return $output;
     }

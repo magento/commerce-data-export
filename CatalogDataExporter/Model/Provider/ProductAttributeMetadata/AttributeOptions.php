@@ -85,9 +85,12 @@ class AttributeOptions
                     }
                 }
             }
-        } catch (\Exception $e) {
-            $this->logger->error('Unable to retrieve attribute options data. Error: ' . $e->getMessage(), ['exception' => $e]);
-            throw new UnableRetrieveData('Unable to retrieve attribute options data. Error: ' . $e->getMessage(), 0, $e);
+        } catch (\Exception $exception) {
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve attribute options data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
         return $output;
     }

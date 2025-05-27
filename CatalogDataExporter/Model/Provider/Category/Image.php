@@ -144,8 +144,11 @@ class Image
                 ];
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve category image');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve category image: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         } finally {
             $this->storeManager->setCurrentStore($actualStoreCode);
         }

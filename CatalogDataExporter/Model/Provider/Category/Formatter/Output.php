@@ -95,8 +95,11 @@ class Output implements FormatterInterface
                 }
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve category formatted attribute data');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve category formatted attribute data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
 
         return $row;

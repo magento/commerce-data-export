@@ -23,6 +23,7 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionQuery;
 use Magento\ConfigurableProductDataExporter\Model\Query\ProductOptionValueQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
+use Magento\DataExporter\Model\FailedItemsRegistry;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 use Magento\Eav\Model\Config;
 use Magento\Framework\App\ObjectManager;
@@ -87,6 +88,8 @@ class Options implements OptionProviderInterface
      */
     private static array $optionValuesPerAttributesCache = [];
 
+    private FailedItemsRegistry $failedItemsRegistry;
+
     /**
      * @param ResourceConnection $resourceConnection
      * @param ProductOptionQuery $productOptionQuery
@@ -95,6 +98,7 @@ class Options implements OptionProviderInterface
      * @param MediaHelper $mediaHelper
      * @param Config $eavConfig
      * @param LoggerInterface $logger
+     * @param FailedItemsRegistry|null $failedRegistry
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -103,7 +107,8 @@ class Options implements OptionProviderInterface
         ConfigurableOptionValueUid $optionValueUid,
         MediaHelper $mediaHelper,
         ?Config $eavConfig,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        ?FailedItemsRegistry $failedRegistry = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->productOptionQuery = $productOptionQuery;
@@ -112,6 +117,8 @@ class Options implements OptionProviderInterface
         $this->mediaHelper = $mediaHelper;
         $this->eavConfig = $eavConfig ?? ObjectManager::getInstance()->get(Config::class);
         $this->logger = $logger;
+        $this->failedItemsRegistry = $failedRegistry ??
+            ObjectManager::getInstance()->get(FailedItemsRegistry::class);
     }
 
     /**
@@ -347,8 +354,11 @@ class Options implements OptionProviderInterface
                 $options = $this->getOptions($row, $options, $optionValuesData);
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve configurable product options data');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve configurable product options data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
         return $options;
     }
@@ -397,15 +407,23 @@ class Options implements OptionProviderInterface
                 );
             }
         } catch (\Throwable $exception) {
-            $this->logger->error(
-                sprintf(
-                    'Unable to retrieve configurable product options data 
-                            (productId:%s, attributeId:%s, storeViewCode:%s)',
-                    $row['productId'],
-                    $row['attribute_id'],
-                    $row['storeViewCode']
-                ),
-                ['exception' => $exception]
+            $this->failedItemsRegistry->addFailed(
+                [
+                    'sku' => $row['sku'],
+                    'storeViewCode' => $row['storeViewCode']
+                ],
+                new UnableRetrieveData(
+                    sprintf(
+                        'Unable to retrieve configurable product options data 
+                            (productId:%s, attributeId:%s, storeViewCode:%s): %s',
+                        $row['productId'],
+                        $row['attribute_id'],
+                        $row['storeViewCode'],
+                        $exception->getMessage()
+                    ),
+                    0,
+                    $exception
+                )
             );
         }
         return $options;
@@ -422,8 +440,7 @@ class Options implements OptionProviderInterface
                 $this->statusAttributeId = $attribute ? (int)$attribute->getId() : null;
             }
         } catch (LocalizedException $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-
+            $this->logger->error("Cannot get status attribute: " . $exception->getMessage(), ['exception' => $exception]);
         }
 
         return $this->statusAttributeId;

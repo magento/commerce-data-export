@@ -110,8 +110,11 @@ class ConfigurableVariants implements ProductVariantsProviderInterface, DataProc
                 ];
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve configurable product variants data');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve configurable product variants data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
 
         $dataProcessorCallback($this->get($output));

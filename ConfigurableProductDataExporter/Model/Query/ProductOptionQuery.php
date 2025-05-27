@@ -56,7 +56,10 @@ class ProductOptionQuery
         $select = $connection->select()
             ->from(
                 ['product' => $this->resourceConnection->getTableName('catalog_product_entity')],
-                ['productId' => 'product.entity_id']
+                [
+                    'productId' => 'product.entity_id',
+                    'sku' => 'product.sku'
+                ]
             )
             ->join(
                 ['super_attribute' => $this->resourceConnection->getTableName('catalog_product_super_attribute')],

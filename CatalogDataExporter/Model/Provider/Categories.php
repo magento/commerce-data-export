@@ -108,8 +108,11 @@ class Categories implements DataProcessorInterface
                 $dataProcessorCallback($this->get(\array_merge(...$output)));
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve category data');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve category data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
     }
 

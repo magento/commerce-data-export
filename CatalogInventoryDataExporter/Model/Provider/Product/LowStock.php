@@ -114,8 +114,11 @@ class LowStock
                 $output[] = $this->format($row, $thresholds);
             }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve stock data');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve LowStock field data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
         return $output;
     }

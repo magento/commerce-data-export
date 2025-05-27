@@ -106,8 +106,11 @@ class EavAttributesProvider
                 return $this->formatEavAttributesArray($data, $attributeCodes);
             }, $this->attributesDataConverter->convert($attributes));
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve category eav attributes');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve category eav attributes: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
     }
 

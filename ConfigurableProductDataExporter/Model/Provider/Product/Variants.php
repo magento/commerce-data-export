@@ -109,9 +109,12 @@ class Variants
                 $output[$key]['productId'] = $row['productId'];
                 $output[$key]['storeViewCode'] = $row['storeViewCode'];
             }
-        } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve product variant data');
+        } catch (\Throwable $exception) {
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve product variant data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
         return array_values($output);
     }
@@ -127,8 +130,7 @@ class Variants
                 $this->statusAttributeId = $attribute ? (int)$attribute->getId() : null;
             }
         } catch (LocalizedException $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-
+            $this->logger->error("Cannot get status attribute: " . $exception->getMessage(), ['exception' => $exception]);
         }
 
         return $this->statusAttributeId;

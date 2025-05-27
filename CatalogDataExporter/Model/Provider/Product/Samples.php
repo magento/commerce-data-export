@@ -44,26 +44,20 @@ class Samples
     private $sampleUrlProvider;
 
     /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
      * @param ResourceConnection $resourceConnection
      * @param ProductSamplesQuery $productSamplesQuery
      * @param SampleUrlProvider $sampleUrlProvider
-     * @param LoggerInterface $logger
+     * @param LoggerInterface|null $logger @deprecated
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         ProductSamplesQuery $productSamplesQuery,
         SampleUrlProvider $sampleUrlProvider,
-        LoggerInterface $logger
+        ?LoggerInterface $logger = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->productSamplesQuery = $productSamplesQuery;
         $this->sampleUrlProvider = $sampleUrlProvider;
-        $this->logger = $logger;
     }
 
     /**
@@ -122,8 +116,11 @@ class Samples
                 }
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve product samples data');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve product samples data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
 
         return $output;

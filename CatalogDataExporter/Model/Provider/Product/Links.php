@@ -101,8 +101,11 @@ class Links
                 }
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve product links');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve product links: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
 
         return $output;

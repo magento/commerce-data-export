@@ -72,8 +72,11 @@ class Children
                 }
             }
         } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve category children');
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve category children: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
 
         return $output;

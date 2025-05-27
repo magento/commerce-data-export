@@ -96,9 +96,12 @@ class Parents
             while ($row = $cursor->fetch()) {
                 $output[] = $this->format($row);
             }
-        } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['exception' => $exception]);
-            throw new UnableRetrieveData('Unable to retrieve parent product data');
+        } catch (\Throwable $exception) {
+            throw new UnableRetrieveData(
+                sprintf('Unable to retrieve parent product data: %s', $exception->getMessage()),
+                0,
+                $exception
+            );
         }
         return $output;
     }
