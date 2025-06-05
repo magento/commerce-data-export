@@ -376,9 +376,8 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
      * @param array $extractedProduct
      * @return void
      */
-    protected function validateAttributeData(ProductInterface $product, array $extractedProduct) : void
+    protected function validateAttributeData(ProductInterface $product, array $extractedProduct, ?array $attributes = null) : void
     {
-        $attributes = null;
         if ($product->hasData('custom_label')) {
             $customLabel = $product->getCustomAttribute('custom_label');
             $attributes[$customLabel->getAttributeCode()] = [

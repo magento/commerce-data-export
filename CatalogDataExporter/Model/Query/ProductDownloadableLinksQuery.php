@@ -148,6 +148,7 @@ class ProductDownloadableLinksQuery
             'sample_url' => new \Zend_Db_Expr('IFNULL(main_table.sample_url, main_table.sample_file)'),
             'title' => new \Zend_Db_Expr('IFNULL(store_title.title, default_store_title.title)'),
             'price' => new \Zend_Db_Expr('IFNULL(store_price.price, default_store_price.price)'),
+            'number_of_downloads' => 'main_table.number_of_downloads',
         ];
     }
 }

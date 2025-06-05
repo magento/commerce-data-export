@@ -44,18 +44,27 @@ class DownloadableProductsTest extends AbstractProductTestHelper
     {
         $skus = ['downloadable-product'];
         $storeViewCodes = ['default', 'custom_store_view_one', 'custom_store_view_two'];
+        $expectedProductAttribute = [
+            'default' => '{"purchase_separately":true,"samples":[{"label":"Downloadable Product Sample Title","url":"http:\/\/localhost\/downloadable\/download\/sample\/sample_id\/1"}],"links":[{"uid":"ZG93bmxvYWRhYmxlLzE=","label":"Downloadable Product Link","price":0,"number_of_downloads":0,"sample_url":null},{"uid":"ZG93bmxvYWRhYmxlLzI=","label":"Downloadable Product Link","price":0,"number_of_downloads":0,"sample_url":"http:\/\/localhost\/downloadable\/download\/linkSample\/link_id\/2"}]}',
+            'custom_store_view_one' => '{"purchase_separately":true,"samples":[{"label":null,"url":"http:\/\/localhost\/downloadable\/download\/sample\/sample_id\/1"}],"links":[{"uid":"ZG93bmxvYWRhYmxlLzE=","label":"Link 0","price":0,"number_of_downloads":0,"sample_url":null},{"uid":"ZG93bmxvYWRhYmxlLzI=","label":"Link 1","price":0,"number_of_downloads":0,"sample_url":"http:\/\/localhost\/downloadable\/download\/linkSample\/link_id\/2"}]}',
+            'custom_store_view_two' => '{"purchase_separately":true,"samples":[{"label":null,"url":"http:\/\/localhost\/downloadable\/download\/sample\/sample_id\/1"}],"links":[{"uid":"ZG93bmxvYWRhYmxlLzE=","label":"Link 0","price":0,"number_of_downloads":0,"sample_url":null},{"uid":"ZG93bmxvYWRhYmxlLzI=","label":"Link 1","price":0,"number_of_downloads":0,"sample_url":"http:\/\/localhost\/downloadable\/download\/linkSample\/link_id\/2"}]}'
+        ];
 
         foreach ($skus as $sku) {
             foreach ($storeViewCodes as $storeViewCode) {
                 $store = $this->storeManager->getStore($storeViewCode);
                 $product = $this->productRepository->get($sku, false, $store->getId());
                 $product->setTypeInstance(Bootstrap::getObjectManager()->create(Simple::class));
+                $attribute = [ 'ac_downloadable' => [
+                            'attributeCode' => 'ac_downloadable',
+                            'value' => [$expectedProductAttribute[$storeViewCode]]
+                ]];
 
                 $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
                 $this->validateBaseProductData($product, $extractedProduct, $storeViewCode);
                 $this->validatePricingData($extractedProduct);
                 $this->validateImageUrls($product, $extractedProduct);
-                $this->validateAttributeData($product, $extractedProduct);
+                $this->validateAttributeData($product, $extractedProduct, $attribute);
                 $this->validateMediaGallery($product, $extractedProduct);
                 $this->validateVideoData($product, $extractedProduct);
                 $this->validateImageData($product, $extractedProduct);

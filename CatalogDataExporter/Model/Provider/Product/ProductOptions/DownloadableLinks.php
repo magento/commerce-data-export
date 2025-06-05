@@ -30,11 +30,6 @@ use Magento\Store\Api\StoreRepositoryInterface;
 class DownloadableLinks
 {
     /**
-     * @var array
-     */
-    private $linkOptions = [];
-
-    /**
      * @var ResourceConnection
      */
     private $resourceConnection;
@@ -106,8 +101,9 @@ class DownloadableLinks
             foreach ($storeViews as $storeViewCode => $storeId) {
                 $downloadableLinksSelect = $this->productDownloadableLinksQuery->getQuery($productIds, $storeId);
                 $downloadableLinksQuery = $this->resourceConnection->getConnection()->query($downloadableLinksSelect);
-                $this->linkOptions = $downloadableLinksQuery->fetchAll();
+                $linkOptions = $downloadableLinksQuery->fetchAll();
                 $output += $this->format(
+                    $linkOptions,
                     $this->buildProductAttributes($values, $productIds),
                     $storeViewCode
                 );
@@ -119,15 +115,15 @@ class DownloadableLinks
     /**
      * Format provider data
      *
+     * @param array $linkOptions
      * @param array $attributes
      * @param string $storeViewCode
      *
      * @return array
      *
      * @throws NoSuchEntityException
-     * @throws InvalidArgumentException
      */
-    private function format(array $attributes, string $storeViewCode): array
+    private function format(array $linkOptions, array $attributes, string $storeViewCode): array
     {
         $output = [];
         $products = array_keys($attributes);
@@ -140,7 +136,7 @@ class DownloadableLinks
                     'id' => 'link:' . (string)$productId,
                     'label' => $attributes[(string)$productId]['links_title'],
                     'type' => DownloadableLinksOptionUid::OPTION_TYPE,
-                    'values' => $this->processOptionValues((string)$productId, $storeViewCode)
+                    'values' => $this->processOptionValues($linkOptions, (string)$productId, $storeViewCode)
                 ]
             ];
         }
@@ -150,18 +146,18 @@ class DownloadableLinks
     /**
      * Process option values.
      *
+     * @param array $linkOptions
      * @param string $productId
      * @param string $storeViewCode
      *
      * @return array
      *
      * @throws NoSuchEntityException
-     * @throws InvalidArgumentException
      */
-    private function processOptionValues(string $productId, string $storeViewCode): array
+    private function processOptionValues(array $linkOptions, string $productId, string $storeViewCode): array
     {
         $values = [];
-        foreach ($this->linkOptions as $key => $option) {
+        foreach ($linkOptions as $option) {
             if ($productId == $option['entity_id']) {
                 $values[] = [
                     'id' => $this->downloadableLinksOptionUid->resolve(
@@ -172,9 +168,9 @@ class DownloadableLinks
                     'label' => $option['title'],
                     'sortOrder' => $option['sort_order'],
                     'infoUrl' => $this->getLinkSampleUrl($option, $storeViewCode),
-                    'price' => (float)$option['price']
+                    'price' => (float)$option['price'],
+                    'qty' => $option['number_of_downloads'] ?? 0
                 ];
-                unset($this->linkOptions[$key]);
             }
         }
         return $values;
