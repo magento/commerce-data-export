@@ -97,6 +97,8 @@ $createBundleProduct = static function (
             'sku' => $childSku,
             'selection_qty' => 1,
             'selection_can_change_qty' => 1,
+            'selection_price_value' => 0,
+            'selection_price_type' => 0,
             'delete' => '',
         ];
     }
@@ -116,6 +118,8 @@ $createBundleProduct = static function (
             $link = $linkFactory->create(['data' => $linkData]);
             $link->setSku($linkData['sku']);
             $link->setQty($linkData['selection_qty']);
+            $link->setPrice($linkData['selection_price_value']);
+            $link->setPriceType($linkData['selection_price_type']);
             $links[] = $link;
         }
         $option->setProductLinks($links);

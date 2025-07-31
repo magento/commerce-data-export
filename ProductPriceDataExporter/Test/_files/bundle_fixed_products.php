@@ -135,6 +135,8 @@ $createBundleProduct = static function (
             $link = $linkFactory->create(['data' => $linkData]);
             $link->setSku($linkData['sku']);
             $link->setQty($linkData['selection_qty']);
+            $link->setPrice($linkData['selection_price_value']);
+            $link->setPriceType($linkData['selection_price_type']);
             $links[] = $link;
         }
         $option->setProductLinks($links);
