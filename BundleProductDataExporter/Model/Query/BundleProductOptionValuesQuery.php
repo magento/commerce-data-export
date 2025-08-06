@@ -63,6 +63,7 @@ class BundleProductOptionValuesQuery
         $catalogProductTable = $this->resourceConnection->getTableName(self::PRODUCT_ENTITY_TABLE);
         $catalogProductVarcharTable = $this->resourceConnection->getTableName([self::PRODUCT_ENTITY_TABLE, 'varchar']);
         $productEntityJoinField = $connection->getAutoIncrementField($catalogProductTable);
+        $storeSelectionPrice = $this->resourceConnection->getTableName('catalog_product_bundle_selection_price');
         $storeValueTableAlias = 'name_store';
         $defaultValueTableAlias = 'name_default';
 
@@ -118,13 +119,23 @@ class BundleProductOptionValuesQuery
                 ),
                 []
             )
+            ->joinLeft(
+                [
+                    'store_selection_price' => $storeSelectionPrice
+                ],
+                'store_selection_price.selection_id = main_table.selection_id',
+                []
+            )
             ->where('cpe_parent.entity_id IN (?)', $productIds)
             ->columns([
                 'id' => 'main_table.selection_id',
                 'sort_order' => 'main_table.position',
                 'default' => 'main_table.is_default',
                 'price_type' => 'main_table.selection_price_type',
-                'price_value' => 'main_table.selection_price_value',
+                'price_value' => $connection->getIfNullSql(
+                    '`store_selection_price`.`selection_price_value`',
+                    'main_table.selection_price_value'
+                ),
                 'attribute_id' => 'name_default.attribute_id',
                 'qty' => 'main_table.selection_qty',
                 'qty_mutability' => 'main_table.selection_can_change_qty',

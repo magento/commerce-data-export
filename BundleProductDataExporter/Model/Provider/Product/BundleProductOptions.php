@@ -23,7 +23,6 @@ use Magento\CatalogDataExporter\Model\Provider\Product\OptionProviderInterface;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
-use Throwable;
 
 /**
  * Class which provides bundle product options and option values
@@ -119,6 +118,7 @@ class BundleProductOptions implements OptionProviderInterface
      * @param string $storeViewCode
      *
      * @return array
+     * @throws \Zend_Db_Statement_Exception
      */
     private function getOptionValues(array $productIds, string $storeViewCode) : array
     {
