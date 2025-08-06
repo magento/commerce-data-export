@@ -32,4 +32,7 @@
     <type name="Magento\InventoryIndexer\Model\ResourceModel\UpdateLegacyStockStatus">
         <plugin name="exporter-reindex-feed-on-legacy-stock-status-update" type="Magento\CatalogInventoryDataExporter\Model\Plugin\LegacyStockStatusUpdater"/>
     </type>
+    <type name="Magento\CatalogDataExporter\Model\Provider\Products">
+        <plugin name="exporter-reindex-feed-reset-inventory-cache" type="Magento\CatalogInventoryDataExporter\Model\Plugin\ResetInventoryDataProviderCache"/>
+    </type>
 </config>

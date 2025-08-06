@@ -51,8 +51,8 @@ class InStock
     {
         try {
             $output = [];
-            foreach ($this->inventoryDataProvider->get($values) as $stockItem) {
-                $output[] = $stockItem;
+            foreach ($this->inventoryDataProvider->get($values) as $key => $stockItem) {
+                $output[$key] = $stockItem;
             }
         } catch (\Exception $exception) {
             throw new UnableRetrieveData(

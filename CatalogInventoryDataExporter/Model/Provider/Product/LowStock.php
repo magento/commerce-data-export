@@ -20,6 +20,7 @@ use Magento\CatalogInventory\Model\Configuration;
 use Magento\CatalogInventoryDataExporter\Model\Query\CatalogInventoryQuery;
 use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Store\Model\ScopeInterface;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
@@ -30,41 +31,42 @@ use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as Logg
 class LowStock
 {
     /**
-     * @var ResourceConnection
+     * @deprecated Use InventoryDataProvider instead
      */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
 
     /**
-     * @var LoggerInterface
+     * @deprecated Logging will be done in InventoryDataProvider instead
      */
-    private $logger;
+    private LoggerInterface $logger;
 
     /**
-     * @var CatalogInventoryQuery
+     * @deprecated Use InventoryDataProvider instead
      */
-    private $catalogInventoryQuery;
+    private CatalogInventoryQuery $catalogInventoryQuery;
+
+    private ScopeConfigInterface $scopeConfig;
+
+    private InventoryDataProvider $inventoryDataProvider;
 
     /**
-     * @var ScopeConfigInterface
-     */
-    private $scopeConfig;
-
-    /**
-     * @param ResourceConnection $resourceConnection
-     * @param CatalogInventoryQuery $catalogInventoryQuery
-     * @param LoggerInterface $logger
+     * @param ?ResourceConnection $resourceConnection
+     * @param ?CatalogInventoryQuery $catalogInventoryQuery
+     * @param ?LoggerInterface $logger
      * @param ScopeConfigInterface $scopeConfig
+     * @param InventoryDataProvider|null $cachedInventoryDataProvider
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function __construct(
-        ResourceConnection $resourceConnection,
-        CatalogInventoryQuery $catalogInventoryQuery,
-        LoggerInterface $logger,
-        ScopeConfigInterface $scopeConfig
+        ?ResourceConnection $resourceConnection,
+        ?CatalogInventoryQuery $catalogInventoryQuery,
+        ?LoggerInterface $logger,
+        ScopeConfigInterface $scopeConfig,
+        ?InventoryDataProvider $cachedInventoryDataProvider = null
     ) {
-        $this->resourceConnection = $resourceConnection;
-        $this->catalogInventoryQuery = $catalogInventoryQuery;
-        $this->logger = $logger;
         $this->scopeConfig = $scopeConfig;
+        $this->inventoryDataProvider = $cachedInventoryDataProvider
+            ?? ObjectManager::getInstance()->get(InventoryDataProvider::class);
     }
 
     /**
@@ -77,7 +79,7 @@ class LowStock
     private function format(array $row, array $thresholds) : array
     {
         $thresholdQty = $thresholds[$row['storeViewCode']];
-        if ($row['qty'] < $thresholdQty) {
+        if ($row['quantity'] < $thresholdQty) {
             $lowStock = true;
         } else {
             $lowStock = false;
@@ -99,19 +101,19 @@ class LowStock
      */
     public function get(array $values) : array
     {
-        $connection = $this->resourceConnection->getConnection();
         $queryArguments = [];
         try {
             $output = [];
             foreach ($values as $value) {
-                $queryArguments['productId'][$value['productId']] = $value['productId'];
-                $queryArguments['storeViewCode'][$value['storeViewCode']] = $value['storeViewCode'];
+                $queryArguments['storeViewCodes'][] = $value['storeViewCode'];
             }
-            $thresholds = $this->getThresholdAmount($queryArguments['storeViewCode']);
-            $select = $this->catalogInventoryQuery->getInStock($queryArguments);
-            $cursor = $connection->query($select);
-            while ($row = $cursor->fetch()) {
-                $output[] = $this->format($row, $thresholds);
+            $thresholds = $this->getThresholdAmount($queryArguments['storeViewCodes']);
+            $inventoryData = $this->inventoryDataProvider->get($values);
+            foreach ($inventoryData as $key => $stockItem) {
+                $output[$key] = $this->format(
+                    $stockItem,
+                    $thresholds
+                );
             }
         } catch (\Exception $exception) {
             throw new UnableRetrieveData(

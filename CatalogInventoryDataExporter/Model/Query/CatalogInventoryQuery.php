@@ -77,7 +77,7 @@ class CatalogInventoryQuery
                 [
                     'productId' => 'csi.product_id',
                     'storeViewCode' => 's.code',
-                    'qty' => 'csi.qty',
+                    'quantity' => 'csi.qty',
                     'is_in_stock' => 'csi.stock_status'
                 ]
             )

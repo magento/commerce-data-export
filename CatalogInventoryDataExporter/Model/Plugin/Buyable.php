@@ -57,13 +57,13 @@ class Buyable
     {
         try {
             $outOfStock = [];
-            foreach ($this->inventoryDataProvider->get($result) as $stockItem) {
+            foreach ($this->inventoryDataProvider->get($result) as $key => $stockItem) {
                 if (!$stockItem['inStock']) {
-                    $outOfStock[$this->getKey($stockItem)] = true;
+                    $outOfStock[$key] = true;
                 }
             }
-            foreach ($result as &$item) {
-                if (isset($outOfStock[$this->getKey($item)])) {
+            foreach ($result as $key => &$item) {
+                if (isset($outOfStock[$key])) {
                     $item['buyable'] = false;
                 }
             }
@@ -75,14 +75,5 @@ class Buyable
             );
         }
         return $result;
-    }
-
-    /**
-     * @param mixed $stockItem
-     * @return string
-     */
-    private function getKey(mixed $stockItem): string
-    {
-        return $stockItem['storeViewCode'] . '_' . $stockItem['productId'];
     }
 }

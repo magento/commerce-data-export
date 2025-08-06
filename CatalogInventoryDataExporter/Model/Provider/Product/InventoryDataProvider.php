@@ -55,6 +55,8 @@ class InventoryDataProvider
      */
     private InventoryHelper $inventoryHelper;
 
+    private array $cachedBatch = [];
+
     /**
      * @param ResourceConnection $resourceConnection
      * @param InventoryData $inventoryData
@@ -91,21 +93,24 @@ class InventoryDataProvider
             $defaultStockValue['is_in_stock'] = false;
             $output[$this->getKey($value)] = $this->format($defaultStockValue);
         }
-
-        $connection = $this->resourceConnection->getConnection();
-        if ($this->inventoryHelper->isMSIEnabled()) {
-            $select = $this->inventoryData->get($queryArguments);
-        } else {
-            $select = $this->catalogInventoryQuery->getInStock($queryArguments);
+        // If the cached batch is the same as the current request, return the cached data
+        if (array_diff_key($output, $this->cachedBatch) || count($this->cachedBatch) !== count($output)) {
+            $connection = $this->resourceConnection->getConnection();
+            if ($this->inventoryHelper->isMSIEnabled()) {
+                $select = $this->inventoryData->get($queryArguments);
+            } else {
+                $select = $this->catalogInventoryQuery->getInStock($queryArguments);
+            }
+            if (!$select) {
+                return $output;
+            }
+            $cursor = $connection->query($select);
+            while ($stockItem = $cursor->fetch()) {
+                $output[$this->getKey($stockItem)] = $this->format($stockItem);
+            }
+            $this->cachedBatch = $output;
         }
-        if (!$select) {
-            return $output;
-        }
-        $cursor = $connection->query($select);
-        while ($stockItem = $cursor->fetch()) {
-            $output[$this->getKey($stockItem)] = $this->format($stockItem);
-        }
-        return $output;
+        return $this->cachedBatch;
     }
 
     /**
@@ -120,6 +125,7 @@ class InventoryDataProvider
             'productId' => $row['productId'],
             'storeViewCode' => $row['storeViewCode'],
             'inStock' => (bool)$row['is_in_stock'],
+            'quantity' => $row['quantity'] ?? null
         ];
     }
 
@@ -129,6 +135,16 @@ class InventoryDataProvider
      */
     private function getKey(array $item): string
     {
-        return $item['productId'] . '-' . $item['storeViewCode'];
+        return $item['storeViewCode'] . '_' . $item['productId'];
+    }
+
+    /**
+     * Reset cache
+     *
+     * @return void
+     */
+    public function resetCache(): void
+    {
+        $this->cachedBatch = [];
     }
 }

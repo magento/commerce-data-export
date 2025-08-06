@@ -61,6 +61,8 @@ class InventoryData
     public function get($arguments): ?Select
     {
         $productIds = $arguments['productId'] ?? [];
+        $storeViewCodes = $arguments['storeViewCode'] ?? [];
+
         $connection = $this->resourceConnection->getConnection();
 
         $stocks = $connection->select()
@@ -75,6 +77,16 @@ class InventoryData
             )
             ->where('channel.type = ?', 'website')
             ->group('stock_id');
+
+        if (!empty($storeViewCodes)) {
+            // Join with store table to filter by store view codes if provided
+            $stocks->joinInner(
+                ['s' => $this->resourceConnection->getTableName('store')],
+                'w.website_id = s.website_id',
+                []
+            )
+                ->where('s.code IN (?)', $storeViewCodes);
+        }
 
         $union = [];
         foreach ($stocks->query()->fetchAll() as $stock) {

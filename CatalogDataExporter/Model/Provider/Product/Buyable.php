@@ -34,12 +34,21 @@ class Buyable
     {
         $output = [];
         foreach ($values as $value) {
-            $output[] = [
+            $output[$this->getKey($value)] = [
                 'productId' => $value['productId'],
                 'storeViewCode' => $value['storeViewCode'],
                 'buyable' => ($value['status'] == 'Enabled')
             ];
         }
         return $output;
+    }
+
+    /**
+     * @param array $stockItem
+     * @return string
+     */
+    private function getKey(array $productItem): string
+    {
+        return $productItem['storeViewCode'] . '_' . $productItem['productId'];
     }
 }
