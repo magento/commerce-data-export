@@ -165,6 +165,12 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
                         'regular' => 100.1,
                         'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 15.15]],
+                        'tierPrices' => [
+                            0 => [
+                                'quantity' => 2,
+                                'percentage' => 14.14
+                            ]
+                        ],
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_tier_price_test_0' => [
@@ -183,6 +189,12 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
                         'regular' => 100.1,
                         'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 13.13]],
+                        'tierPrices' => [
+                            0 => [
+                                'quantity' => 2.55,
+                                'percentage' => 12.12
+                            ]
+                        ],
                         'type' => 'BUNDLE_FIXED'
                     ],
                 ]
@@ -251,6 +263,12 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
                         'regular' => 0,
                         'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 15.15]],
+                        'tierPrices' => [
+                            0 => [
+                                'quantity' => 2,
+                                'percentage' => 14.14
+                            ]
+                        ],
                         'type' => 'BUNDLE_DYNAMIC'
                     ],
                     'bundle_dynamic_product_with_tier_price_test_0' => [
@@ -269,6 +287,12 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
                         'regular' => 0,
                         'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 13.13]],
+                        'tierPrices' => [
+                            0 => [
+                                'quantity' => 2.55,
+                                'percentage' => 12.12
+                            ]
+                        ],
                         'type' => 'BUNDLE_DYNAMIC'
                     ],
                 ]
@@ -311,7 +335,8 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
                         'websiteCode' => 'base',
                         'regular' => 150,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
+                        'discounts' => null,
+                        'tierPrices' => [0 => ['qty' => 2, 'price' => 16.16]],
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_2_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -322,6 +347,7 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
                         'regular' => 150,
                         'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'tierPrices' => [0 => ['qty' => 2, 'price' => 16.16]],
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_2_test_0' => [
@@ -341,7 +367,8 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
                         'websiteCode' => 'test',
                         'regular' => 150,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
+                        'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
+                        'tierPrices' => [0 => ['qty' => 2.55, 'price' => 13.13]],
                         'type' => 'SIMPLE'
                     ],
                 ]
@@ -490,7 +517,13 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
                         'websiteCode' => 'base',
                         'regular' => 10,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
+                        'discounts' => null,
+                        'tierPrices' => [
+                            0 => [
+                                'quantity' => 2,
+                                'price' => 16.16
+                            ]
+                        ],
                         'type' => 'SIMPLE'
                     ],
                     'virtual-product_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -501,6 +534,12 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
                         'regular' => 10,
                         'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'tierPrices' => [
+                            0 => [
+                                'quantity' => 2,
+                                'price' => 16.16
+                            ]
+                        ],
                         'type' => 'SIMPLE'
                     ],
                     'virtual-product_test_0' => [
@@ -520,7 +559,13 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
                         'websiteCode' => 'test',
                         'regular' => 10,
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
+                        'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
+                        'tierPrices' => [
+                            0 => [
+                                'quantity' => 2.55,
+                                'price' => 13.13
+                            ]
+                        ],
                         'type' => 'SIMPLE'
                     ],
                 ]

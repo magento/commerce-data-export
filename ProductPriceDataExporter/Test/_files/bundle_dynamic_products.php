@@ -265,6 +265,14 @@ $productTierPrices[] = $tierPriceFactory->create([
         'value'=> 15.15
     ]
 ])->setExtensionAttributes($tierPriceExtensionAttributesFirstWs);
+$productTierPrices[] = $tierPriceFactory->create([
+    'data' => [
+        'customer_group_id' => \Magento\Customer\Model\Group::NOT_LOGGED_IN_ID,
+        'percentage_value'=> null,
+        'qty'=> 2,
+        'value'=> 14.14
+    ]
+])->setExtensionAttributes($tierPriceExtensionAttributesFirstWs);
 
 /** Second website tier prices */
 $productTierPrices[] = $tierPriceFactory->create([
@@ -281,6 +289,14 @@ $productTierPrices[] = $tierPriceFactory->create([
         'percentage_value'=> null,
         'qty'=> 1,
         'value'=> 13.13
+    ]
+])->setExtensionAttributes($tierPriceExtensionAttributesSecondWs);
+$productTierPrices[] = $tierPriceFactory->create([
+    'data' => [
+        'customer_group_id' => \Magento\Customer\Model\Group::NOT_LOGGED_IN_ID,
+        'percentage_value'=> null,
+        'qty'=> 2.55,
+        'value'=> 12.12
     ]
 ])->setExtensionAttributes($tierPriceExtensionAttributesSecondWs);
 
@@ -301,6 +317,9 @@ $tierPriceExtensionAttributesFirstWsAll = $tierPriceExtensionAttributesFactory->
 $tierPriceExtensionAttributesFirstWsNotLogged = $tierPriceExtensionAttributesFactory->create()
     ->setWebsiteId($firstWebsiteId)
     ->setPercentageValue(15.15);
+$tierPriceExtensionMultipleAttributesFirstWsNotLogged = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($firstWebsiteId)
+    ->setPercentageValue(14.14);
 $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => \Magento\Customer\Model\Group::CUST_GROUP_ALL,
@@ -313,6 +332,12 @@ $productTierPrices[] = $tierPriceFactory->create([
         'qty'=> 1
     ]
 ])->setExtensionAttributes($tierPriceExtensionAttributesFirstWsNotLogged);
+$productTierPrices[] = $tierPriceFactory->create([
+    'data' => [
+        'customer_group_id' => \Magento\Customer\Model\Group::NOT_LOGGED_IN_ID,
+        'qty'=> 2
+    ]
+])->setExtensionAttributes($tierPriceExtensionMultipleAttributesFirstWsNotLogged);
 
 /** Second website tier prices */
 $tierPriceExtensionAttributesSecondWsAll = $tierPriceExtensionAttributesFactory->create()
@@ -321,6 +346,9 @@ $tierPriceExtensionAttributesSecondWsAll = $tierPriceExtensionAttributesFactory-
 $tierPriceExtensionAttributesSecondWsNotLogged = $tierPriceExtensionAttributesFactory->create()
     ->setWebsiteId($secondWebsiteId)
     ->setPercentageValue(13.13);
+$tierPriceMultipleExtensionAttributesSecondWsNotLogged = $tierPriceExtensionAttributesFactory->create()
+    ->setWebsiteId($secondWebsiteId)
+    ->setPercentageValue(12.12);
 $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => \Magento\Customer\Model\Group::CUST_GROUP_ALL,
@@ -333,5 +361,11 @@ $productTierPrices[] = $tierPriceFactory->create([
         'qty'=> 1
     ]
 ])->setExtensionAttributes($tierPriceExtensionAttributesSecondWsNotLogged);
+$productTierPrices[] = $tierPriceFactory->create([
+    'data' => [
+        'customer_group_id' => \Magento\Customer\Model\Group::NOT_LOGGED_IN_ID,
+        'qty'=> 2.55
+    ]
+])->setExtensionAttributes($tierPriceMultipleExtensionAttributesSecondWsNotLogged);
 $bundleDynamicTierPrice->setTierPrices($productTierPrices);
 $productRepository->save($bundleDynamicTierPrice);

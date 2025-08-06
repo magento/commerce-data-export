@@ -25,6 +25,7 @@
         <field name="parents" type="ProductPriceParent" repeated="true"/>
         <field name="regular" type="Float"/>
         <field name="discounts" type="DiscountPrice" repeated="true"/>
+        <field name="tierPrices" type="TierPrice" repeated="true"/>
         <field name="deleted" type="Boolean"/>
         <field name="updatedAt" type="String" provider="Magento\DataExporter\Model\Provider\DateConverter">
             <using field="productPriceId"/>
@@ -36,6 +37,11 @@
     </record>
     <record name="DiscountPrice" skipNull="true">
         <field name="code" type="String"/>
+        <field name="price" type="Float" />
+        <field name="percentage" type="Float" />
+    </record>
+    <record name="TierPrice" skipNull="true">
+        <field name="qty" type="Float"/>
         <field name="price" type="Float" />
         <field name="percentage" type="Float" />
     </record>

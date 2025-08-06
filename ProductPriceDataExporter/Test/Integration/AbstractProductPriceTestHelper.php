@@ -136,12 +136,28 @@ abstract class AbstractProductPriceTestHelper extends TestCase
             if (!isset($feedsToCheck[$expectedKey])) {
                 self::fail("Cannot find product price feed with key: " . $expectedKey);
             }
-            self::assertEquals(
+            $actualFeed = $this->arrangeExpectedItems($expectedItem, $feedsToCheck[$expectedKey]);
+            self::assertEqualsCanonicalizing(
                 $expectedItem,
-                $feedsToCheck[$expectedKey],
-                "Some items are missing in product price feed " . $expectedItem['sku']
+                $actualFeed,
+                "Some items are missing in product price feed "
+                . $expectedItem['sku'] . '_'
+                . $expectedItem['websiteCode'] . '_'
+                . $expectedItem['customerGroupCode'] . ' feed'
             );
         }
+    }
+
+    private function arrangeExpectedItems(array $expectedData, $actualData): array
+    {
+        $normalizedItems = [];
+        foreach (array_keys($expectedData) as $key) {
+            if (!\array_key_exists($key, $actualData)) {
+                self::fail("Cannot find data with key: " . $key);
+            }
+            $normalizedItems[$key] = $actualData[$key];
+        }
+        return array_replace($normalizedItems, $actualData);
     }
 
     /**

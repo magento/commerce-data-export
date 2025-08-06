@@ -44,6 +44,7 @@ use Magento\Framework\DB\Select;
  * If Customer Group "All Groups" selected with qty=1, group price will be added to fallback price
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class ProductPrice implements DataProcessorInterface
 {
@@ -65,6 +66,14 @@ class ProductPrice implements DataProcessorInterface
         Grouped::TYPE_CODE,
         Type::TYPE_BUNDLE,
         'giftcard', // represent giftcard product type
+    ];
+
+    /**
+     * @var string[]
+     */
+    private array $priceValueTypesMapping = [
+        'price_value' => 'price',
+        'percentage_value' => 'percentage'
     ];
 
     private ResourceConnection $resourceConnection;
@@ -334,12 +343,19 @@ class ProductPrice implements DataProcessorInterface
             : isset($productPriceTemplate[$productId]);
     }
 
+    /**
+     * @param $storeId
+     * @return string
+     */
     private function getWebsiteIdFromStoreId($storeId): string
     {
         $this->loadWebsites();
         return isset($this->websitesByStore[$storeId]) ? $this->websitesByStore[$storeId]['website_id'] : "0";
     }
 
+    /**
+     * @return array
+     */
     private function getWebsites(): array
     {
         if ($this->websites === null) {
@@ -354,6 +370,13 @@ class ProductPrice implements DataProcessorInterface
         return $this->websites;
     }
 
+    /**
+     * Get website ids for the row
+     *
+     * @param array $row
+     * @param array $websites
+     * @return array
+     */
     private function getWebsiteIds(array $row, array $websites): array
     {
         if ($this->isGlobalWebsite($row)) {
@@ -364,6 +387,11 @@ class ProductPrice implements DataProcessorInterface
         }
     }
 
+    /**
+     * Load websites by store
+     *
+     * @return void
+     */
     private function loadWebsites(): void
     {
         if ($this->websitesByStore === null) {
@@ -373,11 +401,19 @@ class ProductPrice implements DataProcessorInterface
         }
     }
 
-    private function isGlobalPrice($storeViewId): bool
+    /**
+     * @param ?string $storeViewId
+     * @return bool
+     */
+    private function isGlobalPrice(?string $storeViewId = null): bool
     {
         return (int)$storeViewId === self::GLOBAL_STORE_ID;
     }
 
+    /**
+     * @param array $row
+     * @return bool
+     */
     private function isGlobalWebsite(array $row): bool
     {
         return (int)$row['website_id'] === self::GLOBAL_STORE_ID;
@@ -388,6 +424,7 @@ class ProductPrice implements DataProcessorInterface
      *
      * @param array $productIds An array of product IDs for which the price templates are to be generated.
      * @return array An array of price templates, indexed by product ID and website ID.
+     * @throws \Zend_Db_Statement_Exception
      */
     private function getProductPriceTemplate(
         array $productIds
@@ -499,6 +536,8 @@ class ProductPrice implements DataProcessorInterface
      * @param FeedIndexMetadata $metadata
      * @return void
      * @throws \Zend_Db_Statement_Exception
+     * @throws \Zend_Db_Select_Exception
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function addCustomerGroupPrices(
         array $fallbackPrices,
@@ -524,14 +563,24 @@ class ProductPrice implements DataProcessorInterface
                 }
                 // To handle tier prices
                 if ($row['all_groups'] !== null) {
-                    $priceValue = $row['group_price'] ?? null;
-                    $pricePercentage = $row['percentage_value'] ?? null;
-
                     // copy feed data from fallbackPrice for each row of customer group price
-                    $prices[$key] = $fallbackPrice;
+                    $prices[$key] = $prices[$key] ?? $fallbackPrice;
+
+                    //extract tier and group  prices
+                    $groupedDiscounts = $this->extractTierAndGroupPrices($row);
+                    //add tier prices
+                    $tierPrices = $groupedDiscounts['tier'] ?? [];
+                    $this->addTierPrices($prices[$key], $tierPrices);
 
                     // override customer group specific fields
-                    $this->addDiscountPrice($prices[$key], 'group', $priceValue, $pricePercentage);
+                    $groupPrice = $groupedDiscounts['group'] ?? [];
+                    if (!empty($groupPrice)) {
+                        $priceValue = $groupPrice[$this->priceValueTypesMapping['price_value']]
+                            ?? null;
+                        $pricePercentage = $groupPrice[$this->priceValueTypesMapping['percentage_value']]
+                            ?? null;
+                        $this->addDiscountPrice($prices[$key], 'group', $priceValue, $pricePercentage);
+                    }
                 }
 
                 // To handle only catalog rule prices
@@ -579,9 +628,20 @@ class ProductPrice implements DataProcessorInterface
                 if (!isset($fallbackPrices[$keyFallback])) {
                     continue;
                 }
-                $priceValue = $row['group_price'] ?? null;
-                $pricePercentage = $row['percentage_value'] ?? null;
-                $this->addDiscountPrice($fallbackPrices[$keyFallback], 'group', $priceValue, $pricePercentage);
+                //extract tier and group  prices
+                $groupedDiscounts = $this->extractTierAndGroupPrices($row);
+                // add tier prices to fallback price
+                $tierPrices = $groupedDiscounts['tier'] ?? [];
+                $this->addTierPrices($fallbackPrices[$keyFallback], $tierPrices);
+                // add group price to fallback price
+                $groupPrice = $groupedDiscounts['group'] ?? [];
+                if (!empty($groupPrice)) {
+                    $priceValue = $groupedDiscounts['group'][$this->priceValueTypesMapping['price_value']]
+                        ?? null;
+                    $pricePercentage = $groupedDiscounts['group'][$this->priceValueTypesMapping['percentage_value']]
+                        ?? null;
+                    $this->addDiscountPrice($fallbackPrices[$keyFallback], 'group', $priceValue, $pricePercentage);
+                }
             }
         }
     }
@@ -686,14 +746,123 @@ class ProductPrice implements DataProcessorInterface
      * @param ?string $percent
      * @return void
      */
-    private function setPriceOrPercentageDiscount(array &$discount, ?string $price = null, ?string $percent = null): void
-    {
+    private function setPriceOrPercentageDiscount(
+        array &$discount,
+        ?string $price = null,
+        ?string $percent = null
+    ): void {
         if (null !== $percent) {
             $discount['percentage'] = (float)$percent;
             unset($discount['price']);
         } elseif (null !== $price) {
             $discount['price'] = (float)$price;
             unset($discount['percentage']);
+        }
+    }
+
+    /**
+     * Extract tier prices from row
+     *
+     * @param array $row
+     * @return array
+     */
+    private function extractTierAndGroupPrices(array $row): array
+    {
+        $discounts = [];
+        $priceValueDiscount = $row[$this->priceValueTypesMapping['price_value']] ?? null;
+        $percentageValueDiscount = $row[$this->priceValueTypesMapping['percentage_value']] ?? null;
+        if (!empty($priceValueDiscount)) {
+            $qtyGroupPriceValue = explode(',', $priceValueDiscount);
+            $this->addGroupedDiscounts(
+                $qtyGroupPriceValue,
+                $this->priceValueTypesMapping['price_value'],
+                $discounts
+            );
+        }
+
+        if (!empty($percentageValueDiscount)) {
+            $qtyGroupPricePercentage = explode(',', $percentageValueDiscount);
+            $this->addGroupedDiscounts(
+                $qtyGroupPricePercentage,
+                $this->priceValueTypesMapping['percentage_value'],
+                $discounts
+            );
+        }
+        return $discounts;
+    }
+
+    /**
+     * Add tier prices to price
+     *
+     * If fallback tier price set with same qty, override it with new value even if it is greater than fallback
+     *
+     * @param array $price
+     * @param array $tierPrices
+     * @return void
+     */
+    private function addTierPrices(array &$price, array $tierPrices): void
+    {
+        if (empty($tierPrices)) {
+            return;
+        }
+
+        if (!isset($price['tierPrices'])) {
+            $price['tierPrices'] = $tierPrices;
+            return;
+        }
+
+        // Build a map of string-converted quantities to indices
+        $qtyToIndexMap = [];
+        foreach ($price['tierPrices'] as $index => $existingTierPrice) {
+            if (isset($existingTierPrice['qty'])) {
+                $qtyToIndexMap[(string)$existingTierPrice['qty']] = $index;
+            }
+        }
+
+        foreach ($tierPrices as $newTierPrice) {
+            if (!isset($newTierPrice['qty'])) {
+                continue;
+            }
+
+            $qtyKey = (string)$newTierPrice['qty'];
+
+            if (isset($qtyToIndexMap[$qtyKey])) {
+                // Replace existing tier price with same quantity
+                $price['tierPrices'][$qtyToIndexMap[$qtyKey]] = $newTierPrice;
+            } else {
+                // Add new tier price and update the map
+                $newIndex = count($price['tierPrices']);
+                $price['tierPrices'][] = $newTierPrice;
+                $qtyToIndexMap[$qtyKey] = $newIndex;
+            }
+        }
+    }
+
+    /**
+     * @param array $qtyGroupPriceValue
+     * @param string $valueType
+     * @param array $discounts
+     * @return void
+     */
+    private function addGroupedDiscounts(array $qtyGroupPriceValue, string $valueType, array &$discounts): void
+    {
+        foreach ($qtyGroupPriceValue as $value) {
+            [$qty, $price] = explode(':', $value);
+            if ((float)$price === 0.0) {
+                // skip zero price
+                continue;
+            }
+            // Only qty 1 is a grouped price
+            if ((float)$qty === 1.0) {
+                $discounts['group'][$valueType] = $price;
+            // Tier prices are only for qty > 1, can also be double
+            } elseif ($qty > 1) {
+                $discounts['tier'][] = [
+                    'qty' => (float)$qty,
+                    $valueType => (float)$price
+                ];
+            }
+
         }
     }
 }

@@ -55,7 +55,16 @@ $secondWebsiteStoreId = $store->load('fixture_second_store', 'code')->getStoreId
 
 $productRepository->cleanCache();
 
-// Create simple product with regular price
+// Create TierPrice which is less than one, should be ignored by feeds collector
+$partialQtyTierPriceExtensionAttributes = $tierPriceExtensionAttributesFactory->create()->setWebsiteId($firstWebsiteId);
+$productOneTierPrices[] = $tierPriceFactory->create([
+    'data' => [
+        'customer_group_id' => Group::CUST_GROUP_ALL,
+        'qty'=> 0.7,
+        'value'=> 95.50
+    ]
+])->setExtensionAttributes($partialQtyTierPriceExtensionAttributes);
+// Create simple product with regular price and tier price 0.7 which shouldn't be reflected in the feed
 $product1 = $productFactory->create();
 $product1->setTypeId(Type::TYPE_SIMPLE)
     ->setAttributeSetId(4)
@@ -64,6 +73,8 @@ $product1->setTypeId(Type::TYPE_SIMPLE)
     ->setPrice(100)
     ->setWebsiteIds([$firstWebsiteId, $secondWebsiteId])
     ->setStatus(Status::STATUS_ENABLED);
+$product1->setTierPrices($productOneTierPrices);
+
 $productRepository->save($product1);
 
 // Set different prices for multiple websites

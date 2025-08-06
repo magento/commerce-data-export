@@ -87,7 +87,7 @@ $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => \Magento\Customer\Model\Group::CUST_GROUP_ALL,
         'percentage_value'=> null,
-        'qty'=> 1,
+        'qty'=> 2,
         'value'=> 16.16
     ]
 ])->setExtensionAttributes($tierPriceExtensionAttributesFirstWs);
@@ -113,7 +113,7 @@ $productTierPrices[] = $tierPriceFactory->create([
     'data' => [
         'customer_group_id' => \Magento\Customer\Model\Group::NOT_LOGGED_IN_ID,
         'percentage_value'=> null,
-        'qty'=> 1,
+        'qty'=> 2.55,
         'value'=> 13.13
     ]
 ])->setExtensionAttributes($tierPriceExtensionAttributesSecondWs);

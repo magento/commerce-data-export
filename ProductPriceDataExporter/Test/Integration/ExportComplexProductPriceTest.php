@@ -107,8 +107,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 105.1,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_regular_price_test_0' => [
@@ -116,8 +116,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 105.1,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_special_price_base_0' => [
@@ -125,8 +125,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 155.15,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'special_price', 'percentage' => 55.55]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_special_price_test_0' => [
@@ -134,8 +134,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 155.15,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'special_price', 'percentage' => 55.55]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_tier_price_base_0' => [
@@ -143,8 +143,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 100.1,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 16.16]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_tier_price_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -152,8 +152,9 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
                         'regular' => 100.1,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 15.15]],
+                        'tierPrices' => [0 => ['qty' => 2, 'percentage' => 14.14]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_tier_price_test_0' => [
@@ -161,8 +162,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 100.1,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 14.14]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_FIXED'
                     ],
                     'bundle_fixed_product_with_tier_price_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -170,8 +171,9 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'test',
                         'regular' => 100.1,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 13.13]],
+                        'tierPrices' => [0 => ['qty' => 2.55, 'percentage' => 12.12]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_FIXED'
                     ],
                 ]
@@ -192,180 +194,182 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'sku' => 'simple_option_1',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
-                        'regular' => 55.55,
-                        'deleted' => false,
-                        'discounts' => null,
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_regular_price'
                             ]
                         ],
+                        'regular' => 55.55,
+                        'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_1_test_0' => [
                         'sku' => 'simple_option_1',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
-                        'regular' => 55.55,
-                        'deleted' => false,
-                        'discounts' => null,
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_regular_price'
                             ]
                         ],
+                        'regular' => 55.55,
+                        'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_2_base_0' => [
                         'sku' => 'simple_option_2',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
-                        'regular' => 55.55,
-                        'deleted' => false,
-                        'discounts' => null,
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_regular_price'
                             ]
                         ],
+                        'regular' => 55.55,
+                        'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_2_test_0' => [
                         'sku' => 'simple_option_2',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
-                        'regular' => 55.55,
-                        'deleted' => false,
-                        'discounts' => null,
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_regular_price'
                             ]
                         ],
+                        'regular' => 55.55,
+                        'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_3_base_0' => [
                         'sku' => 'simple_option_3',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
-                        'regular' => 55.55,
-                        'deleted' => false,
-                        'discounts' => [0 => ['code' => 'special_price', 'price' => 10.1]],
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_special_price'
                             ]
                         ],
+                        'regular' => 55.55,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 10.1]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_3_test_0' => [
                         'sku' => 'simple_option_3',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
-                        'regular' => 55.55,
-                        'deleted' => false,
-                        'discounts' => [0 => ['code' => 'special_price', 'price' => 10.1]],
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_special_price'
                             ]
                         ],
+                        'regular' => 55.55,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 10.1]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_4_base_0' => [
                         'sku' => 'simple_option_4',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
-                        'regular' => 55.55,
-                        'deleted' => false,
-                        'discounts' => [0 => ['code' => 'special_price', 'price' => 10.1]],
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_special_price'
                             ]
                         ],
+                        'regular' => 55.55,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 10.1]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_4_test_0' => [
                         'sku' => 'simple_option_4',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
-                        'regular' => 55.55,
-                        'deleted' => false,
-                        'discounts' => [0 => ['code' => 'special_price', 'price' => 10.1]],
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_special_price'
                             ]
                         ],
+                        'regular' => 55.55,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 10.1]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_5_base_0' => [
                         'sku' => 'simple_option_5',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
-                        'regular' => 20.20,
-                        'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_tier_price'
                             ]
                         ],
+                        'regular' => 20.20,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_5_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'simple_option_5',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
-                        'regular' => 20.20,
-                        'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_tier_price'
                             ]
                         ],
+                        'regular' => 20.20,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'tierPrices' => [0 => ['qty' => 2, 'price' => 14.14]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_5_test_0' => [
                         'sku' => 'simple_option_5',
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
-                        'regular' => 20.20,
-                        'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_tier_price'
                             ]
                         ],
+                        'regular' => 20.20,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_5_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
                         'sku' => 'simple_option_5',
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'test',
-                        'regular' => 20.20,
-                        'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
                         'parents' => [
                             [
                                 'type' => 'BUNDLE',
                                 'sku' => 'bundle_dynamic_product_with_tier_price'
                             ]
                         ],
+                        'regular' => 20.20,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
+                        'tierPrices' => [0 => ['qty' => 2.55, 'price' => 12.12]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'bundle_dynamic_product_with_regular_price_base_0' => [
@@ -373,8 +377,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 0,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'BUNDLE_DYNAMIC'
                     ],
                     'bundle_dynamic_product_with_regular_price_test_0' => [
@@ -382,8 +386,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 0,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'BUNDLE_DYNAMIC'
                     ],
                     'bundle_dynamic_product_with_special_price_base_0' => [
@@ -391,8 +395,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 0,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'special_price', 'percentage' => 55.55]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_DYNAMIC'
                     ],
                     'bundle_dynamic_product_with_special_price_test_0' => [
@@ -400,8 +404,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 0,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'special_price', 'percentage' => 55.55]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_DYNAMIC'
                     ],
                     'bundle_dynamic_product_with_tier_price_base_0' => [
@@ -409,8 +413,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 0,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 16.16]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_DYNAMIC'
                     ],
                     'bundle_dynamic_product_with_tier_price_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -418,8 +422,9 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
                         'regular' => 0,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 15.15]],
+                        'tierPrices' => [0 => ['qty' => 2, 'price' => 14.14]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_DYNAMIC'
                     ],
                     'bundle_dynamic_product_with_tier_price_test_0' => [
@@ -427,8 +432,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 0,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 14.14]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_DYNAMIC'
                     ],
                     'bundle_dynamic_product_with_tier_price_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -436,8 +441,9 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'test',
                         'regular' => 0,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'percentage' => 13.13]],
+                        'tierPrices' => [0 => ['qty' => 2.55, 'price' => 12.12]],
+                        'deleted' => false,
                         'type' => 'BUNDLE_DYNAMIC'
                     ],
                 ]
@@ -459,8 +465,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 155.15,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 15.15]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_1_test_0' => [
@@ -469,8 +475,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 155.15,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 15.15]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_2_base_0' => [
@@ -479,8 +485,9 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 150,
+                        'discounts' => null,
+                        'tierPrices' => [0 => ['qty' => 2, 'price' => 16.16]],
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_2_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -489,8 +496,9 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
                         'regular' => 150,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'tierPrices' => [0 => ['qty' => 2, 'price' => 16.16]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_2_test_0' => [
@@ -499,8 +507,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 150,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_2_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -509,8 +517,9 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'test',
                         'regular' => 150,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
+                        'tierPrices' => [0 => ['qty' => 2.55, 'price' => 13.13]],
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
                         'type' => 'SIMPLE'
                     ],
                 ]
@@ -532,8 +541,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 55.55,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_1_test_0' => [
@@ -542,8 +551,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 55.55,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_2_base_0' => [
@@ -552,8 +561,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 105.1,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_option_2_test_0' => [
@@ -562,8 +571,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 105.1,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ]
                 ]
@@ -585,8 +594,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 55.55,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_test_0' => [
@@ -595,8 +604,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 55.55,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'virtual-product_base_0' => [
@@ -605,8 +614,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 155.15,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'virtual-product_test_0' => [
@@ -615,8 +624,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 155.15,
-                        'deleted' => false,
                         'discounts' => null,
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ]
                 ]
@@ -638,8 +647,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 155.15,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 15.15]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'simple_test_0' => [
@@ -648,8 +657,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 155.15,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'special_price', 'price' => 15.15]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'virtual-product_base_0' => [
@@ -658,8 +667,9 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'base',
                         'regular' => 10,
+                        'discounts' => null,
+                        'tierPrices' => [0 => ['qty' => 2, 'price' => 16.16]],
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 16.16]],
                         'type' => 'SIMPLE'
                     ],
                     'virtual-product_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -668,8 +678,9 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
                         'regular' => 10,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'tierPrices' => [0 => ['qty' => 2, 'price' => 16.16]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'virtual-product_test_0' => [
@@ -678,8 +689,8 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => '0',
                         'websiteCode' => 'test',
                         'regular' => 10,
-                        'deleted' => false,
                         'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
+                        'deleted' => false,
                         'type' => 'SIMPLE'
                     ],
                     'virtual-product_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
@@ -688,8 +699,9 @@ class ExportComplexProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'test',
                         'regular' => 10,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
+                        'tierPrices' => [0 => ['qty' => 2.55, 'price' => 13.13]],
                         'deleted' => false,
-                        'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
                         'type' => 'SIMPLE'
                     ],
                 ]
