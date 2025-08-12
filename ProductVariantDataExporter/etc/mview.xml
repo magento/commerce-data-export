@@ -20,6 +20,7 @@
             <table name="catalog_product_entity" entity_column="entity_id" />
             <table name="catalog_product_entity_int" entity_column="entity_id" />
             <table name="catalog_product_super_link" entity_column="product_id" />
+            <table name="catalog_product_super_attribute" entity_column="product_id" />
         </subscriptions>
     </view>
 </config>
