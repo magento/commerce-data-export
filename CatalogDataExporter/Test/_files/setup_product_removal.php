@@ -19,9 +19,17 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Msrp\Model\Product\Attribute\Source\Type;
 use Magento\TestFramework\Helper\Bootstrap;
+use Magento\TestFramework\Workaround\Override\Fixture\Resolver;
+use Magento\Eav\Model\Entity\Attribute\Set;
+
+Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_attributes.php');
 
 /** @var ObjectManagerInterface $objectManager */
 $objectManager = Bootstrap::getObjectManager();
+
+/** @var Set $attributeSet */
+$attributeSet = $objectManager->create(Set::class);
+$attributeSet->load('SaaSCatalogAttributeSet', 'attribute_set_name');
 
 /** @var $product Product */
 $product = $objectManager->create(Product::class);

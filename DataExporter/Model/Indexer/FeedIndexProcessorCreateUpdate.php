@@ -342,10 +342,13 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                     $feedHash,
                     (int)$row[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS]
                 )) {
+                    $sourceEntityId = $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID]
+                        ?? $row[FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID];
+
                     $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_PK]
                         = $row[FeedIndexMetadata::FEED_TABLE_FIELD_PK];
-                    $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID]
-                        = $row[FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID];
+                    // Set actual source entity id to the record or assign one if it was not set before
+                    $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID] = $sourceEntityId;
                     $feedItems[$identifier][FeedIndexMetadata::FEED_TABLE_FIELD_STATUS]
                         = $row[FeedIndexMetadata::FEED_TABLE_FIELD_STATUS];
                     $updates[] = $feedItems[$identifier];

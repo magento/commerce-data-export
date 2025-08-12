@@ -196,6 +196,7 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
             $data[$sku]['store_view_code'] = $feedData['storeViewCode'];
             $data[$sku]['modified_at'] = $row['modified_at'];
             $data[$sku]['is_deleted'] = $row['is_deleted'];
+            $data[$sku]['source_entity_id'] = $row['source_entity_id'];
             $data[$sku]['feedData'] = $feedData;
         }
 
