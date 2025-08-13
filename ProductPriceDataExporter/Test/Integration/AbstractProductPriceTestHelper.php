@@ -21,6 +21,7 @@ use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\Registry;
 use Magento\Indexer\Model\Indexer;
 use Magento\Indexer\Model\Processor;
 use Magento\Store\Api\WebsiteRepositoryInterface;
@@ -97,10 +98,36 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     }
 
     /**
+     * Verify that exported product prices feed contains deleted items
+     *
+     * @param array $expectedIds
+     * @return void
+     */
+    protected function checkExportedDeletedItems(array $expectedIds): void
+    {
+        $this->emulateCustomersBehaviorAfterDeleteAction();
+        $processor = $this->objectManager->create(Processor::class);
+        $processor->updateMview();
+        $processor->reindexAllInvalid();
+
+        $actualProductPricesFeed = $this->getExtractedProductPrices($expectedIds);
+        self::assertNotEmpty($actualProductPricesFeed, 'Product Price Feed should not be empty');
+        foreach ($actualProductPricesFeed as $feedItems) {
+            if (array_contains($expectedIds, (string)$feedItems['feed']['productId'])) {
+                self::assertTrue(
+                    (bool)$feedItems['is_deleted'],
+                    "Product Price Feed with key: " . $feedItems['feed']['sku'] . '_'
+                    . $feedItems['feed']['websiteCode'] . '_'
+                    . $feedItems['feed']['customerGroupCode']
+                    . " should be deleted"
+                );
+            }
+        }
+    }
+    /**
      * @param array $expectedItems
      * @return void
      * @throws NoSuchEntityException
-     * @throws Zend_Db_Statement_Exception
      */
     protected function checkExpectedItemsAreExportedInFeed(array $expectedItems): void
     {
@@ -227,6 +254,30 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     private function buildPriceKey(array $row): string
     {
         return $row['sku'] . '_' . $row['websiteCode'] . '_' . $row['customerGroupCode'];
+    }
+
+    /**
+     * @param string $sku
+     * @return void
+     * @throws NoSuchEntityException
+     */
+    protected function deleteProduct(string $sku): void
+    {
+        $productToDelete = $this->productRepository->get($sku);
+        /** @var \Magento\Framework\Registry $registry */
+        $registry = Bootstrap::getObjectManager()->get(Registry::class);
+        $registry->unregister('isSecureArea');
+        $registry->register('isSecureArea', true);
+        try {
+            $this->productRepository->delete($productToDelete);
+        } catch (\Exception $e) {
+            self::fail(
+                "Failed to delete product with SKU: $sku. Error: " . $e->getMessage()
+            );
+        }
+
+        $registry->unregister('isSecureArea');
+        $registry->register('isSecureArea', false);
     }
 
     /**

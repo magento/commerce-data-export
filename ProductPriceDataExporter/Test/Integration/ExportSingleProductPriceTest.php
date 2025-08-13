@@ -21,8 +21,10 @@ use Magento\CatalogRule\Api\Data\RuleInterface;
 use Magento\CatalogRule\Model\Indexer\Rule\RuleProductProcessor;
 use Magento\CatalogRule\Model\ResourceModel\RuleFactory as ResourceRuleFactory;
 use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\StateException;
 use Magento\TestFramework\Helper\Bootstrap;
 
 /**
@@ -53,6 +55,45 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
      */
     public function testExportSimpleProductsPrices(array $expectedSimpleProductPrices): void
     {
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
+    }
+
+    /**
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products.php
+     * @dataProvider expectedSimpleProductPricesAfterDeleteDataProvider
+     * @param array $expectedSimpleProductPrices
+     * @throws NoSuchEntityException
+     */
+    public function testExportDeletedSimpleProductsPrices(array $expectedSimpleProductPrices): void
+    {
+        // Delete product with regular price
+        $skuToDelete = 'simple_product_with_regular_price';
+        $deletedProductId = $this->productRepository->get($skuToDelete)->getId();
+        $this->deleteProduct($skuToDelete);
+
+        $this->checkExportedDeletedItems([$deletedProductId]);
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
+    }
+
+    /**
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products.php
+     * @dataProvider expectedSimpleProductPricesReplaceSkuDataProvider
+     * @param array $expectedSimpleProductPrices
+     * @throws CouldNotSaveException
+     * @throws NoSuchEntityException
+     * @throws InputException
+     * @throws StateException
+     */
+    public function testExportSimpleProductsPricesReplaceSku(array $expectedSimpleProductPrices): void
+    {
+        // Delete product with regular price
+        $skuToReplace = 'simple_product_with_regular_price';
+        $this->deleteProduct($skuToReplace);
+
+        // Replace special price product with regular price product sku
+        $productToChange = $this->productRepository->get('simple_product_with_special_price');
+        $productToChange->setSku($skuToReplace);
+        $this->productRepository->save($productToChange);
         $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductPrices);
     }
 
@@ -233,6 +274,139 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
                         'deleted' => false
                     ],
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @return \array[][]
+     */
+    private function expectedSimpleProductPricesAfterDeleteDataProvider(): array
+    {
+        return [
+            [
+                [
+                    'simple_product_with_special_price_base_0' => [
+                        'sku' => 'simple_product_with_special_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'deleted' => false,
+                    ],
+                    'simple_product_with_special_price_test_0' => [
+                        'sku' => 'simple_product_with_special_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'deleted' => false,
+                    ],
+                    'virtual_product_with_special_price_base_0' => [
+                        'sku' => 'virtual_product_with_special_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'deleted' => false
+                    ],
+                    'virtual_product_with_special_price_test_0' => [
+                        'sku' => 'virtual_product_with_special_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'deleted' => false
+                    ],
+                    'simple_product_with_tier_price_base_0' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'group', 'percentage' => 10]],
+                        'deleted' => false                    ],
+                    'simple_product_with_tier_price_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 15.15]],
+                        'deleted' => false
+                    ],
+                    'simple_product_with_tier_price_test_0' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 14.14]],
+                        'deleted' => false
+                    ],
+                    'simple_product_with_tier_price_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
+                        'sku' => 'simple_product_with_tier_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'group', 'price' => 13.13]],
+                        'deleted' => false
+                    ],
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @return \array[][]
+     */
+    private function expectedSimpleProductPricesReplaceSkuDataProvider(): array
+    {
+        return [
+            [
+                [
+                    'simple_product_with_special_price_base_0' => [
+                        'sku' => 'simple_product_with_special_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'deleted' => true,
+                    ],
+                    'simple_product_with_special_price_test_0' => [
+                        'sku' => 'simple_product_with_special_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'deleted' => true,
+                    ],
+                    'simple_product_with_regular_price_base_0' => [
+                        'sku' => 'simple_product_with_regular_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'deleted' => false,
+                    ],
+                    'simple_product_with_regular_price_test_0' => [
+                        'sku' => 'simple_product_with_regular_price',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'discounts' => [0 => ['code' => 'special_price', 'price' => 55.55]],
+                        'deleted' => false,
+                    ]
                 ]
             ]
         ];

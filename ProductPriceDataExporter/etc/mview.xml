@@ -24,6 +24,7 @@
             <table name="catalogrule_product_price_replica" entity_column="product_id" />
             <!-- temporary solution to get parent/child relationship -->
             <table name="catalog_product_relation" entity_column="child_id" />
+            <table name="catalog_product_entity" entity_column="entity_id" />
         </subscriptions>
     </view>
 </config>
