@@ -101,15 +101,19 @@ class LowStock
      */
     public function get(array $values) : array
     {
-        $queryArguments = [];
         try {
             $output = [];
+            $storeViewCodesFromProducts = [];
             foreach ($values as $value) {
-                $queryArguments['storeViewCodes'][] = $value['storeViewCode'];
+                $storeViewCodesFromProducts[$value['storeViewCode']] = $value['storeViewCode'];
             }
-            $thresholds = $this->getThresholdAmount($queryArguments['storeViewCodes']);
+            $thresholds = $this->getThresholdAmount(array_values($storeViewCodesFromProducts));
             $inventoryData = $this->inventoryDataProvider->get($values);
+
             foreach ($inventoryData as $key => $stockItem) {
+                if (!isset($storeViewCodesFromProducts[$stockItem['storeViewCode']])) {
+                    continue;
+                }
                 $output[$key] = $this->format(
                     $stockItem,
                     $thresholds
