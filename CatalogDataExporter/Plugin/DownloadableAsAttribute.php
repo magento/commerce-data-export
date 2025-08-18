@@ -16,10 +16,8 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Plugin;
 
-use Magento\CatalogDataExporter\Model\Provider\Products;
+use Magento\CatalogDataExporter\Service\SystemAttributeRegistrar;
 use Magento\DataExporter\Export\Processor;
-use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
-use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 use Magento\Downloadable\Model\Product\Type;
 use Magento\Framework\Serialize\SerializerInterface;
 
@@ -33,11 +31,15 @@ class DownloadableAsAttribute
 {
     private const DOWNLOADABLE_ATTRIBUTE_CODE = 'ac_downloadable';
     private const OPTION_TYPE = 'downloadable';
+    private bool $downloadableAttributeRegistered = false;
 
     /**
      * @param SerializerInterface $serializer
      */
-    public function __construct(private readonly SerializerInterface $serializer) {}
+    public function __construct(
+        private readonly SerializerInterface $serializer,
+        private readonly SystemAttributeRegistrar $systemAttributeRegistrar
+    ) {}
 
     /**
      * After process plugin for the Processor class.
@@ -67,16 +69,26 @@ class DownloadableAsAttribute
      */
     private function addAttributeToProductFeed(array &$products): void
     {
+        $hasDownloadableProducts = false;
         foreach ($products as &$product) {
             if ($product['type'] === Type::TYPE_DOWNLOADABLE) {
                 $downloadableAttributeData = $this->buildAttributeData($product);
                 if ($downloadableAttributeData) {
+                    $hasDownloadableProducts = true;
                     $product['attributes'][] = [
                         'attributeCode' => self::DOWNLOADABLE_ATTRIBUTE_CODE,
                         'value' => [$downloadableAttributeData],
                     ];
                 }
             }
+        }
+
+        // dynamically creating attribute metadata to ensure attribute will be registered with required data
+        if ($hasDownloadableProducts && !$this->downloadableAttributeRegistered) {
+            $this->downloadableAttributeRegistered = $this->systemAttributeRegistrar->execute(
+                self::DOWNLOADABLE_ATTRIBUTE_CODE,
+                __('AC Downloadable product')
+            );
         }
     }
 
