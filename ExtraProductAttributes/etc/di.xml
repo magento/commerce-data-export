@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ * Copyright 2025 Adobe
+ * All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <type name="Magento\DataExporter\Export\Processor">
+        <plugin name="data_exporter_register_additional_attributes"
+                type="AdobeCommerce\ExtraProductAttributes\Plugin\AddAttributesToProductFeed"/>
+    </type>
+
+    <type name="Magento\CatalogDataExporter\Service\SystemAttributeRegistrar">
+        <arguments>
+            <argument name="configurationMap" xsi:type="array">
+                <item name="ac_inventory" xsi:type="array">
+                    <item name="properties" xsi:type="array">
+                        <item name="label" xsi:type="string">AC Inventory Data</item>
+                        <item name="visible_on_front" xsi:type="boolean">true</item>
+                    </item>
+                    <item name="exporterOverrides" xsi:type="array">
+                        <item name="dataType" xsi:type="string">OBJECT</item>
+                        <item name="visible" xsi:type="boolean">true</item>
+                        <item name="visibleInSearch" xsi:type="boolean">false</item>
+                    </item>
+                </item>
+                <item name="ac_tax_class" xsi:type="array">
+                    <item name="properties" xsi:type="array">
+                        <item name="label" xsi:type="string">AC Tax Class</item>
+                        <item name="visible_on_front" xsi:type="boolean">true</item>
+                    </item>
+                    <item name="exporterOverrides" xsi:type="array">
+                        <item name="dataType" xsi:type="string">text</item>
+                        <item name="visible" xsi:type="boolean">true</item>
+                        <item name="visibleInSearch" xsi:type="boolean">false</item>
+                    </item>
+                </item>
+                <item name="ac_attribute_set" xsi:type="array">
+                    <item name="properties" xsi:type="array">
+                        <item name="dataType" xsi:type="string">text</item>
+                        <item name="label" xsi:type="string">AC Attribute Set</item>
+                        <item name="visible_on_front" xsi:type="boolean">true</item>
+                    </item>
+                    <item name="exporterOverrides" xsi:type="array">
+                        <item name="visible" xsi:type="boolean">true</item>
+                        <item name="visibleInSearch" xsi:type="boolean">false</item>
+                    </item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>

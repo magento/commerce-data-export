@@ -1,0 +1,22 @@
+{
+    "name": "adobe-commerce/module-extra-product-attributes",
+    "description": "Enrich products feed with additional product attributes",
+    "type": "magento2-module",
+    "license": [
+        "proprietary"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "AdobeCommerce\\ExtraProductAttributes\\": ""
+        }
+    },
+    "require": {
+        "php": "~8.1.0||~8.2.0||~8.3.0||~8.4.0",
+        "magento/framework": ">=103.0.4",
+        "magento/module-catalog-data-exporter": "self.version"
+
+    }
+}

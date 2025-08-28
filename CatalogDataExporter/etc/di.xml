@@ -545,6 +545,10 @@
         <!-- Extract Downloadable product within product.attributes[]-->
         <plugin name="data_exporter_downloadable_as_attribute"
                 type="Magento\CatalogDataExporter\Plugin\DownloadableAsAttribute"/>
+        <!-- Dynamically register product attributes -->
+        <plugin name="data_exporter_create_product_attributes_on_demand"
+                type="Magento\CatalogDataExporter\Plugin\Attribute\CreateProductAttributes"/>
+
     </type>
 
     <type name="Magento\Catalog\Model\ResourceModel\Indexer\ActiveTableSwitcher">
@@ -574,4 +578,22 @@
         </arguments>
     </type>
 
+    <!-- Register system attribute "ac_downloadable" to avoid future collisions -->
+    <type name="Magento\CatalogDataExporter\Service\SystemAttributeRegistrar">
+        <arguments>
+            <argument name="configurationMap" xsi:type="array">
+                <item name="ac_downloadable" xsi:type="array">
+                    <item name="properties" xsi:type="array">
+                        <item name="label" xsi:type="string">AC Downloadable product</item>
+                        <item name="visible_on_front" xsi:type="boolean">true</item>
+                    </item>
+                    <item name="exporterOverrides" xsi:type="array">
+                        <item name="dataType" xsi:type="string">OBJECT</item>
+                        <item name="visible" xsi:type="boolean">true</item>
+                        <item name="visibleInSearch" xsi:type="boolean">false</item>
+                    </item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
 </config>

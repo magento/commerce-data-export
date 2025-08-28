@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Plugin;
 
-use Magento\CatalogDataExporter\Service\SystemAttributeRegistrar;
 use Magento\DataExporter\Export\Processor;
 use Magento\Downloadable\Model\Product\Type;
 use Magento\Framework\Serialize\SerializerInterface;
@@ -31,14 +30,12 @@ class DownloadableAsAttribute
 {
     private const DOWNLOADABLE_ATTRIBUTE_CODE = 'ac_downloadable';
     private const OPTION_TYPE = 'downloadable';
-    private bool $downloadableAttributeRegistered = false;
 
     /**
      * @param SerializerInterface $serializer
      */
     public function __construct(
-        private readonly SerializerInterface $serializer,
-        private readonly SystemAttributeRegistrar $systemAttributeRegistrar
+        private readonly SerializerInterface $serializer
     ) {}
 
     /**
@@ -54,8 +51,6 @@ class DownloadableAsAttribute
     {
         if ($feedName === 'products') {
             $this->addAttributeToProductFeed($feedItems);
-        } elseif ($feedName === 'productAttributes') {
-            $this->modifyDownloadableAttributeMetadata($feedItems);
         }
 
         return $feedItems;
@@ -69,42 +64,15 @@ class DownloadableAsAttribute
      */
     private function addAttributeToProductFeed(array &$products): void
     {
-        $hasDownloadableProducts = false;
         foreach ($products as &$product) {
             if ($product['type'] === Type::TYPE_DOWNLOADABLE) {
                 $downloadableAttributeData = $this->buildAttributeData($product);
                 if ($downloadableAttributeData) {
-                    $hasDownloadableProducts = true;
                     $product['attributes'][] = [
                         'attributeCode' => self::DOWNLOADABLE_ATTRIBUTE_CODE,
                         'value' => [$downloadableAttributeData],
                     ];
                 }
-            }
-        }
-
-        // dynamically creating attribute metadata to ensure attribute will be registered with required data
-        if ($hasDownloadableProducts && !$this->downloadableAttributeRegistered) {
-            $this->downloadableAttributeRegistered = $this->systemAttributeRegistrar->execute(
-                self::DOWNLOADABLE_ATTRIBUTE_CODE,
-                __('AC Downloadable product')
-            );
-        }
-    }
-
-    /**
-     * Modifies the metadata for the downloadable attribute in the product attributes feed.
-     *
-     * @param array $productAttributes
-     * @return void
-     */
-    private function modifyDownloadableAttributeMetadata(array &$productAttributes): void
-    {
-        foreach ($productAttributes as &$attribute) {
-            if (isset($attribute['attributeCode'])
-                && $attribute['attributeCode'] === self::DOWNLOADABLE_ATTRIBUTE_CODE) {
-                $attribute['dataType'] = 'OBJECT';
-                $attribute['visible'] = true; // visible in PDP
             }
         }
     }

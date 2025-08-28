@@ -75,6 +75,8 @@ class TaxClassFormatter implements FormatterInterface
         }
         if (isset($row['taxClassId']) && isset($this->dictionary[$row['taxClassId']])) {
             $row['taxClassId'] = $this->dictionary[$row['taxClassId']]['class_name'];
+        } else {
+            $row['taxClassId'] = 'no';
         }
         return $row;
     }

@@ -57,7 +57,7 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setAttributeSetId($attributeSet->getId())
     ->setName('Simple Product1')
     ->setSku('simple1')
-    ->setTaxClassId('none')
+    ->setTaxClassId(2) // Taxable Goods
     ->setDescription('description')
     ->setShortDescription('short description')
     ->setOptionsContainer('container1')
@@ -70,8 +70,20 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setVisibility(Visibility::VISIBILITY_BOTH)
     ->setStatus(Status::STATUS_ENABLED)
     ->setWebsiteIds([1])
-    ->setStockData(['use_config_manage_stock' => 1, 'qty' => 100, 'is_qty_decimal' => 0, 'is_in_stock' => 1])
-    ->setSpecialPrice('50.99')
+    ->setStockData([
+            'use_config_manage_stock' => 1,
+            'qty' => 100,
+            'is_qty_decimal' => 0,
+            'is_in_stock' => 1,
+            'backorders' => 1,
+            'use_config_min_sale_qty' => 0,
+            'min_sale_qty' => 3,
+            'max_sale_qty' => 100,
+            'use_config_enable_qty_inc' => 0,
+            'enable_qty_inc' => 1,
+            'qty_increments' => 2
+        ]
+    )->setSpecialPrice('50.99')
     ->setImage('/m/a/magento_image.jpg')
     ->setSmallImage('/m/a/magento_small_image.jpg')
     ->setThumbnail('/m/a/magento_thumbnail.jpg')
@@ -91,7 +103,7 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setAttributeSetId($attributeSet->getId())
     ->setName('Simple Product2')
     ->setSku('simple2')
-    ->setTaxClassId('none')
+    ->setTaxClassId(2) // Taxable Goods
     ->setDescription('description')
     ->setShortDescription('short description')
     ->setOptionsContainer('container1')
@@ -123,7 +135,7 @@ $product->setTypeId(Type::TYPE_SIMPLE)
     ->setAttributeSetId($attributeSet->getId())
     ->setName('Simple Product3')
     ->setSku('simple3')
-    ->setTaxClassId('none')
+    ->setTaxClassId(2) // Taxable Goods
     ->setDescription('description')
     ->setShortDescription('short description')
     ->setPrice(30)

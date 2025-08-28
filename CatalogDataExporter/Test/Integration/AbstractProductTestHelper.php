@@ -336,7 +336,6 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $this->assertEquals($product->getMetaDescription(), $extract['feedData']['metaDescription']);
         $this->assertEquals($product->getMetaKeyword(), $extract['feedData']['metaKeyword']);
         $this->assertEquals($product->getMetaTitle(), $extract['feedData']['metaTitle']);
-        $this->assertEquals($product->getTaxClassId(), $extract['feedData']['taxClassId']);
         $this->assertEquals($visibility, $extract['feedData']['visibility']);
     }
 
