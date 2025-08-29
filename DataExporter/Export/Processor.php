@@ -87,7 +87,7 @@ class Processor
         FeedIndexMetadata $metadata,
         array $arguments,
         callable $dataProcessorCallback,
-        $lastChunk = false
+        bool $lastChunk = false
     ) : void {
         try {
             $info = $this->infoAssembler->assembleFieldInfo($metadata->getFeedName(), $this->rootProfileName);
@@ -109,7 +109,7 @@ class Processor
                 ),
                 ['exception' => $exception]
             );
-            throw new UnableRetrieveData();
+            throw new UnableRetrieveData($exception->getMessage());
         }
     }
 

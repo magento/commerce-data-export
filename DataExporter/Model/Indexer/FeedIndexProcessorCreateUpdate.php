@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Magento\DataExporter\Model\Indexer;
 
 use DateTime;
+use Magento\DataExporter\Exception\UnableRetrieveData;
 use Magento\DataExporter\Model\Batch\BatchGeneratorInterface;
 use Magento\DataExporter\Model\Batch\FeedSource\Generator as FeedSourceBatchGenerator;
 use Magento\DataExporter\Model\FailedItemsRegistry;
@@ -59,6 +60,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
     private FailedItemsRegistry $failedItemsRegistry;
     private ?FeedExportStatusBuilder $feedExportStatusBuilder;
     private IndexerConfig $indexerConfig;
+    private bool $errorOccurredOnFullReindex = false;
 
     /**
      * @param ResourceConnection $resourceConnection
@@ -175,10 +177,22 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                         $chunkTimeStamp
                     );
                 } catch (Throwable $e) {
+                    if (!$e instanceof UnableRetrieveData) {
+                        $this->logger->error(
+                            sprintf(
+                                'Error during full sync. Message: "%s". Skipped IDs: [%s]',
+                                $e->getMessage(),
+                                implode(',', array_column($chunk, $feedIdentity))
+                            ),
+                            ['exception' => $e]
+                        );
+                    }
                     // for partial reindex thrown exception to return un-processed IDs back to changelog
                     if ($isPartialReindex) {
                         throw $e;
                     }
+                    // keep going during full re-sync, but mark fail indexer at the end for next re-process
+                    $this->errorOccurredOnFullReindex = true;
                 }
             } else {
                 $this->feedUpdater->execute(
@@ -205,6 +219,7 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         EntityIdsProviderInterface $idsProvider
     ): void {
         try {
+            $this->errorOccurredOnFullReindex = false;
             $this->truncateIndexTable($metadata);
             $batchIterator = $this->batchGenerator->generate($metadata);
             $threadCount = min($metadata->getThreadCount(), $batchIterator->count());
@@ -212,20 +227,12 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
             for ($threadNumber = 1; $threadNumber <= $threadCount; $threadNumber++) {
                 $userFunctions[] = function () use ($batchIterator, $metadata, $serializer, $idsProvider) {
                     $indexState = $this->indexStateProviderFactory->create(['metadata' => $metadata]);
-                    try {
-                        foreach ($batchIterator as $ids) {
-                            $this->partialReindex($metadata, $serializer, $idsProvider, $ids, null, $indexState);
-                            // track iteration completion
-                            $this->logger->logProgress();
-                        }
-                        $this->exportFeedItemsAndLogStatus($indexState, $metadata, $serializer, true);
-                    } catch (Throwable $e) {
-                        $this->logger->error(
-                            'Data Exporter exception has occurred: ' . $e->getMessage(),
-                            ['exception' => $e]
-                        );
-                        throw $e;
+                    foreach ($batchIterator as $ids) {
+                        $this->partialReindex($metadata, $serializer, $idsProvider, $ids, null, $indexState);
+                        // track iteration completion
+                        $this->logger->logProgress();
                     }
+                    $this->exportFeedItemsAndLogStatus($indexState, $metadata, $serializer, true);
                 };
             }
             $processManager = $this->processManagerFactory->create(['threadsCount' => $threadCount]);
@@ -235,6 +242,12 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
                 'Data Exporter exception has occurred: ' . $e->getMessage(),
                 ['exception' => $e]
             );
+        } finally {
+            // must be thrown in order to mark indexer as "invalid" for next re-run
+            if ($this->errorOccurredOnFullReindex) {
+                throw new UnableRetrieveData('Full resync failed. Check logs for details');
+            }
+
         }
     }
 
@@ -256,6 +269,9 @@ class FeedIndexProcessorCreateUpdate implements FeedIndexProcessorInterface
         while ($indexStateProvider->isBatchLimitReached()) {
             $data = $indexStateProvider->getFeedItems();
             $data = $this->processFailedFeedItems($data, $metadata, $serializer);
+            if (empty($data)) {
+                continue;
+            }
             $exportStatus = $this->exportFeedProcessor->export(
                 array_column($data, FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA),
                 $metadata

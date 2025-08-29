@@ -179,7 +179,7 @@ class ViewMaterializer
                     } catch (\Throwable $e) {
                         $batchIterator->markBatchForRetry();
                         $this->logger->error(
-                            'Mview Data Exporter exception has occurred: ' . $e->getMessage(),
+                            'Partial sync error: ' . $e->getMessage(),
                             ['exception' => $e]
                         );
                     }
