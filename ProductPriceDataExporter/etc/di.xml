@@ -86,4 +86,14 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Magento\CatalogDataExporter\Model\Indexer\IndexInvalidationManager">
+        <arguments>
+            <argument name="invalidationEvents" xsi:type="array">
+                <item name="recalculate_prices" xsi:type="array">
+                    <item name="prices" xsi:type="string">catalog_data_exporter_product_prices</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
 </config>

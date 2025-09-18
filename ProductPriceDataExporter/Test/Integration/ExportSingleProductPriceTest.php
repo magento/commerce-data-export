@@ -178,6 +178,20 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
     }
 
     /**
+     * @magentoDataFixture Magento_ProductPriceDataExporter::Test/_files/simple_products_with_tier_and_group_prices_on_all_websites.php
+     * @magentoDataFixture Magento/CatalogRule/_files/catalog_rule_25_customer_group_all.php
+     * @dataProvider expectedSimpleProductWithTierPricesOnAllWebsitesAndCatalogRulesDataProvider
+     * @param array $expectedSimpleProductWithGroupAndTierPricesAndCatalogRules
+     * @return void
+     * @throws NoSuchEntityException
+     */
+    public function testExportSimpleProductsWithGroupedAndTierPricesOnAllWebsitesAndCatalogRules(
+        array $expectedSimpleProductWithGroupAndTierPricesAndCatalogRules
+    ): void {
+        $this->checkExpectedItemsAreExportedInFeed($expectedSimpleProductWithGroupAndTierPricesAndCatalogRules);
+    }
+
+    /**
      * @return \array[][]
      */
     private function expectedSimpleProductPricesDataProvider(): array
@@ -962,6 +976,76 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                             ['qty' => 2, 'price' => 14.14],
                             ['qty' => 3, 'price' => 13.13],
                             ['qty' => 4, 'price' => 12.13],
+                        ],
+                        'deleted' => false
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @return array[]
+     */
+    private function expectedSimpleProductWithTierPricesOnAllWebsitesAndCatalogRulesDataProvider(): array
+    {
+        return [
+            [
+                [
+                    'simple_product_with_tier_and_grouped_prices_base_0' => [
+                        'sku' => 'simple_product_with_tier_and_grouped_prices',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'discounts' => [
+                            ['code' => 'group', 'percentage' => 10]
+                        ],
+                        'tierPrices' => [0 => ['qty' => 2, 'percentage' => 20]],
+                        'deleted' => false
+                    ],
+                    'simple_product_with_tier_and_grouped_prices_base_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
+                        'sku' => 'simple_product_with_tier_and_grouped_prices',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'base',
+                        'regular' => 100.1,
+                        'discounts' => [
+                            ['code' => 'group', 'percentage' => 10],
+                            ['code' => 'catalog_rule', 'price' => 75.08]
+                        ],
+                        'tierPrices' => [
+                            ['qty' => 2, 'percentage' => 20],
+                            ['qty' => 3, 'price' => 15.15],
+                            ['qty' => 4, 'price' => 14.15],
+                        ],
+                        'deleted' => false
+                    ],
+                    'simple_product_with_tier_and_grouped_prices_test_0' => [
+                        'sku' => 'simple_product_with_tier_and_grouped_prices',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => '0',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'discounts' => [
+                            ['code' => 'group', 'percentage' => 10]
+                        ],
+                        'tierPrices' => [0 => ['qty' => 2, 'percentage' => 20]],
+                        'deleted' => false
+                    ],
+                    'simple_product_with_tier_and_grouped_prices_test_b6589fc6ab0dc82cf12099d1c2d40ab994e8410c' => [
+                        'sku' => 'simple_product_with_tier_and_grouped_prices',
+                        'type' => 'SIMPLE',
+                        'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
+                        'websiteCode' => 'test',
+                        'regular' => 100.1,
+                        'discounts' => [
+                            ['code' => 'group', 'percentage' => 10]
+                        ],
+                        'tierPrices' => [
+                            ['qty' => 2, 'percentage' => 20],
+                            ['qty' => 3, 'price' => 15.15],
+                            ['qty' => 4, 'price' => 14.15],
                         ],
                         'deleted' => false
                     ]
