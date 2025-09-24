@@ -123,7 +123,8 @@ class BundleProductOptionValuesQuery
                 [
                     'store_selection_price' => $storeSelectionPrice
                 ],
-                'store_selection_price.selection_id = main_table.selection_id',
+                'store_selection_price.selection_id = main_table.selection_id'
+                . ' AND store_selection_price.website_id = s.website_id',
                 []
             )
             ->where('cpe_parent.entity_id IN (?)', $productIds)
