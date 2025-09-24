@@ -58,16 +58,18 @@ class InvalidateOnConfigChange
     }
 
     /**
-     * Invalidate indexer if relevant config value is changed
+     * Invalidate indexer if relevant config value is changed (around plugin)
      *
      * @param Config $subject
-     * @return null
+     * @param callable $proceed
+     * @return mixed
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function beforeSave(Config $subject)
+    public function aroundSave(Config $subject, callable $proceed)
     {
         try {
+            $check = [];
             $savedSection = $subject->getSection();
             foreach ($this->configValues as $searchValue) {
                 $path = explode('/', $searchValue);
@@ -76,13 +78,7 @@ class InvalidateOnConfigChange
                 $field = $path[2];
                 if ($savedSection == $section) {
                     if (isset($subject['groups'][$group]['fields'][$field])) {
-                        $savedField = $subject['groups'][$group]['fields'][$field];
-                        $beforeValue = $this->scopeConfig->getValue($searchValue);
-                        $afterValue = $savedField['value'] ?? $savedField['inherit'] ?? null;
-                        if ($beforeValue != $afterValue) {
-                            $this->invalidationManager->invalidate($this->invalidationEvent);
-                            break;
-                        }
+                        $check[$searchValue] = $this->scopeConfig->getValue($searchValue);
                     }
                 }
             }
@@ -92,6 +88,23 @@ class InvalidateOnConfigChange
                 ['exception' => $e]
             );
         }
-        return null;
+        
+        $result = $proceed();
+        
+        try {
+            foreach ($check as $path => $beforeValue) {
+                if ($beforeValue != $this->scopeConfig->getValue($path)) {
+                    $this->invalidationManager->invalidate($this->invalidationEvent);
+                    break;
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                'Data Exporter exception has occurred: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
+        }
+        
+        return $result;
     }
 }
