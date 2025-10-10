@@ -69,7 +69,7 @@ class ResetTriggers
         try {
             $viewList = $this->getViewsForTables($tableNames);
             foreach ($viewList as $view) {
-                $view->unsubscribe();
+                $view->unsubscribe(false);
             }
             $result = $proceed($connection, $tableNames);
             foreach ($viewList as $view) {
