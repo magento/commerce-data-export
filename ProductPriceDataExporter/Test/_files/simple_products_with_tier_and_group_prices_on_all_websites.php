@@ -28,7 +28,7 @@ use Magento\Store\Model\Store;
 
 $createGroupedPrice = static function (
     &$productTierPrices,
-    $websiteId  = null,
+    $websiteId,
     $customerGroupId,
     $qty,
     $percentageValue = null,

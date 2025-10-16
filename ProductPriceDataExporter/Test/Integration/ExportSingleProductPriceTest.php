@@ -450,7 +450,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
                         'regular' => 55.55,
-                        'discounts' => [0 => ['code' => 'catalog_rule', 'price' => 41.66]],
+                        'discounts' => [0 => ['code' => 'catalog_rule', 'price' => 41.6625]],
                         'deleted' => false
                     ],
                     'simple_product_with_regular_price_test_0' => [
@@ -479,7 +479,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             0 => ['code' => 'special_price', 'price' => 55.55],
-                            1 => ['code' => 'catalog_rule', 'price' => 75.08]
+                            1 => ['code' => 'catalog_rule', 'price' => 75.075]
                         ],
                         'deleted' => false
                     ],
@@ -509,7 +509,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             0 => ['code' => 'special_price', 'price' => 55.55],
-                            1 => ['code' => 'catalog_rule', 'price' => 75.08]
+                            1 => ['code' => 'catalog_rule', 'price' => 75.075]
                         ],
                         'deleted' => false
                     ],
@@ -539,7 +539,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             0 => ['code' => 'group', 'price' => 15.15],
-                            1 => ['code' => 'catalog_rule', 'price' => 75.08]
+                            1 => ['code' => 'catalog_rule', 'price' => 75.075]
                         ],
                         'deleted' => false
                     ],
@@ -590,7 +590,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
                         'regular' => 55.55,
-                        'discounts' => [0 => ['code' => 'catalog_rule', 'price' => 41.66]],
+                        'discounts' => [0 => ['code' => 'catalog_rule', 'price' => 41.6625]],
                         'deleted' => true,
                     ],
                     'simple_product_with_regular_price_test_0' => [
@@ -619,7 +619,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             0 => ['code' => 'special_price', 'price' => 55.55],
-                            1 => ['code' => 'catalog_rule', 'price' => 75.08]
+                            1 => ['code' => 'catalog_rule', 'price' => 75.075]
                         ],
                         'deleted' => true
                     ],
@@ -649,7 +649,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             0 => ['code' => 'special_price', 'price' => 55.55],
-                            1 => ['code' => 'catalog_rule', 'price' => 75.08]
+                            1 => ['code' => 'catalog_rule', 'price' => 75.075]
                         ],
                         'deleted' => true
                     ],
@@ -942,7 +942,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             ['code' => 'group', 'percentage' => 10],
-                            ['code' => 'catalog_rule', 'price' => 75.08]
+                            ['code' => 'catalog_rule', 'price' => 75.075]
                         ],
                         'tierPrices' => [
                             ['qty' => 2, 'percentage' => 20],
@@ -1012,7 +1012,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             ['code' => 'group', 'percentage' => 10],
-                            ['code' => 'catalog_rule', 'price' => 75.08]
+                            ['code' => 'catalog_rule', 'price' => 75.075]
                         ],
                         'tierPrices' => [
                             ['qty' => 2, 'percentage' => 20],

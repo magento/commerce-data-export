@@ -74,6 +74,13 @@ abstract class AbstractInventoryTestHelper extends \PHPUnit\Framework\TestCase
         $this->indexer = Bootstrap::getObjectManager()->create(Indexer::class);
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
         $this->stockStatusFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('inventoryStockStatus');
+        Bootstrap::getObjectManager()->configure([
+            'Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata' => [
+                'arguments' => [
+                    'persistExportedFeed' => true
+                ]
+            ]
+        ]);
 
         $this->indexer->load(self::STOCK_STATUS_FEED_INDEXER);
         $this->reindexStockStatusDataExporterTable();

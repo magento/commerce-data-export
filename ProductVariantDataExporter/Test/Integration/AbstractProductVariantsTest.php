@@ -117,6 +117,13 @@ abstract class AbstractProductVariantsTest extends TestCase
         $this->arrayUtils = $objectManager->create(ArrayUtils::class);
         $this->registry = Bootstrap::getObjectManager()->get(Registry::class);
         $this->idResolver = Bootstrap::getObjectManager()->get(ConfigurableId::class);
+        Bootstrap::getObjectManager()->configure([
+            'Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata' => [
+                'arguments' => [
+                    'persistExportedFeed' => true
+                ]
+            ]
+        ]);
     }
 
     /**

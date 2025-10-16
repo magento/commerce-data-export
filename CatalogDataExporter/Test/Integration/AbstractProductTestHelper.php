@@ -169,6 +169,24 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $this->optionValueUid = Bootstrap::getObjectManager()->create(CustomizableSelectedOptionValueUid::class);
         $this->jsonSerializer = Bootstrap::getObjectManager()->create(Json::class);
 
+        Bootstrap::getObjectManager()->configure([
+            'Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata' => [
+                'arguments' => [
+                    'persistExportedFeed' => true
+                ]
+            ],
+            'Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata' => [
+                'arguments' => [
+                    'persistExportedFeed' => true
+                ]
+            ],
+            'Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndexMetadata' => [
+                'arguments' => [
+                    'persistExportedFeed' => true
+                ]
+            ]
+        ]);
+
         $this->indexer->load(self::CATALOG_DATA_EXPORTER);
         $this->reindexProductDataExporter();
     }

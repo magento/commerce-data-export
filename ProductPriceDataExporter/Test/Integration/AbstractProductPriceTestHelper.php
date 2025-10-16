@@ -79,6 +79,14 @@ abstract class AbstractProductPriceTestHelper extends TestCase
         $this->resourceConnection = $this->objectManager->create(ResourceConnection::class);
         $this->websiteRepository = $this->objectManager->get(WebsiteRepositoryInterface::class);
 
+        $this->objectManager->configure([
+            'Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata' => [
+                'arguments' => [
+                    'persistExportedFeed' => true
+                ]
+            ]
+        ]);
+
         $this->indexer->load(self::PRODUCT_PRICE_FEED_INDEXER);
         $this->reindexProductPriceDataExporter();
     }
