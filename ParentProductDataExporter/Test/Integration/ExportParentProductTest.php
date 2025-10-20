@@ -51,7 +51,7 @@ class ExportParentProductTest extends AbstractProductTestHelper
     /**
      * @return \array[][]
      */
-    private function expectedSimpleConfigurableWithParentsData(): array
+    public static function expectedSimpleConfigurableWithParentsData(): array
     {
         return [
             [
@@ -82,7 +82,7 @@ class ExportParentProductTest extends AbstractProductTestHelper
     /**
      * @return \array[][]
      */
-    private function expectedSimpleProductWithParentsData(): array
+    public static function expectedSimpleProductWithParentsData(): array
     {
         return [
             [

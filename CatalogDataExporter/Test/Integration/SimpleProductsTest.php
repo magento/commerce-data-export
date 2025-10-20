@@ -115,7 +115,7 @@ class SimpleProductsTest extends AbstractProductTestHelper
      * @throws \Zend_Db_Statement_Exception
      * @throws \Throwable
      */
-    public function testSimpleProductWithCustomOptions(): void
+    public function testSimpleProductWithCustomOptionsOnly(): void
     {
         $sku = 'simple_with_custom_options';
         $storeViewCode = 'default';

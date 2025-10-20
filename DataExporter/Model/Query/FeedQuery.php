@@ -40,6 +40,7 @@ class FeedQuery
      * @param int $offset
      * @param array|null $ignoredExportStatus
      * @return Select
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function getLimitSelect(
         FeedIndexMetadata $metadata,
@@ -70,6 +71,7 @@ class FeedQuery
      * @param string|null $limit
      * @param array|null $ignoredExportStatus
      * @return Select
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function getDataSelect(
         FeedIndexMetadata $metadata,
@@ -95,6 +97,35 @@ class FeedQuery
             ->where('t.modified_at > ?', $modifiedAt);
         if ($limit) {
             $select->where('t.modified_at <= ?', $limit);
+        }
+
+        return $select;
+    }
+
+    /**
+     * Get select to retrieve data
+     *
+     * @param FeedIndexMetadata $metadata
+     * @param array|null $entityIds
+     * @return Select
+     */
+    public function getFeedIdsSelect(
+        FeedIndexMetadata $metadata,
+        ?array $entityIds,
+    ): Select {
+        $connection = $this->resourceConnection->getConnection();
+        $columns = [
+            FeedIndexMetadata::FEED_TABLE_FIELD_PK,
+            FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID
+        ];
+        $feedTableName = $this->resourceConnection->getTableName($metadata->getFeedTableName());
+        $select = $connection->select()
+            ->from(
+                ['t' => $feedTableName],
+                $columns
+            );
+        if (!empty($entityIds)) {
+            $select->where(FeedIndexMetadata::FEED_TABLE_FIELD_SOURCE_ENTITY_ID . ' in (?)', $entityIds);
         }
 
         return $select;

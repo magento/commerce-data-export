@@ -12,13 +12,13 @@ use PHPUnit\Framework\TestCase;
 
 class ConfigurationExportTest extends TestCase
 {
-    const CONNECTION_AMPQ = 'amqp';
-    const QUEUE_NAME = 'system.configuration.export.queue';
-    const TOPIC_NAME = 'system.configuration.export';
-    const TEST_CONFIG_PATH = 'section/group/field';
-    const TEST_CONFIG_VALUE = 'test value';
-    const TEST_CONFIG_SCOPE = 'stores';
-    const TEST_CONFIG_SCOPE_ID = 1;
+    public const CONNECTION_AMPQ = 'amqp';
+    public const QUEUE_NAME = 'system.configuration.export.queue';
+    public const TOPIC_NAME = 'system.configuration.export';
+    public const TEST_CONFIG_PATH = 'section/group/field';
+    public const TEST_CONFIG_VALUE = 'test value';
+    public const TEST_CONFIG_SCOPE = 'stores';
+    public const TEST_CONFIG_SCOPE_ID = 1;
 
     /**
      * @var  \Magento\Config\Model\Config\Factory
@@ -144,7 +144,7 @@ class ConfigurationExportTest extends TestCase
     /**
      * @return array
      */
-    public function configExportDataProvider(): array
+    public static function configExportDataProvider(): array
     {
         return [
             [

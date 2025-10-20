@@ -195,7 +195,7 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
     /**
      * @return \array[][]
      */
-    private function expectedSimpleProductPricesUnassignedWebsiteDataProvider(): array
+    public static function expectedSimpleProductPricesUnassignedWebsiteDataProvider(): array
     {
         return [
             [
@@ -244,7 +244,7 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
     /**
      * @return array[]
      */
-    private function expectedSimpleProductDisabledGlobalDataProvider(): array
+    public static function expectedSimpleProductDisabledGlobalDataProvider(): array
     {
         return [
             [
@@ -293,7 +293,7 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
     /**
      * @return array[]
      */
-    private function expectedSimpleProductEnabledOneStoreDataProvider(): array
+    public static function expectedSimpleProductEnabledOneStoreDataProvider(): array
     {
         return [
             [
@@ -342,7 +342,7 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
     /**
      * @return \array[][]
      */
-    private function expectedSimpleProductPricesReassignProductsToWebsiteDataProvider(): array
+    public static function expectedSimpleProductPricesReassignProductsToWebsiteDataProvider(): array
     {
         return [
             [
@@ -391,7 +391,7 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
     /**
      * @return \array[][]
      */
-    private function expectedSimpleProductPricesUnassignedGroupPriceDataProvider(): array
+    public static function expectedSimpleProductPricesUnassignedGroupPriceDataProvider(): array
     {
         return [
             [
@@ -440,7 +440,7 @@ class ExportSingleProductPriceUpdateOperationsTest extends AbstractProductPriceT
     /**
      * @return \array[][]
      */
-    private function expectedSimpleProductPricesReassignGroupPricesDataProvider(): array
+    public static function expectedSimpleProductPricesReassignGroupPricesDataProvider(): array
     {
         return [
             [

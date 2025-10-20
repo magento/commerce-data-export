@@ -1,8 +1,7 @@
 {
     "name": "magento/module-configuration-data-exporter",
-    "description": "N/A",
+    "description": "DEPRECATED: This module is no longer supported and will be removed in future releases.",
     "type": "magento2-module",
-    "deprecated": "This module is no longer supported and will be removed in future releases.",
     "license": [
         "OSL-3.0",
         "AFL-3.0"

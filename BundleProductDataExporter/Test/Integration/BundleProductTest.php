@@ -42,23 +42,19 @@ class BundleProductTest extends AbstractProductTestHelper
 
     /**
      * Validate bundle product options data
-     *
-     * @param array $bundleProductOptionsDataProvider
-     *
+     * @param array $item
      * @magentoDataFixture Magento/Bundle/_files/product_1.php
      * @dataProvider getBundleFixedProductOptionsDataProvider
-     *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     *
      * @return void
      */
-    public function testBundleFixedProductOptions(array $bundleProductOptionsDataProvider) : void
+    public function testBundleFixedProductOptions(array $item) : void
     {
         $extractedProduct = $this->getExtractedProduct(self::BUNDLE_SKU, 'default');
         $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
-        foreach ($bundleProductOptionsDataProvider as $key => $expectedData) {
+        foreach ($item as $key => $expectedData) {
             $diff = $this->arrayUtils->recursiveDiff($expectedData, $extractedProduct[$key]);
             self::assertEquals([], $diff, 'Actual feed data doesn\'t equal to expected data');
         }
@@ -77,15 +73,15 @@ class BundleProductTest extends AbstractProductTestHelper
      *
      */
     public function testBundleFixedProductOptionsWithPriceDifferentThanDefault(
-        array $bundleProductOptionsBeforeChanges,
-        array $bundleProductOptionsAfterChanges
+        array $beforeChanges,
+        array $afterChanges
     ) : void {
         $product = $this->productRepository->get('bundle-product', true, 'main_website_store');
 
         $extractedProductBeforeChanges = $this->getExtractedProduct(self::BUNDLE_SKU, 'default');
         $this->assertNotEmpty($extractedProductBeforeChanges, 'Feed data must not be empty');
 
-        foreach ($bundleProductOptionsBeforeChanges as $key => $expectedData) {
+        foreach ($beforeChanges as $key => $expectedData) {
             $diff = $this->arrayUtils->recursiveDiff($expectedData, $extractedProductBeforeChanges[$key]);
             self::assertEquals([], $diff, 'Actual feed data doesn\'t equal to expected data');
         }
@@ -109,7 +105,7 @@ class BundleProductTest extends AbstractProductTestHelper
         $extractedProductAfterChanges = $this->getExtractedProduct(self::BUNDLE_SKU, 'default');
         $this->assertNotEmpty($extractedProductAfterChanges, 'Feed data must not be empty');
 
-        foreach ($bundleProductOptionsAfterChanges as $key => $expectedData) {
+        foreach ($afterChanges as $key => $expectedData) {
             $diff = $this->arrayUtils->recursiveDiff($expectedData, $extractedProductAfterChanges[$key]);
             self::assertEquals([], $diff, 'Actual feed data doesn\'t equal to expected data');
         }
@@ -117,24 +113,20 @@ class BundleProductTest extends AbstractProductTestHelper
 
     /**
      * Validate bundle product options data
-     *
-     * @param array $bundleProductOptionsDataProvider
-     *
+     * @param array $item
      * @return void
      * @throws \Zend_Db_Statement_Exception
      * @magentoDataFixture Magento/Bundle/_files/dynamic_bundle_product_with_special_price.php
      * @dataProvider getBundleDynamicProductOptionsDataProvider
-     *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     *
      */
-    public function testBundleDynamicProductOptions(array $bundleProductOptionsDataProvider) : void
+    public function testBundleDynamicProductOptions(array $item) : void
     {
         $extractedProduct = $this->getExtractedProduct(self::DYNAMIC_BUNDLE_SKU, 'default');
         $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
-        foreach ($bundleProductOptionsDataProvider as $key => $expectedData) {
+        foreach ($item as $key => $expectedData) {
             $diff = $this->arrayUtils->recursiveDiff($expectedData, $extractedProduct[$key]);
             self::assertEquals([], $diff, 'Actual feed data doesn\'t equal to expected data');
         }
@@ -145,7 +137,7 @@ class BundleProductTest extends AbstractProductTestHelper
      *
      * @return array
      */
-    public function getBundleFixedProductOptionsDataProvider() : array
+    public static function getBundleFixedProductOptionsDataProvider() : array
     {
         return [
             'bundleProduct' => [
@@ -187,11 +179,11 @@ class BundleProductTest extends AbstractProductTestHelper
      *
      * @return array
      */
-    public function getBundleFixedProductOptionsBeforeAndAfterPriceChangeDataProvider() : array
+    public static function getBundleFixedProductOptionsBeforeAndAfterPriceChangeDataProvider() : array
     {
         return [
             [
-                'before_changes' => [
+                'beforeChanges' => [
                     'feedData' => [
                         'sku' => self::BUNDLE_SKU,
                         'storeViewCode' => 'default',
@@ -220,7 +212,7 @@ class BundleProductTest extends AbstractProductTestHelper
                         ],
                     ],
                 ],
-                'after_changes' => [
+                'afterChanges' => [
                     'feedData' => [
                         'sku' => self::BUNDLE_SKU,
                         'storeViewCode' => 'default',
@@ -258,7 +250,7 @@ class BundleProductTest extends AbstractProductTestHelper
      *
      * @return array
      */
-    public function getBundleDynamicProductOptionsDataProvider() : array
+    public static function getBundleDynamicProductOptionsDataProvider() : array
     {
         return [
             'bundleProduct' => [

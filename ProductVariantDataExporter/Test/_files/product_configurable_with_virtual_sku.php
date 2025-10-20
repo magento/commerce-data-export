@@ -18,8 +18,6 @@ use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\Workaround\Override\Fixture\Resolver;
 use Magento\Eav\Model\Config;
 
-\Magento\TestFramework\Helper\Bootstrap::getInstance()->reinitialize();
-
 Resolver::getInstance()->requireDataFixture('Magento/ConfigurableProduct/_files/configurable_attribute.php');
 /** @var ProductRepositoryInterface $productRepository */
 $productRepository = Bootstrap::getObjectManager()

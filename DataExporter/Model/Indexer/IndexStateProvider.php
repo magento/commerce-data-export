@@ -69,7 +69,7 @@ class IndexStateProvider
     }
 
     /**
-     * Warming: this function is NOT idempotent
+     * Warning: this function is NOT idempotent
      *
      * @return array
      */
@@ -136,6 +136,7 @@ class IndexStateProvider
      *
      * @param array $item
      * @return bool
+     * phpcs:disable Magento2.Functions.StaticFunction
      */
     public static function isUpdate(array $item): bool
     {

@@ -1,0 +1,39 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+/** @var $block \Magento\Catalog\Block\Adminhtml\Product\Edit\Tab\ChildTab */
+?>
+<?php
+foreach ($block->getChildNames() as $childName) :
+    /** @var $childBlock Magento\DataExporterStatus\Block\Adminhtml\Section */
+    $childBlock = $block->getChildBlock($childName);
+    if (!$childBlock instanceof \Magento\DataExporterStatus\Block\Adminhtml\Section) {
+        continue;
+    }
+?>
+<div class="feed-section-wrapper">
+    <div class="fieldset-wrapper admin__collapsible-block-wrapper" data-tab="<?= /* @noEscape */ $childBlock->getTabId() ?>"
+         id="<?= /* @noEscape */ $childBlock->getTabId() ?>-wrapper" data-mage-init='{"collapsible":{
+                        "active": <?= $childBlock->isOpen() ? 'true' : 'false' ?>,
+                        "openedState": "_show",
+                        "closedState": "_hide",
+                        "animate": 200,
+                        "collapsible": true
+                        }}'
+        >
+        <div class="fieldset-wrapper-title" data-role="title">
+            <strong class="admin__collapsible-title" data-role="trigger" >
+                <span><?= /* @noEscape */ $childBlock->getTitle() ?></span>
+            </strong>
+        </div>
+        <div class="fieldset-wrapper-content" data-role="content" id="<?= /* @noEscape */ $childBlock->getTabId() ?>-content">
+            <?= /* @noEscape */ $childBlock->getContent() ?>
+        </div>
+    </div>
+    <?php
+        endforeach;
+    ?>
+</div>

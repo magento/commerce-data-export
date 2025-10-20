@@ -185,7 +185,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
     /**
      * @return \array[][]
      */
-    private function expectedSimpleProductPricesDataProvider(): array
+    public static function expectedSimpleProductPricesDataProvider(): array
     {
         return [
             [
@@ -287,7 +287,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
     /**
      * @return \array[][]
      */
-    private function expectedSimpleProductPricesAfterDeleteDataProvider(): array
+    public static function expectedSimpleProductPricesAfterDeleteDataProvider(): array
     {
         return [
             [
@@ -371,7 +371,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
     /**
      * @return \array[][]
      */
-    private function expectedSimpleProductPricesReplaceSkuDataProvider(): array
+    public static function expectedSimpleProductPricesReplaceSkuDataProvider(): array
     {
         return [
             [
@@ -421,7 +421,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
      * @return \array[][]
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    private function expectedSimpleProductPricesWithCatalogRuleDataProvider(): array
+    public static function expectedSimpleProductPricesWithCatalogRuleDataProvider(): array
     {
         return [
             [
@@ -561,7 +561,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
      * @return \array[][]
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    private function expectedSimpleProductPricesWithCatalogRuleDisabledDataProvider(): array
+    public static function expectedSimpleProductPricesWithCatalogRuleDisabledDataProvider(): array
     {
         return [
             [
@@ -699,7 +699,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
     /**
      * @return array[]
      */
-    private function expectedDownloadableProductPricesDataProvider(): array
+    public static function expectedDownloadableProductPricesDataProvider(): array
     {
         return [
             [
@@ -784,7 +784,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
     /**
      * @return array[]
      */
-    private function expectedSimpleProductWithGroupAndTierPricesDataProvider(): array
+    public static function expectedSimpleProductWithGroupAndTierPricesDataProvider(): array
     {
         return [
             [
@@ -847,7 +847,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
     /**
      * @return array[]
      */
-    private function expectedSimpleProductWithTierPricesDataProvider(): array
+    public static function expectedSimpleProductWithTierPricesDataProvider(): array
     {
         return [
             [
@@ -908,7 +908,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
     /**
      * @return array[]
      */
-    private function expectedSimpleProductWithTierPricesAndCatalogRulesDataProvider(): array
+    public static function expectedSimpleProductWithTierPricesAndCatalogRulesDataProvider(): array
     {
         return [
             [
@@ -978,7 +978,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
     /**
      * @return array[]
      */
-    private function expectedSimpleProductWithTierPricesOnAllWebsitesAndCatalogRulesDataProvider(): array
+    public static function expectedSimpleProductWithTierPricesOnAllWebsitesAndCatalogRulesDataProvider(): array
     {
         return [
             [

@@ -81,25 +81,23 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
 
     /**
      * Check simple product status on website unassignment (bulk update)
-     *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
      * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/setup_simple_products_with_multiple_websites.php
-     *
      * @param array $skus
-     * @param array $websitesToUnassign
-     * @param array $expectedData
+     * @param array $websites
+     * @param array $expected
      * @return void
      * @throws NoSuchEntityException
      * @throws \Zend_Db_Statement_Exception
      * @dataProvider bulkUnassignWebsitesDataProvider
      */
-    public function testSimpleProductsOnBulkUpdate(array $skus, array $websitesToUnassign, array $expectedData) : void
+    public function testSimpleProductsOnBulkUpdate(array $skus, array $websites, array $expected) : void
     {
         /** @var WebsiteRepositoryInterface $websiteRepository */
         $websiteRepository = $this->objectManager->get(WebsiteRepositoryInterface::class);
         $websiteIds = [];
-        foreach ($websitesToUnassign as $websiteToUnassign) {
+        foreach ($websites as $websiteToUnassign) {
             $websiteIds[] = $websiteRepository->get($websiteToUnassign)->getId();
 
         }
@@ -114,7 +112,7 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
         $this->emulateCustomersBehaviorAfterDeleteAction();
         $this->emulatePartialReindexBehavior($productIds);
 
-        foreach ($expectedData as $storeViewCode => $isDeleted) {
+        foreach ($expected as $storeViewCode => $isDeleted) {
             foreach ($skus as $sku) {
                 $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
                 self::assertEquals(
@@ -129,7 +127,7 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
     /**
      * @return array
      */
-    public function unassignWebsitesDataProvider(): array
+    public static function unassignWebsitesDataProvider(): array
     {
         return [
             [
@@ -169,7 +167,7 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
     /**
      * @return array
      */
-    public function bulkUnassignWebsitesDataProvider(): array
+    public static function bulkUnassignWebsitesDataProvider(): array
     {
         return [
             [
@@ -181,7 +179,7 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
                 'websites' => [
                     'test'
                 ],
-                'expected_data' => [
+                'expected' => [
                     'default' => "0",
                     'custom_store_view_one' => "0",
                     'custom_store_view_two' => "1"
@@ -196,7 +194,7 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
                 'websites' => [
                     'base'
                 ],
-                'expected_data' => [
+                'expected' => [
                     'default' => "1",
                     'custom_store_view_one' => "1",
                     'custom_store_view_two' => "0"
@@ -212,7 +210,7 @@ class SimpleProductsWebsiteUnassignTest extends AbstractProductTestHelper
                     'base',
                     'test'
                 ],
-                'expected_data' => [
+                'expected' => [
                     'default' => "1",
                     'custom_store_view_one' => "1",
                     'custom_store_view_two' => "1"

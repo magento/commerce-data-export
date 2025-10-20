@@ -7,13 +7,17 @@ declare(strict_types=1);
 
 namespace Magento\InventoryDataExporter\Test\Integration;
 
+use DateTime;
+use Magento\DataExporter\Model\FeedInterface;
+use Magento\DataExporter\Model\FeedPool;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\StateException;
+use Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata;
 use Magento\TestFramework\Helper\Bootstrap;
+use Zend_Db_Statement_Exception;
 
 /**
  * @magentoDbIsolation disabled
- * @magentoAppIsolation enabled
  */
 class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHelper
 {
@@ -21,27 +25,24 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
      * @var string
      */
     private const EXPECTED_DATE_TIME_FORMAT = '%d-%d-%d %d:%d:%d';
+    private FeedInterface $stockStatusFeed;
+
+    public static function setUpBeforeClass(): void
+    {
+    }
 
     /**
      * Setup tests
      */
     protected function setUp(): void
     {
-        Bootstrap::getObjectManager()->configure(
-            [
-                \Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata::class => [
-                    'arguments' => [
-                        'persistExportedFeed' => false
-                    ]
-                ]
-            ]
-        );
         parent::setUp();
+        $this->stockStatusFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('inventoryStockStatus');
     }
 
     /**
      * @magentoDataFixture Magento_InventoryDataExporter::Test/_files/products_with_sources.php
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      * @throws NoSuchEntityException
      */
     public function testExportStockStatusesWithoutFeedPersisting()
@@ -57,7 +58,7 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
         ];
 
         $productIds = [];
-        $updatedAt = (new \DateTime())->getTimestamp();
+        $updatedAt = (new DateTime())->getTimestamp();
         foreach ($productsSkus as $sku) {
             $productIds[$sku] = $this->getProductId($sku);
         }
@@ -74,7 +75,7 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                     self::EXPECTED_DATE_TIME_FORMAT,
                     $actualStockStatus['updatedAt'],
                 );
-                $dateTimeFromFeed = (new \DateTime($actualStockStatus['updatedAt']))->getTimestamp();
+                $dateTimeFromFeed = (new DateTime($actualStockStatus['updatedAt']))->getTimestamp();
                 $this->assertEqualsWithDelta($updatedAt, $dateTimeFromFeed, 3);
                 unset($actualStockStatus['updatedAt']);
                 self::assertEquals(
@@ -89,7 +90,7 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
     /**
      * @magentoDataFixture Magento_InventoryDataExporter::Test/_files/products_with_sources.php
      * @magentoAppArea adminhtml
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      * @throws NoSuchEntityException
      * @throws StateException
      */
@@ -106,7 +107,7 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
         ];
 
         $productIds = [];
-        $updatedAt = (new \DateTime())->getTimestamp();
+        $updatedAt = (new DateTime())->getTimestamp();
         foreach ($productsSkus as $sku) {
             $productId = $this->getProductId($sku);
             $productIds[$sku] = $productId;
@@ -126,7 +127,7 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
                     self::EXPECTED_DATE_TIME_FORMAT,
                     $actualStockStatus['updatedAt'],
                 );
-                $dateTimeFromFeed = (new \DateTime($actualStockStatus['updatedAt']))->getTimestamp();
+                $dateTimeFromFeed = (new DateTime($actualStockStatus['updatedAt']))->getTimestamp();
                 $this->assertEqualsWithDelta($updatedAt, $dateTimeFromFeed, 3);
                 unset($actualStockStatus['updatedAt']);
 
@@ -141,6 +142,7 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
 
     /**
      * @return \array[][]
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     private function getExpectedStockStatusMandatoryFeedsOnly(): array
     {
@@ -261,6 +263,7 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
 
     /**
      * @return \array[][]
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     private function getExpectedStockStatusMandatoryFeedsOnlyDeletedProducts(): array
     {

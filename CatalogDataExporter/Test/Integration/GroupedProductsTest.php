@@ -29,30 +29,25 @@ class GroupedProductsTest extends AbstractProductTestHelper
      */
     protected function setUp() : void
     {
-        $this->arrayUtils = Bootstrap::getObjectManager()->create(ArrayUtils::class);
-
         parent::setUp();
+        $this->arrayUtils = Bootstrap::getObjectManager()->create(ArrayUtils::class);
     }
 
     /**
      * Validate grouped product options data
-     *
-     * @param array $groupedProductOptionsDataProvider
-     *
+     * @param array $item
      * @magentoDataFixture Magento/GroupedProduct/_files/product_grouped.php
      * @dataProvider getGroupedProductOptionsDataProvider
-     *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     *
      * @return void
      */
-    public function testGroupedProductOptions(array $groupedProductOptionsDataProvider) : void
+    public function testGroupedProductOptions(array $item) : void
     {
         $extractedProduct = $this->getExtractedProduct(self::GROUPED_PRODUCT_SKU, 'default');
         $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
-        foreach ($groupedProductOptionsDataProvider as $key => $expectedData) {
+        foreach ($item as $key => $expectedData) {
             $diff = $this->arrayUtils->recursiveDiff($expectedData, $extractedProduct[$key]);
             self::assertEquals([], $diff, 'Actual feed data doesn\'t equal to expected data');
         }
@@ -60,19 +55,15 @@ class GroupedProductsTest extends AbstractProductTestHelper
 
     /**
      * Validate grouped product options data in multiple website
-     *
-     * @param array $groupedProductOptionsDataProvider
-     *
+     * @param array $item
      * @magentoDataFixture Magento/Store/_files/second_website_with_two_stores.php
      * @magentoDataFixture Magento/GroupedProduct/_files/product_grouped_in_multiple_websites.php
      * @dataProvider getGroupedProductOptionsDataProvider
-     *
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
-     *
      * @return void
      */
-    public function testGroupedProductOptionsInMultipleWebsites(array $groupedProductOptionsDataProvider) : void
+    public function testGroupedProductOptionsInMultipleWebsites(array $item) : void
     {
         $storeViews = ['fixture_second_store','fixture_third_store'];
 
@@ -81,8 +72,8 @@ class GroupedProductsTest extends AbstractProductTestHelper
             $this->assertNotEmpty($extractedProduct, 'Feed data must not be empty');
 
             // Assert values are equal for fixture_second_store
-            $groupedProductOptionsDataProvider['feedData']['storeViewCode'] = $store;
-            foreach ($groupedProductOptionsDataProvider as $key => $expectedData) {
+            $item['feedData']['storeViewCode'] = $store;
+            foreach ($item as $key => $expectedData) {
                 $diff = $this->arrayUtils->recursiveDiff($expectedData, $extractedProduct[$key]);
                 self::assertEquals([], $diff, 'Actual feed data doesn\'t equal to expected data');
             }
@@ -94,7 +85,7 @@ class GroupedProductsTest extends AbstractProductTestHelper
      *
      * @return array
      */
-    public function getGroupedProductOptionsDataProvider() : array
+    public static function getGroupedProductOptionsDataProvider() : array
     {
         return [
             'groupedProduct' => [

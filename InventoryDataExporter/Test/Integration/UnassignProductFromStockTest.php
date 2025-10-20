@@ -11,6 +11,7 @@ namespace Magento\InventoryDataExporter\Test\Integration;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryCatalogApi\Api\BulkSourceUnassignInterface;
 use Magento\InventoryCatalogApi\Model\SourceItemsProcessorInterface;
@@ -55,6 +56,7 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
      * @param array $sourcesToLeave
      * @param array $expectedData
      * @throws InputException
+     * @throws NoSuchEntityException
      * @throws \Zend_Db_Statement_Exception
      * @magentoDataFixture Magento_InventoryDataExporter::Test/_files/products_with_sources.php
      */
@@ -101,13 +103,13 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      * @return array[]
      */
-    public function stocksUnassignDataProvider(): array
+    public static function stocksUnassignDataProvider(): array
     {
         return [
             'one_stock_unassign' => [
                 'sku' => 'product_in_EU_stock_with_2_sources',
-                'sources_to_leave' => ['eu-2'],
-                'expected_data' => [
+                'sourcesToLeave' => ['eu-2'],
+                'expectedData' => [
                     '10' => [
                         'sku' => 'product_in_EU_stock_with_2_sources',
                         'stock_id' => '10',
@@ -130,8 +132,8 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
             ],
             'unassign_sources_from_multiple_stocks' => [
                 'sku' => 'product_in_Global_stock_with_3_sources',
-                'sources_to_leave' => ['eu-2'],
-                'expected_data' => [
+                'sourcesToLeave' => ['eu-2'],
+                'expectedData' => [
                     '10' => [
                         'sku' => 'product_in_Global_stock_with_3_sources',
                         'stock_id' => '10',
@@ -163,8 +165,8 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
             ],
             'default_stock_unassign_from_only_default_stock_product' => [
                 'sku' => 'product_with_default_stock_only',
-                'sources_to_leave' => [],
-                'expected_data' => [
+                'sourcesToLeave' => [],
+                'expectedData' => [
                     '1' => [
                         'sku' => 'product_with_default_stock_only',
                         'stock_id' => '1',
@@ -178,8 +180,8 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
             ],
             'default_stock_unassign_from_default_and_custom_stocks_product' => [
                 'sku' => 'product_in_default_and_2_EU_sources',
-                'sources_to_leave' => ['eu-1', 'eu-2'],
-                'expected_data' => [
+                'sourcesToLeave' => ['eu-1', 'eu-2'],
+                'expectedData' => [
                     '1' => [
                         'sku' => 'product_in_default_and_2_EU_sources',
                         'stock_id' => '1',
@@ -202,8 +204,8 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
             ],
             'custom_stock_unassign_from_default_and_custom_stocks_product' => [
                 'sku' => 'product_in_default_and_2_EU_sources',
-                'sources_to_leave' => ['default'],
-                'expected_data' => [
+                'sourcesToLeave' => ['default'],
+                'expectedData' => [
                     '1' => [
                         'sku' => 'product_in_default_and_2_EU_sources',
                         'stock_id' => '1',
@@ -231,7 +233,7 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      * @return array[]
      */
-    public function stocksBulkUnassignDataProvider(): array
+    public static function stocksBulkUnassignDataProvider(): array
     {
         return [
             'one_stock_unassign' => [
@@ -241,8 +243,8 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
                     'product_with_default_stock_only',
                     'product_in_default_and_2_EU_sources'
                 ],
-                'sources_to_unassign' => ['eu-1', 'eu-2'],
-                'expected_data' => [
+                'sourcesToUnassign' => ['eu-1', 'eu-2'],
+                'expectedData' => [
                     'product_with_default_stock_only' => [
                         '1' => [
                             'sku' => 'product_with_default_stock_only',
@@ -314,8 +316,8 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
                     'product_with_default_stock_only',
                     'product_in_default_and_2_EU_sources'
                 ],
-                'sources_to_unassign' => ['eu-1', 'eu-2', 'us-1'],
-                'expected_data' => [
+                'sourcesToUnassign' => ['eu-1', 'eu-2', 'us-1'],
+                'expectedData' => [
                     'product_with_default_stock_only' => [
                         '1' => [
                             'sku' => 'product_with_default_stock_only',
@@ -387,8 +389,8 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
                     'product_with_default_stock_only',
                     'product_in_default_and_2_EU_sources'
                 ],
-                'sources_to_unassign' => ['eu-1', 'eu-2', 'us-1', 'default'],
-                'expected_data' => [
+                'sourcesToUnassign' => ['eu-1', 'eu-2', 'us-1', 'default'],
+                'expectedData' => [
                     'product_with_default_stock_only' => [
                         '1' => [
                             'sku' => 'product_with_default_stock_only',
@@ -460,8 +462,8 @@ class UnassignProductFromStockTest extends AbstractInventoryTestHelper
                     'product_with_default_stock_only',
                     'product_in_default_and_2_EU_sources'
                 ],
-                'sources_to_unassign' => ['default'],
-                'expected_data' => [
+                'sourcesToUnassign' => ['default'],
+                'expectedData' => [
                     'product_with_default_stock_only' => [
                         '1' => [
                             'sku' => 'product_with_default_stock_only',

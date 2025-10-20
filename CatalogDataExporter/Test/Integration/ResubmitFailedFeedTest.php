@@ -19,12 +19,12 @@ use Magento\SaaSCatalog\Cron\ProductSubmitFeed;
 use Magento\SaaSCommon\Cron\SubmitFeedInterface;
 use Magento\SaaSCommon\Test\Integration\ExportFeedStub;
 use Magento\TestFramework\Helper\Bootstrap;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Test class to check that only feeds with "resyncable" statuses would be re-submitted
  *
  * @SuppressWarnings(PHPMD.UnusedPrivateMethod)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class ResubmitFailedFeedTest extends AbstractProductTestHelper
 {
@@ -158,7 +158,7 @@ class ResubmitFailedFeedTest extends AbstractProductTestHelper
      *
      * @return array[]
      */
-    public function productsWithStatusesDataProvider(): array
+    public static function productsWithStatusesDataProvider(): array
     {
         return [
             [

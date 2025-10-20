@@ -57,7 +57,7 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     /**
      * @var WebsiteRepositoryInterface
      */
-    protected WebsiteRepositoryInterface $websiteRepository;
+    protected $websiteRepository;
 
     /**
      * Setup tests

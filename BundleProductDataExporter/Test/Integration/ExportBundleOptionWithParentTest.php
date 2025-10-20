@@ -36,9 +36,8 @@ class ExportBundleOptionWithParentTest extends AbstractProductTestHelper
      */
     protected function setUp() : void
     {
-        $this->productsFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('products');
-
         parent::setUp();
+        $this->productsFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('products');
     }
 
     /**
@@ -57,7 +56,7 @@ class ExportBundleOptionWithParentTest extends AbstractProductTestHelper
     /**
      * @return \array[][]
      */
-    private function expectedBundleOptionsWithParentData(): array
+    public static function expectedBundleOptionsWithParentData(): array
     {
         return [
             [

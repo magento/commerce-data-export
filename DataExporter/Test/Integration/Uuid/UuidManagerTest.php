@@ -85,12 +85,12 @@ class UuidManagerTest extends TestCase
         $this->expectExceptionMessage('Failed to assign UUID for type: test-type, ids: 8,9. duplicates: uuid');
 
         $uuidManager->assignBulk([8, 9], 'test-type');
-
     }
+
     /**
      * @return array[]
      */
-    public function happyPathDataProvider(): array
+    public static function happyPathDataProvider(): array
     {
         return [
             [

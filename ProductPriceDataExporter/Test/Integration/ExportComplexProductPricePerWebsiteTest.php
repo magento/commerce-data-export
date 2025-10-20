@@ -99,7 +99,7 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
     /**
      * @return array[]
      */
-    private function expectedBundleFixedProductPricesDataProvider(): array
+    public static function expectedBundleFixedProductPricesDataProvider(): array
     {
         return [
             [
@@ -197,7 +197,7 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
      * @return array[]
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    private function expectedBundleDynamicProductPricesDataProvider(): array
+    public static function expectedBundleDynamicProductPricesDataProvider(): array
     {
         return [
             [
@@ -294,7 +294,7 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
     /**
      * @return \array[][]
      */
-    private function expectedConfigurableSpecialAndTierProductPricesDataProvider(): array
+    public static function expectedConfigurableSpecialAndTierProductPricesDataProvider(): array
     {
         return [
             [
@@ -370,7 +370,7 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
     /**
      * @return \array[][]
      */
-    private function expectedConfigurableRegularProductPricesDataProvider(): array
+    public static function expectedConfigurableRegularProductPricesDataProvider(): array
     {
         return [
             [
@@ -423,7 +423,7 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
     /**
      * @return array[]
      */
-    private function expectedGroupedProductRegularPriceDataProvider(): array
+    public static function expectedGroupedProductRegularPriceDataProvider(): array
     {
         return [
             [
@@ -476,7 +476,7 @@ class ExportComplexProductPricePerWebsiteTest extends AbstractProductPriceTestHe
     /**
      * @return \array[][]
      */
-    private function expectedGroupedSpecialAndTierProductPricesDataProvider(): array
+    public static function expectedGroupedSpecialAndTierProductPricesDataProvider(): array
     {
         return [
             [

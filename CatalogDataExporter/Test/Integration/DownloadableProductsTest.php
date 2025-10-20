@@ -24,22 +24,19 @@ class DownloadableProductsTest extends AbstractProductTestHelper
      * @magentoDbIsolation disabled
      * @magentoAppIsolation enabled
      * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/downloadable_product_with_files_and_sample_url.php
+     * @dataProvider expectedDownloadableAttributeDataProvider
      *
+     * @param array $expectedProductAttribute
      * @return void
      * @throws NoSuchEntityException
      * @throws LocalizedException
      * @throws \Zend_Db_Statement_Exception
      * @throws \Throwable
      */
-    public function testDownloadableProducts() : void
+    public function testDownloadableProducts(array $expectedProductAttribute) : void
     {
         $skus = ['downloadable-product'];
         $storeViewCodes = ['default', 'custom_store_view_one', 'custom_store_view_two'];
-        $expectedProductAttribute = [
-            'default' => '{"purchase_separately":true,"samples":[{"label":"Downloadable Product Sample Title","url":"http:\/\/localhost\/downloadable\/download\/sample\/sample_id\/1"}],"links":[{"uid":"ZG93bmxvYWRhYmxlLzE=","label":"Downloadable Product Link","price":0,"number_of_downloads":0,"sample_url":null},{"uid":"ZG93bmxvYWRhYmxlLzI=","label":"Downloadable Product Link","price":0,"number_of_downloads":0,"sample_url":"http:\/\/localhost\/downloadable\/download\/linkSample\/link_id\/2"}]}',
-            'custom_store_view_one' => '{"purchase_separately":true,"samples":[{"label":null,"url":"http:\/\/localhost\/downloadable\/download\/sample\/sample_id\/1"}],"links":[{"uid":"ZG93bmxvYWRhYmxlLzE=","label":"Link 0","price":0,"number_of_downloads":0,"sample_url":null},{"uid":"ZG93bmxvYWRhYmxlLzI=","label":"Link 1","price":0,"number_of_downloads":0,"sample_url":"http:\/\/localhost\/downloadable\/download\/linkSample\/link_id\/2"}]}',
-            'custom_store_view_two' => '{"purchase_separately":true,"samples":[{"label":null,"url":"http:\/\/localhost\/downloadable\/download\/sample\/sample_id\/1"}],"links":[{"uid":"ZG93bmxvYWRhYmxlLzE=","label":"Link 0","price":0,"number_of_downloads":0,"sample_url":null},{"uid":"ZG93bmxvYWRhYmxlLzI=","label":"Link 1","price":0,"number_of_downloads":0,"sample_url":"http:\/\/localhost\/downloadable\/download\/linkSample\/link_id\/2"}]}'
-        ];
 
         foreach ($skus as $sku) {
             foreach ($storeViewCodes as $storeViewCode) {
@@ -52,6 +49,10 @@ class DownloadableProductsTest extends AbstractProductTestHelper
                 ]];
 
                 $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
+                if ($extractedProduct['feedData']['attributes'][0]['value'][0]) {
+                    $extractedProduct['feedData']['attributes'][0]['value'][0]
+                        = json_decode($extractedProduct['feedData']['attributes'][0]['value'][0], true);
+                }
                 $this->validateBaseProductData($product, $extractedProduct, $storeViewCode);
                 $this->validatePricingData($extractedProduct);
                 $this->validateImageUrls($product, $extractedProduct);
@@ -62,6 +63,96 @@ class DownloadableProductsTest extends AbstractProductTestHelper
                 $this->validateDownloadableData($product, $extractedProduct);
             }
         }
+    }
+
+    /**
+     * Data provider for expected downloadable attribute data
+     *
+     * @return array[]
+     */
+    public static function expectedDownloadableAttributeDataProvider(): array
+    {
+        return [
+            [
+                [
+                    'default' => [
+                        'purchase_separately' => true,
+                        'samples' => [
+                            [
+                                'label' => 'Downloadable Product Sample Title',
+                                'url' => 'http://localhost/downloadable/download/sample/sample_id/1'
+                            ]
+                        ],
+                        'links' => [
+                            [
+                                'uid' => 'ZG93bmxvYWRhYmxlLzE=',
+                                'label' => 'Downloadable Product Link',
+                                'price' => 0,
+                                'number_of_downloads' => 0,
+                                'sample_url' => null
+                            ],
+                            [
+                                'uid' => 'ZG93bmxvYWRhYmxlLzI=',
+                                'label' => 'Downloadable Product Link',
+                                'price' => 0,
+                                'number_of_downloads' => 0,
+                                'sample_url' => 'http://localhost/downloadable/download/linkSample/link_id/2'
+                            ]
+                        ]
+                    ],
+                    'custom_store_view_one' => [
+                        'purchase_separately' => true,
+                        'samples' => [
+                            [
+                                'label' => null,
+                                'url' => 'http://localhost/downloadable/download/sample/sample_id/1'
+                            ]
+                        ],
+                        'links' => [
+                            [
+                                'uid' => 'ZG93bmxvYWRhYmxlLzE=',
+                                'label' => 'Link 0',
+                                'price' => 0,
+                                'number_of_downloads' => 0,
+                                'sample_url' => null
+                            ],
+                            [
+                                'uid' => 'ZG93bmxvYWRhYmxlLzI=',
+                                'label' => 'Link 1',
+                                'price' => 0,
+                                'number_of_downloads' => 0,
+                                'sample_url' => 'http://localhost/downloadable/download/linkSample/link_id/2'
+                            ]
+                        ]
+                    ],
+                    'custom_store_view_two' => [
+                        'purchase_separately' => true,
+                        'samples' => [
+                            [
+                                'label' => null,
+                                'url' => 'http://localhost/downloadable/download/sample/sample_id/1'
+                            ]
+                        ],
+                        'links' => [
+                            [
+                                'uid' => 'ZG93bmxvYWRhYmxlLzE=',
+                                'label' => 'Link 0',
+                                'price' => 0,
+                                'number_of_downloads' => 0,
+                                'sample_url' => null
+                            ],
+                            [
+                                'uid' => 'ZG93bmxvYWRhYmxlLzI=',
+                                'label' => 'Link 1',
+                                'price' => 0,
+                                'number_of_downloads' => 0,
+                                'sample_url' => 'http://localhost/downloadable/download/linkSample/link_id/2'
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
     }
 
     /**

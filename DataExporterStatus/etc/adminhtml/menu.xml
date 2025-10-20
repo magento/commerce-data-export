@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+  ~ ADOBE CONFIDENTIAL
+  ~ ___________________
+  ~
+  ~ Copyright 2025 Adobe
+  ~ All Rights Reserved.
+  ~
+  ~ NOTICE: All information contained herein is, and remains
+  ~ the property of Adobe and its suppliers, if any. The intellectual
+  ~ and technical concepts contained herein are proprietary to Adobe
+  ~ and its suppliers and are protected by all applicable intellectual
+  ~ property laws, including trade secret and copyright laws.
+  ~ Dissemination of this information or reproduction of this material
+  ~ is strictly forbidden unless prior written permission is obtained
+  ~ from Adobe.
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Magento_DataExporterStatus::data_exporter_feeds_listing_component" title="Data Feed Sync Status" module="Magento_DataExporterStatus" sortOrder="45" parent="Magento_Backend::system_convert" resource="Magento_Catalog::products" action="data_exporter_status/ExportStatus/index"/>
+    </menu>
+</config>

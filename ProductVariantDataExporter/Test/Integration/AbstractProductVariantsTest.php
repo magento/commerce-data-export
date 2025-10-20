@@ -103,7 +103,6 @@ abstract class AbstractProductVariantsTest extends TestCase
         $this->jsonSerializer = Bootstrap::getObjectManager()->create(Json::class);
         $this->productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
         $this->storeManager = Bootstrap::getObjectManager()->create(StoreManagerInterface::class);
-        $this->productVariantsFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('variants');
         $this->attributeRepository = Bootstrap::getObjectManager()->create(AttributeRepository::class);
         $this->arrayUtils = $objectManager->create(ArrayUtils::class);
         $this->registry = Bootstrap::getObjectManager()->get(Registry::class);
@@ -115,6 +114,7 @@ abstract class AbstractProductVariantsTest extends TestCase
                 ]
             ]
         ]);
+        $this->productVariantsFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('variants');
     }
 
     /**

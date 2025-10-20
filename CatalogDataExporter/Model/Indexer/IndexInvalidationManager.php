@@ -13,6 +13,7 @@ use Magento\Indexer\Model\IndexerFactory;
  * Class IndexInvalidationManager
  *
  * Invalidates indexes by preconfigured events
+ * @deprecared use \Magento\DataExporter\Service\IndexInvalidationManager instead
  */
 class IndexInvalidationManager
 {

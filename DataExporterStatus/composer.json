@@ -1,0 +1,23 @@
+{
+    "name": "magento/module-data-exporter-status",
+    "description": "Magento 2 Data Exporter Status module provides admin interface grids to monitor and manage data export feed synchronization status.",
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Magento\\DataExporterStatus\\": ""
+        }
+    },
+    "require": {
+        "php": "~8.1.0||~8.2.0||~8.3.0||~8.4.0",
+        "magento/framework": ">=103.0.4",
+        "magento/module-data-exporter": "self.version",
+        "magento/module-product-price-data-exporter": "self.version"
+    }
+}

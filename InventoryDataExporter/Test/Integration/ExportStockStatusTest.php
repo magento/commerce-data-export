@@ -15,7 +15,6 @@ use Magento\TestFramework\Helper\Bootstrap;
 
 /**
  * @magentoDbIsolation disabled
- * @magentoAppIsolation enabled
  */
 class ExportStockStatusTest extends AbstractInventoryTestHelper
 {
@@ -136,7 +135,8 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
     }
 
     /**
-     * @return \array[][]
+     * @return \array[][
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     private function getExpectedStockStatus(): array
     {
@@ -257,6 +257,7 @@ class ExportStockStatusTest extends AbstractInventoryTestHelper
 
     /**
      * @return \array[][]
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     private function getExpectedStockStatusForReservations(): array
     {

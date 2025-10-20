@@ -380,13 +380,18 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
 
     /**
      * Validate product attributes in extracted product data
-     *
      * @param ProductInterface $product
      * @param array $extractedProduct
+     * @param array|null $attributes
      * @return void
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    protected function validateAttributeData(ProductInterface $product, array $extractedProduct, ?array $attributes = null) : void
-    {
+    protected function validateAttributeData(
+        ProductInterface $product,
+        array $extractedProduct,
+        ?array $attributes = null
+    ) : void {
         if ($product->hasData('custom_label')) {
             $customLabel = $product->getCustomAttribute('custom_label');
             $attributes[$customLabel->getAttributeCode()] = [
@@ -596,29 +601,35 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
             $extractedProduct['feedData']['shopperInputOptions'] ?? []
         );
         $this->assertCount(\count($customOptions), $feedCustomOptions);
+
+        $feedOptionsById = \array_column($feedCustomOptions, null, 'id');
+
         foreach ($customOptions as $customOption) {
             $expectedCustomOption = $this->formatCustomOption($customOption);
-            if (!\in_array($expectedCustomOption['id'], \array_column($feedCustomOptions, 'id'), true)) {
-                $this->fail('Custom option with id ' . $expectedCustomOption['id'] . ' is not found in feed data.');
+            $optionId = $expectedCustomOption['id'];
+
+            if (!isset($feedOptionsById[$optionId])) {
+                $this->fail('Custom option with id ' . $optionId . ' is not found in feed data.');
             }
-            foreach ($feedCustomOptions as $feedCustomOption) {
-                if ($feedCustomOption['id'] === $expectedCustomOption['id']) {
-                    foreach ($expectedCustomOption as $expectedKey => $expectedValue) {
-                        if ($expectedKey === 'values') {
-                            $this->assertCount(\count($expectedValue), $feedCustomOption['values']);
-                            foreach ($feedCustomOption['values'] as $feedCustomOptionValue) {
-                                $this->assertNotEmpty($feedCustomOptionValue['id']);
-                                $this->assertNotEmpty($expectedValue[$feedCustomOptionValue['id']]);
-                                foreach ($expectedValue[$feedCustomOptionValue['id']] as $valueKey => $valueField) {
-                                    $this->assertEquals(
-                                        $valueField,
-                                        $feedCustomOptionValue[$valueKey]
-                                    );
-                                }
-                            }
-                            continue;
-                        }
-                        $this->assertEquals($expectedValue, $feedCustomOption[$expectedKey]);
+
+            $feedCustomOption = $feedOptionsById[$optionId];
+
+            foreach ($expectedCustomOption as $expectedKey => $expectedValue) {
+                if ($expectedKey !== 'values') {
+                    $this->assertEquals($expectedValue, $feedCustomOption[$expectedKey]);
+                    continue;
+                }
+
+                // Validate values
+                $this->assertCount(\count($expectedValue), $feedCustomOption['values']);
+
+                foreach ($feedCustomOption['values'] as $feedCustomOptionValue) {
+                    $valueId = $feedCustomOptionValue['id'];
+                    $this->assertNotEmpty($valueId);
+                    $this->assertNotEmpty($expectedValue[$valueId]);
+
+                    foreach ($expectedValue[$valueId] as $valueKey => $valueField) {
+                        $this->assertEquals($valueField, $feedCustomOptionValue[$valueKey]);
                     }
                 }
             }

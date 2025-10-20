@@ -82,6 +82,14 @@ abstract class AbstractCategoryTest extends TestCase
         $this->jsonSerializer = Bootstrap::getObjectManager()->create(Json::class);
         $this->categoryRepository = Bootstrap::getObjectManager()->create(CategoryRepositoryInterface::class);
         $this->storeManager = Bootstrap::getObjectManager()->create(StoreManagerInterface::class);
+
+        Bootstrap::getObjectManager()->configure([
+            'Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata' => [
+                'arguments' => [
+                    'persistExportedFeed' => true
+                ]
+            ]
+        ]);
         $this->categoryFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('categories');
 
         $this->indexer->load(self::CATEGORY_FEED_INDEXER);

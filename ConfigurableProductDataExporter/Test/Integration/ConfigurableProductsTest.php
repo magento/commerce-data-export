@@ -526,11 +526,11 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     /**
      * @return array[]
      */
-    public function outOfStockProducts(): array
+    public static function outOfStockProducts(): array
     {
         return [
             [
-                'all_products_out_of_stock' => [
+                'outOfStockSkus' => [ // all_products_out_of_stock
                     'simple_option_50',
                     'simple_option_60',
                     'simple_option_70',
@@ -540,14 +540,14 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                 ]
             ],
             [
-                'one_option_products_out_of_stock' => [
+                'outOfStockSkus' => [ // one_option_products_out_of_stock
                     'simple_option_55',
                     'simple_option_59',
                     'simple_option_65'
                 ]
             ],
             [
-                'one_product_from_option_out_of_stock' => [
+                'outOfStockSkus' => [ // one_product_from_option_out_of_stock
                     'simple_option_50',
                     'simple_option_70',
                     'simple_option_55',
@@ -560,11 +560,11 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
     /**
      * @return array[]
      */
-    public function outOfStockVirtualProducts(): array
+    public static function outOfStockVirtualProducts(): array
     {
         return [
             [
-                'all_products_out_of_stock' => [
+                'outOfStockSkus' => [ // all_products_out_of_stock
                     'virtual_option_50',
                     'virtual_option_60',
                     'virtual_option_70',
@@ -574,14 +574,14 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
                 ]
             ],
             [
-                'one_option_products_out_of_stock' => [
+                'outOfStockSkus' => [ // one_option_products_out_of_stock
                     'virtual_option_55',
                     'virtual_option_59',
                     'virtual_option_65'
                 ]
             ],
             [
-                'one_product_from_option_out_of_stock' => [
+                'outOfStockSkus' => [ // one_product_from_option_out_of_stock
                     'virtual_option_50',
                     'virtual_option_70',
                     'virtual_option_55',

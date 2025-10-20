@@ -39,17 +39,9 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
      */
     private $feedExportStatusBuilder;
 
-    /**
-     * @param string|null $name
-     * @param array $data
-     * @param string $dataName
-     */
-    public function __construct(
-        ?string $name = null,
-        array   $data = [],
-        $dataName = ''
-    ) {
-        parent::__construct($name, $data, $dataName);
+    protected function setUp(): void
+    {
+        parent::setUp();
         $this->testUnit = Bootstrap::getObjectManager()->create(
             \Magento\DataExporter\Model\Indexer\DataSerializer::class // @phpstan-ignore-line
         );
@@ -255,7 +247,6 @@ class ProductDataSerializerTest extends AbstractProductTestHelper
                 'feed_id' => $item['feed_id'],
                 'source_entity_id' => $feed['productId']
             ];
-            $currentKey = array_key_last($expected);
         }
         return $expected;
     }

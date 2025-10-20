@@ -9,7 +9,7 @@ namespace Magento\DataExporter\Setup;
 
 use Magento\DataExporter\Model\Indexer\FeedIndexer;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
-use Magento\Framework\Indexer\ActionFactory;
+use Magento\Framework\Mview\ActionFactory;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 use Magento\Indexer\Model\Indexer\Collection;
@@ -68,7 +68,7 @@ class Recurring implements \Magento\Framework\Setup\InstallSchemaInterface
 
         foreach ($indexers as $indexer) {
             try {
-                $indexerAction =  $this->actionFactory->create($indexer->getActionClass());
+                $indexerAction =  $this->actionFactory->get($indexer->getActionClass());
 
                 if ($indexerAction instanceof FeedIndexer && $indexer->isScheduled() === false) {
                     $this->logger->info(
@@ -77,6 +77,10 @@ class Recurring implements \Magento\Framework\Setup\InstallSchemaInterface
                     $indexer->setScheduled(true);
                 }
             } catch (\Throwable $e) {
+                $this->logger->error('Cannot set indexer to Update On Schedule mode: ' . $e->getMessage(), [
+                    'indexer' => $indexer->getId(),
+                    'exception' => $e
+                ]);
                 continue;
             }
         }
