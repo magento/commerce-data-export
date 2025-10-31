@@ -17,6 +17,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\StateException;
 use Magento\TestFramework\Helper\Bootstrap;
+use Magento\Framework\App\ProductMetadataInterface;
 
 /**
  * Check prices for single (non-complex) products
@@ -31,6 +32,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
      * @var CatalogRuleRepositoryInterface $catalogRuleRepository
      */
     private CatalogRuleRepositoryInterface $catalogRuleRepository;
+    private static ?string $version;
 
     protected function setUp(): void
     {
@@ -441,7 +443,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
                         'regular' => 55.55,
-                        'discounts' => [0 => ['code' => 'catalog_rule', 'price' => 41.6625]],
+                        'discounts' => [0 => ['code' => 'catalog_rule', 'price' => self::getPriceForVersion(41.6625)]],
                         'deleted' => false
                     ],
                     'simple_product_with_regular_price_test_0' => [
@@ -470,7 +472,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             0 => ['code' => 'special_price', 'price' => 55.55],
-                            1 => ['code' => 'catalog_rule', 'price' => 75.075]
+                            1 => ['code' => 'catalog_rule', 'price' => self::getPriceForVersion(75.075)]
                         ],
                         'deleted' => false
                     ],
@@ -500,7 +502,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             0 => ['code' => 'special_price', 'price' => 55.55],
-                            1 => ['code' => 'catalog_rule', 'price' => 75.075]
+                            1 => ['code' => 'catalog_rule', 'price' => self::getPriceForVersion(75.075)]
                         ],
                         'deleted' => false
                     ],
@@ -530,7 +532,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             0 => ['code' => 'group', 'price' => 15.15],
-                            1 => ['code' => 'catalog_rule', 'price' => 75.075]
+                            1 => ['code' => 'catalog_rule', 'price' => self::getPriceForVersion(75.075)]
                         ],
                         'deleted' => false
                     ],
@@ -581,7 +583,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'customerGroupCode' => 'b6589fc6ab0dc82cf12099d1c2d40ab994e8410c',
                         'websiteCode' => 'base',
                         'regular' => 55.55,
-                        'discounts' => [0 => ['code' => 'catalog_rule', 'price' => 41.6625]],
+                        'discounts' => [0 => ['code' => 'catalog_rule', 'price' => self::getPriceForVersion(41.6625)]],
                         'deleted' => true,
                     ],
                     'simple_product_with_regular_price_test_0' => [
@@ -610,7 +612,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             0 => ['code' => 'special_price', 'price' => 55.55],
-                            1 => ['code' => 'catalog_rule', 'price' => 75.075]
+                            1 => ['code' => 'catalog_rule', 'price' => self::getPriceForVersion(75.075)]
                         ],
                         'deleted' => true
                     ],
@@ -640,7 +642,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             0 => ['code' => 'special_price', 'price' => 55.55],
-                            1 => ['code' => 'catalog_rule', 'price' => 75.075]
+                            1 => ['code' => 'catalog_rule', 'price' => self::getPriceForVersion(75.075)]
                         ],
                         'deleted' => true
                     ],
@@ -933,7 +935,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             ['code' => 'group', 'percentage' => 10],
-                            ['code' => 'catalog_rule', 'price' => 75.075]
+                            ['code' => 'catalog_rule', 'price' => self::getPriceForVersion(75.075)]
                         ],
                         'tierPrices' => [
                             ['qty' => 2, 'percentage' => 20],
@@ -1003,7 +1005,7 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
                         'regular' => 100.1,
                         'discounts' => [
                             ['code' => 'group', 'percentage' => 10],
-                            ['code' => 'catalog_rule', 'price' => 75.075]
+                            ['code' => 'catalog_rule', 'price' => self::getPriceForVersion(75.075)]
                         ],
                         'tierPrices' => [
                             ['qty' => 2, 'percentage' => 20],
@@ -1062,5 +1064,11 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
         $ruleId = $catalogRuleResource->getConnection()->fetchOne($select);
 
         return $this->catalogRuleRepository->get((int)$ruleId);
+    }
+
+    private static function getPriceForVersion(float $price): float
+    {
+        self::$version = Bootstrap::getObjectManager()->get(ProductMetadataInterface::class)->getVersion();
+        return version_compare(self::$version, '2.4.9-dev', '>=') ? $price : round($price, 2);
     }
 }
