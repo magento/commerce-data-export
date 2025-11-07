@@ -9,6 +9,7 @@ namespace Magento\ProductPriceDataExporter\Test\Integration;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
+use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\ObjectManagerInterface;
@@ -58,6 +59,8 @@ abstract class AbstractProductPriceTestHelper extends TestCase
      * @var WebsiteRepositoryInterface
      */
     protected $websiteRepository;
+
+    private static ?string $version;
 
     /**
      * Setup tests
@@ -285,5 +288,14 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     protected function tearDown(): void
     {
         $this->truncateIndexTable();
+    }
+
+    protected static function getPriceForVersion(float $price): float
+    {
+        if (empty(self::$version)) {
+            $rawVersion = Bootstrap::getObjectManager()->get(ProductMetadataInterface::class)->getVersion();
+            self::$version = preg_replace('/.*?(\d\.\d\.\d(?:-\w+)?).*/', '$1', $rawVersion);
+        }
+        return version_compare(self::$version, '2.4.9-dev', '>=') ? $price : round($price, 2);
     }
 }
