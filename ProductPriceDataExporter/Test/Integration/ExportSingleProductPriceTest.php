@@ -17,7 +17,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\StateException;
 use Magento\TestFramework\Helper\Bootstrap;
-use Magento\Framework\App\ProductMetadataInterface;
 
 /**
  * Check prices for single (non-complex) products
@@ -32,7 +31,6 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
      * @var CatalogRuleRepositoryInterface $catalogRuleRepository
      */
     private CatalogRuleRepositoryInterface $catalogRuleRepository;
-    private static ?string $version;
 
     protected function setUp(): void
     {
@@ -1064,14 +1062,5 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
         $ruleId = $catalogRuleResource->getConnection()->fetchOne($select);
 
         return $this->catalogRuleRepository->get((int)$ruleId);
-    }
-
-    private static function getPriceForVersion(float $price): float
-    {
-        if (empty(self::$version)) {
-            $rawVersion = Bootstrap::getObjectManager()->get(ProductMetadataInterface::class)->getVersion();
-            self::$version = preg_replace('/.*?(\d\.\d\.\d(?:-\w+)?).*/', '$1', $rawVersion);
-        }
-        return version_compare(self::$version, '2.4.9-dev', '>=') ? $price : round($price, 2);
     }
 }
