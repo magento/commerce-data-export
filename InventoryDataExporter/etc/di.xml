@@ -21,6 +21,7 @@
     <virtualType name="Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">inventoryStockStatus</argument>
+            <argument name="indexerId" xsi:type="string">inventory_data_exporter_stock_status</argument>
             <argument name="feedSummary" xsi:type="string">Inventory Stock Status Feed</argument>
             <argument name="feedIdentity" xsi:type="string">productId</argument>
             <!-- source table used only during full reindex -->

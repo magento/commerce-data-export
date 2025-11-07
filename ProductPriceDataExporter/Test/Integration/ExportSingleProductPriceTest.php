@@ -1068,7 +1068,10 @@ class ExportSingleProductPriceTest extends AbstractProductPriceTestHelper
 
     private static function getPriceForVersion(float $price): float
     {
-        self::$version = Bootstrap::getObjectManager()->get(ProductMetadataInterface::class)->getVersion();
+        if (empty(self::$version)) {
+            $rawVersion = Bootstrap::getObjectManager()->get(ProductMetadataInterface::class)->getVersion();
+            self::$version = preg_replace('/.*?(\d\.\d\.\d(?:-\w+)?).*/', '$1', $rawVersion);
+        }
         return version_compare(self::$version, '2.4.9-dev', '>=') ? $price : round($price, 2);
     }
 }

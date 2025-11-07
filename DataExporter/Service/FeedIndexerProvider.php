@@ -16,12 +16,10 @@ declare(strict_types=1);
 
 namespace Magento\DataExporter\Service;
 
-use Magento\DataExporter\Model\Indexer\FeedIndexer;
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\Framework\Indexer\IndexerInterface;
-use Magento\Framework\Mview\ActionFactory;
-use Magento\Indexer\Model\Indexer\Collection;
+use Magento\Framework\Indexer\IndexerRegistry;
 
 /**
  * Return Feed Indexer instance for given metadata
@@ -29,20 +27,13 @@ use Magento\Indexer\Model\Indexer\Collection;
 class FeedIndexerProvider
 {
     /**
-     * @var array|null
-     */
-    private ?array $feedNameToIndexerMap = null;
-
-    /**
      * Constructor
      *
-     * @param Collection $indexerCollection
-     * @param ActionFactory $actionFactory
+     * @param IndexerRegistry $indexerRegistry
      * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
-        private readonly Collection $indexerCollection,
-        private readonly ActionFactory $actionFactory,
+        private readonly IndexerRegistry $indexerRegistry,
         private readonly CommerceDataExportLoggerInterface $logger
     ) {
     }
@@ -55,23 +46,22 @@ class FeedIndexerProvider
      */
     public function getIndexer(FeedIndexMetadata $metadata): ?IndexerInterface
     {
-        if ($this->feedNameToIndexerMap === null) {
-            foreach ($this->indexerCollection->getItems() as $indexer) {
-                try {
-                    $actionIndexer = $this->actionFactory->get(
-                        $indexer->getActionClass()
-                    );
-                    if ($actionIndexer instanceof FeedIndexer) {
-                        $this->feedNameToIndexerMap[$actionIndexer->getFeedIndexMetadata()->getFeedName()] = $indexer;
-                    }
-                } catch (\Exception $e) {
-                    $this->logger->error(
-                        'Cannot load feed indexer',
-                        ['indexer' => $indexer->getId(), 'error' => $e->getMessage()]
-                    );
-                }
-            }
+        if ($metadata->getIndexerId() == null) {
+            $this->logger->warning(
+                'Feed metadata does not contain indexer name',
+                ['feedName' => $metadata->getFeedName()]
+            );
+            return null;
         }
-        return $this->feedNameToIndexerMap[$metadata->getFeedName()] ?? null;
+
+        try {
+            return $this->indexerRegistry->get($metadata->getIndexerId());
+        } catch (\Exception $e) {
+            $this->logger->error(
+                'Cannot load feed indexer for feed',
+                ['feedName' => $metadata->getFeedName(), 'error' => $e->getMessage()]
+            );
+        }
+        return null;
     }
 }

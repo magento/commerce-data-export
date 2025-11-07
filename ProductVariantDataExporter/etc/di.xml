@@ -9,6 +9,7 @@
     <virtualType name="Magento\ProductVariantDataExporter\Model\Indexer\ProductVariantFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">variants</argument>
+            <argument name="indexerId" xsi:type="string">catalog_data_exporter_product_variants</argument>
             <argument name="feedSummary" xsi:type="string">Product Variants Feed</argument>
             <argument name="feedIdentity" xsi:type="string">productId</argument>
             <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>

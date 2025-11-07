@@ -9,8 +9,8 @@
     <virtualType name="Magento\ProductPriceDataExporter\Model\Indexer\ProductPriceFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">prices</argument>
+            <argument name="indexerId" xsi:type="string">catalog_data_exporter_product_prices</argument>
             <argument name="feedSummary" xsi:type="string">Product Prices Feed</argument>
-<!--            TODO: rename?? it's not actually identity but source of IDs for feed-->
             <argument name="feedIdentity" xsi:type="string">productId</argument>
             <argument name="sourceTableName" xsi:type="string">catalog_product_entity</argument>
             <argument name="sourceTableField" xsi:type="string">entity_id</argument>

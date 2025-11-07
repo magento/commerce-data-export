@@ -14,6 +14,7 @@
             type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">scopesCustomerGroup</argument>
+            <argument name="indexerId" xsi:type="string">scopes_customergroup_data_exporter</argument>
             <argument name="feedSummary" xsi:type="string">Scopes Customer Groups Feed</argument>
             <argument name="feedIdentity" xsi:type="string">customerGroupId</argument>
             <argument name="sourceTableName" xsi:type="string">customer_group</argument>
@@ -65,6 +66,7 @@
             type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">scopesWebsite</argument>
+            <argument name="indexerId" xsi:type="string">scopes_website_data_exporter</argument>
             <argument name="feedSummary" xsi:type="string">Scopes Websites Feed</argument>
             <argument name="feedIdentity" xsi:type="string">websiteId</argument>
             <argument name="sourceTableName" xsi:type="string">store_website</argument>

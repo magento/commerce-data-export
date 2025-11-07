@@ -170,6 +170,11 @@ class FeedIndexMetadata
     private array $entityIdentifierMapping;
 
     /**
+     * @var ?string
+     */
+    private ?string $indexerId;
+
+    /**
      * @param string $feedName
      * @param string $sourceTableName
      * @param string $sourceTableField
@@ -193,6 +198,7 @@ class FeedIndexMetadata
      * @param string|null $feedSummary
      * @param string|null $viewSourceLinkField
      * @param array $entityIdentifierMapping
+     * @param string|null $indexerId
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -218,7 +224,8 @@ class FeedIndexMetadata
         ?Config $config = null,
         ?string $feedSummary = null,
         ?string $viewSourceLinkField = null,
-        array $entityIdentifierMapping = []
+        array $entityIdentifierMapping = [],
+        ?string $indexerId = null,
     ) {
         $this->feedName = $feedName;
         $this->feedSummary = $feedSummary ?? '';
@@ -250,6 +257,7 @@ class FeedIndexMetadata
         $this->viewSourceLinkField = $viewSourceLinkField;
         $this->config = $config ?? ObjectManager::getInstance()->get(Config::class);
         $this->entityIdentifierMapping = $entityIdentifierMapping;
+        $this->indexerId = $indexerId;
     }
 
     /**
@@ -524,5 +532,15 @@ class FeedIndexMetadata
     public function getIdentifierMap(string $identifierField): ?string
     {
         return $this->entityIdentifierMapping[$identifierField] ?? null;
+    }
+
+    /**
+     * Get indexer id
+     *
+     * @return string|null
+     */
+    public function getIndexerId(): ?string
+    {
+        return $this->indexerId;
     }
 }

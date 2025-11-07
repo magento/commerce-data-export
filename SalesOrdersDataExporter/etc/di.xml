@@ -11,6 +11,7 @@
     <virtualType name="Magento\SalesOrdersDataExporter\Model\Indexer\OrdersFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
         <arguments>
             <argument name="feedName" xsi:type="string">orders</argument>
+            <argument name="indexerId" xsi:type="string">sales_order_data_exporter_v2</argument>
             <argument name="feedSummary" xsi:type="string">Sales Orders Feed</argument>
             <argument name="feedIdentity" xsi:type="string">commerceOrderId</argument>
             <argument name="sourceTableName" xsi:type="string">sales_order</argument>
