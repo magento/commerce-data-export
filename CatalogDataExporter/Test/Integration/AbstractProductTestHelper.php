@@ -69,6 +69,15 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     ];
 
     /**
+     * Attributes from the list are verified in another test cases
+     */
+    private const SKIP_VALIDATION_ATTRIBUTES = [
+        'ac_attribute_set',
+        'ac_inventory',
+        'ac_tax_class',
+    ];
+
+    /**
      * @var ProductRepositoryInterface
      */
     protected $productRepository;
@@ -443,6 +452,9 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $feedAttributes = null;
         if (isset($extractedProduct['feedData']['attributes'])) {
             foreach ($extractedProduct['feedData']['attributes'] as $feed) {
+                if (in_array($feed['attributeCode'], self::SKIP_VALIDATION_ATTRIBUTES)) {
+                    continue;
+                }
                 $feedAttributes[$feed['attributeCode']] = $feed;
             }
         }

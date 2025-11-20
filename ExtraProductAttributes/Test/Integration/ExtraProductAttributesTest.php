@@ -66,7 +66,6 @@ class ExtraProductAttributesTest extends \Magento\CatalogDataExporter\Test\Integ
         ];
 
         // Validate attribute set attribute
-        $attributeSetId = $product->getAttributeSetId();
         $expectedAttributes['ac_attribute_set'] = [
             'attributeCode' => 'ac_attribute_set',
             'value' => ['SaaSCatalogAttributeSet']
@@ -79,7 +78,29 @@ class ExtraProductAttributesTest extends \Magento\CatalogDataExporter\Test\Integ
             'value' => [$inventoryData]
         ];
 
-        $this->validateAttributeData($product, $extractedProduct, $expectedAttributes);
+        $feedAttributes = [];
+        $attributesToVerify = [
+            'ac_attribute_set',
+            'ac_inventory',
+            'ac_tax_class',
+        ];
+        if (isset($extractedProduct['feedData']['attributes'])) {
+            foreach ($extractedProduct['feedData']['attributes'] as $feed) {
+                if (!in_array($feed['attributeCode'], $attributesToVerify)) {
+                    continue;
+                }
+                $feedAttributes[$feed['attributeCode']] = $feed;
+            }
+        }
+
+        try {
+            $this->assertJsonStringEqualsJsonString(
+                json_encode($expectedAttributes, JSON_THROW_ON_ERROR),
+                json_encode($feedAttributes, JSON_THROW_ON_ERROR)
+            );
+        } catch (\JsonException $e) {
+            $this->fail($e->getMessage());
+        }
     }
 
     /**
@@ -91,7 +112,7 @@ class ExtraProductAttributesTest extends \Magento\CatalogDataExporter\Test\Integ
     private function getInventoryData(ProductInterface $product): ?string
     {
         $stockItem = [
-            // overriden settings
+            // overridden settings
             'simple1' => [
                 'manageStock' => true,
                 'cartMinQty' => 3,

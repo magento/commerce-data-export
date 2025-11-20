@@ -48,7 +48,7 @@ class FeedMetadataPool
     /**
      * Get list of all registered feeds
      *
-     * @return array
+     * @return FeedIndexMetadata[]
      */
     public function getAll(): array
     {

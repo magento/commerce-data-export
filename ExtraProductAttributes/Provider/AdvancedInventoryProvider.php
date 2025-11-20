@@ -9,10 +9,8 @@ namespace AdobeCommerce\ExtraProductAttributes\Provider;
 
 
 use Magento\CatalogInventory\Api\StockConfigurationInterface;
-use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Stdlib\DateTime;
-use Magento\Framework\DB\Adapter\TableNotFoundException;
 use AdobeCommerce\ExtraProductAttributes\Provider\Query\InventoryStockQuery;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
