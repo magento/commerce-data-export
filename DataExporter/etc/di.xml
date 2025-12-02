@@ -30,7 +30,7 @@
     </virtualType>
     <type name="Magento\DataExporter\Config\Converter">
         <arguments>
-            <argument name="converter" xsi:type="object">Magento\Analytics\ReportXml\Config\Converter\Xml</argument>
+            <argument name="converter" xsi:type="object">Magento\QueryXml\Model\Config\Converter\Xml</argument>
         </arguments>
     </type>
     <type name="Magento\DataExporter\Config\Config">

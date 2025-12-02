@@ -1,4 +1,0 @@
-app/code/Magento/QueryXml/
-app/code/Magento/DataExporter/Model/Indexer/
-app/code/Magento/CatalogDataExporter/Model/Provider/Category/
-app/code/Magento/CatalogDataExporter/Model/Query/

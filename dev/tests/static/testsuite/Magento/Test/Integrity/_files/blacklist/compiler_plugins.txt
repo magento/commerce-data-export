@@ -1,2 +1,0 @@
-Magento\CatalogDataExporter\Plugin\ProductScheduledUpdateExecute
-Magento\CatalogDataExporter\Plugin\CategoryScheduledUpdateExecute
