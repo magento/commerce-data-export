@@ -81,14 +81,7 @@ class CustomerGroupPricesQuery
                 ['tier' => $this->resourceConnection->getTableName('catalog_product_entity_tier_price')],
                 \sprintf('product.%1$s = tier.%1$s', $this->getLinkField()) .
                 ' AND tier.all_groups = 1',
-                [
-                    'price' => new \Zend_Db_Expr(
-                        'GROUP_CONCAT(CONCAT(`tier`.`qty`, \':\', `tier`.`value`) SEPARATOR \',\')'
-                    ),
-                    'percentage' => new \Zend_Db_Expr(
-                        'GROUP_CONCAT(CONCAT(`tier`.`qty`, \':\', `tier`.`percentage_value`) SEPARATOR \',\')'
-                    )
-                ]
+                $this->tierPriceColumns(),
             )->columns([
                 'product.sku',
                 'product.entity_id',
@@ -101,6 +94,33 @@ class CustomerGroupPricesQuery
     }
 
     /**
+     * Get tier price columns
+     *
+     * @return array
+     */
+    private function tierPriceColumns(): array
+    {
+        return [
+            'price' => $this->resourceConnection->getConnection()->getCheckSql(
+                '`tier`.percentage_value IS NULL',
+                new \Zend_Db_Expr(
+                    'GROUP_CONCAT(CONCAT(`tier`.`qty`, \':\', `tier`.`value`) SEPARATOR \',\')'
+                ),
+                'null'
+            ),
+            'percentage' => $this->resourceConnection->getConnection()->getCheckSql(
+                '`tier`.percentage_value IS NULL',
+                'null',
+                new \Zend_Db_Expr(
+                    'GROUP_CONCAT(CONCAT(`tier`.`qty`, \':\', `tier`.`percentage_value`) SEPARATOR \',\')'
+                )
+            )
+        ];
+    }
+
+    /**
+     * Get link field for product entity
+     *
      * @return string
      * @throws \Exception
      */
@@ -112,6 +132,8 @@ class CustomerGroupPricesQuery
     }
 
     /**
+     * Get query to retrieve customer group prices
+     *
      * @param  array $productIds
      * @return Select
      * @throws \Exception
@@ -129,14 +151,7 @@ class CustomerGroupPricesQuery
                 ['tier' => $this->resourceConnection->getTableName('catalog_product_entity_tier_price')],
                 \sprintf('product.%1$s = tier.%1$s', $linkField) .
                 ' AND tier.all_groups = 0',
-                [
-                    'price' => new \Zend_Db_Expr(
-                        'GROUP_CONCAT(CONCAT(`tier`.`qty`, \':\', `tier`.`value`) SEPARATOR \',\')'
-                    ),
-                    'percentage' => new \Zend_Db_Expr(
-                        'GROUP_CONCAT(CONCAT(`tier`.`qty`, \':\', `tier`.`percentage_value`) SEPARATOR \',\')'
-                    )
-                ]
+                $this->tierPriceColumns(),
             )
             ->columns([
                 'sku' => 'product.sku',
@@ -154,6 +169,8 @@ class CustomerGroupPricesQuery
     }
 
     /**
+     * Get query to retrieve catalog rule prices
+     *
      * @param  array $productIds
      * @return Select
      * @throws \Exception
@@ -193,8 +210,9 @@ class CustomerGroupPricesQuery
             ->where('rule.product_id IS NOT NULL');
     }
 
-
     /**
+     * Get CASE SQL expression for website specific dates
+     *
      * @return \Zend_Db_Expr
      */
     private function getWebsiteDate(): \Zend_Db_Expr

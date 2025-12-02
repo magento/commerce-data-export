@@ -5,6 +5,7 @@
  */
 declare(strict_types=1);
 
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
 use Magento\Catalog\Api\Data\ProductTierPriceExtensionFactory;
 use Magento\Catalog\Api\Data\ProductTierPriceInterfaceFactory;
@@ -12,6 +13,7 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Type;
 use Magento\Customer\Model\Group;
+use Magento\Framework\EntityManager\EntityMetadataInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use Magento\TestFramework\Workaround\Override\Fixture\Resolver;
 use Magento\Store\Api\WebsiteRepositoryInterface;
@@ -104,4 +106,28 @@ $productWithTierPrices->setTypeId(Type::TYPE_SIMPLE)
     ->setWebsiteIds([$firstWebsiteId, $secondWebsiteId])
     ->setStatus(Status::STATUS_ENABLED);
 $productWithTierPrices->setTierPrices($productTierPrices);
-$productRepository->save($productWithTierPrices);
+$product = $productRepository->save($productWithTierPrices);
+
+// Emulate behavior where a tier price record has both 'value' and 'percentage_value' set
+// This updates the tier price for qty=2, customer_group_id=ALL_GROUPS, first website
+/** @var \Magento\Framework\App\ResourceConnection $resourceConnection */
+$resourceConnection = $objectManager->get(\Magento\Framework\App\ResourceConnection::class);
+$connection = $resourceConnection->getConnection();
+$tierPriceTable = $resourceConnection->getTableName('catalog_product_entity_tier_price');
+
+/** @var EntityMetadataInterface $metadata */
+$metadata = $objectManager->get(\Magento\Framework\EntityManager\MetadataPool::class)
+    ->getMetadata(ProductInterface::class);
+$linkField = $metadata->getLinkField();
+
+$connection->update(
+    $tierPriceTable,
+    ['value' => 20],
+    [
+        "$linkField = ?" => $product->getId(),
+        'all_groups = ?' => 1,
+        'customer_group_id = ?' => 0,
+        'qty = ?' => 2.0,
+        'website_id = ?' => $firstWebsiteId
+    ]
+);
