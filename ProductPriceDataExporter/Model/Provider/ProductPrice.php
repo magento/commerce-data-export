@@ -335,16 +335,20 @@ class ProductPrice implements DataProcessorInterface
     }
 
     /**
-     * @param $storeId
+     * Get website id from store id
+     *
+     * @param ?string $storeId
      * @return string
      */
-    private function getWebsiteIdFromStoreId($storeId): string
+    private function getWebsiteIdFromStoreId(?string $storeId): string
     {
         $this->loadWebsites();
         return isset($this->websitesByStore[$storeId]) ? $this->websitesByStore[$storeId]['website_id'] : "0";
     }
 
     /**
+     * Get websites
+     *
      * @return array
      */
     private function getWebsites(): array
@@ -393,6 +397,8 @@ class ProductPrice implements DataProcessorInterface
     }
 
     /**
+     * Is global price
+     *
      * @param ?string $storeViewId
      * @return bool
      */
@@ -402,6 +408,8 @@ class ProductPrice implements DataProcessorInterface
     }
 
     /**
+     * Is global website
+     *
      * @param array $row
      * @return bool
      */
@@ -830,6 +838,8 @@ class ProductPrice implements DataProcessorInterface
     }
 
     /**
+     * Add grouped discounts - group price and tier prices
+     *
      * @param array $qtyGroupPriceValue
      * @param string $valueType
      * @param array $discounts
@@ -839,8 +849,8 @@ class ProductPrice implements DataProcessorInterface
     {
         foreach ($qtyGroupPriceValue as $value) {
             [$qty, $price] = explode(':', $value);
-            if ((float)$price === 0.0) {
-                // skip zero price
+            if ($price === null) {
+                // Skip processing if price is null
                 continue;
             }
             // Only qty 1 is a grouped price
