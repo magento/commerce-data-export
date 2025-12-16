@@ -17,8 +17,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class FullSyncCommand extends \Symfony\Component\Console\Command\Command
 {
-    const COMMAND_NAME = 'commerce-data-export:config:export';
-    const INPUT_OPTION_STORE_ID = 'store';
+    public const COMMAND_NAME = 'commerce-data-export:config:export';
+    public const INPUT_OPTION_STORE_ID = 'store';
 
     /**
      * @var \Magento\ConfigurationDataExporter\Model\FullExportProcessorInterface
@@ -60,7 +60,7 @@ class FullSyncCommand extends \Symfony\Component\Console\Command\Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $storeId = $input->getOption(self::INPUT_OPTION_STORE_ID);
 

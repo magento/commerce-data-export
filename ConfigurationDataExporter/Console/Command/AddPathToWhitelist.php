@@ -19,8 +19,8 @@ use Magento\Framework\Config\File\ConfigFilePool;
  */
 class AddPathToWhitelist extends \Symfony\Component\Console\Command\Command
 {
-    const COMMAND_NAME = 'commerce-data-export:config:add-paths-to-whitelist';
-    const INPUT_OPTION_PATHS = 'paths';
+    public const COMMAND_NAME = 'commerce-data-export:config:add-paths-to-whitelist';
+    public const INPUT_OPTION_PATHS = 'paths';
 
     /**
      * @var \Magento\Framework\App\DeploymentConfig
@@ -68,7 +68,7 @@ class AddPathToWhitelist extends \Symfony\Component\Console\Command\Command
      * @param OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $paths = $input->getArgument(self::INPUT_OPTION_PATHS);
 
