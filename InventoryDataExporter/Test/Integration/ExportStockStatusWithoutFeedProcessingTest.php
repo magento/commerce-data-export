@@ -8,12 +8,9 @@ declare(strict_types=1);
 namespace Magento\InventoryDataExporter\Test\Integration;
 
 use DateTime;
-use Magento\DataExporter\Model\FeedInterface;
-use Magento\DataExporter\Model\FeedPool;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\StateException;
 use Magento\InventoryDataExporter\Model\Indexer\StockStatusFeedIndexMetadata;
-use Magento\TestFramework\Helper\Bootstrap;
 use Zend_Db_Statement_Exception;
 
 /**
@@ -25,19 +22,9 @@ class ExportStockStatusWithoutFeedProcessingTest extends AbstractInventoryTestHe
      * @var string
      */
     private const EXPECTED_DATE_TIME_FORMAT = '%d-%d-%d %d:%d:%d';
-    private FeedInterface $stockStatusFeed;
 
     public static function setUpBeforeClass(): void
     {
-    }
-
-    /**
-     * Setup tests
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->stockStatusFeed = Bootstrap::getObjectManager()->get(FeedPool::class)->getFeed('inventoryStockStatus');
     }
 
     /**
