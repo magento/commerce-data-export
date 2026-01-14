@@ -1,4 +1,5 @@
 # Overview
+
 This project purposed to assemble and synchronization of data that represent Magento entities with integrations,
 which are sources for the data consumed by external or SaaS services and integrations.
 
