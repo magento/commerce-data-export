@@ -12,6 +12,8 @@ use Magento\BundleProductDataExporter\Model\Query\BundleProductOptionsQuery;
 use Magento\BundleProductDataExporter\Model\Query\BundleProductOptionValuesQuery;
 use Magento\CatalogDataExporter\Model\Provider\Product\OptionProviderInterface;
 use Magento\DataExporter\Exception\UnableRetrieveData;
+use Magento\DataExporter\Model\FailedItemsRegistry;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as LoggerInterface;
 
@@ -45,25 +47,30 @@ class BundleProductOptions implements OptionProviderInterface
      */
     private $bundleItemOptionUid;
 
+    private FailedItemsRegistry $failedRegistry;
+
     /**
      * @param ResourceConnection $resourceConnection
      * @param BundleProductOptionsQuery $bundleProductOptionsQuery
      * @param BundleProductOptionValuesQuery $bundleProductOptionValuesQuery
      * @param BundleItemOptionUid $bundleItemOptionUid
      * @param LoggerInterface $logger
+     * @param ?FailedItemsRegistry $failedRegistry
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         BundleProductOptionsQuery $bundleProductOptionsQuery,
         BundleProductOptionValuesQuery $bundleProductOptionValuesQuery,
         BundleItemOptionUid $bundleItemOptionUid,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        ?FailedItemsRegistry $failedRegistry = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->bundleProductOptionsQuery = $bundleProductOptionsQuery;
         $this->bundleProductOptionValuesQuery = $bundleProductOptionValuesQuery;
         $this->logger = $logger;
         $this->bundleItemOptionUid = $bundleItemOptionUid;
+        $this->failedRegistry = $failedRegistry ?? ObjectManager::getInstance()->get(FailedItemsRegistry::class);
     }
 
     /**
@@ -88,7 +95,18 @@ class BundleProductOptions implements OptionProviderInterface
                 );
 
                 while ($row = $cursor->fetch()) {
-                    $output[] = $this->formatBundleOptionsRow($row, $optionValues);
+                    try {
+                        $output[] = $this->formatBundleOptionsRow($row, $optionValues);
+                    } catch (\Throwable $e) {
+                        $this->failedRegistry->addFailed(
+                            [
+                                'productId' => $row['productId'],
+                                'storeViewCode' => $value['storeViewCode'],
+                                'sku' => $value['sku'] ?? null,
+                            ],
+                            $e
+                        );
+                    }
                 }
             }
         } catch (\Throwable $exception) {
@@ -120,7 +138,18 @@ class BundleProductOptions implements OptionProviderInterface
         );
 
         while ($row = $cursor->fetch()) {
-            $output[$row['parent_id']][$row['option_id']][] = $this->formatBundleValuesRow($row);
+            try {
+                $output[$row['parent_id']][$row['option_id']][] = $this->formatBundleValuesRow($row);
+            } catch (\Throwable $e) {
+                $this->failedRegistry->addFailed(
+                    [
+                        'productId' => $row['parent_id'],
+                        'storeViewCode' => $storeViewCode,
+                        'sku' => $row['parent_sku'],
+                    ],
+                    $e
+                );
+            }
         }
 
         return $output;
