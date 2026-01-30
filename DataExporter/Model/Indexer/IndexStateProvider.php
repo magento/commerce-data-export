@@ -89,7 +89,7 @@ class IndexStateProvider
             while ($item = array_shift($this->feedItemsUpdates)) {
                 $item['operation'] = self::UPDATE_OPERATION;
                 $feedItems[] = $item;
-                if (count($feedItems) === $this->feedItemsUpdates) {
+                if (count($feedItems) === $this->batchSize) {
                     break;
                 }
             }
