@@ -27,7 +27,8 @@ class DownloadableAsAttribute
      */
     public function __construct(
         private readonly SerializerInterface $serializer
-    ) {}
+    ) {
+    }
 
     /**
      * After process plugin for the Processor class.
@@ -92,9 +93,7 @@ class DownloadableAsAttribute
     private function getSamples(array $samples): array
     {
         $output = [];
-        usort($samples, function ($a, $b) {
-            return ($a['sortOrder'] ?? 0) <=> ($b['sortOrder'] ?? 0);
-        });
+        usort($samples, fn($a, $b) => ($a['sortOrder'] ?? 0) <=> ($b['sortOrder'] ?? 0));
 
         foreach ($samples as $sampleLink) {
             if (!isset($sampleLink['resource'])) {
@@ -123,9 +122,7 @@ class DownloadableAsAttribute
                 continue;
             }
             $values = $option['values'] ?? [];
-            usort($values, function ($a, $b) {
-                return ($a['sortOrder'] ?? 0) <=> ($b['sortOrder'] ?? 0);
-            });
+            usort($values, fn($a, $b) => ($a['sortOrder'] ?? 0) <=> ($b['sortOrder'] ?? 0));
 
             foreach ($values as $n => $value) {
                 $links[] = [

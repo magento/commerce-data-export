@@ -49,7 +49,7 @@ class RecurringData implements \Magento\Framework\Setup\InstallDataInterface
     {
         try {
             $this->exportProcessor->process();
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             $this->logger->error('Full configuration sync failed.');
         }
     }

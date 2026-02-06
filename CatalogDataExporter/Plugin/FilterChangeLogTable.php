@@ -37,9 +37,7 @@ class FilterChangeLogTable
     public function afterGetSql(SqlCollector $subject, array $result): array
     {
         try {
-            return array_filter($result, static function ($item) {
-                return !str_ends_with($item[1], '_cl');
-            });
+            return array_filter($result, static fn($item) => !str_ends_with((string) $item[1], '_cl'));
         } catch (\Throwable $e) {
             $this->logger->error(
                 'Data Exporter exception has occurred: ' . $e->getMessage(),

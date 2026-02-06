@@ -238,9 +238,7 @@ class Products implements DataProcessorInterface
         array &$output,
         string $storeViewCode
     ): void {
-        $output[] = \array_map(function ($row) {
-            return $this->formatter->format($row);
-        }, \array_replace_recursive(
+        $output[] = \array_map($this->formatter->format(...), \array_replace_recursive(
             $products,
             $this->entityEavAttributesResolver->resolve($attributesData, $storeViewCode)
         ));

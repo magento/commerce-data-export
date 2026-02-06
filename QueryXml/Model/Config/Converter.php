@@ -29,14 +29,20 @@ class Converter implements ConverterInterface
         $this->baseConverter = $converter;
     }
 
+    /**
+     * Builds map of source aliases to source names for given query.
+     *
+     * @param array $queryData
+     * @return array
+     */
     private function buildSourcesMap(array $queryData) : array
     {
         $output = [];
-        $alias = isset($queryData['alias']) ? $queryData['alias'] : $queryData['name'];
+        $alias = $queryData['alias'] ?? $queryData['name'];
         $output[$alias] = $queryData['name'];
         if (isset($queryData['link-source'])) {
             foreach ($queryData['link-source'] as $linkedSource) {
-                $alias = isset($linkedSource['alias']) ? $linkedSource['alias'] : $linkedSource['name'];
+                $alias = $linkedSource['alias'] ?? $linkedSource['name'];
                 $output[$alias] = $linkedSource['name'];
             }
         }

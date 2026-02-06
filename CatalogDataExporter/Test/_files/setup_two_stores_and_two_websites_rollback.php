@@ -52,8 +52,8 @@ $website = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()->create(\
 $websiteId = $website->load('test', 'code')->getId();
 if ($websiteId) {
     try {
-        $website->getResource()->delete($website);
-    } catch (Exception $e) {
+        $objectManager->get(\Magento\Store\Model\ResourceModel\Website::class)->delete($website);
+    } catch (Exception) {
     }
 }
 

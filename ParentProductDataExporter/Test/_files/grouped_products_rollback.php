@@ -17,7 +17,7 @@ $productRepository = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()
 
 try {
     $productRepository->deleteById('grouped-product-parent-product-test');
-} catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+} catch (\Magento\Framework\Exception\NoSuchEntityException) {
     //Product already removed
 }
 

@@ -206,9 +206,7 @@ class DataSerializer implements DataSerializerInterface
     private function getNestedValue(array $array, string $path): mixed
     {
         $arrayPath = explode('.', $path);
-        $reduce = function (array $source, $key) {
-            return (array_key_exists($key, $source)) ? $source[$key] : null;
-        };
+        $reduce = (fn(array $source, $key) => (array_key_exists($key, $source)) ? $source[$key] : null);
         return array_reduce($arrayPath, $reduce, $array);
     }
 }

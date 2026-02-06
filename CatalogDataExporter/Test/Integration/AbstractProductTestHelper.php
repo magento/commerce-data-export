@@ -241,9 +241,8 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     {
         $searchCriteria = Bootstrap::getObjectManager()->create(SearchCriteriaInterface::class);
 
-        $productIds = array_map(function ($product) {
-            return $product->getId();
-        }, $this->productRepository->getList($searchCriteria)->getItems());
+        $items = $this->productRepository->getList($searchCriteria)->getItems();
+        $productIds = array_map(fn($product) => $product->getId(), $items);
 
         if (!empty($productIds)) {
             $this->indexer->reindexList($productIds);

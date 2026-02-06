@@ -360,7 +360,7 @@ class ConfigurableProductVariantsTest extends AbstractProductVariantsTest
 
         try {
             $this->productRepository->deleteById($productSku);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             throw new RuntimeException('Could not delete product ' . $productSku);
         }
 

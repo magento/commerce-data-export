@@ -37,6 +37,8 @@ class AssignUuidForOrder
     }
 
     /**
+     * Assign UUID to order and order items if it was not assigned before
+     *
      * @param OrderResource $subject
      * @param OrderResource $result
      * @param Order $order
@@ -52,9 +54,7 @@ class AssignUuidForOrder
                 // assume new order was placed, assign UUID to order && order items
                 $this->uidManager->assign($orderId, self::ORDER_TYPE);
                 $itemIds = array_map(
-                    static function ($item) {
-                        return (int) $item->getItemId();
-                    },
+                    static fn($item) => (int) $item->getItemId(),
                     $order->getItems()
                 );
                 $this->uidManager->assignBulk($itemIds, self::ORDER_ITEM_TYPE);

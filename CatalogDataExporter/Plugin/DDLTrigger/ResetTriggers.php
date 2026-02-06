@@ -79,17 +79,17 @@ class ResetTriggers
     /**
      * Get list of views that are enabled for particular tables
      *
-     * @param $tableNames
+     * @param array $tableNames
      * @return array
      */
-    private function getViewsForTables($tableNames): array
+    private function getViewsForTables(array $tableNames): array
     {
         // Get list of views that are enabled
         $allViewList = $this->viewCollection->getViewsByStateMode(StateInterface::MODE_ENABLED);
         $viewList = [];
         $dbPrefix = $this->resource->getTablePrefix();
         foreach ($tableNames as &$tableName) {
-            $tableName = preg_replace("/^$dbPrefix/", '', $tableName);
+            $tableName = preg_replace("/^$dbPrefix/", '', (string) $tableName);
         }
 
         foreach ($allViewList as $view) {

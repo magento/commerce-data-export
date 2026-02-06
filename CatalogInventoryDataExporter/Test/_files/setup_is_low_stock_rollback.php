@@ -24,7 +24,7 @@ try {
     if ($product->getId()) {
         $productInterface->delete($product);
     }
-} catch (Exception $e) {
+} catch (Exception) {
     // Nothing to delete
 }
 

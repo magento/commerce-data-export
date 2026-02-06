@@ -11,7 +11,8 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\InventoryApi\Api\Data\SourceInterface;
 use Magento\InventoryApi\Api\StockRepositoryInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
-use \Magento\Framework\Registry;
+use Magento\Framework\Registry;
+
 // Delete products
 $skusToDelete = [
     'product_with_default_stock_only', 'product_with_disabled_manage_stock', 'product_with_enabled_backorders',
@@ -57,7 +58,7 @@ $stockRepository = Bootstrap::getObjectManager()->get(StockRepositoryInterface::
 foreach ([10, 20, 30] as $stockId) {
     try {
         $stockRepository->deleteById($stockId);
-    } catch (NoSuchEntityException $e) {
+    } catch (NoSuchEntityException) {
         //Stock already removed
     }
 }

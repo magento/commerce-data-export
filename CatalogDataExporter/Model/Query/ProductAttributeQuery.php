@@ -117,8 +117,8 @@ class ProductAttributeQuery
      */
     public function getQuery(array $arguments) : ?Select
     {
-        $productIds = isset($arguments['productId']) ? $arguments['productId'] : [];
-        $storeViewCode = isset($arguments['storeViewCode']) ? $arguments['storeViewCode'] : [];
+        $productIds = $arguments['productId'] ?? [];
+        $storeViewCode = $arguments['storeViewCode'] ?? [];
 
         $attributesToSearch = array_merge(
             $this->getUserDefinedAttributes(),

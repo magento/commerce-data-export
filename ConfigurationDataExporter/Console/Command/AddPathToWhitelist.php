@@ -101,9 +101,7 @@ class AddPathToWhitelist extends \Symfony\Component\Console\Command\Command
     {
         $whitelist = $this->deploymentConfig->get(EnvironmentProvider::WHITELIST_CONFIG_KEY, []);
         $paths = array_unique($paths);
-        $paths = array_filter($paths, function ($path) use ($whitelist) {
-            return !in_array($path, $whitelist);
-        });
+        $paths = array_filter($paths, fn($path) => !in_array($path, $whitelist));
 
         return [
             ConfigFilePool::APP_ENV => [

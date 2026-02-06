@@ -71,7 +71,7 @@ class ProductReviews
 
             while ($row = $cursor->fetch()) {
                 $key = $row['reviewId'];
-                $output[$key] = $output[$key] ?? $this->formatReviewRow($row);
+                $output[$key] ??= $this->formatReviewRow($row);
 
                 if (null !== $row['ratingId']) {
                     $output[$key]['ratings'][] = [
@@ -103,7 +103,7 @@ class ProductReviews
         return [
             'reviewId' => $row['reviewId'],
             'productId' => $row['productId'],
-            'visibility' => \explode(',', $row['visibility']),
+            'visibility' => \explode(',', (string) $row['visibility']),
             'title' => $row['title'],
             'nickname' => $row['nickname'],
             'text' => $row['text'],

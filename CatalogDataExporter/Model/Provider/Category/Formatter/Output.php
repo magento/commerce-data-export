@@ -75,13 +75,11 @@ class Output implements FormatterInterface
                     $outputFormatter = $this->outputFormatter;
                     $row[$attributeKey] = $this->appState->emulateAreaCode(
                         AppArea::AREA_FRONTEND,
-                        function () use ($outputFormatter, $row, $attributeCode, $attributeKey) {
-                            return $outputFormatter->categoryAttribute(
-                                null,
-                                $row[$attributeKey],
-                                $attributeCode
-                            );
-                        }
+                        fn() => $outputFormatter->categoryAttribute(
+                            null,
+                            $row[$attributeKey],
+                            $attributeCode
+                        )
                     );
                 }
             }

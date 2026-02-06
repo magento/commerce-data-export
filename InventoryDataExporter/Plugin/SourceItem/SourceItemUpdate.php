@@ -34,8 +34,10 @@ class SourceItemUpdate
     }
 
     /**
+     * After plugin for SourceItemsSaveInterface::execute - trigger stock status reindex when source items change.
+     *
      * @param SourceItemsSaveInterface $subject
-     * @param void $result
+     * @param mixed $result
      * @param SourceItemInterface[] $sourceItems
      * @return void
      *
@@ -50,9 +52,7 @@ class SourceItemUpdate
             $stockStatusIndexer = $this->indexerRegistry->get(self::STOCK_STATUS_FEED_INDEXER);
             if (!$stockStatusIndexer->isScheduled()) {
                 $skus = \array_map(
-                    static function (SourceItemInterface $sourceItem) {
-                        return $sourceItem->getSku();
-                    },
+                    static fn(SourceItemInterface $sourceItem) => $sourceItem->getSku(),
                     $sourceItems
                 );
                 $stockStatusIndexer->reindexList($skus);

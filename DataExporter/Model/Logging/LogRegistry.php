@@ -28,13 +28,23 @@ class LogRegistry
     private int $logProgressIntervalChunks;
     private ?int $userDefinedLogProgressInterval;
     private int $currentIteration;
-    private ?int $totalIterationsPerThread;
+    private ?int $totalIterationsPerThread = null;
 
+    /**
+     * @param int|null $logProgressInterval Optional user-defined log interval in seconds
+     */
     public function __construct($logProgressInterval = null)
     {
         $this->userDefinedLogProgressInterval = $logProgressInterval !== null ? (int)$logProgressInterval : null;
     }
 
+    /**
+     * Initialize sync log state from metadata and operation name.
+     *
+     * @param FeedIndexMetadata $metadata
+     * @param string $operation
+     * @return void
+     */
     public function initSyncLog(FeedIndexMetadata $metadata, string $operation): void
     {
         $this->feedName = $metadata->getFeedName();
@@ -44,6 +54,8 @@ class LogRegistry
     }
 
     /**
+     * Add contextual values to the registry (e.g. total iterations).
+     *
      * @param array $context
      * @return void
      */
@@ -55,6 +67,8 @@ class LogRegistry
     }
 
     /**
+     * Initialize internal counters and timestamps for logging.
+     *
      * @return void
      */
     private function init(): void
@@ -69,6 +83,8 @@ class LogRegistry
         $this->currentIteration = 0;
     }
     /**
+     * Get current operation name.
+     *
      * @return string
      */
     private function getOperation(): string
@@ -77,6 +93,8 @@ class LogRegistry
     }
 
     /**
+     * Get current feed name.
+     *
      * @return string
      */
     private function getFeedName(): string
@@ -85,6 +103,8 @@ class LogRegistry
     }
 
     /**
+     * Get formatted elapsed time since start.
+     *
      * @return string
      */
     private function getElapsedTime(): string
@@ -93,6 +113,8 @@ class LogRegistry
     }
 
     /**
+     * Get elapsed seconds since start.
+     *
      * @return int
      */
     private function getElapsedSeconds(): int
@@ -101,6 +123,8 @@ class LogRegistry
     }
 
     /**
+     * Get human-friendly thread identifier.
+     *
      * @return string|null
      */
     private function getThreadId(): string|null
@@ -113,6 +137,8 @@ class LogRegistry
     }
 
     /**
+     * Get current process id.
+     *
      * @return int
      */
     private function getPid(): int
@@ -121,7 +147,9 @@ class LogRegistry
     }
 
     /**
-     * @param $message
+     * Prepare structured log message as JSON string.
+     *
+     * @param mixed $message
      * @param array $context
      * @return string
      */
@@ -181,7 +209,7 @@ class LogRegistry
     }
 
     /**
-     * Determine how frequently log message
+     * Determine whether it is time to log progress based on configured interval.
      *
      * @return bool
      */
@@ -201,6 +229,8 @@ class LogRegistry
     }
 
     /**
+     * Check whether the current iteration is the last one for total progress logging.
+     *
      * @return bool
      */
     private function isFinalIteration(): bool
@@ -209,7 +239,8 @@ class LogRegistry
     }
 
     /**
-     * How frequently log sync status. Return value in seconds
+     * How frequently log sync status. Return value in seconds.
+     *
      * @return int
      */
     private function getLogProgressTimeInterval(): int
@@ -229,27 +260,34 @@ class LogRegistry
     }
 
     /**
+     * Get caller info for CLI or return 'app' for non-CLI contexts.
+     *
      * @return string|null
      */
     private function getCallerInfo(): ?string
     {
         $cli = $_SERVER['argv'] ?? [];
         if ($cli) {
-            return \implode(' ', \array_slice($cli, 0, 6));
+            $return = \implode(' ', \array_slice($cli, 0, 6));
         } else {
-            return 'app';
+            $return = 'app';
         }
+        return $return;
     }
 
     /**
+     * Determine whether total progress can be logged based on availability of total iterations and iteration count.
+     *
      * @return bool
      */
     private function isLogTotalProgress(): bool
     {
         return $this->totalIterationsPerThread !== null && $this->currentIteration > 0;
     }
+
     /**
      * Format time to display in days, hours, minutes and seconds, ms
+     *
      * @param array $before
      * @param array $after
      * @return string

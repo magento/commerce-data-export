@@ -115,19 +115,22 @@ class BatchTable
         );
 
         if ($initializeCreate || $initializeCreate === null) {
-        $connection->dropTable($this->batchTableName);
-        $connection->createTable($batchTable);
+            $connection->dropTable($this->batchTableName);
+            $connection->createTable($batchTable);
         }
+
         $result = $connection->query($insertDataQuery);
         $processedItems = 0;
         if ($result instanceof \Zend_Db_Statement_Pdo) {
-            $processedItems = (int)$result->rowCount() ;
+            $processedItems = (int)$result->rowCount();
         } else {
             $this->logger->warning('Batch table insert query returned unexpected result');
         }
+
         if ($processedItems === 0 || $initializeCreate === null) {
-        $connection->query(sprintf("ANALYZE TABLE %s", $this->batchTableName));
-    }
+            $connection->query(sprintf("ANALYZE TABLE %s", $this->batchTableName));
+        }
+
         return $processedItems;
     }
 
@@ -190,9 +193,7 @@ class BatchTable
     {
         $result = array_filter(
             $this->resourceConnection->getConnection()->describeTable($tableName),
-            function ($column) use ($columnNames) {
-                return in_array($column['COLUMN_NAME'], $columnNames);
-            }
+            fn($column) => in_array($column['COLUMN_NAME'], $columnNames)
         );
 
         return $result;

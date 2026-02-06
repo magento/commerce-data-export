@@ -62,7 +62,7 @@ class InvalidateOnConfigChange
             $check = [];
             $savedSection = $subject->getSection();
             foreach ($this->configValues as $searchValue) {
-                $path = explode('/', $searchValue);
+                $path = explode('/', (string) $searchValue);
                 $section = $path[0];
                 $group = $path[1];
                 $field = $path[2];

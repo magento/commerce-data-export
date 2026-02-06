@@ -27,11 +27,12 @@ $registry->register('isSecureArea', true);
 try {
     $product = $productRepository->get('downloadable-product');
     $productRepository->delete($product);
-} catch (NoSuchEntityException $e) {
+} catch (NoSuchEntityException) {
     //Product already removed
 }
 
 $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', false);
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_two_stores_and_two_websites_rollback.php'
+Resolver::getInstance()->requireDataFixture(
+    'Magento_CatalogDataExporter::Test/_files/setup_two_stores_and_two_websites_rollback.php'
 );

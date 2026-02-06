@@ -73,9 +73,8 @@ class SelectBuilder
     private $sort = [];
 
     /**
-     * SelectBuilder constructor.
-     *
      * @param ResourceConnection $resourceConnection
+     * @param array $queryConfig
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -209,17 +208,12 @@ class SelectBuilder
      */
     private function processJoin(Select $select, $joinConfig)
     {
-        switch ($joinConfig['link-type']) {
-            case 'left':
-                $select->joinLeft($joinConfig['table'], $joinConfig['condition'], []);
-                break;
-            case 'inner':
-                $select->joinInner($joinConfig['table'], $joinConfig['condition'], []);
-                break;
-            case 'right':
-                $select->joinRight($joinConfig['table'], $joinConfig['condition'], []);
-                break;
-        }
+        match ($joinConfig['link-type']) {
+            'left' => $select->joinLeft($joinConfig['table'], $joinConfig['condition'], []),
+            'inner' => $select->joinInner($joinConfig['table'], $joinConfig['condition'], []),
+            'right' => $select->joinRight($joinConfig['table'], $joinConfig['condition'], []),
+            default => $select,
+        };
         return $select;
     }
 
@@ -289,10 +283,10 @@ class SelectBuilder
     /**
      * Set sort
      *
-     * @param $sort
+     * @param array $sort
      * @return $this
      */
-    public function setSort($sort)
+    public function setSort(array $sort)
     {
         $this->sort = $sort;
 
@@ -345,6 +339,11 @@ class SelectBuilder
         return $this;
     }
 
+    /**
+     * Get query config
+     *
+     * @return array
+     */
     public function getQueryConfig() : array
     {
         return $this->queryConfig;

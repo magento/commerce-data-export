@@ -43,8 +43,9 @@ class VideoFormatter implements MediaGalleryFormatterInterface
             'storeViewCode' => $row['storeViewCode'],
             'videos' => [
                 'preview' => [
-                    'url' => $this->mediaUrlProvider->getBaseMediaUrlByStoreViewCode($row['storeViewCode'])
-                        . $row['file'],
+                    'url' => $this->mediaUrlProvider->getBaseMediaUrlByStoreViewCode(
+                        $row['storeViewCode']
+                    ) . $row['file'],
                     'label' => $row['label'] ?? '',
                     'roles' => $roles,
                 ],
@@ -63,9 +64,11 @@ class VideoFormatter implements MediaGalleryFormatterInterface
      */
     private function getVideoContent(array $row) : ?array
     {
-        $videoContent = \array_filter($row, function ($value, $field) {
-            return !empty($value) && \strpos($field, 'video') === 0;
-        }, ARRAY_FILTER_USE_BOTH);
+        $videoContent = \array_filter(
+            $row,
+            fn($value, $field) => !empty($value) && str_starts_with((string) $field, 'video'),
+            ARRAY_FILTER_USE_BOTH
+        );
 
         if ($videoContent) {
             $videoContent['mediaType'] = $row['mediaType'];

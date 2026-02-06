@@ -38,7 +38,7 @@ try {
             $categoryInterface->delete($category);
         }
     }
-} catch (Exception $e) {
+} catch (Exception) {
     // Nothing to delete
 }
 

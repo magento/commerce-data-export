@@ -19,7 +19,7 @@ $productRepository = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()
 try {
     $productRepository->deleteById('configurable-data-parent-test');
     $productRepository->deleteById('configurable-data-parent-test-child-1');
-} catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+} catch (\Magento\Framework\Exception\NoSuchEntityException) {
     //Product already removed
 }
 

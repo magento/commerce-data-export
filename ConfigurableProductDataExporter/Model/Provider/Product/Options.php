@@ -389,7 +389,7 @@ class Options implements OptionProviderInterface
             );
 
             $key = $this->getOptionKey($row);
-            $options[$key] = $options[$key] ?? $this->formatOptionsRow($row);
+            $options[$key] ??= $this->formatOptionsRow($row);
 
             if (isset($optionValuesData[$row['attribute_id']][$row['storeViewCode']])) {
                 $options[$key]['optionsV2']['values'] = $this->getAssignedAttributeValues(
@@ -431,7 +431,10 @@ class Options implements OptionProviderInterface
                 $this->statusAttributeId = $attribute ? (int)$attribute->getId() : null;
             }
         } catch (LocalizedException $exception) {
-            $this->logger->error("Cannot get status attribute: " . $exception->getMessage(), ['exception' => $exception]);
+            $this->logger->error(
+                "Cannot get status attribute: " . $exception->getMessage(),
+                ['exception' => $exception]
+            );
         }
 
         return $this->statusAttributeId;

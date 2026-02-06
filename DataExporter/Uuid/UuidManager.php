@@ -21,11 +21,6 @@ class UuidManager
     private const MAX_UUID_SAVE_ATTEMPTS = 10;
 
     /**
-     * @var UuidResource
-     */
-    private $salesOrderResource;
-
-    /**
      * @var IdentityService
      */
     private $identityService;
@@ -43,21 +38,19 @@ class UuidManager
     public function __construct(
         IdentityService $identityService,
         CommerceDataExportLoggerInterface $logger,
-        UuidResource $salesOrderResource
+        private readonly UuidResource $salesOrderResource
     ) {
-        $this->salesOrderResource = $salesOrderResource;
         $this->identityService = $identityService;
         $this->logger = $logger;
     }
 
     /**
-     * Assign UUID to given entity. Return assigned UUID
-     * Thrown Exception on failure
+     * Assign UUID to given entity. Return assigned UUID.
      *
      * @param int $entityId
      * @param string $type
      * @return string assigned UUID if any
-     * @throw UuidSaveException
+     * @throws UuidSaveException
      */
     public function assign(int $entityId, string $type): string
     {
@@ -69,13 +62,12 @@ class UuidManager
     }
 
     /**
-     * Assign UUIDs to given entities. Return assigned UUIDs
-     * Thrown Exception on failure
+     * Assign UUIDs to given entities. Return assigned UUIDs.
      *
      * @param int[] $entityIds
      * @param string $type
      * @return string[] Map of UUID assigned to entity if any in format [entityId => UUID, ...]
-     * @throw UuidSaveException
+     * @throws UuidSaveException
      */
     public function assignBulk(array $entityIds, string $type): array
     {
@@ -89,7 +81,7 @@ class UuidManager
             $data = $this->generateBulkData($entityIds, $type);
             try {
                 $this->salesOrderResource->saveBulk($data);
-            } catch (AlreadyExistsException $e) {
+            } catch (AlreadyExistsException) {
                 $attempts++;
                 $duplicates[] = \array_column($data, 'uuid');
                 continue ;
@@ -125,7 +117,7 @@ class UuidManager
      */
     public function isAssigned(int $entityId, string $type): bool
     {
-        return (boolean) $this->salesOrderResource->getAssignedIds([$entityId], $type);
+        return (bool) $this->salesOrderResource->getAssignedIds([$entityId], $type);
     }
 
     /**
@@ -145,6 +137,8 @@ class UuidManager
     }
 
     /**
+     * Generate bulk data array for provided entity IDs and type.
+     *
      * @param array $entityIds
      * @param string $type
      * @return array

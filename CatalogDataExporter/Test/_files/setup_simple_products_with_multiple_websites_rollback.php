@@ -35,12 +35,13 @@ try {
     if ($product->getId()) {
         $productInterface->delete($product);
     }
-} catch (Exception $e) {
+} catch (Exception) {
     // Nothing to delete
 }
 
 $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', false);
 
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_two_stores_and_two_websites_rollback.php'
+Resolver::getInstance()->requireDataFixture(
+    'Magento_CatalogDataExporter::Test/_files/setup_two_stores_and_two_websites_rollback.php'
 );

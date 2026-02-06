@@ -39,7 +39,7 @@ $storeGroup->setCode('second_store_group')
     ->setWebsite($website);
 try {
     $storeGroup->save();
-} catch (Exception $e) {
+} catch (Exception) {
 }
 
 
@@ -67,7 +67,7 @@ if (!$store2->getId()) {
     try {
         /** @var $website2 \Magento\Store\Model\Website */
         $website2 = $websiteRepository->get('test');
-    } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+    } catch (\Magento\Framework\Exception\NoSuchEntityException) {
     }
     if (!isset($website2) || !$website2->getId()) {
         $website2 = $objectManager->create(\Magento\Store\Model\Website::class);
@@ -80,8 +80,8 @@ if (!$store2->getId()) {
             ]
         );
         try {
-            $website2->getResource()->save($website2);
-        } catch (Exception $e) {
+            $objectManager->get(\Magento\Store\Model\ResourceModel\Website::class)->save($website2);
+        } catch (\Exception) {
         }
     }
     $websiteId = $website2->getId();

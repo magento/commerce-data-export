@@ -554,9 +554,7 @@ class CreateOrderTest extends AbstractOrderFeedTest
     private function extractComments(array $comments): ?array
     {
         $commentValues = array_map(
-            function ($comment) {
-                return $comment->getComment();
-            },
+            fn($comment) => $comment->getComment(),
             $comments
         );
         return $commentValues ? array_values($commentValues) : null;

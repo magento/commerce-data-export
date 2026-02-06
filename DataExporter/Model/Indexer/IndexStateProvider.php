@@ -22,7 +22,7 @@ class IndexStateProvider
     public function __construct(FeedIndexMetadata $metadata, ?FailedItemsRegistry $failedRegistry = null)
     {
         $this->batchSize = $metadata->getBatchSize();
-        $failedRegistry = $failedRegistry ?? ObjectManager::getInstance()->get(FailedItemsRegistry::class);
+        $failedRegistry ??= ObjectManager::getInstance()->get(FailedItemsRegistry::class);
         $failedRegistry->clear();
     }
 

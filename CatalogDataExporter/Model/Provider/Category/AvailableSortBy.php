@@ -48,7 +48,7 @@ class AvailableSortBy
                     continue;
                 }
 
-                foreach (\explode(',', $value['availableSortBy']) as $sortByOption) {
+                foreach (\explode(',', (string) $value['availableSortBy']) as $sortByOption) {
                     $output[] = [
                         'categoryId' => $value['categoryId'],
                         'storeViewCode' => $value['storeViewCode'],

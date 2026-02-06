@@ -45,6 +45,8 @@ class UuidResource extends AbstractDb
     }
 
     /**
+     * Save multiple UUID records in a single operation.
+     *
      * @param array $data
      * @return bool
      * @throws AlreadyExistsException
@@ -54,7 +56,7 @@ class UuidResource extends AbstractDb
         $connection = $this->getConnection();
         try {
             $connection->insertMultiple($this->getMainTable(), $data);
-        } catch (DuplicateException $e) {
+        } catch (DuplicateException) {
             throw new AlreadyExistsException(__('UUID already exists for given records'));
         }
 

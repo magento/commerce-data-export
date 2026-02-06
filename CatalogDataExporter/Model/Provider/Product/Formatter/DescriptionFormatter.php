@@ -48,9 +48,7 @@ class DescriptionFormatter implements FormatterInterface
             if (!empty($value) && \in_array($attribute, $this->attributes, true)) {
                 $value = $this->state->emulateAreaCode(
                     DesignInterface::DEFAULT_AREA,
-                    function ($value) {
-                        return $this->catalogHelper->getPageTemplateProcessor()->filter($value);
-                    },
+                    fn($value) => $this->catalogHelper->getPageTemplateProcessor()->filter($value),
                     [$value]
                 );
             }

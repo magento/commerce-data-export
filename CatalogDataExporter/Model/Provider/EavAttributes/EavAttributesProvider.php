@@ -93,9 +93,11 @@ class EavAttributesProvider
                 $this->queryBuilder->build($entityIds, $attributeCodes, $storeCode)
             );
 
-            return \array_map(function ($data) use ($attributeCodes) {
-                return $this->formatEavAttributesArray($data, $attributeCodes);
-            }, $this->attributesDataConverter->convert($attributes));
+            $convertedAttributes = $this->attributesDataConverter->convert($attributes);
+            return \array_map(
+                fn($data) => $this->formatEavAttributesArray($data, $attributeCodes),
+                $convertedAttributes
+            );
         } catch (\Throwable $exception) {
             throw new UnableRetrieveData(
                 sprintf('Unable to retrieve category eav attributes: %s', $exception->getMessage()),

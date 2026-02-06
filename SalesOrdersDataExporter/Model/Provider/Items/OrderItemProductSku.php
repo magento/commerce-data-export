@@ -76,7 +76,7 @@ class OrderItemProductSku
             try {
                 $product = $this->productRepository->getById($row['productId']);
                 return $product->getSku();
-            } catch (NoSuchEntityException $e) {
+            } catch (NoSuchEntityException) {
                 $this->logger->error('Unable to retrieve product information for ID: ' . $row['productId']);
             }
         }

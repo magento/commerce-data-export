@@ -33,14 +33,15 @@ try {
     if ($rewrite->getId()) {
         $rewrite->delete();
     }
-} catch (Exception $e) {
+} catch (Exception) {
     // Nothing to delete
 }
 
 $registry->unregister('isSecureArea');
 $registry->register('isSecureArea', false);
 
-Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_simple_products_rollback.php'
+Resolver::getInstance()->requireDataFixture(
+    'Magento_CatalogDataExporter::Test/_files/setup_simple_products_rollback.php'
 );
 Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_categories_rollback.php');
 Resolver::getInstance()->requireDataFixture('Magento_CatalogDataExporter::Test/_files/setup_stores_rollback.php');

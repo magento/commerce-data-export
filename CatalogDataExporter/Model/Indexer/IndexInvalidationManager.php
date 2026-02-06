@@ -48,7 +48,7 @@ class IndexInvalidationManager
      */
     public function invalidate(string $eventName): void
     {
-        $indexers = isset($this->invalidationEvents[$eventName]) ? $this->invalidationEvents[$eventName] : [];
+        $indexers = $this->invalidationEvents[$eventName] ?? [];
         foreach ($indexers as $indexerId) {
             $this->indexerFactory->create()->load($indexerId)->invalidate();
         }

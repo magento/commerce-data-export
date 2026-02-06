@@ -131,7 +131,7 @@ class FeedUpdater
                 ),
                 'feed_ids' => array_column($feedItems, FeedIndexMetadata::FEED_TABLE_FIELD_FEED_ID),
                 'error' => $exception->getMessage(),
-                'error_class' => get_class($exception)
+                'error_class' => $exception::class
             ]
         );
     }

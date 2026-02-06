@@ -55,7 +55,7 @@ class MigrateDataFromJSON implements DDLTriggerInterface
         /** @var Column $column */
         $column = $columnHistory->getNew();
 
-        preg_match(self::MATCH_PATTERN, $column->getOnCreate(), $matches);
+        preg_match(self::MATCH_PATTERN, (string) $column->getOnCreate(), $matches);
         return function () use ($column, $matches) {
             $tableName = $column->getTable()->getName();
             $adapter = $this->resourceConnection->getConnection(

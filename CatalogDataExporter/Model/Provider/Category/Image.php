@@ -27,7 +27,7 @@ class Image
     /**
      * Path in /pub/media directory
      */
-    const ENTITY_MEDIA_PATH = '/catalog/category';
+    private const ENTITY_MEDIA_PATH = '/catalog/category';
 
     /**
      * @var LoggerInterface
@@ -113,13 +113,13 @@ class Image
                 if ($this->fileInfo->isBeginsWithMediaDirectoryPath($imageUrl)) {
                     $imageUrl = \sprintf(
                         '%s/%s',
-                        \rtrim($mediaBaseUrl, '/'),
+                        \rtrim((string) $mediaBaseUrl, '/'),
                         \ltrim($this->getRelativePathToMediaDirectory($imageUrl), '/')
                     );
-                } elseif (\substr($imageUrl, 0, 1) !== '/') {
+                } elseif (!str_starts_with($imageUrl, '/')) {
                     $imageUrl = \sprintf(
                         '%s/%s/%s',
-                        \rtrim($mediaBaseUrl, '/'),
+                        \rtrim((string) $mediaBaseUrl, '/'),
                         \ltrim(
                             FileInfo::ENTITY_MEDIA_PATH,
                             '/'
@@ -205,13 +205,13 @@ class Image
         $result = $path;
         try {
             $storeUrl = $this->storeManager->getStore()->getBaseUrl();
-        } catch (NoSuchEntityException $e) {
+        } catch (NoSuchEntityException) {
             return $result;
         }
         // phpcs:ignore Magento2.Functions.DiscouragedFunction
         $path = parse_url($path, PHP_URL_PATH);
         // phpcs:ignore Magento2.Functions.DiscouragedFunction
-        $storePath = parse_url($storeUrl, PHP_URL_PATH);
+        $storePath = parse_url((string) $storeUrl, PHP_URL_PATH);
         $storePath = rtrim($storePath, '/');
 
         $result = preg_replace('/^' . preg_quote($storePath, '/') . '/', '', $path);
@@ -232,18 +232,20 @@ class Image
         $mediaDirectoryPath = $this->getMediaDirectory()->getAbsolutePath();
         $pubDirectoryPath = $this->getPubDirectory()->getAbsolutePath();
 
-        $mediaDirectoryRelativeSubpath = substr($mediaDirectoryPath, strlen($baseDirectoryPath));
+        $mediaDirectoryRelativeSubpath = substr((string) $mediaDirectoryPath, strlen((string) $baseDirectoryPath));
         $pubDirectory = $baseDirectory->getRelativePath($pubDirectoryPath);
 
-        if ($pubDirectory && strpos($mediaDirectoryRelativeSubpath, $pubDirectory) === 0
-            && strpos($filePath, $pubDirectory) !== 0) {
-            $mediaDirectoryRelativeSubpath = substr($mediaDirectoryRelativeSubpath, strlen($pubDirectory));
+        if ($pubDirectory && str_starts_with($mediaDirectoryRelativeSubpath, (string) $pubDirectory)
+            && !str_starts_with($filePath, (string) $pubDirectory)) {
+            $mediaDirectoryRelativeSubpath = substr($mediaDirectoryRelativeSubpath, strlen((string) $pubDirectory));
         }
 
         return $mediaDirectoryRelativeSubpath;
     }
 
     /**
+     * Get media directory read/write instance.
+     *
      * @return WriteInterface
      * @throws \Magento\Framework\Exception\FileSystemException
      */
@@ -256,7 +258,7 @@ class Image
     }
 
     /**
-     * Get Base Directory read instance
+     * Get Base Directory read instance.
      *
      * @return ReadInterface
      */
@@ -270,7 +272,7 @@ class Image
     }
 
     /**
-     * Get Pub Directory read instance
+     * Get Pub Directory read instance.
      *
      * @return ReadInterface
      */

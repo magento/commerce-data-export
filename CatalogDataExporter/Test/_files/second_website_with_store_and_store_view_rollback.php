@@ -20,7 +20,7 @@ if ($store->load('fixture_second_store', 'code')->getId()) {
     try {
         $store->delete();
         $store->getGroup()->delete();
-    } catch (Exception $e) {
+    } catch (Exception) {
     }
 }
 

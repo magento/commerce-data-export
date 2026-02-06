@@ -83,7 +83,7 @@ class ConfigurationExportTest extends TestCase
             'config_data_save_after' => [
                 'export_config_change' => [
                     'name' => 'export_config_change',
-                    'instance' => 'Magento\ConfigurationDataExporter\Observer\ConfigChange'
+                    'instance' => \Magento\ConfigurationDataExporter\Observer\ConfigChange::class
                 ]
             ]
         ]);

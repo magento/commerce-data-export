@@ -24,7 +24,7 @@ try {
     if ($store->getId()) {
         $storeResource->delete($store);
     }
-} catch (Exception $e) {
+} catch (Exception) {
     // Nothing to delete
 }
 

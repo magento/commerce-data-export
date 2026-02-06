@@ -66,6 +66,8 @@ class SelectHydrator
     }
 
     /**
+     * Get list of supported Select parts
+     *
      * @return array
      */
     private function getSelectParts()
@@ -90,8 +92,11 @@ class SelectHydrator
     }
 
     /**
+     * Recreate Select object by provided metadata parts
+     *
      * @param array $selectParts
      * @return Select
+     * @throws \Zend_Db_Select_Exception
      */
     public function recreate(array $selectParts)
     {
@@ -122,11 +127,11 @@ class SelectHydrator
             $part = [];
 
             foreach ($selectParts[Select::COLUMNS] as $columnEntry) {
-                list($correlationName, $column, $alias) = $columnEntry;
+                [$correlationName, $column, $alias] = $columnEntry;
                 if (is_array($column) && !empty($column['class'])) {
                     $expression = $this->objectManager->create(
                         $column['class'],
-                        isset($column['arguments']) ? $column['arguments'] : []
+                        $column['arguments'] ?? []
                     );
                     $part[] = [$correlationName, $expression, $alias];
                 } else {

@@ -171,9 +171,7 @@ class Iterator implements BatchIteratorInterface
         $connection = $this->resourceConnection->getConnection();
         $this->batchNumber = $this->batchLocator->getNumber();
         $pkJoinConditions = array_map(
-            function ($key) {
-                return sprintf('t.%s = b.%s', $key, $key);
-            },
+            fn($key) => sprintf('t.%s = b.%s', $key, $key),
             $this->sourceTableKeyColumns
         );
 
@@ -199,7 +197,7 @@ class Iterator implements BatchIteratorInterface
         $statement = $connection->query($select);
         $data = [];
         while ($row = $statement->fetch()) {
-            $entity = json_decode($row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA], true);
+            $entity = json_decode((string) $row[FeedIndexMetadata::FEED_TABLE_FIELD_FEED_DATA], true);
             $entity['deleted'] = $this->isRemovable && $row[FeedIndexMetadata::FEED_TABLE_FIELD_IS_DELETED];
 
             $data[] = $entity;
@@ -218,9 +216,7 @@ class Iterator implements BatchIteratorInterface
     {
         $connection = $this->resourceConnection->getConnection();
         $pkJoinConditions = array_map(
-            function ($key) {
-                return sprintf('t.%s = b.%s', $key, $key);
-            },
+            fn($key) => sprintf('t.%s = b.%s', $key, $key),
             $this->sourceTableKeyColumns
         );
 

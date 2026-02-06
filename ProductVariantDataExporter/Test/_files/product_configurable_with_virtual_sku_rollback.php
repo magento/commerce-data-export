@@ -28,7 +28,7 @@ foreach (['virtual_10', 'virtual_20', 'configurable'] as $sku) {
         $stockStatus->delete();
 
         $productRepository->delete($product);
-    } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+    } catch (\Magento\Framework\Exception\NoSuchEntityException) {
         //Product already removed
     }
 }

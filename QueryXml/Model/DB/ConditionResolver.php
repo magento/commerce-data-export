@@ -84,7 +84,7 @@ class ConditionResolver
     private function getValue(SelectBuilder $selectBuilder, $condition, $referencedEntity)
     {
         $value = null;
-        $argument = isset($condition['_value']) ? $condition['_value'] : null;
+        $argument = $condition['_value'] ?? null;
         if (!isset($condition['type'])) {
             $condition['type'] = 'value';
         }
@@ -100,7 +100,7 @@ class ConditionResolver
                 $value = '::'. $argument . '::';
                 break;
             case "identifier":
-                $identifier = explode('.', $argument);
+                $identifier = explode('.', (string) $argument);
                 if (count($identifier) > 1) {
                     $value = $this->getConnection()->quoteIdentifier(
                         $identifier[0] . '.' . $this->resolveIdentifier(
@@ -119,8 +119,11 @@ class ConditionResolver
         return $value;
     }
 
-
     /**
+     * Resolves identifier
+     *
+     * If it is LinkField - returns real field name, if it is Primary Key - returns auto increment field for table
+     *
      * @param SelectBuilder $selectBuilder
      * @param string $identifier
      * @param string $tableName
@@ -151,10 +154,11 @@ class ConditionResolver
      * Returns condition for WHERE
      *
      * @param SelectBuilder $selectBuilder
-     * @param string $tableName
+     * @param string $tableAlias
      * @param array $condition
-     * @param null|string $referencedEntity
+     * @param mixed $referencedEntity
      * @return string
+     * @throws \Exception
      */
     private function getCondition(
         SelectBuilder $selectBuilder,
@@ -183,8 +187,8 @@ class ConditionResolver
      *
      * @param SelectBuilder $selectBuilder
      * @param array $filterConfig
-     * @param string $aliasName
-     * @param null|string $referencedAlias
+     * @param string $tableAlias
+     * @param mixed $referencedAlias
      * @return array
      */
     public function getFilter(
@@ -216,7 +220,7 @@ class ConditionResolver
                     $referencedAlias
                 ) . ')';
             }
-            $filtersParts[] = '(' . implode(' ' . strtoupper($glue) . ' ', $parts) . ')';
+            $filtersParts[] = '(' . implode(' ' . strtoupper((string) $glue) . ' ', $parts) . ')';
         }
         return implode(' OR ', $filtersParts);
     }

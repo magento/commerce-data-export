@@ -20,6 +20,10 @@ class FeedLockManager
 
     private const DEFAULT_LOCK_TIME = 0;
 
+    /**
+     * @param LockManagerInterface $lockManager
+     * @param FeedState $feedState
+     */
     public function __construct(
         private readonly LockManagerInterface $lockManager,
         private readonly FeedState            $feedState
@@ -40,7 +44,7 @@ class FeedLockManager
             try {
                 $lockedBy = sprintf('%s(%s)', $lockedBy, getmypid());
                 $this->feedState->save($feedName, self::STATE_PROPERTY_NAME, $lockedBy);
-            } catch (\Throwable $ignore) {
+            } catch (\Throwable) {
                 // ignore
             }
         }
@@ -48,6 +52,8 @@ class FeedLockManager
     }
 
     /**
+     * Get the name of the entity that locked the feed or null if not locked.
+     *
      * @param string $feedName
      * @return string|null
      */
@@ -67,16 +73,24 @@ class FeedLockManager
         return $this->lockManager->unlock($this->getLockName($feedName));
     }
 
+    /**
+     * Check whether feed is locked.
+     *
+     * @param string $feedName
+     * @return bool
+     */
     public function isLocked(string $feedName): bool
     {
         return $this->lockManager->isLocked($this->getLockName($feedName));
     }
 
     /**
-     * @param $feedName
+     * Build lock name for the provided feed.
+     *
+     * @param string $feedName
      * @return string
      */
-    private function getLockName($feedName): string
+    private function getLockName(string $feedName): string
     {
         return self::LOCK_PREFIX . $feedName;
     }

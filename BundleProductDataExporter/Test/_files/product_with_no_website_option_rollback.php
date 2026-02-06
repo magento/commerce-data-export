@@ -23,7 +23,7 @@ $productRepository = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()
 try {
     $product = $productRepository->get('bundle-product', false, null, true);
     $productRepository->delete($product);
-} catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+} catch (\Magento\Framework\Exception\NoSuchEntityException) {
     //Product already removed
 }
 

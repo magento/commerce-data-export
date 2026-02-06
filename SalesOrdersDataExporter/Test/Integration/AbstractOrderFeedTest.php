@@ -134,9 +134,7 @@ abstract class AbstractOrderFeedTest extends TestCase
     {
         $filteredFeed = array_filter(
             $this->ordersFeed->getFeedSince('1')['feed'],
-            function ($item) use ($ids, $excludeDeleted) {
-                return (!$excludeDeleted || !$item['deleted']) && in_array($item['commerceOrderId'], $ids);
-            }
+            fn($item) => (!$excludeDeleted || !$item['deleted']) && in_array($item['commerceOrderId'], $ids)
         );
         return array_values($filteredFeed);
     }

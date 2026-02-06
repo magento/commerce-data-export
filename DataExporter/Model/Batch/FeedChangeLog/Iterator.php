@@ -175,9 +175,7 @@ class Iterator implements BatchIteratorInterface
     {
         $connection = $this->resourceConnection->getConnection();
         $data = array_map(
-            function ($id) {
-                return [$this->sourceTableKeyColumn => $id];
-            },
+            fn($id) => [$this->sourceTableKeyColumn => $id],
             $this->current()
         );
         $connection->insertMultiple($this->sourceTableName, $data);

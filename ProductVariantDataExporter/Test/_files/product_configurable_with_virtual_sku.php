@@ -116,7 +116,7 @@ try {
         $itemResource->getMainTable(),
         'product_id = ' . $productToDelete->getId()
     );
-} catch (\Exception $e) {
+} catch (\Exception) {
     // Nothing to remove
 }
 $registry->unregister('isSecureArea');

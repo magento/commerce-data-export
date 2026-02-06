@@ -87,11 +87,9 @@ class Categories implements DataProcessorInterface
         try {
             foreach ($this->getDataBatch($arguments, $metadata->getBatchSize()) as $dataBatch) {
                 $output = [];
-                list($mappedCategories, $attributesData) = $dataBatch;
+                [$mappedCategories, $attributesData] = $dataBatch;
                 foreach ($mappedCategories as $storeCode => $categories) {
-                    $output[] = \array_map(function ($row) {
-                        return $this->formatter->format($row);
-                    }, \array_replace_recursive(
+                    $output[] = \array_map($this->formatter->format(...), \array_replace_recursive(
                         $categories,
                         $this->entityEavAttributesResolver->resolve($attributesData[$storeCode], $storeCode)
                     ));

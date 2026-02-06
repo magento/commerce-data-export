@@ -83,9 +83,7 @@ class Payment
     private function getNestedValue(array $array, string $path)
     {
         $arrayPath = explode('.', $path);
-        $reduce = static function ($source, $key) {
-            return $source[$key] ?? null;
-        };
+        $reduce = (static fn($source, $key) => $source[$key] ?? null);
         return array_reduce($arrayPath, $reduce, $array);
     }
 }

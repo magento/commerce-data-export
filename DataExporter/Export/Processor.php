@@ -87,7 +87,7 @@ class Processor
 
                 $dataProcessorCallback($this->transformer->transform($info, $snapshots));
             };
-            $this->extractor->extractWithCallback($info, $arguments, $dataProcessorCallback, $metadata, $lastChunk);
+            $this->extractor->extractWithCallback($info, $arguments, $dataProcessorCallback, $metadata);
         } catch (\Throwable $exception) {
             $provider = empty($info) === false ? $info->getRootNode()->getField()['provider'] : '';
             // if error happened during data collecting we skip entire process

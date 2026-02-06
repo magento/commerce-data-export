@@ -47,7 +47,7 @@ try {
     if ($attribute->getId()) {
         $attribute->delete();
     }
-} catch (Exception $e) {
+} catch (Exception) {
     // Nothing to delete
 }
 

@@ -51,7 +51,7 @@ class DownloadableProductsTest extends AbstractProductTestHelper
                 $extractedProduct = $this->getExtractedProduct($sku, $storeViewCode);
                 if ($extractedProduct['feedData']['attributes'][0]['value'][0]) {
                     $extractedProduct['feedData']['attributes'][0]['value'][0]
-                        = json_decode($extractedProduct['feedData']['attributes'][0]['value'][0], true);
+                        = json_decode((string) $extractedProduct['feedData']['attributes'][0]['value'][0], true);
                 }
                 $this->validateBaseProductData($product, $extractedProduct, $storeViewCode);
                 $this->validatePricingData($extractedProduct);
@@ -180,7 +180,7 @@ class DownloadableProductsTest extends AbstractProductTestHelper
         foreach ($downloadableSamples as $sample) {
             foreach ($extractedProduct['feedData']['samples'] as $extractedSample) {
                 $idMatches = [];
-                \preg_match("#\d+$#", $extractedSample['resource']['url'], $idMatches);
+                \preg_match("#\d+$#", (string) $extractedSample['resource']['url'], $idMatches);
                 if ($idMatches[0] === $sample->getId()) {
                     self::assertEquals($sample->getSortOrder(), $extractedSample['sortOrder']);
                     self::assertNotEmpty($extractedSample['resource']['url']);

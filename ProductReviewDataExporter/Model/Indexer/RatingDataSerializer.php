@@ -65,11 +65,11 @@ class RatingDataSerializer implements DataSerializerInterface
             $outputRow = [];
 
             foreach ($this->mapping as $field => $index) {
-                $outputRow[$field] = isset($row[$index]) ? $row[$index] : null;
+                $outputRow[$field] = $row[$index] ?? null;
             }
 
             // Keep feed table "id" decoded and encode "feed data identity"
-            $row[$this->feedIdentity] = \base64_encode($row[$this->feedIdentity]);
+            $row[$this->feedIdentity] = \base64_encode((string) $row[$this->feedIdentity]);
             $outputRow['feed_data'] = $this->serializer->serialize($row);
             $output[] = $outputRow;
         }

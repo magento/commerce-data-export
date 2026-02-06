@@ -22,7 +22,7 @@ $categoryRepository = $objectManager->create(CategoryRepositoryInterface::class)
 
 try {
     $categoryRepository->deleteByIdentifier(600);
-} catch (\Throwable $e) {
+} catch (\Throwable) {
     // Nothing to delete
 }
 

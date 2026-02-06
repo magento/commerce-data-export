@@ -41,7 +41,7 @@ class DefaultFunctionRenderer implements FunctionRendererInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      *
      * @param array $attributeInfo
      * @param array $entityInfo
@@ -61,7 +61,7 @@ class DefaultFunctionRenderer implements FunctionRendererInterface
         }
         $connection = $this->resourceConnection->getConnection();
         return new ColumnValueExpression(
-            strtoupper($attributeInfo['function']) . '(' . $prefix
+            strtoupper((string) $attributeInfo['function']) . '(' . $prefix
             . $connection->quoteIdentifier($tableAlias . '.' . $columnName)
             . ')'
         );

@@ -10,7 +10,12 @@ namespace Magento\CatalogDataExporter\Model\Provider\Product\MediaGallery;
 
 /**
  * Media gallery default data formatter
- * @deprecated use new structure formatters - ImageFormatter / VideoFormatter
+ *
+ * @deprecated This legacy formatter combines image and video handling into a single formatter. Prefer
+ *     using dedicated formatters for clarity and extension: ImageFormatter for images and VideoFormatter for
+ *     video metadata. These newer formatters separate concerns and provide more predictable output.
+ * @see \Magento\CatalogDataExporter\Model\Provider\Product\MediaGallery\ImageFormatter
+ * @see \Magento\CatalogDataExporter\Model\Provider\Product\MediaGallery\VideoFormatter
  */
 class DefaultFormatter implements MediaGalleryFormatterInterface
 {
@@ -38,7 +43,9 @@ class DefaultFormatter implements MediaGalleryFormatterInterface
             'productId' => $row['productId'],
             'storeViewCode' => $row['storeViewCode'],
             'media_gallery' => [
-                'url' => $this->mediaUrlProvider->getBaseMediaUrlByStoreViewCode($row['storeViewCode']) . $row['file'],
+                'url' => $this->mediaUrlProvider->getBaseMediaUrlByStoreViewCode(
+                    $row['storeViewCode']
+                ) . $row['file'],
                 'label' => $row['label'] ?? '',
                 'types' => \array_keys(\array_filter($roleImages), $row['file'], true),
                 'sort_order' => (int)$row['sortOrder'],
@@ -56,9 +63,11 @@ class DefaultFormatter implements MediaGalleryFormatterInterface
      */
     private function getVideoContent(array $row) : ?array
     {
-        $videoContent = \array_filter($row, function ($value, $field) {
-            return !empty($value) && \strpos($field, 'video') === 0;
-        }, ARRAY_FILTER_USE_BOTH);
+        $videoContent = \array_filter(
+            $row,
+            fn($value, $field) => !empty($value) && str_starts_with((string) $field, 'video'),
+            ARRAY_FILTER_USE_BOTH
+        );
 
         if ($videoContent) {
             $videoContent['mediaType'] = $row['mediaType'];

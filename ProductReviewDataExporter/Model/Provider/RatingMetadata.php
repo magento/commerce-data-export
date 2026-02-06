@@ -71,9 +71,9 @@ class RatingMetadata
 
             while ($row = $cursor->fetch()) {
                 $key = $row['ratingId'] . $row['storeViewCode'];
-                $output[$key] = $output[$key] ?? $this->formatRatingRow($row);
+                $output[$key] ??= $this->formatRatingRow($row);
                 $output[$key]['values'][] = [
-                    'valueId' => \base64_encode($row['valueId']),
+                    'valueId' => \base64_encode((string) $row['valueId']),
                     'value' => $row['value'],
                     'position' => $row['position'],
                 ];

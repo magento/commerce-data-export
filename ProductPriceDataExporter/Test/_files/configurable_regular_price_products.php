@@ -45,7 +45,7 @@ $storeGroup->setCode('second_store_group')
     ->setWebsite($secondWebsite);
 try {
     $storeGroup->save();
-} catch (Exception $e) {
+} catch (Exception) {
 }
 
 $store->load('fixture_second_store', 'code');

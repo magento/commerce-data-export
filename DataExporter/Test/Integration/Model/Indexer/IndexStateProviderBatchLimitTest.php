@@ -66,7 +66,6 @@ class IndexStateProviderBatchLimitTest extends TestCase
         // Override batch size via reflection
         $reflection = new \ReflectionClass(\Magento\DataExporter\Model\Indexer\IndexStateProvider::class);
         $batchSizeProperty = $reflection->getProperty('batchSize');
-        $batchSizeProperty->setAccessible(true);
         $batchSizeProperty->setValue($this->indexStateProvider, self::TEST_BATCH_SIZE);
 
         $this->resourceConnection = $this->objectManager->get(ResourceConnection::class);

@@ -198,9 +198,10 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     {
         $searchCriteria = Bootstrap::getObjectManager()->create(SearchCriteriaInterface::class);
 
-        $productIds = array_map(function ($product) {
-            return $product->getId();
-        }, $this->productRepository->getList($searchCriteria)->getItems());
+        $productIds = array_map(
+            fn($product) => $product->getId(),
+            $this->productRepository->getList($searchCriteria)->getItems()
+        );
 
         if (!empty($productIds)) {
             $this->indexer->reindexList($productIds);
@@ -244,7 +245,7 @@ abstract class AbstractProductPriceTestHelper extends TestCase
         $cursor = $connection->query($query);
         $data = [];
         while ($row = $cursor->fetch()) {
-            $feed = \json_decode($row['feed_data'], true);
+            $feed = \json_decode((string) $row['feed_data'], true);
             $key = $this->buildPriceKey($feed);
             $data[$key]['modified_at'] = $row['modified_at'];
             $data[$key]['is_deleted'] = $row['is_deleted'];
@@ -294,7 +295,7 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     {
         if (empty(self::$version)) {
             $rawVersion = Bootstrap::getObjectManager()->get(ProductMetadataInterface::class)->getVersion();
-            self::$version = preg_replace('/.*?(\d\.\d\.\d(?:-\w+)?).*/', '$1', $rawVersion);
+            self::$version = preg_replace('/.*?(\d\.\d\.\d(?:-\w+)?).*/', '$1', (string) $rawVersion);
         }
         return version_compare(self::$version, '2.4.9-dev', '>=') ? $price : round($price, 2);
     }

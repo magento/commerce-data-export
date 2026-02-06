@@ -92,7 +92,7 @@ class ViewMaterializer
 
         try {
             $currentVersionId = $view->getChangelog()->getVersion();
-        } catch (ChangelogTableNotExistsException $e) {
+        } catch (ChangelogTableNotExistsException) {
             return;
         }
 

@@ -35,7 +35,7 @@ class InventoryData
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->logger = $logger;
-        $inventoryHelper = $inventoryHelper ?? ObjectManager::getInstance()->get(InventoryHelper::class);
+        $inventoryHelper ??= ObjectManager::getInstance()->get(InventoryHelper::class);
         $this->defaultStockId = $inventoryHelper->isMSIEnabled()
             ? ObjectManager::getInstance()->get(\Magento\InventoryCatalogApi\Api\DefaultStockProviderInterface::class)
                 ->getId()
@@ -114,8 +114,8 @@ class InventoryData
                     ['storeViewCode' => 's.code']
                 )
                 ->where('e.entity_id IN (?)', $productIds)
-                ->where('pw.website_id IN (?)', explode(',', $stock['website_ids']))
-                ->where('s.website_id IN (?)', explode(',', $stock['website_ids']))
+                ->where('pw.website_id IN (?)', explode(',', (string) $stock['website_ids']))
+                ->where('s.website_id IN (?)', explode(',', (string) $stock['website_ids']))
                 ->group('e.entity_id')
                 ->group('s.store_id');
             $union[] = $select;

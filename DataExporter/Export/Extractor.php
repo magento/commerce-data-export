@@ -83,6 +83,8 @@ class Extractor
     }
 
     /**
+     * Extract and process data for the root node using a data processor.
+     *
      * @param Info $info
      * @param DataProcessorInterface $dataProcessor
      * @param array $arguments
@@ -113,7 +115,7 @@ class Extractor
         $this->profilerStart();
 
         $dataProcessor->execute($arguments, $dataProcessorCallback, $metadata, $node, $info);
-        $this->profilerStop(true, get_class($dataProcessor), $arguments);
+        $this->profilerStop(true, $dataProcessor::class, $arguments);
     }
 
     /**
@@ -152,6 +154,14 @@ class Extractor
         return $output;
     }
 
+    /**
+     * Process child nodes of a node and merge their extracted data.
+     *
+     * @param Info $info
+     * @param Node $node
+     * @param array $data
+     * @return array
+     */
     private function processChildrenNodes(Info $info, Node $node, array $data): array
     {
         $output = [];
@@ -173,6 +183,8 @@ class Extractor
     }
 
     /**
+     * Extract data with a callback provided by the caller.
+     *
      * @param Info $info
      * @param array $arguments
      * @param callable $dataProcessorCallback

@@ -130,7 +130,7 @@ abstract class AbstractProductVariantsTest extends TestCase
         try {
             $this->indexer->load(self::PRODUCT_VARIANT_FEED_INDEXER);
             $this->indexer->reindexList($parentIds);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             throw new RuntimeException('Could not reindex product variant data');
         }
     }

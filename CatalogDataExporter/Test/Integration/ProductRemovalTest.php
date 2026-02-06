@@ -102,7 +102,7 @@ class ProductRemovalTest extends AbstractProductTestHelper
                 $this->emulateCustomersBehaviorAfterDeleteAction();
                 $this->emulatePartialReindexBehavior([$productId]);
             }
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             //Nothing to delete
         }
 

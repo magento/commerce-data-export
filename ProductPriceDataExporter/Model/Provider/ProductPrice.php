@@ -357,9 +357,7 @@ class ProductPrice implements DataProcessorInterface
             $this->loadWebsites();
             $this->websites = array_unique(\array_filter(
                 array_column($this->websitesByStore, 'website_id'),
-                function ($websiteId) {
-                    return (int)$websiteId !== self::GLOBAL_STORE_ID;
-                }
+                fn($websiteId) => (int)$websiteId !== self::GLOBAL_STORE_ID
             ));
         }
         return $this->websites;
@@ -563,7 +561,7 @@ class ProductPrice implements DataProcessorInterface
                 // To handle tier prices
                 if ($row['all_groups'] !== null) {
                     // copy feed data from fallbackPrice for each row of customer group price
-                    $prices[$key] = $prices[$key] ?? $fallbackPrice;
+                    $prices[$key] ??= $fallbackPrice;
 
                     //extract tier and group  prices
                     $groupedDiscounts = $this->extractTierAndGroupPrices($row);
@@ -771,7 +769,7 @@ class ProductPrice implements DataProcessorInterface
         $priceValueDiscount = $row[$this->priceValueTypesMapping['price_value']] ?? null;
         $percentageValueDiscount = $row[$this->priceValueTypesMapping['percentage_value']] ?? null;
         if (!empty($priceValueDiscount)) {
-            $qtyGroupPriceValue = explode(',', $priceValueDiscount);
+            $qtyGroupPriceValue = explode(',', (string) $priceValueDiscount);
             $this->addGroupedDiscounts(
                 $qtyGroupPriceValue,
                 $this->priceValueTypesMapping['price_value'],
@@ -780,7 +778,7 @@ class ProductPrice implements DataProcessorInterface
         }
 
         if (!empty($percentageValueDiscount)) {
-            $qtyGroupPricePercentage = explode(',', $percentageValueDiscount);
+            $qtyGroupPricePercentage = explode(',', (string) $percentageValueDiscount);
             $this->addGroupedDiscounts(
                 $qtyGroupPricePercentage,
                 $this->priceValueTypesMapping['percentage_value'],
@@ -848,7 +846,7 @@ class ProductPrice implements DataProcessorInterface
     private function addGroupedDiscounts(array $qtyGroupPriceValue, string $valueType, array &$discounts): void
     {
         foreach ($qtyGroupPriceValue as $value) {
-            [$qty, $price] = explode(':', $value);
+            [$qty, $price] = explode(':', (string) $value);
             if ($price === null) {
                 // Skip processing if price is null
                 continue;

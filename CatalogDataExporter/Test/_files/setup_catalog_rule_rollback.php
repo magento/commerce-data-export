@@ -24,7 +24,7 @@ try {
     /** @var CatalogRuleRepositoryInterface $ruleRepository */
     $ruleRepository = $objectManager->create(CatalogRuleRepositoryInterface::class);
     $ruleRepository->deleteById($ruleId);
-} catch (Exception $ex) {
+} catch (Exception) {
     //Nothing to remove
 }
 /** @var IndexBuilder $indexBuilder */

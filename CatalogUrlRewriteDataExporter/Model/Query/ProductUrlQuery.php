@@ -50,8 +50,8 @@ class ProductUrlQuery
      */
     public function getQuery(array $arguments): Select
     {
-        $productIds = isset($arguments['productId']) ? $arguments['productId'] : [];
-        $storeViewCodes = isset($arguments['storeViewCode']) ? $arguments['storeViewCode'] : [];
+        $productIds = $arguments['productId'] ?? [];
+        $storeViewCodes = $arguments['storeViewCode'] ?? [];
         $connection = $this->resourceConnection->getConnection();
         $select = $connection->select()
             ->from(

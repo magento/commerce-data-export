@@ -61,7 +61,7 @@ class Transformer
             $snapshot,
             null
         );
-        return $data ? $data : [];
+        return $data ?: [];
     }
 
     /**
@@ -85,21 +85,13 @@ class Transformer
     private function castScalarValue(string $type, $value)
     {
         $result = null;
-        switch ($type) {
-            case "ID":
-            case "String":
-                $result = (string) $value;
-                break;
-            case "Int":
-                $result = (int) $value;
-                break;
-            case "Float":
-                $result = (float) $value;
-                break;
-            case "Boolean":
-                $result = (bool) $value;
-                break;
-        }
+        $result = match ($type) {
+            "ID", "String" => (string) $value,
+            "Int" => (int) $value,
+            "Float" => (float) $value,
+            "Boolean" => (bool) $value,
+            default => $result,
+        };
         return $result;
     }
 

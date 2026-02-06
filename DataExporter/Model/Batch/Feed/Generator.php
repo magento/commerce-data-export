@@ -103,6 +103,13 @@ class Generator implements BatchGeneratorInterface
         }
     }
 
+    /**
+     * Internal implementation of batch generation.
+     *
+     * @param FeedIndexMetadata $metadata
+     * @param array $args
+     * @return BatchIteratorInterface
+     */
     private function doGenerate(FeedIndexMetadata $metadata, array $args = []): BatchIteratorInterface
     {
         $sinceTimestamp = array_key_exists('sinceTimestamp', $args) ? (string)$args['sinceTimestamp'] : '1';
@@ -247,9 +254,7 @@ class Generator implements BatchGeneratorInterface
     {
         $pkColumns = array_filter(
             $this->resourceConnection->getConnection()->describeTable($tableName),
-            function ($column) {
-                return $column['PRIMARY'];
-            }
+            fn($column) => $column['PRIMARY']
         );
 
         return array_keys($pkColumns);
