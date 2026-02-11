@@ -9,8 +9,8 @@ namespace Magento\DataExporter\Test\Integration\Model\Indexer;
 
 use Magento\DataExporter\Model\Indexer\FeedIndexMetadata;
 use Magento\DataExporter\Model\Indexer\IndexStateProvider;
-use Magento\Framework\App\ResourceConnection;
 use Magento\TestFramework\Fixture\AppIsolation;
+use Magento\TestFramework\Fixture\Config;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 
@@ -30,47 +30,30 @@ class IndexStateProviderBatchLimitTest extends TestCase
 {
     private const TEST_BATCH_SIZE = 10;
 
-    private $objectManager;
-    private FeedIndexMetadata $metadata;
-    private IndexStateProvider $indexStateProvider;
-    private ResourceConnection $resourceConnection;
-    private string $feedTableName;
+    private ?IndexStateProvider $indexStateProvider = null;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->objectManager = Bootstrap::getObjectManager();
-
-        // Create a simple custom metadata for testing with known batch size
-        $this->metadata = $this->objectManager->create(
-            FeedIndexMetadata::class,
-            [
-                'feedName' => 'test_feed',
-                'sourceTableName' => 'test_source',
-                'sourceTableField' => 'entity_id',
-                'feedIdentity' => 'entity_id',
-                'feedTableName' => 'test_feed_table',
-                'feedTableField' => 'source_entity_id',
-            ]
-        );
 
         // Create the ORIGINAL IndexStateProvider (not the override) for testing
         // Use the fully qualified class name to get the parent class
-        $this->indexStateProvider = $this->objectManager->create(
-            \Magento\DataExporter\Model\Indexer\IndexStateProvider::class,
+        $this->indexStateProvider = Bootstrap::getObjectManager()->create(
+            IndexStateProvider::class,
             [
-                'metadata' => $this->metadata,
+                'metadata' => Bootstrap::getObjectManager()->create(
+                    FeedIndexMetadata::class,
+                    [
+                        'feedName' => 'test_feed',
+                        'sourceTableName' => 'test_source',
+                        'sourceTableField' => 'entity_id',
+                        'feedIdentity' => 'entity_id',
+                        'feedTableName' => 'test_feed_table',
+                        'feedTableField' => 'source_entity_id',
+                    ]
+                ),
             ]
         );
-
-        // Override batch size via reflection
-        $reflection = new \ReflectionClass(\Magento\DataExporter\Model\Indexer\IndexStateProvider::class);
-        $batchSizeProperty = $reflection->getProperty('batchSize');
-        $batchSizeProperty->setValue($this->indexStateProvider, self::TEST_BATCH_SIZE);
-
-        $this->resourceConnection = $this->objectManager->get(ResourceConnection::class);
-        $connection = $this->resourceConnection->getConnection();
-        $this->feedTableName = $connection->getTableName($this->metadata->getFeedTableName());
     }
 
     /**
@@ -79,6 +62,9 @@ class IndexStateProviderBatchLimitTest extends TestCase
      * The bug: when 15 updates are added with batch size 10,
      * IndexStateProvider should only return 10 items, not 15.
      */
+    #[
+        Config('commerce_data_export/feeds/test_feed/batch_size', self::TEST_BATCH_SIZE)
+    ]
     public function testAddUpdatesRespectsBatchLimit(): void
     {
         // Arrange: Create 15 update items (more than batch size of 10)
@@ -131,6 +117,9 @@ class IndexStateProviderBatchLimitTest extends TestCase
     /**
      * Test that when update count equals batch size, all are processed
      */
+    #[
+        Config('commerce_data_export/feeds/test_feed/batch_size', self::TEST_BATCH_SIZE),
+    ]
     public function testExactlyBatchSizeUpdates(): void
     {
         // Arrange: Create exactly 10 updates (equals batch size)
@@ -157,6 +146,9 @@ class IndexStateProviderBatchLimitTest extends TestCase
     /**
      * Test that when update count is less than batch size, all are processed
      */
+    #[
+        Config('commerce_data_export/feeds/test_feed/batch_size', self::TEST_BATCH_SIZE),
+    ]
     public function testFewerThanBatchSizeUpdates(): void
     {
         // Arrange: Create only 5 updates (less than batch size of 10)
