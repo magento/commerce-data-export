@@ -60,7 +60,9 @@ class Converter implements ConverterInterface
                 $field = [
                     'name' => $fieldData['name'],
                     'type' => $fieldData['type'],
-                    'provider' => isset($fieldData['provider']) && $fieldData['provider'] !== 'null' ? $fieldData['provider'] : null,
+                    'provider' => isset($fieldData['provider']) && $fieldData['provider'] !== 'null'
+                        ? $fieldData['provider']
+                        : null,
                     'repeated' => isset($fieldData['repeated']) && $fieldData['repeated'] == 'true'
                 ];
                 if ($fieldData['type'] == 'ID') {
@@ -72,7 +74,9 @@ class Converter implements ConverterInterface
                             $field['using'][$usingField['field']] = $usingField;
                         }
                     } else {
-                        $field['using'][$idField] = ['field' => $idField];
+                        if ($idField !== null) {
+                            $field['using'][$idField] = ['field' => $idField];
+                        }
                     }
                 }
                 $records[$queryData['name']]['field'][$field['name']] = $field;

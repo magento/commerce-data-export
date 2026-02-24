@@ -186,9 +186,7 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
         foreach ($eavAttributesMetaData as $attributeTable => $eavAttributes) {
             $eavAttributeTable = $this->resourceConnection->getTableName($attributeTable);
 
-            $valueExpr = stripos($eavAttributeTable, '_int', -4)
-                ? new \Zend_Db_Expr('CAST(eav.value as CHAR)')
-                : 'eav.value';
+            $valueExpr = new \Zend_Db_Expr('CAST(eav.value as CHAR)');
 
             $selects[] = $connection->select()
                 ->from(['e' => $entityTableName], ['entity_id'])
