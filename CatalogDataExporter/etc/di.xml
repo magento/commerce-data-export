@@ -553,6 +553,9 @@
         <plugin name="exporter-filter-changelog-table" type="Magento\CatalogDataExporter\Plugin\FilterChangeLogTable"/>
     </type>
 
+    <type name="Magento\Catalog\Model\ResourceModel\Category">
+        <plugin name="data-exporter-schedule-product-update-on-category-change" type="Magento\CatalogDataExporter\Plugin\Category\ResyncProductsOnCategoryChange"/>
+    </type>
     <type name="Magento\DataExporter\Model\FeedMetadataPool">
         <arguments>
             <argument name="classMap" xsi:type="array">
