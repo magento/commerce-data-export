@@ -82,6 +82,46 @@ class ProductRemovalTest extends AbstractProductTestHelper
     }
 
     /**
+     * Validate product is exported with deleted flag when full reindex is triggered after deletion.
+     *
+     * Using fixture with several products intentionally - to have several products in feed table
+     * additionally to deleted product
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture Magento_CatalogDataExporter::Test/_files/setup_simple_products.php
+     *
+     * @return void
+     */
+    public function testProductRemovalWithFullReindex(): void
+    {
+        $sku = 'simple1';
+        $productId = (int)$this->productRepository->get($sku)->getId();
+
+        /** @var \Magento\Framework\Registry $registry */
+        $registry = Bootstrap::getObjectManager()->get(Registry::class);
+        $registry->unregister('isSecureArea');
+        $registry->register('isSecureArea', true);
+
+        try {
+            $product = $this->productRepository->get($sku);
+            $this->productRepository->delete($product);
+            $this->emulateCustomersBehaviorAfterDeleteAction();
+        } catch (\Exception) {
+            self::fail('Could not delete product with SKU: ' . $sku);
+        } finally {
+            $registry->unregister('isSecureArea');
+            $registry->register('isSecureArea', false);
+        }
+
+        $this->indexer->reindexAll();
+
+        $output = $this->getExtractedProduct($sku, 'default');
+        self::assertNotEmpty($output, 'Empty feed received for sku: ' . $sku);
+        $this->validateProductRemoval($output, $productId);
+    }
+
+    /**
      * Delete product from catalog_data_exporter_products
      *
      * @param string $sku

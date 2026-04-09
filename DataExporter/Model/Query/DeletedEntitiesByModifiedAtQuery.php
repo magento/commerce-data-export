@@ -40,7 +40,6 @@ class DeletedEntitiesByModifiedAtQuery
             )
             ->where(\sprintf('f.%s IN (?)', $metadata->getFeedTableField()), $ids)
             ->where('f.modified_at < ?', $recentTimeStamp)
-            // return only un-deleted items to prevent extra processing
-            ->where('f.is_deleted = ?', 0);
+            ->where('f.is_deleted = 0 OR f.status != 200');
     }
 }

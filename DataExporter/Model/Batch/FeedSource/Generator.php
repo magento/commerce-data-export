@@ -167,7 +167,7 @@ class Generator implements BatchGeneratorInterface
         $totalProcessedItems = 0;
 
         while (true) {
-        $insertDataQuery = $connection->insertFromSelect(
+            $insertDataQuery = $connection->insertFromSelect(
                 $this->getSelect(
                     $metadata,
                     $sourceTableName,
@@ -176,9 +176,9 @@ class Generator implements BatchGeneratorInterface
                     $batchNumberIncrement,
                     $startFrom,
                     $maxProcessedItemsLimit),
-            $batchTable->getBatchTableName(),
-            [$batchTable->getBatchNumberField(), $sourceTableField]
-        );
+                $batchTable->getBatchTableName(),
+                [$batchTable->getBatchNumberField(), $sourceTableField]
+            );
             // TOTO: make initialization more explicit
             $initializeCreate = $processedItems === 0;
             if ($initializeCreate) {
@@ -204,7 +204,7 @@ class Generator implements BatchGeneratorInterface
             $totalProcessedItems+= $processedItems;
             $batchNumberIncrement = intdiv($totalProcessedItems, $metadata->getBatchSize());
 
-            if ($processedItems === 0) {
+            if ($processedItems === 0 || $batchNumberIncrement === 0) {
                 break;
             }
             $startFrom += self::MAX_PROCESSED_ITEMS_PER_ITERATION;
@@ -289,7 +289,15 @@ class Generator implements BatchGeneratorInterface
                     $sourceTableField => "s.$sourceTableField"
                 ]
             );
-        $unionSelect = $connection->select()->union([$feedSelect, $sourceSelect]);
+        if ($startFrom !== null && $maxLimit !== null) {
+            $sourceSelect->where(sprintf('%s > %s', $sourceTableField, $startFrom));
+            $sourceSelect->where(sprintf('%s <= %s', $sourceTableField, $maxLimit));
+        }
+
+        // add deleted items only with 1st iteration
+        $unionSelect = $batchNumberIncrement == 0
+            ? $connection->select()->union([$feedSelect, $sourceSelect])
+            : $sourceSelect;
 
         if ($metadata->getFullReIndexSecondsLimit() !== 0) {
             $dateTime = date_create();
@@ -315,10 +323,6 @@ class Generator implements BatchGeneratorInterface
                     $sourceTableField
                 ]
             );
-        if ($startFrom !== null && $maxLimit !== null) {
-            $select->where(sprintf('%s > %s', $sourceTableField, $startFrom));
-            $select->where(sprintf('%s <= %s', $sourceTableField, $maxLimit));
-            }
 
         return $select;
     }
