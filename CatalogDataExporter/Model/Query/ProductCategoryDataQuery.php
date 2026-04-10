@@ -90,6 +90,7 @@ class ProductCategoryDataQuery
 
     /**
      * Get resource table for attribute
+     *
      * @param string $tableName
      * @return string
      */
@@ -111,7 +112,12 @@ class ProductCategoryDataQuery
         $connection = $this->resourceConnection->getConnection();
 
         if (isset($this->cache[$storeViewCode])) {
-            extract($this->cache[$storeViewCode], EXTR_SKIP);
+            $categoryEntityTableName = $this->cache[$storeViewCode]['categoryEntityTableName'];
+            $joinField = $this->cache[$storeViewCode]['joinField'];
+            $storeId = $this->cache[$storeViewCode]['storeId'];
+            $attributeId = $this->cache[$storeViewCode]['attributeId'];
+            $categoryProductIndexTableName = $this->cache[$storeViewCode]['categoryProductIndexTableName'];
+            $categoryAttributeTableName = $this->cache[$storeViewCode]['categoryAttributeTableName'];
         } else {
             $categoryEntityTableName = $this->getTable($this->mainTable);
             $joinField = $connection->getAutoIncrementField($categoryEntityTableName);
@@ -160,7 +166,7 @@ class ProductCategoryDataQuery
             $storeId
         );
         $select
-            ->joinRight(
+            ->joinLeft(
                 [$defaultValueTableAlias => $categoryAttributeTableName],
                 $defaultValueJoinCondition,
                 []
@@ -183,15 +189,17 @@ class ProductCategoryDataQuery
     }
 
     /**
+     * Get store ID by store view code
+     *
      * @param string $storeViewCode
-     * @return Int
+     * @return int
      */
-    private function getStoreId(string $storeViewCode) : Int
+    private function getStoreId(string $storeViewCode) : int
     {
         $connection = $this->resourceConnection->getConnection();
         return (int) $connection->fetchOne(
             $connection->select()
-                ->from(['store' => $this->getTable('store')],'store_id')
+                ->from(['store' => $this->getTable('store')], 'store_id')
                 ->where('store.code = ?', $storeViewCode)
         );
     }
