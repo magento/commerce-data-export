@@ -71,6 +71,11 @@ class ProductAttributeDelete
             return ;
         }
 
+        if ($attribute->isStatic()) {
+            $this->invalidationManager->invalidate('product_attribute_deleted');
+            return;
+        }
+
         try {
             $connection = $this->resourceConnection->getConnection('indexer');
             $metadata = $this->metadataPool->getMetadata(ProductInterface::class);
