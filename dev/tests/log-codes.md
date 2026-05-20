@@ -94,6 +94,11 @@ Log codes related to errors or warnings that occur when scheduling or triggering
 | CDE03-19 | error    | `CDE03-19 Failed to remove product override view subscriptions during table maintenance: {error_message}` | `commerce-data-export-ee/ProductOverrideDataExporter/Plugin/CreateViewAfterTableMaintenance.php` |
 | CDE03-20 | error    | `CDE03-20 Failed to recreate product override view subscriptions after table maintenance: {error_message}` | `commerce-data-export-ee/ProductOverrideDataExporter/Plugin/CreateViewAfterTableMaintenance.php` |
 | CDE03-21 | error    | `CDE03-21 Product sync scheduling error on attribute {%s} option change. Run resync. Error: %s` | `commerce-data-export/CatalogDataExporter/Plugin/Eav/ResyncProductsOnAttributeOptionLabelChange.php` |
+| CDE03-22 | warning  | `CDE03-22 StagedCategoryUrlKeyChangeDetector: no active row at version {version_id} for entity_id(s) [{entity_ids}]; skipping.` | `commerce-data-export-ee/ProductOverrideDataExporter/Model/Category/StagedCategoryUrlKeyChangeDetector.php` |
+| CDE03-23 | error    | `CDE03-23 StagedCategoryUrlKeyChangeDetector: catalog_category url_key attribute not found; failing open.` | `commerce-data-export-ee/ProductOverrideDataExporter/Model/Category/StagedCategoryUrlKeyChangeDetector.php` |
+| CDE03-24 | error    | `CDE03-24 InvalidateProductFeedOnCategoryUrlKeyChange: scheduler failed for path "{path}": {error_message}` | `commerce-data-export-ee/ProductOverrideDataExporter/Plugin/Category/InvalidateProductFeedOnCategoryUrlKeyChange.php` |
+| CDE03-25 | error    | `CDE03-25 InvalidateProductFeedOnCategoryUrlKeyChange: gate query failed: {error_message}` | `commerce-data-export-ee/ProductOverrideDataExporter/Plugin/Category/InvalidateProductFeedOnCategoryUrlKeyChange.php` |
+| CDE03-26 | error    | `CDE03-26 ExpandStagedCategoryUrlKeyReindex: unable to expand staged url_key category reindex scope: {error_message}` | `commerce-data-export-ee/ProductOverrideDataExporter/Plugin/Category/ExpandStagedCategoryUrlKeyReindex.php` |
 
 ---
 
@@ -123,4 +128,3 @@ Log codes related to errors during the indexation process or due to misconfigura
 | CDE04-19 | warning | `CDE04-19 The identifier for a feed item is empty. Sync is skipped for the entity.` | `commerce-data-export/DataExporter/Model/Indexer/FeedIndexProcessorCreateUpdate.php` |
 | CDE04-20 | warning | `CDE04-20 Unexpected call: feed "{feed_name}" is not locked, trace: {stack_trace}` | `commerce-data-export/DataExporter/Model/Indexer/FeedIndexer.php` |
 | CDE04-21 | error   | `CDE04-21 Failed to clean up deleted feed items for feed "{feed_name}". Error: {error_message}` | `commerce-data-export/DataExporter/Cron/CleanupDeletedFeedItems.php` |
-
