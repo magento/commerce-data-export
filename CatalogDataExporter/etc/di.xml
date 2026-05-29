@@ -481,6 +481,12 @@
                 <item name="product_attribute_deleted" xsi:type="array">
                     <item name="products" xsi:type="string">catalog_data_exporter_products</item>
                 </item>
+                <item name="inventory_config_changed" xsi:type="array">
+                    <item name="products" xsi:type="string">catalog_data_exporter_products</item>
+                </item>
+                <item name="currency_changed" xsi:type="array">
+                    <item name="products" xsi:type="string">catalog_data_exporter_products</item>
+                </item>
             </argument>
         </arguments>
     </type>
@@ -519,10 +525,11 @@
     </type>
     <type name="Magento\CatalogDataExporter\Plugin\Index\InvalidateOnConfigChange">
         <arguments>
-            <argument name="configValues" xsi:type="array">
-                <item name="web/url/use_store" xsi:type="string">web/url/use_store</item>
-                <item name="cataloginventory/options/show_out_of_stock" xsi:type="string">cataloginventory/options/show_out_of_stock</item>
-                <item name="cataloginventory/options/stock_threshold_qty" xsi:type="string">cataloginventory/options/stock_threshold_qty</item>
+            <argument name="configPathToEvent" xsi:type="array">
+                <item name="web/url/use_store" xsi:type="string">config_changed</item>
+                <item name="cataloginventory/options/show_out_of_stock" xsi:type="string">inventory_config_changed</item>
+                <item name="cataloginventory/options/stock_threshold_qty" xsi:type="string">inventory_config_changed</item>
+                <item name="currency/options/base" xsi:type="string">currency_changed</item>
             </argument>
         </arguments>
     </type>

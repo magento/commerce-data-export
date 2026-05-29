@@ -8,49 +8,43 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Plugin\Index;
 
-use Magento\CatalogDataExporter\Model\Indexer\IndexInvalidationManager as DeprecatedIndexerManager;
 use Magento\Config\Model\Config;
 use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface;
 use Magento\DataExporter\Service\IndexInvalidationManager;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ObjectManager;
+use Magento\Store\Model\ScopeInterface;
 
 /**
- * Class InvalidateOnConfigChange
+ * Invalidates indexes on configuration change.
  *
- * Invalidates indexes on configuration change
+ * Accepts a configPathToEvent map: each key is a config path (section/group/field),
+ * and its value is the invalidation event to fire when that path changes.
+ * Multiple paths may map to the same event; each unique event fires at most once per save.
  */
 class InvalidateOnConfigChange
 {
     private IndexInvalidationManager $invalidationManager;
-    private string $invalidationEvent;
-    private array $configValues;
 
     /**
-     * @param DeprecatedIndexerManager $invalidationManager
      * @param ScopeConfigInterface $scopeConfig
      * @param CommerceDataExportLoggerInterface $logger
-     * @param string $invalidationEvent
-     * @param array $configValues
+     * @param array<string,string> $configPathToEvent Map of config path => invalidation event name
      * @param IndexInvalidationManager|null $indexInvalidationManager
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function __construct(
-        DeprecatedIndexerManager $invalidationManager,
         private readonly ScopeConfigInterface $scopeConfig,
         private readonly CommerceDataExportLoggerInterface $logger,
-        string $invalidationEvent = 'config_changed',
-        array $configValues = [],
+        private readonly array $configPathToEvent = [],
         ?IndexInvalidationManager $indexInvalidationManager = null
     ) {
-        $this->invalidationEvent = $invalidationEvent;
-        $this->configValues = $configValues;
         $this->invalidationManager = $indexInvalidationManager
             ?? ObjectManager::getInstance()->get(IndexInvalidationManager::class);
     }
 
     /**
-     * Invalidate indexer if relevant config value is changed (around plugin)
+     * Invalidate indexers for any watched config paths that changed (around plugin).
      *
      * @param Config $subject
      * @param callable $proceed
@@ -60,25 +54,19 @@ class InvalidateOnConfigChange
      */
     public function aroundSave(Config $subject, callable $proceed)
     {
+        $beforeValues = [];
+        $savedSection = $subject->getSection();
         try {
-            $check = [];
-            $savedSection = $subject->getSection();
-            foreach ($this->configValues as $searchValue) {
-                $path = explode('/', (string) $searchValue);
-                $section = $path[0];
-                $group = $path[1];
-                $field = $path[2];
-                if ($savedSection == $section) {
-                    if (isset($subject['groups'][$group]['fields'][$field])) {
-                        $check[$searchValue] = $this->scopeConfig->getValue($searchValue);
-                    }
+            foreach ($this->configPathToEvent as $path => $event) {
+                [$section, $group, $field] = explode('/', (string) $path);
+                if ($savedSection === $section && isset($subject['groups'][$group]['fields'][$field])) {
+                    $beforeValues[$path] = $this->getConfigValue($path, $subject);
                 }
             }
         } catch (\Throwable $e) {
             $this->logger->error(
                 sprintf(
-                    'CDE03-14 Failed to read config values. Indexer invalidation for event "%s" skipped. Error: %s',
-                    $this->invalidationEvent,
+                    'CDE03-14 Failed to read config values. Indexer invalidation skipped. Error: %s',
                     $e->getMessage()
                 ),
                 ['exception' => $e]
@@ -87,13 +75,47 @@ class InvalidateOnConfigChange
 
         $result = $proceed();
 
-        foreach ($check as $path => $beforeValue) {
-            if ($beforeValue != $this->scopeConfig->getValue($path)) {
-                $this->invalidationManager->invalidate($this->invalidationEvent);
-                break;
+        try {
+            $eventsToFire = [];
+            foreach ($beforeValues as $path => $beforeValue) {
+                if ($beforeValue != $this->getConfigValue($path, $subject)) {
+                    $eventsToFire[$this->configPathToEvent[$path]] = true;
+                }
             }
+
+            foreach (array_keys($eventsToFire) as $event) {
+                $this->invalidationManager->invalidate($event);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error(
+                sprintf(
+                    'CDE03-27 Failed to invalidate indexers after config "%s" change. Error: %s',
+                    $savedSection,
+                    $e->getMessage()
+                ),
+                ['exception' => $e]
+            );
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $path
+     * @param Config $config
+     * @return mixed
+     */
+    public function getConfigValue(string $path, Config $config): mixed
+    {
+        $scopeType = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
+        $scopeCode = null;
+        if (!empty($config->getWebsite())) {
+            $scopeType = ScopeInterface::SCOPE_WEBSITES;
+            $scopeCode = $config->getWebsite();
+        } elseif (!empty($config->getStore())) {
+            $scopeType = ScopeInterface::SCOPE_STORES;
+            $scopeCode = $config->getStore();
+        }
+        return $this->scopeConfig->getValue($path, $scopeType, $scopeCode);
     }
 }
