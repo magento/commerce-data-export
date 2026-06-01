@@ -9,11 +9,9 @@ declare(strict_types=1);
 namespace Magento\CatalogDataExporter\Test\Integration\Category;
 
 use Magento\Catalog\Api\CategoryRepositoryInterface;
-use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\DataExporter\Model\FeedInterface;
 use Magento\DataExporter\Model\FeedPool;
 use Magento\Framework\DB\Adapter\AdapterInterface;
-use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -94,37 +92,6 @@ abstract class AbstractCategoryTestCase extends TestCase
 
         $this->indexer->load(self::CATEGORY_FEED_INDEXER);
         $this->reindexCategoryDataExporterTable();
-    }
-
-    /**
-     * Assert base category data
-     *
-     * @param CategoryInterface $category
-     * @param array $extract
-     * @param StoreInterface $store
-     */
-    protected function assertBaseCategoryData(CategoryInterface $category, array $extract, StoreInterface $store) : void
-    {
-        $this->assertNotEmpty($extract, "Exported Category Data is empty");
-
-        $storeCode = $this->storeManager->getGroup($store->getStoreGroupId())->getCode();
-        $websiteCode = $this->storeManager->getWebsite($store->getWebsiteId())->getCode();
-        $this->assertEquals($store->getCode(), $extract['storeViewCode']);
-        $this->assertEquals($storeCode, $extract['storeCode']);
-        $this->assertEquals($websiteCode, $extract['websiteCode']);
-        $this->assertEquals($category->getId(), $extract['categoryId']);
-        $this->assertEquals($category->getIsActive(), $extract['isActive']);
-        $this->assertEquals($category->getName(), $extract['name']);
-        $this->assertEquals($category->getPath(), $extract['path']);
-        $this->assertEquals($category->getUrlKey(), $extract['urlKey']);
-        $this->assertEquals($category->getUrlPath(), $extract['urlPath']);
-        $this->assertEquals($category->getPosition(), $extract['position']);
-        $this->assertEquals($category->getLevel(), $extract['level']);
-        $this->assertEquals($category->getParentId(), $extract['parentId']);
-        $this->assertEquals($category->getCreatedAt(), $extract['createdAt']);
-        $this->assertEquals($category->getUpdatedAt(), $extract['updatedAt']);
-        $this->assertEquals($category->getDefaultSortBy(), $extract['defaultSortBy']);
-        $this->assertEquals($category->getImageUrl(), $extract['image']);
     }
 
     /**

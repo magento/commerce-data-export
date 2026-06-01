@@ -46,6 +46,7 @@ $customStoresCategories = [
         'available_sort_by' => ['name'],
         'default_sort_by' => 'name',
         'is_active' => true,
+        'include_in_menu' => true,
         'position' => 1,
         'url_key' => 'category_1',
         'image' => 'category_test_image.jpg'
@@ -59,6 +60,7 @@ $customStoresCategories = [
         'available_sort_by' => ['name'],
         'default_sort_by' => 'name',
         'is_active' => true,
+        'include_in_menu' => true,
         'position' => 2,
         'url_key' => 'category_1_1',
         'image' => 'category_test_image.jpg'
@@ -72,6 +74,7 @@ $customStoresCategories = [
         'available_sort_by' => ['name', 'price'],
         'default_sort_by' => 'price',
         'is_active' => false,
+        'include_in_menu' => true,
         'position' => 4,
         'url_key' => 'category_1_1_1',
         'image' => 'category_test_image.jpg'
@@ -88,6 +91,7 @@ $mainStoreCategories = [
         'available_sort_by' => ['name'],
         'default_sort_by' => 'name',
         'is_active' => true,
+        'include_in_menu' => true,
         'position' => 1,
         'url_key' => 'category_main_1',
         'image' => 'category_test_image.jpg'
@@ -100,11 +104,11 @@ $mainStoreCategories = [
         'level' => 3,
         'available_sort_by' => ['name'],
         'default_sort_by' => 'name',
-        'is_active' => false,
+        'is_active' => true,
+        'include_in_menu' => false,
         'position' => 5,
         'url_key' => 'category_main_1_1',
         'image' => 'category_test_image.jpg'
-
     ],
     [
         'id' => 502,
@@ -115,6 +119,7 @@ $mainStoreCategories = [
         'available_sort_by' => ['name', 'price'],
         'default_sort_by' => 'price',
         'is_active' => true,
+        'include_in_menu' => true,
         'position' => 4,
         'url_key' => 'category_main_1_1_1',
         'image' => 'category_test_image.jpg'
@@ -137,6 +142,7 @@ foreach (\array_merge($mainStoreCategories, $customStoresCategories) as $data) {
         ->setAvailableSortBy($data['available_sort_by'])
         ->setDefaultSortBy($data['default_sort_by'])
         ->setIsActive($data['is_active'])
+        ->setIncludeInMenu($data['include_in_menu'])
         ->setPosition($data['position'])
         ->setStoreId(0)
         ->setImage($data['image'])
@@ -166,5 +172,18 @@ foreach ([$storeCustomOne, $storeCustomTwo] as $store) {
         $urlPathByParentId[$data['id']] = $urlPath;
     }
 }
+
+// Set store-specific overrides for categories 500/501 in custom_store_view_one.
+// This drives the ancestor-propagation test:
+//   500 has includeInMenu=false in this store → propagates to all descendants
+//   501 has isActive=false in this store (own store-specific value)
+$storeManager->setCurrentStore($storeCustomOne);
+$category500 = $categoryRepository->get(500, $storeCustomOne->getId());
+$category500->setIncludeInMenu(false);
+$categoryRepository->save($category500);
+
+$category501 = $categoryRepository->get(501, $storeCustomOne->getId());
+$category501->setIsActive(false);
+$categoryRepository->save($category501);
 
 $storeManager->setCurrentStore($currentStore);

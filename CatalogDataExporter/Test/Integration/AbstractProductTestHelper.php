@@ -17,6 +17,7 @@ use Magento\Catalog\Helper\Category as CategoryHelper;
 use Magento\Catalog\Helper\Product as ProductHelper;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
+use Magento\CatalogDataExporter\Model\Provider\Category\CategoryUrlPathBuilder;
 use Magento\CatalogDataExporter\Model\Provider\Product\ProductOptions\CustomizableSelectedOptionValueUid;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\App\ResourceConnection;
@@ -189,6 +190,7 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
 
         $this->indexer->load(self::CATALOG_DATA_EXPORTER);
         $this->reindexProductDataExporter();
+        $this->resetUrlPathBuilderCache();
     }
 
     /**
@@ -292,6 +294,10 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
         $categories = [];
         foreach ($product->getCategoryIds() as $categoryId) {
             $category = $this->categoryRepository->get($categoryId, $storeId);
+            // catalog_category_product_index excludes inactive categories
+            if (!$category->getIsActive()) {
+                continue;
+            }
             $parentId = $category->getParentId();
             $path = $category->getUrlKey();
             while ($parentId) {
@@ -309,7 +315,11 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
             $categories[] = $path;
         }
 
-         $this->assertEquals($categories, $extractedProduct['feedData']['categories']);
+         $this->assertEquals(
+             $categories,
+             $extractedProduct['feedData']['categories'],
+             'Category data mismatch for store view' . $storeViewCode
+         );
     }
 
     /**
@@ -751,5 +761,24 @@ abstract class AbstractProductTestHelper extends \PHPUnit\Framework\TestCase
     private function buildUid(string $optionId): string
     {
         return base64_encode(implode('/', [self::OPTION_TYPE, $optionId]));
+    }
+
+    /**
+     * Resets CategoryUrlPathBuilder's in-memory caches via reflection.
+     *
+     * The builder is a singleton that caches url_keys and built url_paths across indexer runs.
+     * Within a single test (setUp indexes once, then the test body changes data and indexes again)
+     * the cached values become stale.
+     *
+     * @return void
+     */
+    private function resetUrlPathBuilderCache(): void
+    {
+        $builder = Bootstrap::getObjectManager()->get(CategoryUrlPathBuilder::class);
+        $ref = new \ReflectionClass($builder);
+        foreach (['urlPathCache', 'urlKeyCache'] as $property) {
+            $prop = $ref->getProperty($property);
+            $prop->setValue($builder, []);
+        }
     }
 }

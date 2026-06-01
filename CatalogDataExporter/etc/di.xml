@@ -212,9 +212,6 @@
             </argument>
         </arguments>
     </type>
-    <type name="Magento\Catalog\Model\Category">
-        <plugin name="reindex_category_feed_on_save" type="Magento\CatalogDataExporter\Plugin\Category\ReindexCategoryFeedOnSave"/>
-    </type>
     <!-- Indexer & metadata declaration -->
     <!-- Products feed -->
     <virtualType name="Magento\CatalogDataExporter\Model\Indexer\ProductFeedIndexMetadata" type="Magento\DataExporter\Model\Indexer\FeedIndexMetadata">
@@ -562,6 +559,7 @@
 
     <type name="Magento\Catalog\Model\ResourceModel\Category">
         <plugin name="data-exporter-schedule-product-update-on-category-change" type="Magento\CatalogDataExporter\Plugin\Category\ResyncProductsOnCategoryChange"/>
+        <plugin name="data-exporter-schedule-children-sync-after-save" type="Magento\CatalogDataExporter\Plugin\Category\ReindexCategoryFeedOnSave"/>
     </type>
     <type name="Magento\Eav\Model\ResourceModel\Entity\Attribute">
         <plugin name="data-exporter-schedule-product-update-on-attribute-option-label-change" type="Magento\CatalogDataExporter\Plugin\Eav\ResyncProductsOnAttributeOptionLabelChange"/>

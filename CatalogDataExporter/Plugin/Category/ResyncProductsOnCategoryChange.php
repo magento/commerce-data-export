@@ -19,11 +19,11 @@ use Magento\Framework\Model\AbstractModel;
 class ResyncProductsOnCategoryChange
 {
     /**
-     * @param ScheduleProductUpdateOnCategoryChange $productUpdateSheduler
+     * @param ScheduleProductUpdateOnCategoryChange $productUpdateScheduler
      * @param CommerceDataExportLoggerInterface $logger
      */
     public function __construct(
-        private readonly ScheduleProductUpdateOnCategoryChange $productUpdateSheduler,
+        private readonly ScheduleProductUpdateOnCategoryChange $productUpdateScheduler,
         private readonly CommerceDataExportLoggerInterface $logger
     ) {
     }
@@ -48,23 +48,39 @@ class ResyncProductsOnCategoryChange
         if ($category->isObjectNew()) {
             return $result;
         }
+        // on url_key change this and all children categories should be re-synced
         $oldKey = $category->getOrigData('url_key');
         $newKey = $category->getUrlKey();
         $urlKeyChanged = $oldKey !== $newKey;
 
-        if (!$urlKeyChanged) {
+        // Disabled category should not be returned in Products.categoryData
+        $wasActive = (bool)$category->getOrigData('is_active');
+        $isActive = (bool)$category->getData('is_active');
+        $isActiveChanged = $wasActive !== $isActive;
+
+        if (!$urlKeyChanged && !$isActiveChanged) {
             return $result;
         }
-        $this->logger->info(
-            sprintf(
+
+        if ($urlKeyChanged) {
+            $this->logger->info(sprintf(
                 'Category id: "%s" url_key changed (%s -> %s). Scheduling product feed update.',
                 $category->getId(),
                 $oldKey,
                 $newKey,
-            )
-        );
+            ));
+        }
+        if ($isActiveChanged) {
+            $this->logger->info(sprintf(
+                'Category id: "%s" is_active changed (%s -> %s). Scheduling product feed update.',
+                $category->getId(),
+                (int)$wasActive,
+                (int)$isActive,
+            ));
+        }
         try {
-            $this->productUpdateSheduler->execute($category->getPath());
+            // include children only when url_key changes - is_active affects the category itself only
+            $this->productUpdateScheduler->execute($category->getPath(), $urlKeyChanged);
         } catch (\Throwable $e) {
             $this->logger->error(
                 sprintf(
@@ -108,7 +124,7 @@ class ResyncProductsOnCategoryChange
             )
         );
         try {
-            $this->productUpdateSheduler->execute($newPath);
+            $this->productUpdateScheduler->execute($newPath);
         } catch (\Throwable $e) {
             $this->logger->error(
                 sprintf(

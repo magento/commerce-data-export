@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Provider;
 
+use Magento\CatalogDataExporter\Model\Provider\Category\AncestorStatusProvider;
 use Magento\CatalogDataExporter\Model\Provider\Category\CategoryUrlPathBuilder;
 use Magento\CatalogDataExporter\Model\Provider\Category\Formatter\FormatterInterface;
 use Magento\CatalogDataExporter\Model\Provider\EavAttributes\EntityEavAttributesResolver;
@@ -22,6 +23,8 @@ use Magento\DataExporter\Model\Logging\CommerceDataExportLoggerInterface as Logg
 
 /**
  * Categories main data provider
+ *
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class Categories implements DataProcessorInterface
 {
@@ -56,12 +59,18 @@ class Categories implements DataProcessorInterface
     private $urlPathBuilder;
 
     /**
+     * @var AncestorStatusProvider
+     */
+    private $ancestorStatusProvider;
+
+    /**
      * @param ResourceConnection $resourceConnection
      * @param CategoryMainQuery $categoryMainQuery
      * @param FormatterInterface $formatter
      * @param LoggerInterface $logger
      * @param EntityEavAttributesResolver $entityEavAttributesResolver
      * @param CategoryUrlPathBuilder|null $urlPathBuilder
+     * @param AncestorStatusProvider|null $ancestorStatusProvider
      */
     public function __construct(
         ResourceConnection $resourceConnection,
@@ -69,7 +78,8 @@ class Categories implements DataProcessorInterface
         FormatterInterface $formatter,
         LoggerInterface $logger,
         EntityEavAttributesResolver $entityEavAttributesResolver,
-        ?CategoryUrlPathBuilder $urlPathBuilder = null
+        ?CategoryUrlPathBuilder $urlPathBuilder = null,
+        ?AncestorStatusProvider $ancestorStatusProvider = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->categoryMainQuery = $categoryMainQuery;
@@ -77,6 +87,8 @@ class Categories implements DataProcessorInterface
         $this->logger = $logger;
         $this->entityEavAttributesResolver = $entityEavAttributesResolver;
         $this->urlPathBuilder = $urlPathBuilder ?? ObjectManager::getInstance()->get(CategoryUrlPathBuilder::class);
+        $this->ancestorStatusProvider = $ancestorStatusProvider
+            ?? ObjectManager::getInstance()->get(AncestorStatusProvider::class);
     }
 
     /**
@@ -106,6 +118,7 @@ class Categories implements DataProcessorInterface
                     $merged = $this->injectUrlPaths($merged);
                     \array_push($output, ...\array_map($this->formatter->format(...), $merged));
                 }
+                $output = $this->applyAncestorStatus($output);
                 $dataProcessorCallback($this->get($output));
             }
         } catch (\Throwable $exception) {
@@ -215,5 +228,45 @@ class Categories implements DataProcessorInterface
         }
 
         return $categories;
+    }
+
+    /**
+     * Overrides isActive and includeInMenu for categories whose ancestors are inactive or excluded from menu.
+     *
+     * AC hide all children categories if top-level (and only top-level) menu not active or not included in menu
+     *
+     * @param array $output
+     * @return array
+     */
+    private function applyAncestorStatus(array $output): array
+    {
+        foreach ($output as &$category) {
+            $ancestorId = $this->getAncestorId($category['path'] ?? '');
+            if (!$ancestorId) {
+                continue;
+            }
+            $status = $this->ancestorStatusProvider->getAncestorStatus($ancestorId, $category['storeViewCode']);
+            if (!$status['isActive']) {
+                $category['isActive'] = false;
+            }
+            if (!$status['includeInMenu']) {
+                $category['includeInMenu'] = false;
+            }
+        }
+        return $output;
+    }
+
+    /**
+     * Returns the top-level menu category ID as the sole ancestor to check.
+     *
+     * For path 1/2/3/4 returns 3. Returns null when the category itself is top-level (path 1/2/3).
+     *
+     * @param string $path
+     * @return int|null
+     */
+    private function getAncestorId(string $path): ?int
+    {
+        $parts = explode('/', $path);
+        return isset($parts[3]) ? (int)$parts[2] : null;
     }
 }

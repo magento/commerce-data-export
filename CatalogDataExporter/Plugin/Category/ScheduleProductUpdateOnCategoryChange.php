@@ -44,10 +44,12 @@ class ScheduleProductUpdateOnCategoryChange
      * - or invalidate the product feed indexer when too many products are affected.
      *
      * @param string $categoryPath
+     * @param bool $includeChildrenCategories
      * @return void
      */
     public function execute(
-        string $categoryPath
+        string $categoryPath,
+        bool $includeChildrenCategories = true
     ): void {
         if ($categoryPath === '' || !str_contains($categoryPath, '/')) {
             $this->logger->warning(
@@ -58,7 +60,7 @@ class ScheduleProductUpdateOnCategoryChange
             );
             return ;
         }
-        $affectedCategoryIds = $this->getAffectedCategoryIds($categoryPath);
+        $affectedCategoryIds = $this->getAffectedCategoryIds($categoryPath, $includeChildrenCategories);
         if (empty($affectedCategoryIds)) {
             return ;
         }
@@ -96,12 +98,16 @@ class ScheduleProductUpdateOnCategoryChange
      * Get current category id and all descendant category ids (path pattern "1/2/5/6" for descendants).
      *
      * @param string $categoryPath
+     * @param bool $includeChildrenCategories
      * @return int[]
      */
-    private function getAffectedCategoryIds(string $categoryPath): array
+    private function getAffectedCategoryIds(string $categoryPath, bool $includeChildrenCategories): array
     {
         $currentId = explode('/', $categoryPath);
         $currentId = (int) end($currentId);
+        if (!$includeChildrenCategories) {
+            return [$currentId];
+        }
 
         $connection = $this->resourceConnection->getConnection();
         $categoryEntityTable = $this->resourceConnection->getTableName(self::CATALOG_CATEGORY_ENTITY_TABLE);
