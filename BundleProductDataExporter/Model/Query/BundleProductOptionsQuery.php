@@ -91,6 +91,7 @@ class BundleProductOptionsQuery
             ->columns([
                 'store_view_code' => 's.code',
                 'product_id' => 'cpe.entity_id',
+                'sku' => 'cpe.sku',
                 'render_type' => 'main_table.type',
                 'label' => $connection->getIfNullSql('option_value.title', 'option_value_default.title'),
                 'required' => 'main_table.required',

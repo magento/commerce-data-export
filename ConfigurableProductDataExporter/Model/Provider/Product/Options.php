@@ -344,7 +344,7 @@ class Options implements OptionProviderInterface
             while ($row = $cursor->fetch()) {
                 $options = $this->getOptions($row, $options, $optionValuesData);
             }
-            usort($options, fn(array $a, array $b) => $a['optionsV2']['sortOrder'] <=> $b['optionsV2']['sortOrder']);
+            uasort($options, fn(array $a, array $b) => $a['optionsV2']['sortOrder'] <=> $b['optionsV2']['sortOrder']);
         } catch (\Throwable $exception) {
             throw new UnableRetrieveData(
                 sprintf('Unable to retrieve configurable product options data: %s', $exception->getMessage()),

@@ -96,13 +96,14 @@ class BundleProductOptions implements OptionProviderInterface
 
                 while ($row = $cursor->fetch()) {
                     try {
-                        $output[] = $this->formatBundleOptionsRow($row, $optionValues);
+                        $key = $this->getOptionKey($row);
+                        $output[$key] = $this->formatBundleOptionsRow($row, $optionValues);
                     } catch (\Throwable $e) {
                         $this->failedRegistry->addFailed(
                             [
-                                'productId' => $row['productId'],
-                                'storeViewCode' => $value['storeViewCode'],
-                                'sku' => $value['sku'] ?? null,
+                                'productId' => $row['product_id'],
+                                'storeViewCode' => $row['store_view_code'],
+                                'sku' => $row['sku']
                             ],
                             $e
                         );
@@ -200,5 +201,16 @@ class BundleProductOptions implements OptionProviderInterface
             'isDefault' => $row['default'],
             'qtyMutability' => (bool)$row['qty_mutability'],
         ];
+    }
+
+    /**
+     * Generate option key by concatenating product_id, store_view_code and option_id
+     *
+     * @param array $row
+     * @return string
+     */
+    private function getOptionKey(array $row): string
+    {
+        return 'bundle-' . $row['product_id'] . $row['store_view_code'] . $row['option_id'];
     }
 }
