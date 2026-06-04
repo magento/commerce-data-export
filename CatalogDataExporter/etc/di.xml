@@ -484,6 +484,9 @@
                 <item name="currency_changed" xsi:type="array">
                     <item name="products" xsi:type="string">catalog_data_exporter_products</item>
                 </item>
+                <item name="fix_feed_data_update" xsi:type="array">
+                    <item name="products" xsi:type="string">catalog_data_exporter_products</item>
+                </item>
             </argument>
         </arguments>
     </type>
