@@ -97,13 +97,18 @@ abstract class AbstractCategoryTestCase extends TestCase
     /**
      * @param int $categoryId
      * @param string $storeViewCode
+     * @param bool|null $deleted null = any row; true = only deleted; false = only active
      * @return array
      * @throws \Zend_Db_Statement_Exception
      */
-    public function getCategoryById(int $categoryId, string $storeViewCode) : array
+    public function getCategoryById(int $categoryId, string $storeViewCode, ?bool $deleted = null) : array
     {
         foreach ($this->categoryFeed->getFeedSince('1')['feed'] as $item) {
-            if ($item['categoryId'] == $categoryId && $item['storeViewCode'] === $storeViewCode) {
+            if (isset($item['categoryId'])
+                && $item['categoryId'] == $categoryId
+                && $item['storeViewCode'] === $storeViewCode
+                && ($deleted === null || (bool)($item['deleted'] ?? false) === $deleted)
+            ) {
                 return $item;
             }
         }

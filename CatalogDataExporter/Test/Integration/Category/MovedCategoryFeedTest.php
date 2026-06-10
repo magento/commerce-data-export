@@ -64,11 +64,16 @@ class MovedCategoryFeedTest extends AbstractCategoryTestCase
         $cat1->load(self::CAT1_ID);
 
         $cat1->move(self::CAT2_CHILD_ID, null);
+        // Deleted-row detection compares feed modified_at with the reindex timestamp.
+        // Keep the old and new feed writes in different seconds, same as removal tests.
+        $this->emulateCustomersBehaviorAfterDeleteAction();
 
         $this->emulatePartialReindexBehavior([self::CAT1_ID, self::CAT1_CHILD_ID]);
 
         foreach (self::STORE_VIEW_CODES as $storeCode) {
-            $afterMove = $this->getCategoryById(self::CAT1_ID, $storeCode);
+            // With urlPath identity a move produces a new active row (new path) and a deleted row
+            // (old path). Fetch only the active row to verify the new position.
+            $afterMove = $this->getCategoryById(self::CAT1_ID, $storeCode, false);
             $this->assertNotEmpty(
                 $afterMove,
                 "Category 810 must still be present in the feed for $storeCode after being moved."
@@ -79,7 +84,16 @@ class MovedCategoryFeedTest extends AbstractCategoryTestCase
                 "urlPath for $storeCode must reflect the new position in the hierarchy after the move."
             );
 
-            $childAfterMove = $this->getCategoryById(self::CAT1_CHILD_ID, $storeCode);
+            // Old identity row must exist as a tombstone so SaaS receives the delete.
+            $oldRow = $this->getCategoryById(self::CAT1_ID, $storeCode, true);
+            $this->assertNotEmpty($oldRow, "Old-identity tombstone must exist for $storeCode after the move.");
+            $this->assertEquals(
+                'cat1-move',
+                $oldRow['urlPath'],
+                "Tombstone must carry the pre-move urlPath for $storeCode."
+            );
+
+            $childAfterMove = $this->getCategoryById(self::CAT1_CHILD_ID, $storeCode, false);
             $this->assertNotEmpty(
                 $childAfterMove,
                 "Category 811 (child of moved category) must be present in the feed for $storeCode after the move."
