@@ -84,10 +84,12 @@ class Links
                 );
 
                 while ($row = $cursor->fetch()) {
-                    $output[] = [
+                    $link = $this->formatLinkRow($row, $linkTypes);
+                    $key = implode('-', [$storeViewCode, $row['parentId'], $link['type'], $link['sku']]);
+                    $output[$key] = [
                         'productId' => $row['parentId'],
                         'storeViewCode' => $storeViewCode,
-                        'links' => $this->formatLinkRow($row, $linkTypes),
+                        'links' => $link,
                     ];
                 }
             }
@@ -98,6 +100,8 @@ class Links
                 $exception
             );
         }
+
+        ksort($output);
 
         return $output;
     }

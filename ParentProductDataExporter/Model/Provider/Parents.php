@@ -85,7 +85,8 @@ class Parents
             $select = $this->productParentQuery->getQuery($queryArguments);
             $cursor = $connection->query($select);
             while ($row = $cursor->fetch()) {
-                $output[] = $this->format($row);
+                $key = implode('-', [$row['storeViewCode'], $row['productId'], $row['productType'], $row['sku']]);
+                $output[$key] = $this->format($row);
             }
         } catch (\Throwable $exception) {
             throw new UnableRetrieveData(
@@ -94,6 +95,7 @@ class Parents
                 $exception
             );
         }
+        ksort($output);
         return $output;
     }
 }

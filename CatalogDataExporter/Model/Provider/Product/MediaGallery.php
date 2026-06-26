@@ -109,7 +109,8 @@ class MediaGallery
                 );
 
                 while ($row = $cursor->fetch()) {
-                    $output[] = $this->mediaGalleryFormatter->format($row, $roleImages);
+                    $key = sha1(implode('-', [$storeViewCode, $row['productId'], $row['sortOrder'], $row['file']]));
+                    $output[$key] = $this->mediaGalleryFormatter->format($row, $roleImages);
                 }
             }
         } catch (\Throwable $exception) {
@@ -119,6 +120,8 @@ class MediaGallery
                 $exception
             );
         }
+
+        ksort($output);
 
         return $output;
     }
