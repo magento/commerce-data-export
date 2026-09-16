@@ -299,7 +299,7 @@ abstract class AbstractProductPriceTestHelper extends TestCase
     {
         if (empty(self::$version)) {
             $rawVersion = Bootstrap::getObjectManager()->get(ProductMetadataInterface::class)->getVersion();
-            self::$version = preg_replace('/.*?(\d\.\d\.\d(?:-\w+)?).*/', '$1', (string) $rawVersion);
+            self::$version = preg_replace('/.*?(\d+\.\d+\.\d+(?:-\w+)?).*/', '$1', (string) $rawVersion);
         }
         return version_compare(self::$version, '2.4.9-dev', '>=') ? $price : round($price, 2);
     }
