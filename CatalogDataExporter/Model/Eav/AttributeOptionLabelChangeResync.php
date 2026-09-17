@@ -36,6 +36,15 @@ class AttributeOptionLabelChangeResync
     private const FRONTEND_INPUT_MULTISELECT = 'multiselect';
     private const SUPPORTED_FRONTEND_INPUTS = [self::FRONTEND_INPUT_SELECT, self::FRONTEND_INPUT_MULTISELECT];
 
+    /**
+     * Backend types that map to a real per-store (attribute_id, store_id, value) EAV table.
+     *
+     * Mirrors {@see \Magento\CatalogDataExporter\Model\Query\Eav\EavAttributeQueryBuilder}.
+     * Attributes outside this list (e.g. `static`) have no such table - `getBackendTable()`
+     * falls back to the entity table itself, which would join incorrectly.
+     */
+    private const SUPPORTED_BACKEND_TYPES = ['int', 'decimal', 'text', 'varchar', 'datetime'];
+
     private ?int $targetEntityTypeId = null;
 
     /**
@@ -224,9 +233,15 @@ class AttributeOptionLabelChangeResync
         array $changedOptionIds,
         array $changedStoreIds
     ): void {
-        if ((string) $attribute->getBackendTable() === '' || empty($changedOptionIds)) {
+        if (empty($changedOptionIds)) {
             return;
         }
+
+        $backendType = (string) $attribute->getBackendType();
+        if (!\in_array($backendType, self::SUPPORTED_BACKEND_TYPES, true)) {
+            return;
+        }
+        $backendTable = \sprintf('%s_%s', $this->mainTable, $backendType);
 
         // Always include admin (0) - the feed falls back to the admin row when a store override is absent.
         $changedStoreIds[] = 0;
@@ -246,6 +261,7 @@ class AttributeOptionLabelChangeResync
         $linkField = $this->metadataPool->getMetadata($this->entityInterface)->getLinkField();
         $affectedEntitiesSelect = $this->buildAffectedEntitiesSelect(
             $attribute,
+            $backendTable,
             $linkField,
             $changedOptionIds,
             $storeIds
@@ -322,6 +338,7 @@ class AttributeOptionLabelChangeResync
      * because no index can be used against a CSV.
      *
      * @param AbstractModel $attribute
+     * @param string $backendTable
      * @param string $linkField
      * @param int[] $changedOptionIds
      * @param int[] $storeIds
@@ -330,19 +347,33 @@ class AttributeOptionLabelChangeResync
      */
     private function buildAffectedEntitiesSelect(
         AbstractModel $attribute,
+        string $backendTable,
         string $linkField,
         array $changedOptionIds,
         array $storeIds
     ): \Magento\Framework\DB\Select {
         return (string) $attribute->getFrontendInput() === self::FRONTEND_INPUT_MULTISELECT
-            ? $this->buildAffectedMultiselectEntitiesSelect($attribute, $linkField, $changedOptionIds, $storeIds)
-            : $this->buildAffectedSelectEntitiesSelect($attribute, $linkField, $changedOptionIds, $storeIds);
+            ? $this->buildAffectedMultiselectEntitiesSelect(
+                $attribute,
+                $backendTable,
+                $linkField,
+                $changedOptionIds,
+                $storeIds
+            )
+            : $this->buildAffectedSelectEntitiesSelect(
+                $attribute,
+                $backendTable,
+                $linkField,
+                $changedOptionIds,
+                $storeIds
+            );
     }
 
     /**
      * Build the affected-entities select for `select` attributes (int backend).
      *
      * @param AbstractModel $attribute
+     * @param string $backendTable
      * @param string $linkField
      * @param int[] $changedOptionIds
      * @param int[] $storeIds
@@ -351,6 +382,7 @@ class AttributeOptionLabelChangeResync
      */
     private function buildAffectedSelectEntitiesSelect(
         AbstractModel $attribute,
+        string $backendTable,
         string $linkField,
         array $changedOptionIds,
         array $storeIds
@@ -367,7 +399,7 @@ class AttributeOptionLabelChangeResync
                 ['entity_id' => 'p.entity_id']
             )
             ->joinInner(
-                ['eav' => $this->resourceConnection->getTableName((string) $attribute->getBackendTable())],
+                ['eav' => $this->resourceConnection->getTableName($backendTable)],
                 $joinCondition,
                 []
             )
@@ -381,6 +413,7 @@ class AttributeOptionLabelChangeResync
      * Number of predicates is bounded by the number of options the admin changed in the save.
      *
      * @param AbstractModel $attribute
+     * @param string $backendTable
      * @param string $linkField
      * @param int[] $changedOptionIds
      * @param int[] $storeIds
@@ -389,6 +422,7 @@ class AttributeOptionLabelChangeResync
      */
     private function buildAffectedMultiselectEntitiesSelect(
         AbstractModel $attribute,
+        string $backendTable,
         string $linkField,
         array $changedOptionIds,
         array $storeIds
@@ -410,7 +444,7 @@ class AttributeOptionLabelChangeResync
                 ['entity_id' => 'p.entity_id']
             )
             ->joinInner(
-                ['eav' => $this->resourceConnection->getTableName((string) $attribute->getBackendTable())],
+                ['eav' => $this->resourceConnection->getTableName($backendTable)],
                 $joinCondition,
                 []
             )
