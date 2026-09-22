@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright 2026 Adobe
+ * All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!--
+        The allowlist of manageable indexers (Config::$manageableIndexers) is intentionally empty here:
+        this module only provides the generic mechanism. Consumer modules contribute their own indexer
+        codes to that argument (see Magento_CategoryProductDataExporter), which is the guardrail that
+        stops critical indexers (price, stock, ...) from being disabled by mistake.
+    -->
+    <type name="Magento\Indexer\Model\Config">
+        <plugin name="indexer_status_manager_remove_disabled_indexers_from_config"
+                type="AdobeCommerce\IndexerStatusManager\Plugin\RemoveIndexersFromConfig"/>
+    </type>
+    <!--
+        Skip execution of a disabled indexer on every path. Both plugins read the indexer id from the
+        subject (IndexerInterface::getId() / ViewInterface::getId()), so disabling any indexer is
+        purely a config flag; no per-indexer wiring is required.
+    -->
+    <type name="Magento\Framework\Indexer\IndexerInterface">
+        <plugin name="indexer_status_manager_skip_disabled_reindex"
+                type="AdobeCommerce\IndexerStatusManager\Plugin\DisableIndexerReindex"/>
+    </type>
+    <type name="Magento\Framework\Mview\ViewInterface">
+        <plugin name="indexer_status_manager_skip_disabled_mview_update"
+                type="AdobeCommerce\IndexerStatusManager\Plugin\DisableMviewUpdate"/>
+    </type>
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="indexer_status_manager_indexer_disable" xsi:type="object">
+                    AdobeCommerce\IndexerStatusManager\Console\Command\IndexerDisable
+                </item>
+                <item name="indexer_status_manager_indexer_enable" xsi:type="object">
+                    AdobeCommerce\IndexerStatusManager\Console\Command\IndexerEnable
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>

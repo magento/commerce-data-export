@@ -19,6 +19,7 @@
         "magento/module-parent-product-data-exporter": "self.version",
         "magento/module-product-review-data-exporter": "self.version",
         "magento/module-product-variant-data-exporter": "self.version",
+        "adobe-commerce/module-indexer-status-manager": "self.version",
         "magento/module-inventory-data-exporter": "self.version",
         "magento/module-query-xml": "self.version",
         "magento/module-sales-orders-data-exporter": "self.version",
