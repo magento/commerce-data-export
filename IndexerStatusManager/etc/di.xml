@@ -17,6 +17,18 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <!--
+        Proxy injection for $indexerConfigData: StatusManager must never eagerly load indexer_state
+        (e.g. CLI commands are instantiated during setup before that table exists), so it is given a
+        lazy-loading Proxy instead of the real Data class.
+    -->
+    <type name="AdobeCommerce\IndexerStatusManager\Model\Indexer\StatusManager">
+        <arguments>
+            <argument name="indexerConfigData" xsi:type="object">
+                Magento\Indexer\Model\Config\Data\Proxy
+            </argument>
+        </arguments>
+    </type>
+    <!--
         The allowlist of manageable indexers (Config::$manageableIndexers) is intentionally empty here:
         this module only provides the generic mechanism. Consumer modules contribute their own indexer
         codes to that argument (see Magento_CategoryProductDataExporter), which is the guardrail that

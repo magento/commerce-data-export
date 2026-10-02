@@ -14,5 +14,14 @@
                 </prices>
             </feeds>
         </commerce_data_export>
+        <ac_disabled_indexers>
+            <!--
+                The price data this module exports powers SaaS/ACO pricing, so the local catalog
+                product price index can be replaced. It is managed by AdobeCommerce_IndexerStatusManager
+                but ships enabled (0) by default; set to 1 (or run bin/magento indexer:disable) to turn
+                it off.
+            -->
+            <catalog_product_price>0</catalog_product_price>
+        </ac_disabled_indexers>
     </default>
 </config>

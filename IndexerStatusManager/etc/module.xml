@@ -19,7 +19,6 @@
     <module name="AdobeCommerce_IndexerStatusManager">
         <sequence>
             <module name="Magento_Indexer"/>
-            <module name="Magento_Config"/>
         </sequence>
     </module>
 </config>

@@ -9,6 +9,7 @@
     <module name="Magento_ProductPriceDataExporter">
         <sequence>
             <module name="Magento_DataExporter"/>
+            <module name="AdobeCommerce_IndexerStatusManager"/>
         </sequence>
     </module>
 </config>

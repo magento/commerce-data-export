@@ -50,6 +50,9 @@ class StatusManager
      * @param WriterInterface $configWriter
      * @param Config $config
      * @param IndexerConfigData $indexerConfigData Raw, unfiltered indexer configuration (view_id source).
+     *        Injected as a di.xml-configured Proxy (see etc/di.xml), not the real Data class directly, so
+     *        constructing this service never eagerly loads indexer_state -- e.g. CLI commands are
+     *        instantiated during setup before that table exists.
      * @param ViewInterfaceFactory $viewFactory
      * @param StateFactory $indexerStateFactory
      * @param ResourceConnection $resourceConnection
@@ -141,7 +144,8 @@ class StatusManager
                 // One bad indexer must not abort setup; log and keep going.
                 $this->logger->error(
                     sprintf(
-                        'IndexerStatusManager: unable to remove mview triggers for disabled indexer "%s": %s',
+                        'CDE04-22 IndexerStatusManager: unable to remove mview triggers for disabled indexer'
+                        . ' "%s": %s',
                         $indexerCode,
                         $e->getMessage()
                     ),
@@ -175,7 +179,7 @@ class StatusManager
                 // One bad indexer must not abort setup; log and keep going.
                 $this->logger->error(
                     sprintf(
-                        'IndexerStatusManager: unable to restore mview triggers for indexer "%s": %s',
+                        'CDE04-23 IndexerStatusManager: unable to restore mview triggers for indexer "%s": %s',
                         $indexerCode,
                         $e->getMessage()
                     ),
@@ -216,7 +220,7 @@ class StatusManager
             } catch (\Throwable $e) {
                 $this->logger->error(
                     sprintf(
-                        'IndexerStatusManager: unable to truncate index table "%s": %s',
+                        'CDE04-24 IndexerStatusManager: unable to truncate index table "%s": %s',
                         $logicalTable,
                         $e->getMessage()
                     ),

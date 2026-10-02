@@ -87,4 +87,25 @@
             </argument>
         </arguments>
     </type>
+    <!--
+        Declare the price indexer this module's export replaces as manageable by
+        AdobeCommerce_IndexerStatusManager. Only allowlisted indexers may be disabled, so this contribution
+        is what lets the config flag in etc/config.xml actually take effect (the generic module ships an
+        empty allowlist).
+    -->
+    <type name="AdobeCommerce\IndexerStatusManager\Model\Config">
+        <arguments>
+            <argument name="manageableIndexers" xsi:type="array">
+                <item name="catalog_product_price" xsi:type="string">catalog_product_price</item>
+            </argument>
+            <!-- Truncated when catalog_product_price is disabled: the read table and its replica hold the
+                 price index data; the *_idx/*_tmp working tables are transient and left alone. -->
+            <argument name="indexTables" xsi:type="array">
+                <item name="catalog_product_price" xsi:type="array">
+                    <item name="catalog_product_index_price" xsi:type="string">catalog_product_index_price</item>
+                    <item name="catalog_product_index_price_replica" xsi:type="string">catalog_product_index_price_replica</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
 </config>
