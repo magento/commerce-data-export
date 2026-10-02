@@ -24,6 +24,7 @@
         "magento/module-downloadable": ">=100.4.4",
         "magento/module-indexer": ">=100.4.4",
         "magento/module-grouped-product": ">=100.4.2",
+        "adobe-commerce/module-indexer-status-manager": "self.version",
         "magento/module-data-exporter": "self.version"
     },
     "require-dev": {

@@ -21,6 +21,15 @@
                     <store_view_batch_size>10</store_view_batch_size>
                 </productAttributes>
             </feeds>
+            <ac_disabled_indexers>
+                <!--
+                    The product data this module exports powers SaaS/Live Search, so the local catalog
+                    fulltext search index can be replaced. It is managed by AdobeCommerce_IndexerStatusManager
+                    but ships enabled (0) by default; set to 1 (or run bin/magento indexer:disable) to turn
+                    it off.
+                -->
+                <catalogsearch_fulltext>0</catalogsearch_fulltext>
+            </ac_disabled_indexers>
         </commerce_data_export>
     </default>
 </config>
