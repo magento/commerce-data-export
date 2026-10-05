@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright 2026 Adobe
+ * All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <ac_disabled_indexers>
+            <!--
+                The write-side category data this module reads can replace these indexers when a
+                catalog is exported to ACO/CCDM. They are managed by AdobeCommerce_IndexerStatusManager
+                but ship enabled (0) by default; set to 1 (or run bin/magento indexer:disable) to turn
+                them off.
+            -->
+            <catalog_category_product>0</catalog_category_product>
+            <catalog_product_category>0</catalog_product_category>
+        </ac_disabled_indexers>
+    </default>
+</config>

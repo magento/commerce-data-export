@@ -1,0 +1,27 @@
+{
+    "name": "adobe-commerce/module-category-product-data-exporter",
+    "description": "Provides product category data for export by reading directly from write-side tables",
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "AdobeCommerce\\CategoryProductDataExporter\\": ""
+        }
+    },
+    "require": {
+        "php": ">=8.1.0",
+        "magento/framework": ">=103.0.4",
+        "magento/module-catalog-data-exporter": "self.version",
+        "magento/module-data-exporter": "self.version",
+        "adobe-commerce/module-indexer-status-manager": "self.version",
+        "magento/module-catalog": ">=104.0.4",
+        "magento/module-store": ">=101.1.4",
+        "magento/module-eav": ">=102.1.4"
+    }
+}

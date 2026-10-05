@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright 2026 Adobe
+ * All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\CatalogDataExporter\Model\Provider\Product\CategoryData"
+                type="AdobeCommerce\CategoryProductDataExporter\Model\Provider\Product\CategoryData"/>
+    <!--
+        Declare the catalog indexers this module replaces as manageable by AdobeCommerce_IndexerStatusManager.
+        Only allowlisted indexers may be disabled, so this contribution is what lets the config flags in
+        etc/config.xml actually take effect (the generic module ships an empty allowlist).
+    -->
+    <type name="AdobeCommerce\IndexerStatusManager\Model\Config">
+        <arguments>
+            <argument name="manageableIndexers" xsi:type="array">
+                <item name="catalog_category_product" xsi:type="string">catalog_category_product</item>
+                <item name="catalog_product_category" xsi:type="string">catalog_product_category</item>
+            </argument>
+        </arguments>
+        <!--
+            The category-product index data lives in dynamic per-store tables (…_store<N> + replicas), which
+            a static list cannot enumerate; this plugin appends them at runtime so they are truncated when
+            the indexers are disabled.
+        -->
+        <plugin name="category_product_data_exporter_add_index_tables"
+                type="AdobeCommerce\CategoryProductDataExporter\Plugin\IndexerStatusManager\AddPerStoreCategoryIndexTables"/>
+    </type>
+</config>

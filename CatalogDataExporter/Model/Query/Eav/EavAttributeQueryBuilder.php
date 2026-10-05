@@ -7,7 +7,9 @@ declare(strict_types=1);
 
 namespace Magento\CatalogDataExporter\Model\Query\Eav;
 
+use Magento\CatalogDataExporter\Model\StoreIdResolver;
 use Magento\Eav\Model\Config;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Select;
@@ -37,7 +39,11 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
     private array $entityTypeIdMap;
     private Config $eavConfig;
     private array $attributesMetadata = [];
-    private array $storeCodeToStoreIdMap = [];
+
+    /**
+     * @var StoreIdResolver
+     */
+    private StoreIdResolver $storeIdResolver;
 
     /**
      * @param string $entityType
@@ -45,19 +51,22 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
      * @param MetadataPool $metadataPool
      * @param Config $eavConfig
      * @param array $linkedAttributes
+     * @param StoreIdResolver|null $storeIdResolver
      */
     public function __construct(
         string $entityType,
         ResourceConnection $resourceConnection,
         MetadataPool $metadataPool,
         Config $eavConfig,
-        array $linkedAttributes = []
+        array $linkedAttributes = [],
+        ?StoreIdResolver $storeIdResolver = null
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->metadataPool = $metadataPool;
         $this->entityType = $entityType;
         $this->linkedAttributes = $linkedAttributes;
         $this->eavConfig = $eavConfig;
+        $this->storeIdResolver = $storeIdResolver ?? ObjectManager::getInstance()->get(StoreIdResolver::class);
     }
 
     /**
@@ -196,7 +205,7 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
                     $connection->quoteInto(' AND eav.attribute_id IN (?)', array_values($eavAttributes)) .
                     $connection->quoteInto(
                         ' AND eav.store_id IN (?)',
-                        [Store::DEFAULT_STORE_ID, $this->getStoreId($storeCode)]
+                        [Store::DEFAULT_STORE_ID, $this->storeIdResolver->getStoreId($storeCode)]
                     ),
                     ['store_id']
                 )
@@ -214,27 +223,6 @@ class EavAttributeQueryBuilder implements EavAttributeQueryBuilderInterface
         }
 
         return $connection->select()->union($selects, Select::SQL_UNION_ALL);
-    }
-
-    /**
-     * Get store id by store code
-     *
-     * @param string $storeCode
-     * @return int
-     */
-    private function getStoreId(string $storeCode): int
-    {
-        if (!isset($this->storeCodeToStoreIdMap[$storeCode])) {
-            $connection = $this->resourceConnection->getConnection();
-
-            $storeId = (int)$connection->fetchOne(
-                $connection->select()
-                    ->from(['s' => $this->resourceConnection->getTableName('store')], ['store_id'])
-                    ->where('s.code = ?', $storeCode)
-            );
-            $this->storeCodeToStoreIdMap[$storeCode] = $storeId;
-        }
-        return $this->storeCodeToStoreIdMap[$storeCode];
     }
 
     /**
