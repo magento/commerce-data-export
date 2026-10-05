@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright 2026 Adobe
+ * All Rights Reserved.
+ */
+-->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="front_fieldset">
+        <field name="is_filterable" component="Magento_Catalog/js/components/disable-on-option/select"
+               sortOrder="40" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="valuesForEnable" xsi:type="array">
+                        <item name="numeric" xsi:type="string">numeric</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="is_filterable_in_search" component="Magento_Catalog/js/components/disable-on-option/yesno"
+               sortOrder="50" formElement="checkbox">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="valuesForEnable" xsi:type="array">
+                        <item name="numeric" xsi:type="string">numeric</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+    </fieldset>
+</form>

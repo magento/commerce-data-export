@@ -1,0 +1,26 @@
+{
+    "name": "adobe-commerce/module-catalog-product-numeric-attribute",
+    "description": "Adds a numeric/decimal product attribute input type that supports negative values and range facets for Live Search",
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "AdobeCommerce\\CatalogProductNumericAttribute\\": ""
+        }
+    },
+    "require": {
+        "php": ">=8.1.0",
+        "magento/framework": ">=103.0.4",
+        "magento/module-catalog": ">=104.0.4",
+        "magento/module-catalog-graph-ql": ">=100.4.4",
+        "magento/module-eav": ">=102.1.4",
+        "magento/module-catalog-data-exporter": "self.version",
+        "magento/module-ui": ">=101.2.4"
+    }
+}

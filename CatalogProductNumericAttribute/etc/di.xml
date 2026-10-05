@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright 2026 Adobe
+ * All Rights Reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Map frontend_input "numeric" to backend_type "decimal" and default value field -->
+    <type name="Magento\Eav\Model\Entity\Attribute">
+        <plugin name="catalog_product_numeric_attribute_backend_type"
+                type="AdobeCommerce\CatalogProductNumericAttribute\Plugin\Eav\Model\Entity\AttributePlugin"/>
+    </type>
+    <!-- Ensure "numeric" passes input-type validation on attribute save -->
+    <type name="Magento\Eav\Helper\Data">
+        <plugin name="catalog_product_numeric_attribute_input_types"
+                type="AdobeCommerce\CatalogProductNumericAttribute\Plugin\Eav\Helper\DataPlugin"/>
+    </type>
+    <!-- Allow "numeric" attributes in catalog price rule conditions -->
+    <type name="Magento\Catalog\Model\ResourceModel\Eav\Attribute">
+        <plugin name="catalog_product_numeric_attribute_rule_condition"
+                type="AdobeCommerce\CatalogProductNumericAttribute\Plugin\Catalog\Model\ResourceModel\Eav\AttributePlugin"/>
+    </type>
+    <!-- Map "numeric" to FilterRangeTypeInput in GraphQL product filter config -->
+    <type name="Magento\CatalogGraphQl\Model\Config\FilterAttributeReader">
+        <plugin name="catalog_product_numeric_attribute_graphql_filter"
+                type="AdobeCommerce\CatalogProductNumericAttribute\Plugin\CatalogGraphQl\Model\Config\FilterAttributeReaderPlugin"/>
+    </type>
+    <!-- Add validate-number rule for numeric input so non-numeric values are rejected in admin -->
+    <type name="Magento\Catalog\Ui\DataProvider\CatalogEavValidationRules">
+        <plugin name="catalog_product_numeric_attribute_validation_rules"
+                type="AdobeCommerce\CatalogProductNumericAttribute\Plugin\Catalog\Ui\DataProvider\CatalogEavValidationRulesPlugin"/>
+    </type>
+    <!-- Include "numeric" in SaaS feed NumericMetadataFormatter so attributes get numeric:true flag -->
+    <virtualType name="Magento\CatalogDataExporter\Model\Provider\Product\Formatter\NumericMetadataFormatter"
+                 type="Magento\CatalogDataExporter\Model\Provider\Product\Formatter\BooleanNumericMetadataFormatter">
+        <arguments>
+            <argument name="frontendInput" xsi:type="array">
+                <item name="numeric" xsi:type="string">numeric</item>
+            </argument>
+        </arguments>
+    </virtualType>
+</config>

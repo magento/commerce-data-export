@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright 2026 Adobe
+ * All Rights Reserved.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="AdobeCommerce\CatalogProductNumericAttribute\Block\Adminhtml\Attribute\NumericLayeredNav"
+                   name="numeric_attribute_layered_nav_js"
+                   template="AdobeCommerce_CatalogProductNumericAttribute::catalog/product/attribute/numeric-layered-nav.phtml"
+                   after="attribute_edit_js"/>
+        </referenceContainer>
+    </body>
+</page>

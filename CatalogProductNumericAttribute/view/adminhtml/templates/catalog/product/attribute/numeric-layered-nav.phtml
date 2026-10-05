@@ -1,0 +1,100 @@
+<?php
+/**
+ * Copyright 2026 Adobe
+ * All Rights Reserved.
+ */
+
+/**
+ * Enables "Use in Layered Navigation" and "Use in Search Results Layered Navigation"
+ * for the "numeric" frontend_input type on the legacy attribute edit form.
+ *
+ * The core js.phtml resets these fields to 0 and disables them for unknown input types.
+ * A MutationObserver on the disabled attribute reactively re-enables the fields and
+ * restores their persisted values whenever the core script disables them.
+ *
+ * @var \AdobeCommerce\CatalogProductNumericAttribute\Block\Adminhtml\Attribute\NumericLayeredNav $block
+ * @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer
+ */
+
+$savedFilterable = $block->getIsFilterable();
+$savedFilterableInSearch = $block->getIsFilterableInSearch();
+?>
+<?php
+$scriptString = <<<script
+require(["jquery"], function($) {
+    var NUMERIC = 'numeric';
+    var savedFilterable = '{$savedFilterable}';
+    var savedFilterableInSearch = '{$savedFilterableInSearch}';
+    var needsRestore = true;
+    var applying = false;
+
+    function isNumericSelected() {
+        var inputElement = document.getElementById('frontend_input');
+        return inputElement && inputElement.value === NUMERIC;
+    }
+
+    function enableFields() {
+        if (applying || !isNumericSelected()) {
+            return;
+        }
+        applying = true;
+
+        var corrected = false;
+        [
+            ['is_filterable', savedFilterable],
+            ['is_filterable_in_search', savedFilterableInSearch]
+        ].forEach(function(pair) {
+            var field = document.getElementById(pair[0]);
+            if (!field) {
+                return;
+            }
+            if (field.disabled) {
+                field.disabled = false;
+                corrected = true;
+            }
+            if (needsRestore) {
+                field.value = pair[1];
+            }
+        });
+
+        if (corrected) {
+            needsRestore = false;
+        }
+        if (typeof window.switchIsFilterable === 'function') {
+            window.switchIsFilterable();
+        }
+
+        applying = false;
+    }
+
+    $(function() {
+        ['is_filterable', 'is_filterable_in_search'].forEach(function(id) {
+            var field = document.getElementById(id);
+            if (!field) {
+                return;
+            }
+            new MutationObserver(function() {
+                if (field.disabled) {
+                    setTimeout(enableFields, 0);
+                }
+            }).observe(field, {attributes: true, attributeFilter: ['disabled']});
+        });
+
+        enableFields();
+
+        $('#edit_form').on('submit', function() {
+            if (!isNumericSelected()) {
+                return;
+            }
+            ['is_filterable', 'is_filterable_in_search'].forEach(function(id) {
+                var field = document.getElementById(id);
+                if (field) {
+                    field.disabled = false;
+                }
+            });
+        });
+    });
+});
+script;
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>
