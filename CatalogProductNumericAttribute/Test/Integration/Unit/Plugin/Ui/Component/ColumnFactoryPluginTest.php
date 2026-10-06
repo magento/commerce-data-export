@@ -10,6 +10,7 @@ namespace AdobeCommerce\CatalogProductNumericAttribute\Test\Integration\Unit\Plu
 use Magento\Catalog\Api\Data\ProductAttributeInterface;
 use Magento\Catalog\Ui\Component\ColumnFactory;
 use AdobeCommerce\CatalogProductNumericAttribute\Plugin\Ui\Component\ColumnFactoryPlugin;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -30,6 +31,7 @@ class ColumnFactoryPluginTest extends TestCase
     /**
      * @dataProvider provideBeforeCreateScenarios
      */
+    #[DataProvider('provideBeforeCreateScenarios')]
     public function testBeforeCreate(
         string $frontendInput,
         bool $filterableInGrid,

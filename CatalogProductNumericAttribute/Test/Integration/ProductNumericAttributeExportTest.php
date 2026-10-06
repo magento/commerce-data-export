@@ -7,7 +7,8 @@ declare(strict_types=1);
 
 namespace AdobeCommerce\CatalogProductNumericAttribute\Test\Integration;
 
-use Magento\Catalog\Model\Entity\Attribute as CatalogAttribute;
+use Magento\Catalog\Model\ResourceModel\Eav\Attribute as CatalogAttribute;
+use Magento\DataExporter\Test\Integration\DisablesFeedReadinessCheckers;
 use Magento\Eav\Model\Entity\Attribute\Set;
 use Magento\Eav\Model\Entity\Type;
 use Magento\Framework\App\ResourceConnection;
@@ -23,6 +24,8 @@ use PHPUnit\Framework\TestCase;
  */
 class ProductNumericAttributeExportTest extends TestCase
 {
+    use DisablesFeedReadinessCheckers;
+
     private const ATTRIBUTE_CODE = 'numeric_export_test';
 
     /**
@@ -31,6 +34,7 @@ class ProductNumericAttributeExportTest extends TestCase
      */
     public function testNumericAttributeMetadataIsExported(): void
     {
+        self::disableFeedReadinessCheckers();
         $objectManager = Bootstrap::getObjectManager();
         $objectManager->configure([
             'Magento\CatalogDataExporter\Model\Indexer\ProductAttributeFeedIndexMetadata' => [

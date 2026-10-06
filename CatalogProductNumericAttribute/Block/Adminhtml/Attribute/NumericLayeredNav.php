@@ -12,6 +12,8 @@ use Magento\Framework\Registry;
 
 /**
  * Provides saved attribute filterable values to the numeric layered navigation JS template.
+ *
+ * @api
  */
 class NumericLayeredNav extends Template
 {
