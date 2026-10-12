@@ -8,8 +8,6 @@ declare(strict_types=1);
 namespace Magento\CatalogDataExporter\Model\Query;
 
 use Magento\Catalog\Model\Indexer\Category\Product\AbstractAction;
-use Magento\CatalogDataExporter\Model\StoreIdResolver;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\Indexer\ScopeResolver\IndexScopeResolver as TableResolver;
@@ -41,28 +39,20 @@ class ProductCategoryDataQuery
     private $cache = [];
 
     /**
-     * @var StoreIdResolver
-     */
-    private $storeIdResolver;
-
-    /**
      * ProductCategoryIdsQuery constructor.
      *
      * @param ResourceConnection $resourceConnection
      * @param TableResolver $tableResolver
      * @param string $mainTable
-     * @param StoreIdResolver|null $storeIdResolver
      */
     public function __construct(
         ResourceConnection $resourceConnection,
         TableResolver $tableResolver,
-        string $mainTable = 'catalog_category_entity',
-        ?StoreIdResolver $storeIdResolver = null
+        string $mainTable = 'catalog_category_entity'
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->tableResolver = $tableResolver;
         $this->mainTable = $mainTable;
-        $this->storeIdResolver = $storeIdResolver ?? ObjectManager::getInstance()->get(StoreIdResolver::class);
     }
 
     /**
@@ -93,9 +83,7 @@ class ProductCategoryDataQuery
                 'categoryProductIndexTableName' => $categoryProductIndexTableName] = $this->cache[$storeViewCode];
         } else {
             $categoryEntityTableName = $this->getTable($this->mainTable);
-            $categoryProductIndexTableName = $this->getIndexTableName(
-                $this->storeIdResolver->getStoreId($storeViewCode)
-            );
+            $categoryProductIndexTableName = $this->getIndexTableName($this->getStoreId($storeViewCode));
             $this->cache[$storeViewCode] = compact(
                 'categoryEntityTableName',
                 'categoryProductIndexTableName'
@@ -121,6 +109,22 @@ class ProductCategoryDataQuery
             ->where('ccp.product_id IN (?)', $productIds);
 
         return $select;
+    }
+
+    /**
+     * Returns the store_id for the given store view code.
+     *
+     * @param string $storeViewCode
+     * @return int
+     */
+    private function getStoreId(string $storeViewCode) : int
+    {
+        $connection = $this->resourceConnection->getConnection();
+        return (int) $connection->fetchOne(
+            $connection->select()
+                ->from(['store' => $this->getTable('store')], 'store_id')
+                ->where('store.code = ?', $storeViewCode)
+        );
     }
 
     /**

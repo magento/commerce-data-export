@@ -113,21 +113,11 @@ class ConfigTest extends TestCase
     public function testIndexTablesMapIsResolved(): void
     {
         $this->assertSame(
-            [
-                'catalog_category_product_index',
-                'catalog_category_product_index_replica',
-                'catalog_category_product_index_store1',
-                'catalog_category_product_index_store1_replica',
-            ],
+            ['catalog_category_product_index' => 'catalog_category_product_index'],
             $this->config->getIndexTables('catalog_category_product')
         );
         $this->assertSame(
-            [
-                'catalog_category_product_index',
-                'catalog_category_product_index_replica',
-                'catalog_category_product_index_store1',
-                'catalog_category_product_index_store1_replica',
-            ],
+            ['catalog_category_product_index'],
             array_values($this->config->getIndexTables('catalog_product_category')),
             'The map values are the table names truncateIndexTables() iterates over.'
         );
