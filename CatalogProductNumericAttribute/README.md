@@ -2,6 +2,8 @@
 
 Adds a **Number** (`numeric`) product attribute input type that stores values as `decimal`, allows negative values, displays no currency symbol, and generates range facets for Live Search / Product Discovery.
 
+Note: magento/module-ui is required for the admin UI to work, however, static tests complains about it being a hard dependency because there is no code implementation and di.xml implementation is considered a soft dependency, so this module is not listed as a requirement in composer.
+
 ## Motivation
 
 Existing decimal-backed input types (`price`, `weight`) reject negative values in their backend models and — in the case of `price` — add currency formatting. This prevents merchants from creating attributes like operating temperature ranges (e.g., -40.5°C to +85°C) that require negative decimals with range-based filtering.
