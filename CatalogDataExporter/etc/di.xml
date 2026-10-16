@@ -400,7 +400,7 @@
             </argument>
 
             <argument name="feedItemIdentifiers" xsi:type="array">
-                <item name="urlPath" xsi:type="string">urlPath</item>
+                <item name="categoryId" xsi:type="string">categoryId</item>
                 <item name="storeViewCode" xsi:type="string">storeViewCode</item>
             </argument>
         </arguments>
@@ -642,7 +642,7 @@
             </argument>
         </arguments>
     </type>
-    <type name="Magento\CatalogDataExporter\Setup\Patch\Data\MigrateCategoryFeedIdentity">
+    <type name="Magento\CatalogDataExporter\Setup\Patch\Data\RestoreCategoryFeedV1Identity">
         <arguments>
             <argument name="categoryFeedIndexMetadata" xsi:type="object">Magento\CatalogDataExporter\Model\Indexer\CategoryFeedIndexMetadata</argument>
         </arguments>
