@@ -112,7 +112,9 @@ class EavAttributeOptionValueResolver
                 $this->attributeMetadata[$row['attribute_code']]['options']['admin'][0] = 'no';
                 $this->attributeMetadata[$row['attribute_code']]['options']['admin'][1] = 'yes';
             } elseif (isset($row['optionId'])) {
-                $this->attributeMetadata[$row['attribute_code']]['options'][$row['storeViewCode']][$row['optionId']] =
+                // The store LEFT JOIN yields a null code for orphaned labels; PHP 8.5 deprecates null offsets.
+                $storeViewCode = (string)$row['storeViewCode'];
+                $this->attributeMetadata[$row['attribute_code']]['options'][$storeViewCode][$row['optionId']] =
                     $row['optionValue'];
             }
         }
