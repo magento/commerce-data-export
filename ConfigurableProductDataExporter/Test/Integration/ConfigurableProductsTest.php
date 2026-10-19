@@ -14,6 +14,7 @@ use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\CatalogDataExporter\Test\Integration\AbstractProductTestHelper;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\ConfigurableProductDataExporter\Model\Provider\Product\ConfigurableOptionValueUid;
+use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -355,6 +356,32 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
         $child = $this->productRepository->get($disabledChildSku, true);
         $parent = $this->productRepository->get($parentSku, true);
 
+        $nullValueChild = $this->productRepository->get('simple_option_70', true);
+        $attributeId = (int) Bootstrap::getObjectManager()
+            ->get(EavConfig::class)
+            ->getAttribute('catalog_product', 'first_test_configurable')
+            ->getId();
+        $entityTable = $this->resource->getTableName('catalog_product_entity');
+        $joinField = $this->connection->getAutoIncrementField($entityTable);
+        $childLinkId = (int) $this->connection->fetchOne(
+            $this->connection->select()
+                ->from(['cpe' => $entityTable], [$joinField])
+                ->where('cpe.entity_id = ?', $nullValueChild->getId())
+        );
+        $this->assertSame(
+            1,
+            $this->connection->update(
+                $this->resource->getTableName('catalog_product_entity_int'),
+                ['value' => null],
+                [
+                    'attribute_id = ?' => $attributeId,
+                    'store_id = ?' => 0,
+                    sprintf('%s = ?', $joinField) => $childLinkId,
+                ]
+            ),
+            'Expected to set the child configurable attribute value to NULL'
+        );
+
         // Disable the child at a base-website store. `status` is website-scoped, so this disables it for every base
         // website store view (admin value stays enabled), but not for the second website.
         $productAction->updateAttributes(
@@ -368,11 +395,11 @@ class ConfigurableProductsTest extends AbstractProductTestHelper
         }
         $this->partialReindex(array_values(array_unique($reindexIds)));
 
-        // "Option 2" (child simple_option_60) is disabled for the base website only; it must stay for the second.
+        // "Option 2" is disabled only for the base website; "Option 3" has a NULL child value in every store.
         $expectedLabelsPerStore = [
-            'default' => ['Option 1', 'Option 3'],
-            $baseWebsiteStoreCode => ['Option 1', 'Option 3'],
-            $secondWebsiteStoreCode => ['Option 1', 'Option 2', 'Option 3'],
+            'default' => ['Option 1'],
+            $baseWebsiteStoreCode => ['Option 1'],
+            $secondWebsiteStoreCode => ['Option 1', 'Option 2'],
         ];
         foreach ($expectedLabelsPerStore as $storeViewCode => $expectedLabels) {
             $extractedParent = $this->getExtractedProduct($parentSku, $storeViewCode);

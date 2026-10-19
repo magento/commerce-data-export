@@ -197,6 +197,9 @@ class ProductAssignedAttributeValues
     ): array {
         $values = [];
         foreach ($childValues as $childLinkId => $value) {
+            if ($value === null) {
+                continue;
+            }
             if ($statusAttributeId === null) {
                 $values[$value] = true;
                 continue;
