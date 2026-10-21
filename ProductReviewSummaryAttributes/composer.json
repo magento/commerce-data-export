@@ -1,0 +1,26 @@
+{
+    "name": "adobe-commerce/module-product-review-summary-attributes",
+    "description": "Adds the ac_review_count and ac_rating_summary system product attributes and exports product review summaries through the products feed",
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "AdobeCommerce\\ProductReviewSummaryAttributes\\": ""
+        }
+    },
+    "require": {
+        "php": ">=8.1.0",
+        "magento/framework": ">=103.0.4",
+        "magento/module-catalog": ">=104.0.4",
+        "magento/module-eav": ">=102.1.4",
+        "magento/module-data-exporter": "self.version",
+        "magento/module-catalog-data-exporter": "self.version",
+        "adobe-commerce/module-catalog-product-numeric-attribute": "self.version"
+    }
+}

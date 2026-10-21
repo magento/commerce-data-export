@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright 2026 Adobe
+ * All Rights Reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="product_attribute_form_build_main_tab">
+        <observer name="product_review_summary_attributes_system_notice"
+                  instance="AdobeCommerce\ProductReviewSummaryAttributes\Observer\ConfigureReviewAttributeEditForm"/>
+    </event>
+</config>

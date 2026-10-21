@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright 2026 Adobe
+ * All Rights Reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="config_data_save_after">
+        <observer name="product_review_summary_sync_resync_on_review_active_change"
+                  instance="AdobeCommerce\ProductReviewSummarySync\Observer\ResyncOnReviewActiveChange"/>
+    </event>
+    <event name="config_data_delete_after">
+        <observer name="product_review_summary_sync_resync_on_review_active_change"
+                  instance="AdobeCommerce\ProductReviewSummarySync\Observer\ResyncOnReviewActiveChange"/>
+    </event>
+</config>

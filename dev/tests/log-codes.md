@@ -39,6 +39,8 @@ Log codes related to errors or warnings that occur while collecting data from so
 | CDE01-21 | error   | `CDE01-21 Unable to resolve url_path for category {id} with path "{path}", url_key "{urk_key}", store "{store}"`                   | `commerce-data-export/CatalogDataExporter/Model/Provider/Categories.php`                             |
 | CDE01-22 | error   | `CDE01-22 Unable to resolve url_path for category{id} with path "{path}" for store view "{store}"`                                 | `commerce-data-export/CatalogDataExporter/Model/Provider/Product/CategoryData.php`                    |
 | CDE01-23 | error   | `CDE01-23 Unable to assemble "ac_customizable_options" attribute. Error: {exception_message}` | `commerce-data-export/CustomizableOptionsDataExporter/Model/Provider/CustomizableOptionsProvider.php` |
+| CDE01-24 | error   | `CDE01-24 Unable to add review summary data to feed` | `commerce-data-export/ProductReviewSummaryAttributes/Plugin/AddReviewAttributesToProductFeed.php` |
+| CDE01-26 | warning | `CDE01-26 Review summary attributes are not registered. Values are not exported. Check that no attribute with the same code was created by a merchant` | `commerce-data-export/ProductReviewSummaryAttributes/Plugin/AddReviewAttributesToProductFeed.php` |
 
 ---
 
@@ -102,6 +104,7 @@ Log codes related to errors or warnings that occur when scheduling or triggering
 | CDE03-26 | error    | `CDE03-26 InvalidateProductFeedOnCategoryUrlKeyChange: unable to expand staged url_key category reindex scope: {error_message}`            | `commerce-data-export-ee/CatalogStagingDataExporter/Plugin/Category/InvalidateProductFeedOnCategoryUrlKeyChange.php` |
 | CDE03-27 | error    | `CDE03-27 Failed to invalidate indexers after config "{config_section}" change. Error: {error_message}`                          | `commerce-data-export/CatalogDataExporter/Plugin/Index/InvalidateOnConfigChange.php`                                  |
 | CDE03-28 | warning  | `CDE03-28 StagedCategoryUrlKeyChangeDetector: catalog category staging schema is not present; skipping staged url_key change detection.` | `commerce-data-export-ee/CatalogStagingDataExporter/Model/Category/StagedCategoryUrlKeyChangeDetector.php`           |
+| CDE03-29 | warning  | `CDE03-29 Product sync scheduling error on review summary change` | `commerce-data-export/ProductReviewSummarySync/Model/ProductFeedUpdateScheduler.php` |
 
 ---
 

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright 2026 Adobe
+ * All Rights Reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Review summary values are calculated from reviews and cannot be edited per product -->
+    <type name="Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\Eav">
+        <arguments>
+            <argument name="attributesToEliminate" xsi:type="array">
+                <item name="ac_review_count" xsi:type="string">ac_review_count</item>
+                <item name="ac_rating_summary" xsi:type="string">ac_rating_summary</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Hide from Catalog > Products > Update attributes (mass action) -->
+    <type name="Magento\Catalog\Block\Adminhtml\Product\Edit\Action\Attribute\Tab\Attributes">
+        <arguments>
+            <argument name="excludeFields" xsi:type="array">
+                <item name="ac_review_count" xsi:type="string">ac_review_count</item>
+                <item name="ac_rating_summary" xsi:type="string">ac_rating_summary</item>
+            </argument>
+        </arguments>
+    </type>
+</config>
